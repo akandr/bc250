@@ -1,0 +1,13 @@
+[Unit]
+Description=Ollama API Proxy (injects think:false for qwen3 models)
+After=ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/ollama-proxy.py --port 11435 --upstream http://127.0.0.1:11434
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

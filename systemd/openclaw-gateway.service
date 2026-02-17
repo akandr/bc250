@@ -1,0 +1,25 @@
+# User-level systemd service: ~/.config/systemd/user/openclaw-gateway.service
+# Managed by `openclaw gateway install` — shown here for reference.
+# The OPENCLAW_GATEWAY_TOKEN value is redacted.
+
+[Unit]
+Description=OpenClaw Gateway (v2026.2.14)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart="/usr/bin/node" "/usr/local/lib/node_modules/openclaw/dist/index.js" gateway --port 18789
+Restart=always
+RestartSec=5
+KillMode=process
+Environment=HOME=/home/$USER
+Environment="PATH=/home/$USER/.local/bin:/home/$USER/.npm-global/bin:/home/$USER/bin:/usr/local/bin:/usr/bin:/bin"
+Environment=OPENCLAW_GATEWAY_PORT=18789
+Environment=OPENCLAW_GATEWAY_TOKEN=<redacted>
+Environment="OPENCLAW_SYSTEMD_UNIT=openclaw-gateway.service"
+Environment=OPENCLAW_SERVICE_MARKER=openclaw
+Environment=OPENCLAW_SERVICE_KIND=gateway
+Environment=OPENCLAW_SERVICE_VERSION=2026.2.14
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.14",
+    "lastTouchedAt": "2026-02-17T21:20:49.601Z"
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "http://127.0.0.1:11435",
+        "apiKey": "ollama-local",
+        "api": "ollama",
+        "models": [
+          {
+            "id": "qwen3-abl-nothink:latest",
+            "name": "Qwen 3 8B Abliterated NoThink",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen3:8b",
+            "name": "Qwen 3 8B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "llama3.1:8b",
+            "name": "Llama 3.1 8B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen2.5:7b",
+            "name": "Qwen 2.5 7B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen2.5-coder:7b",
+            "name": "Qwen 2.5 Coder 7B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "huihui_ai/qwen3-abliterated:8b",
+            "name": "Qwen 3 8B Abliterated",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "ollama/qwen3-abl-nothink:latest",
+        "fallbacks": [
+          "ollama/llama3.1:8b",
+          "ollama/qwen3:8b",
+          "ollama/qwen2.5:7b"
+        ]
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "Clawd"
+      }
+    ]
+  },
+  "tools": {
+    "profile": "coding",
+    "alsoAllow": [
+      "message",
+      "group:messaging"
+    ],
+    "deny": [
+      "browser",
+      "canvas",
+      "nodes",
+      "cron",
+      "gateway"
+    ],
+    "exec": {
+      "pathPrepend": [
+        "/opt/stable-diffusion.cpp/build/bin"
+      ]
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "channels": {
+    "signal": {
+      "enabled": true,
+      "account": "+1BOTPHONENUMBER",
+      "cliPath": "/usr/local/bin/signal-cli",
+      "dmPolicy": "open",
+      "allowFrom": [
+        "*"
+      ],
+      "groupPolicy": "allowlist"
+    }
+  },
+  "gateway": {
+    "mode": "local"
+  },
+  "plugins": {
+    "entries": {
+      "signal": {
+        "enabled": true
+      }
+    }
+  }
+}
