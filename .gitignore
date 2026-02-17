@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Test outputs
+test_*.png
+
+# Temp/debug scripts
+/tmp/
+*.pyc
+__pycache__/
+
+# Secrets (systemd units may contain tokens)
+# openclaw-gateway.service is tracked as reference (token redacted)
