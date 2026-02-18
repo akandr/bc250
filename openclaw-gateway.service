@@ -1,0 +1,21 @@
+[Unit]
+Description=OpenClaw Gateway (v2026.2.17)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart="/usr/bin/node" "/usr/local/lib/node_modules/openclaw/dist/index.js" gateway --port 18789
+Restart=always
+RestartSec=5
+KillMode=process
+Environment=HOME=/home/akandr
+Environment="PATH=/home/akandr/.local/bin:/home/akandr/.npm-global/bin:/home/akandr/bin:/home/akandr/.nvm/current/bin:/home/akandr/.fnm/current/bin:/home/akandr/.volta/bin:/home/akandr/.asdf/shims:/home/akandr/.local/share/pnpm:/home/akandr/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+Environment=OPENCLAW_GATEWAY_PORT=18789
+Environment=OPENCLAW_GATEWAY_TOKEN=59a02c0300f34614b0349f0af18a9eba2f9bf6a3f3eff180
+Environment="OPENCLAW_SYSTEMD_UNIT=openclaw-gateway.service"
+Environment=OPENCLAW_SERVICE_MARKER=openclaw
+Environment=OPENCLAW_SERVICE_KIND=gateway
+Environment=OPENCLAW_SERVICE_VERSION=2026.2.14
+
+[Install]
+WantedBy=default.target
