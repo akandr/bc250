@@ -23,7 +23,7 @@
               "cacheRead": 0,
               "cacheWrite": 0
             },
-            "contextWindow": 32768,
+            "contextWindow": 16384,
             "maxTokens": 8192
           },
           {
@@ -39,7 +39,7 @@
               "cacheRead": 0,
               "cacheWrite": 0
             },
-            "contextWindow": 32768,
+            "contextWindow": 16384,
             "maxTokens": 8192
           },
           {
@@ -55,7 +55,7 @@
               "cacheRead": 0,
               "cacheWrite": 0
             },
-            "contextWindow": 32768,
+            "contextWindow": 16384,
             "maxTokens": 4096
           },
           {
@@ -117,10 +117,6 @@
       ]
     }
   },
-  "commands": {
-    "native": "auto",
-    "nativeSkills": "auto"
-  },
   "channels": {
     "signal": {
       "enabled": true,
@@ -142,5 +138,8 @@
         "enabled": true
       }
     }
+  },
+  "skills": {
+    "allowBundled": []
   }
 }

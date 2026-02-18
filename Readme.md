@@ -837,9 +837,9 @@ systemctl --user daemon-reload
         "apiKey": "ollama-local",
         "api": "ollama",
         "models": [
-          { "id": "huihui_ai/qwen3-abliterated:14b", "name": "Qwen 3 14B Abliterated (Thinking)", "contextWindow": 32768, "maxTokens": 8192, "reasoning": true },
-          { "id": "qwen3:14b",                       "name": "Qwen 3 14B",                        "contextWindow": 32768, "maxTokens": 4096 },
-          { "id": "qwen3-14b-abl-nothink:latest",    "name": "Qwen 3 14B Abliterated NoThink",    "contextWindow": 32768, "maxTokens": 4096 },
+          { "id": "huihui_ai/qwen3-abliterated:14b", "name": "Qwen 3 14B Abliterated (Thinking)", "contextWindow": 16384, "maxTokens": 8192, "reasoning": true },
+          { "id": "qwen3:14b",                       "name": "Qwen 3 14B",                        "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen3-14b-abl-nothink:latest",    "name": "Qwen 3 14B Abliterated NoThink",    "contextWindow": 16384, "maxTokens": 4096 },
           { "id": "mistral-nemo:12b",                 "name": "Mistral Nemo 12B",                  "contextWindow": 16384, "maxTokens": 4096 }
         ]
       }
@@ -866,7 +866,7 @@ systemctl --user daemon-reload
 
 **No proxy needed:** OpenClaw 2026.2.17 natively supports the `reasoning` flag and passes the correct `think` parameter to Ollama. The `ollama-proxy` (port 11435) has been **disabled** and is no longer required. Direct connection to Ollama on port 11434.
 
-> **⚠️ Context window is set to 32768 for thinking model.** OpenClaw requires ≥16000 tokens context, and the thinking model benefits from extra context for reasoning. At 32k, the KV cache is ~4 GB, leaving room for model weights (~9 GB for 14B Q4). Set globally via `OLLAMA_CONTEXT_LENGTH=32768` in the Ollama systemd override. 128k OOM-kills on 16 GB systems.
+> **⚠️ Context window is set to 16384.** OpenClaw requires ≥16000 tokens context. At 16k, the KV cache is ~2.5 GB, leaving room for model weights (~8.4 GB for 14B Q4). Using 32768 wastes ~2.5 GB on larger KV cache — avoid on 16 GB systems. Set globally via `OLLAMA_CONTEXT_LENGTH=16384` in the Ollama systemd override. 128k OOM-kills on 16 GB systems.
 
 ### 10.4 Agent Identity & Personality
 
@@ -928,19 +928,31 @@ This keeps: file read/write, shell exec, session management, Signal messaging (v
 
 #### Image Generation via FLUX.1-schnell
 
-A custom skill at `~/.openclaw/workspace/skills/sd-image/SKILL.md` teaches the agent to generate images using the local GPU:
+The agent generates images using the local GPU via an **async two-script architecture** that solves the memory coexistence problem (SD and Ollama can't run simultaneously on 16 GB unified memory):
 
 ```
-User: "draw me a cat in space"
-Clawd: [thinks about prompt → unloads Ollama model → runs sd-cli → sends image via Signal]
+User: "draw me a cyberpunk cat"
+Clawd: [calls exec → wrapper returns instantly → replies "Generating your image..."]
+       [background: waits 45s → stops Ollama → runs SD → sends image → restarts Ollama]
+User receives: 🎨 cyberpunk cat image via Signal (~100s total)
 ```
 
-The skill instructs the agent to:
-1. Use the `exec` tool to run `/opt/stable-diffusion.cpp/generate-and-send.sh <prompt>`
-2. The script handles: unloading Ollama models, running FLUX.1-schnell (background with auto-kill), sending the image via Signal
-3. Generation takes ~50 seconds total (including model load, conditioning, sampling, VAE decode)
+**How it works:**
+1. `TOOLS.md` (injected as Project Context) tells the model the exact command
+2. Model calls `exec` with `/opt/stable-diffusion.cpp/generate-and-send.sh <prompt>`
+3. **Wrapper** (`generate-and-send.sh`) starts the worker in background, returns immediately
+4. **Worker** (`generate-and-send-worker.sh`) orchestrates the pipeline:
+   - Waits 45s for OpenClaw to finish its model response (the "generating your image" message)
+   - Stops Ollama service (`systemctl stop ollama`) to fully free VRAM
+   - Runs FLUX.1-schnell via sd-cli (4 steps, 512×512, ~48s)
+   - Restarts Ollama service
+   - Sends image via Signal JSON-RPC
 
-**Limitation:** GPU memory is shared — can't run LLM inference and image generation simultaneously. The script handles model unloading/reloading automatically.
+**Why async?** OpenClaw's exec tool has a timeout. If the script ran synchronously (~50s), OpenClaw would report "Command still running" and try to call Ollama again — triggering model reload while SD is using the GPU → OOM kill. The async approach returns instantly, letting the model respond, then the background worker safely takes over the GPU.
+
+**Why 45s delay?** The model needs time to generate its response ("Generating your image, it will arrive in about a minute.") before the worker stops Ollama. On cold start, model loading can take 30-60s; on warm start, response takes 10-20s. 45s covers both cases.
+
+**Limitation:** During image generation (~50s), the bot is **offline** — Ollama is stopped. Messages sent during this window will be queued and processed after Ollama restarts.
 
 ### 10.7 Signal Channel Setup
 
@@ -1098,10 +1110,13 @@ bc250/
 ├── Readme.md                    # This file — the full setup guide
 ├── openclaw.json                # → ~/.openclaw/openclaw.json (thinking model config)
 ├── SKILL-sd-image.md            # → ~/.openclaw/workspace/skills/sd-image/SKILL.md
-├── generate-and-send.sh         # → /opt/stable-diffusion.cpp/generate-and-send.sh (FLUX + Signal)
+├── generate-and-send.sh         # → /opt/stable-diffusion.cpp/generate-and-send.sh (async wrapper)
+├── generate-and-send-worker.sh  # → /opt/stable-diffusion.cpp/generate-and-send-worker.sh (background worker)
 ├── openclaw-gateway.service     # → ~/.config/systemd/user/openclaw-gateway.service (ref)
 ├── ollama-proxy.py              # HISTORICAL — ollama-proxy (disabled since OpenClaw 2026.2.17)
 ├── openclaw/
+│   ├── TOOLS.md                 # → ~/.openclaw/workspace/TOOLS.md (injected into system prompt)
+│   ├── SKILL-web-search.md      # → ~/.openclaw/workspace/skills/web-search/SKILL.md
 │   ├── skills/
 │   │   ├── sd-image/
 │   │   │   └── SKILL.md         # → ~/.openclaw/workspace/skills/sd-image/SKILL.md
@@ -1113,7 +1128,7 @@ bc250/
 │       └── IDENTITY.md          # → ~/.openclaw/workspace/IDENTITY.md
 ├── scripts/
 │   ├── generate.sh              # → /opt/stable-diffusion.cpp/generate.sh (SD-Turbo only)
-│   └── generate-and-send.sh     # → /opt/stable-diffusion.cpp/generate-and-send.sh
+│   └── generate-and-send.sh     # → /opt/stable-diffusion.cpp/generate-and-send.sh (old version)
 ├── systemd/
 │   ├── ollama.service           # → /etc/systemd/system/ollama.service
 │   ├── ollama.service.d/
@@ -1152,8 +1167,9 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - **Clawd bot on Signal** — responds to messages with **deep thinking** (reasoning:true), **reliably calls tools** (exec, read, write, etc.), runs shell commands, reads/writes files, does sysadmin tasks
 - **Thinking model** — `huihui_ai/qwen3-abliterated:14b` with `reasoning: true` and `thinkingDefault: "high"`. Thinks deeply before acting, produces excellent tool calls. ~27 tok/s, 100% GPU.
 - **Tool calling** — Thinking model correctly uses structured tool calls through OpenClaw → Ollama (direct, no proxy). 13 tools exposed (read, edit, write, exec, process, message, sessions_*, memory_*).
-- **Web search** — `ddgr` (DuckDuckGo CLI) called via `exec` tool. Agent searches web and summarizes results.
-- **Image generation (FLUX.1-schnell)** — `generate-and-send.sh` generates FLUX images at 512×512 in ~48s and sends to Signal. Q4_K diffusion (6.5 GB VRAM) + Q4_K_M T5-XXL (2.9 GB RAM) = 10 GB total, fits comfortably.
+- **Web search** — `ddgr` (DuckDuckGo CLI) called via `exec` tool. Agent searches web and summarizes results. BTC price queries work end-to-end.
+- **Image generation (FLUX.1-schnell)** — Async two-script architecture: wrapper returns instantly, background worker stops Ollama → runs SD → sends image → restarts Ollama. 512×512 in ~48s, image delivered via Signal. **No OOM kills.**
+- **TOOLS.md approach** — Explicit command instructions injected as Project Context into system prompt. More reliable than skill-read chains for 14B models.
 - **Image generation (SD-Turbo fallback)** — 512×512 in ~3s, much faster but lower quality
 - **Ollama + Vulkan** — `huihui_ai/qwen3-abliterated:14b` as primary, ~27 tok/s eval speed, 100% GPU
 - **No proxy needed** — OpenClaw 2026.2.17 natively handles thinking model parameters. `ollama-proxy` disabled.
@@ -1225,21 +1241,29 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 | mistral-nemo:12b | ~34 tok/s | ✅ Works | ❌ N/A | Good alternative 12B option |
 
 ### Known limitations
-- **Shared VRAM** — image generation requires unloading the LLM first (handled by `generate-and-send.sh`)
+- **Shared VRAM** — image generation requires stopping Ollama entirely (handled by async worker with 45s safety delay). Bot is offline during SD generation (~50s).
+- **Chinese thinking token leakage** — The abliterated Qwen3 model occasionally outputs Chinese reasoning fragments (e.g., `句话`) even with `/no_think` in TOOLS.md. Cosmetic issue — doesn't affect functionality.
+- **OpenClaw doesn't send `think: true` to Ollama** — The `createOllamaStreamFn` in model-auth-CxlTW8uU.js doesn't include the `think` parameter in the API body. Qwen3 operates in `/no_think` mode. Thinking works through the model's natural reasoning, not Ollama's explicit thinking mode.
 - **sd-cli hangs on GFX1013** — Vulkan cleanup bug requires background kill workaround
 - **14B memory pressure** — with 11 GB GPU + ~2 GB OS, only ~2 GB free RAM when 14B is loaded. Stable but tight.
 - **FLUX generation time** — ~48s per image (including model load). Fast enough for chat but not interactive.
+- **Cold start latency** — First request after Ollama restart takes 30-60s (model loading). Subsequent requests are 10-20s.
 
 ---
 
 ## 13. TODO
 
-- [ ] End-to-end Signal test: text message → thinking model → response
-- [ ] End-to-end Signal test: image request → FLUX generation → image delivery
 - [ ] Test concurrent requests under load
 - [ ] Set up cron job for daily health check / greeting
 - [ ] Consider reducing OpenClaw system prompt overhead (~9.6K framework chars)
 - [ ] Try higher FLUX resolution (768×768) — will need more VRAM, may require further quantization
+- [ ] Fix Chinese thinking token leakage — try stronger `/no_think` enforcement or model switch
+- [ ] Re-enable Ollama `think: true` once OpenClaw properly handles thinking blocks separately from content
+- [x] ~~End-to-end Signal test: text message → thinking model → response~~ — **Working!** BTC price query, general questions, all functional.
+- [x] ~~End-to-end Signal test: image request → FLUX generation → image delivery~~ — **Working!** Async architecture: wrapper returns instantly, worker stops Ollama → SD → Signal → restart. No OOM.
+- [x] ~~Fix image gen OOM kill~~ — **Two-script async architecture.** Wrapper (`generate-and-send.sh`) returns instantly, worker (`generate-and-send-worker.sh`) runs in background: waits 45s for model response → stops Ollama → runs SD → sends Signal → restarts Ollama.
+- [x] ~~Fix web search~~ — **TOOLS.md approach.** Explicit commands injected as Project Context. More reliable than skill-read chains. Model correctly calls `ddgr` for web search.
+- [x] ~~Fix skill discovery~~ — 14B model in /no_think mode can't follow OpenClaw's skill-read chain (scan available_skills → read SKILL.md → follow instructions). **Solution:** Put commands directly in TOOLS.md.
 - [x] ~~Upgrade OpenClaw to 2026.2.17~~ — **Native thinking model support!** `reasoning: true` + `thinkingDefault: "high"`. Proxy no longer needed.
 - [x] ~~Switch to thinking model~~ — `huihui_ai/qwen3-abliterated:14b` with `reasoning: true`. Thinks deeply (5-30s) before acting. ~27 tok/s.
 - [x] ~~FLUX.1-schnell image generation~~ — **Working!** Q4_K diffusion (6.5 GB) + Q4_K_M t5xxl (2.9 GB) = 10 GB. 48s at 512×512. sd-cli hang workaround with background kill.
@@ -1256,7 +1280,7 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 - [x] ~~Image generation skill~~ — Custom SKILL.md teaches agent to use generate-and-send.sh (updated for FLUX)
 - [x] ~~KV cache quantization~~ — q8_0/q4_0 have **no effect on Vulkan** (f16 only). 16k is the ceiling.
 - [x] ~~Signal bot fully working~~ — thinking model responds via Signal, tool calling + web search works reliably
-- [x] ~~Context window tuning~~ — 128k OOM-kills (16 GB KV cache); 8k rejected by OpenClaw (min 16000); **16384 is the sweet spot** (~2 GB KV cache). Now using 32768 for thinking model.
+- [x] ~~Context window tuning~~ — 128k OOM-kills (16 GB KV cache); 8k rejected by OpenClaw (min 16000); **16384 is the sweet spot** (~2.5 GB KV cache). 32768 wastes 2.5 GB on extra KV cache — stick with 16384.
 - [x] ~~Model selection for OpenClaw~~ — huihui_ai/qwen3-abliterated:14b thinking primary, qwen3:14b / qwen3-14b-abl-nothink / mistral-nemo:12b fallback
 - [x] ~~Integrate with OpenClaw~~ — v2026.2.17 installed, Ollama provider configured (direct, no proxy), Signal channel linked and working
 - [x] ~~Signal setup~~ — signal-cli v0.13.24 native binary, linked as secondary device via QR code
