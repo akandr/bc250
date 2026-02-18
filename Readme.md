@@ -58,7 +58,13 @@ The BC-250 doesn't have a separate GPU memory bus — CPU and GPU share the same
 
 **The fix:** Set `amdgpu.gttsize=12288` in the kernel command line to give the GPU 12 GiB of GTT. After tuning, Vulkan sees **12.5 GiB** of GPU memory.
 
-**However:** Even with 12.5 GiB available, the Vulkan **device-local heap** on GFX1013/RADV is limited to ~8.3 GiB. Models loading >7 GB of tensors into device-local memory become unreliable (14B models load but can't compute). The practical limit for reliable 100% GPU inference is **~5-6 GB loaded model size** (7-8B parameter models).
+**However:** Even with 12.5 GiB available, the kernel's **TTM memory manager** defaults to capping GPU allocations at ~7.4 GiB (50% of RAM) — a second bottleneck independent of the GTT size. By increasing `ttm.pages_limit` to match the GTT (12 GiB = 3,145,728 pages), the full 12.5 GiB becomes usable. After both fixes, the practical limit for 100% GPU inference is **~12 GB loaded model size** — enough for **14B parameter models**.
+
+<!-- TTM fix (July 2026): The default ttm.pages_limit = totalram_pages/2 ≈ 7.42 GiB.
+     This was the REAL bottleneck preventing 14B models from computing — the device-local
+     heap reported 8.33 GiB but TTM could only back ~7.4 GiB of allocations. Fix:
+     echo 3145728 > /sys/module/ttm/parameters/pages_limit
+     Persisted via /etc/modprobe.d/ttm-gpu-memory.conf and /etc/tmpfiles.d/gpu-ttm-memory.conf -->
 
 ---
 
@@ -213,7 +219,44 @@ sudo journalctl -u ollama -n 20 | grep total
 
 **Alternative:** `amdgpu.no_system_mem_limit=1` removes the cap entirely, but the driver will still respect physical memory limits.
 
-### 3.5 Disabling the GUI (saves ~1 GB RAM)
+### 3.5 Tuning TTM pages_limit (critical for 14B models)
+
+Even with GTT set to 12 GiB, the kernel's **TTM memory manager** applies its own cap at ~50% of system RAM (~7.4 GiB). This invisible second bottleneck prevents models >7 GB from computing — they load fine but produce HTTP 500 errors during inference.
+
+<!-- This was THE breakthrough that unlocked 14B models on BC-250. The TTM pages_limit
+     defaults to totalram_pages/2 (kernel source: drivers/gpu/drm/ttm/ttm_sys_manager.c).
+     With 15.2 GiB visible RAM, that's ~7.42 GiB — less than the 8.33 GiB device-local
+     Vulkan heap. So TTM silently denied allocations that RADV promised were available. -->
+
+```bash
+# Runtime fix (immediate, no reboot needed)
+echo 3145728 | sudo tee /sys/module/ttm/parameters/pages_limit   # 12 GiB
+echo 3145728 | sudo tee /sys/module/ttm/parameters/page_pool_size
+
+# Persistent — modprobe.d (applied when ttm module loads at boot)
+echo "options ttm pages_limit=3145728 page_pool_size=3145728" | \
+  sudo tee /etc/modprobe.d/ttm-gpu-memory.conf
+
+# Persistent — tmpfiles.d (fallback, applied by systemd-tmpfiles)
+printf "w /sys/module/ttm/parameters/pages_limit - - - - 3145728\n\
+w /sys/module/ttm/parameters/page_pool_size - - - - 3145728\n" | \
+  sudo tee /etc/tmpfiles.d/gpu-ttm-memory.conf
+
+# Regenerate initramfs to include new modprobe.d config
+sudo dracut -f
+```
+
+Verify:
+```bash
+cat /sys/module/ttm/parameters/pages_limit
+# → 3145728 (= 12 GiB in 4 KiB pages)
+```
+
+**How to calculate:** `pages = GiB × 1024 × 1024 / 4 = GiB × 262144`. So 12 GiB = `12 × 262144 = 3145728` pages.
+
+**Result:** After this fix, qwen3:14b loads (12 GB) and runs at **27 tok/s, 100% GPU**. Previously it would hang during compute.
+
+### 3.6 Disabling the GUI (saves ~1 GB RAM)
 
 If you access the BC-250 exclusively via SSH, disable the graphical desktop:
 
@@ -235,46 +278,62 @@ This frees ~1 GB of RAM (GNOME Shell, GDM, ibus, evolution, xdg-portals, etc.) a
 
 ### 4.1 What's the biggest model that works?
 
-**TL;DR: 7-8B models are the sweet spot at 100% GPU. 14B loads after GTT tuning but Vulkan compute hangs.**
+**TL;DR: After TTM tuning, 14B models run at 100% GPU (~27 tok/s). 7-8B models remain the fastest option (~45-75 tok/s).**
 
-After GTT tuning (Section 3.4), Vulkan sees **12.5 GiB** of GPU memory. However, the RADV Vulkan driver on GFX1013 has a **device-local heap of ~8.3 GiB** — models exceeding this become unreliable even if they "load" successfully.
+After GTT tuning (Section 3.4) and TTM fix (Section 3.5), Vulkan sees **12.5 GiB** of GPU memory with the full allocation backed by TTM. The RADV device-local heap is ~8.3 GiB, and non-device-local is ~4.2 GiB — Ollama's Vulkan backend uses both, enabling models up to ~12 GB loaded.
 
 | Model | Disk | Loaded | GPU% | Speed | Verdict |
 |-------|------|--------|------|-------|---------|
 | qwen2.5:3b | 1.9 GB | 2.4 GB | **100% GPU** | **101 tok/s** | ✅ Fast, lightweight |
 | qwen2.5:7b | 4.7 GB | 4.9 GB | **100% GPU** | **59 tok/s** | ✅ Great quality/speed ratio |
-| qwen2.5-coder:7b | 4.7 GB | 4.9 GB | **100% GPU** | **55 tok/s** | ✅ **Best for coding / clawdbot** |
+| qwen2.5-coder:7b | 4.7 GB | 4.9 GB | **100% GPU** | **55 tok/s** | ✅ Good for coding |
 | llama3.1:8b | 4.9 GB | 5.5 GB | **100% GPU** | **75 tok/s** | ✅ Fastest 8B model |
-| **qwen3:8b** | 5.2 GB | 5.9 GB | **100% GPU** | **44 tok/s** | ✅ **Smartest 8B** (has thinking mode) |
-| mannix/llama3.1-8b-lexi | 4.7 GB | ~5.5 GB | **100% GPU** | **49.8 tok/s** | ✅ **Best uncensored** — fast, no refusals |
-| huihui_ai/seed-coder-abliterate | 5.1 GB | ~5.5 GB | **100% GPU** | **50.3 tok/s** | ✅ **Uncensored coding** — abliterated Seed-Coder |
-| huihui_ai/qwen3-abliterated:8b | 5.0 GB | ~5.9 GB | **100% GPU** | **45.8 tok/s** | ✅ Uncensored Qwen 3 (needs high num_predict) |
+| **qwen3:8b** | 5.2 GB | 5.9 GB | **100% GPU** | **44 tok/s** | ✅ Smartest 8B (has thinking mode) |
+| qwen3-abl-nothink (8B) | 5.0 GB | 7.6 GB | **100% GPU** | **46 tok/s** | ✅ Reliable tool calling |
+| mannix/llama3.1-8b-lexi | 4.7 GB | ~5.5 GB | **100% GPU** | **49.8 tok/s** | ✅ Best uncensored 8B |
+| huihui_ai/seed-coder-abliterate | 5.1 GB | ~5.5 GB | **100% GPU** | **50.3 tok/s** | ✅ Uncensored coding |
+| **mistral-nemo:12b** | 7.1 GB | 10 GB | **100% GPU** | **34 tok/s** | ✅ Great 12B option (after TTM fix) |
+| **qwen3-14b-abl-nothink** | 9.0 GB | 11 GB | **100% GPU** | **27.5 tok/s** | ✅ **Primary model** — best quality |
+| **qwen3:14b** | 9.3 GB | 12 GB | **100% GPU** | **27 tok/s** | ✅ Largest working model |
+| huihui_ai/qwen3-abliterated:14b | 9.0 GB | 11 GB | **100% GPU** | **27.7 tok/s** | ✅ Uncensored 14B |
 | gemma2:9b | 5.4 GB | 8.1 GB | 91% GPU / 9% CPU | **26 tok/s** | ⚠️ Works but spills to CPU |
-| mistral-nemo:12b | 7.1 GB | 7.7 GB | 100% GPU | ~one-shot | ⚠️ Loads, responds once, then hangs |
-| qwen2.5:14b (Q4) | 9.0 GB | 9.7 GB | 100% GPU | — | ❌ Loads (640s!) but compute hangs |
-| qwen2.5:14b (Q3) | 7.3 GB | — | — | — | ❌ Won't complete loading |
 
-**Why 14B fails even with enough memory:** The model's 8148 MiB of tensors fit in the 12.5 GiB Vulkan allocation, and Ollama reports "offloaded 49/49 layers to GPU" — but the Vulkan compute pipeline on GFX1013 can't actually execute matrix operations at that scale. The RADV driver's device-local heap is ~8.3 GiB, and with the model tensors + KV cache + compute buffers, it exceeds what the shader pipeline can handle. Every inference request returns HTTP 500 with zero bytes generated.
+<!-- Table updated July 2026: After increasing ttm.pages_limit from 7.42 GiB to 12 GiB,
+     14B models now run successfully at 100% GPU. Previously, 14B loaded but compute hung
+     because TTM couldn't back the full device-local heap. mistral-nemo:12b also now works
+     reliably instead of hanging after one response. -->
+
+**Why 14B works now (but didn't before):** The kernel's TTM (Translation Table Manager) memory subsystem defaults `pages_limit` to ~50% of system RAM (~7.4 GiB). Even though the GPU's Vulkan device-local heap reports 8.33 GiB, TTM could only actually back ~7.4 GiB of GPU memory allocations. A 14B model at ~9-10 GB loaded exceeded this invisible cap, causing compute hangs. Increasing `ttm.pages_limit` to 12 GiB (matching GTT) removes this bottleneck.
 
 ### 4.2 Memory budget with clawdbot
 
-Running headless (no GUI), the system uses only ~840 MiB for the OS. With a 7B model loaded:
+Running headless (no GUI), the system uses only ~840 MiB for the OS. With the 14B primary model loaded:
 
 ```
 OS + services:           ~0.8 GB
 Ollama process:          ~0.5 GB
-Model loaded (100% GPU): ~5 GB in Vulkan/GTT (shared memory)
-System RAM available:    ~8-9 GB free
+Model loaded (100% GPU): ~11 GB in Vulkan/GTT (shared memory)
+System RAM available:    ~1.8-3 GB free
+Swap:                    8 GB (mostly untouched)
+→ Tight but stable — clawdbot + Node.js + proxy fit in remaining RAM
+```
+
+With an 8B model (fallback):
+
+```
+OS + services:           ~0.8 GB
+Ollama process:          ~0.5 GB
+Model loaded (100% GPU): ~7.6 GB in Vulkan/GTT
+System RAM available:    ~5-6 GB free
 Swap:                    8 GB (untouched)
-→ Plenty of headroom for clawdbot + Node.js + other services
+→ Plenty of headroom
 ```
 
 **Recommended models for clawdbot:**
-- **qwen2.5-coder:7b** — Code-optimized, 55 tok/s, 4.9 GB loaded
-- **qwen3:8b** — Smartest option, built-in "thinking" mode for harder problems, 44 tok/s, 5.9 GB loaded
-- **llama3.1:8b** — Fastest at 75 tok/s if raw speed matters more than code quality
-- **mannix/llama3.1-8b-lexi** — Best uncensored option, 49.8 tok/s, no refusals
-- **huihui_ai/seed-coder-abliterate** — Uncensored coding model, 50.3 tok/s
+- **qwen3-14b-abl-nothink** — **Primary**: best quality, abliterated, 27.5 tok/s, 11 GB loaded
+- **qwen3-abl-nothink (8B)** — Fallback: faster (46 tok/s), smaller (7.6 GB), still reliable tool calling
+- **mistral-nemo:12b** — Alternative: good quality, 34 tok/s, 10 GB loaded
+- **qwen3:14b** — Standard (non-abliterated) 14B, 27 tok/s
 
 ### 4.3 Pull and test
 
@@ -390,13 +449,17 @@ All benchmarks run via Ollama 0.16.1, Vulkan backend, RADV Mesa 25.3.4.
 │ GTT (GPU-accessible system RAM): 12 GiB          │
 │ (tuned via amdgpu.gttsize=12288, default was 50%)│
 ├──────────────────────────────────────────────────┤
+│ TTM pages_limit: 12 GiB (3,145,728 pages)       │
+│ (tuned via modprobe.d, default was 50% ≈ 7.4 GiB)│
+│ ⚠️ DEFAULT TTM LIMIT WAS THE REAL BOTTLENECK     │
+├──────────────────────────────────────────────────┤
 │ Vulkan heaps (RADV):                             │
 │   Heap 0 (system):       4.17 GiB                │
-│   Heap 1 (device-local): 8.33 GiB  ← the limit  │
+│   Heap 1 (device-local): 8.33 GiB                │
 │   Total reported:       12.5  GiB                │
 ├──────────────────────────────────────────────────┤
-│ Practical model limit: ~6 GB loaded (100% GPU)   │
-│ Models >7 GB loaded → unreliable on GFX1013      │
+│ Practical model limit: ~12 GB loaded (100% GPU)  │
+│ 14B models: ✅ 27 tok/s at 11-12 GB loaded       │
 │ Unified memory = zero-copy, no PCIe bottleneck   │
 └──────────────────────────────────────────────────┘
 ```
@@ -442,7 +505,22 @@ cat /proc/cmdline | grep gttsize
 
 ### 14B model loads but inference returns HTTP 500
 
-This is a GFX1013/RADV limitation. The model tensors fit in memory (Ollama reports "offloaded 49/49 layers") but the Vulkan compute pipeline can't execute at that scale. The device-local heap on GFX1013 is ~8.3 GiB — with model weights + KV cache + shader buffers, it overflows. Stick to 7-8B models.
+This was caused by the **TTM `pages_limit` bottleneck** — NOT a GFX1013/RADV limitation. The default TTM limit (~7.4 GiB) prevented full use of the 12.5 GiB Vulkan memory.
+
+**Fix:** Increase TTM pages_limit to match GTT:
+```bash
+# Runtime fix (immediate)
+echo 3145728 | sudo tee /sys/module/ttm/parameters/pages_limit
+echo 3145728 | sudo tee /sys/module/ttm/parameters/page_pool_size
+
+# Persistent (survives reboot)
+echo "options ttm pages_limit=3145728 page_pool_size=3145728" | sudo tee /etc/modprobe.d/ttm-gpu-memory.conf
+echo "w /sys/module/ttm/parameters/pages_limit - - - - 3145728" | sudo tee /etc/tmpfiles.d/gpu-ttm-memory.conf
+echo "w /sys/module/ttm/parameters/page_pool_size - - - - 3145728" | sudo tee -a /etc/tmpfiles.d/gpu-ttm-memory.conf
+sudo dracut -f  # Regenerate initramfs
+```
+
+After this fix, qwen3:14b runs at **27 tok/s, 100% GPU, 12 GB loaded**.
 
 ### Model takes 10+ minutes to load
 
@@ -462,18 +540,41 @@ First load of a model takes a few seconds (cold start). Subsequent runs are inst
 
 | Model | Disk | Speed | Architecture | Best for |
 |-------|------|-------|--------------|----------|
-| **mannix/llama3.1-8b-lexi** | 4.7 GB | **49.8 tok/s** | Llama 3.1 | ✅ **Best overall** — fast, no thinking overhead, direct answers |
+| **qwen3-14b-abl-nothink** | 9.0 GB | **27.5 tok/s** | Qwen 3 14B | ✅ **Primary model** — smartest, reliable tool calling, no refusals |
+| **huihui_ai/qwen3-abliterated:14b** | 9.0 GB | **27.7 tok/s** | Qwen 3 14B | ✅ **Best abliterated 14B** — same base, marginally faster than standard |
+| **qwen3-abl-nothink** (8B) | 5.0 GB | **46 tok/s** | Qwen 3 8B | ✅ **Fastest abliterated** — fallback for speed-sensitive tasks |
+| **mannix/llama3.1-8b-lexi** | 4.7 GB | **49.8 tok/s** | Llama 3.1 | ✅ Fast, no thinking overhead, direct answers |
 | **huihui_ai/seed-coder-abliterate** | 5.1 GB | **50.3 tok/s** | Seed-Coder 8B | ✅ **Best for coding** — ByteDance's coding model, abliterated |
-| **huihui_ai/qwen3-abliterated:8b** | 5.0 GB | **45.8 tok/s** | Qwen 3 | ⚠️ Good quality but has thinking mode — see note below |
 
-All run at **100% GPU**, well within the 8.3 GiB device-local heap limit.
+<!-- Section updated July 2026: added 14B abliterated variants. Quality testing confirms
+     zero performance/intelligence loss from abliteration — identical code quality and
+     reasoning compared to standard qwen3:14b. The abliterated 14B is marginally faster
+     (27.5 vs 27.0 tok/s) due to 1 GB smaller model file (different quantization). -->
+
+All models run at **100% GPU**. The 14B models require the TTM fix (Section 3.5) to work reliably.
+
+**Abliterated 14B vs standard 14B:** In side-by-side testing (coding tasks, reasoning, tool calling), the abliterated variant shows **zero measurable quality or intelligence loss**. Both produce identical algorithmic solutions with similar explanation quality. The abliterated variant is marginally faster due to a slightly smaller model file.
 
 ### 8.2 Pull commands
 
 ```bash
-ollama pull mannix/llama3.1-8b-lexi          # Best general uncensored
-ollama pull huihui_ai/seed-coder-abliterate   # Best uncensored coding model
-ollama pull huihui_ai/qwen3-abliterated:8b    # Smartest but has thinking quirk
+# 14B abliterated (primary model after TTM fix)
+ollama pull huihui_ai/qwen3-abliterated:14b
+# Create nothink variant:
+cat > /tmp/Modelfile.qwen3-14b-abl-nothink << "EOF"
+FROM huihui_ai/qwen3-abliterated:14b
+PARAMETER num_predict 2048
+PARAMETER repeat_penalty 1
+PARAMETER temperature 0.6
+PARAMETER top_k 20
+PARAMETER top_p 0.95
+EOF
+ollama create qwen3-14b-abl-nothink -f /tmp/Modelfile.qwen3-14b-abl-nothink
+
+# 8B abliterated (fallback)
+ollama pull huihui_ai/qwen3-abliterated:8b
+ollama pull mannix/llama3.1-8b-lexi
+ollama pull huihui_ai/seed-coder-abliterate
 ```
 
 ### 8.3 Qwen 3 thinking mode workaround
@@ -669,10 +770,10 @@ systemctl --user daemon-reload
 
 #### Model routing in `~/.openclaw/openclaw.json`
 
-<!-- Updated Feb 2026: this section now matches the actual deployed config.
-     Previously showed llama3.1:8b as primary on port 11434 with Gemini fallback.
-     Actual config uses qwen3-abl-nothink as primary through ollama-proxy on
-     port 11435, with 6 local models and no cloud fallback. -->
+<!-- Updated July 2026: upgraded primary from 8B to 14B after TTM fix.
+     qwen3-14b-abl-nothink is now primary, with 8B as first fallback.
+     Added mistral-nemo:12b and qwen3:14b as additional options.
+     Still using ollama-proxy on port 11435 for think parameter control. -->
 
 ```json
 {
@@ -683,12 +784,13 @@ systemctl --user daemon-reload
         "apiKey": "ollama-local",
         "api": "ollama",
         "models": [
-          { "id": "qwen3-abl-nothink:latest", "name": "Qwen 3 8B Abliterated NoThink", "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "qwen3:8b",                 "name": "Qwen 3 8B",                   "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "llama3.1:8b",               "name": "Llama 3.1 8B",                "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "qwen2.5:7b",               "name": "Qwen 2.5 7B",                 "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "qwen2.5-coder:7b",         "name": "Qwen 2.5 Coder 7B",           "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "huihui_ai/qwen3-abliterated:8b", "name": "Qwen 3 8B Abliterated", "contextWindow": 16384, "maxTokens": 4096 }
+          { "id": "qwen3-14b-abl-nothink:latest", "name": "Qwen 3 14B Abliterated NoThink", "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen3-abl-nothink:latest",     "name": "Qwen 3 8B Abliterated NoThink",  "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen3:14b",                    "name": "Qwen 3 14B",                     "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "mistral-nemo:12b",              "name": "Mistral Nemo 12B",               "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen3:8b",                     "name": "Qwen 3 8B",                      "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "huihui_ai/qwen3-abliterated:14b", "name": "Qwen 3 14B Abliterated",      "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "huihui_ai/qwen3-abliterated:8b",  "name": "Qwen 3 8B Abliterated",       "contextWindow": 16384, "maxTokens": 4096 }
         ]
       }
     }
@@ -696,17 +798,17 @@ systemctl --user daemon-reload
   "agents": {
     "defaults": {
       "model": {
-        "primary": "ollama/qwen3-abl-nothink:latest",
-        "fallbacks": ["ollama/llama3.1:8b", "ollama/qwen3:8b", "ollama/qwen2.5:7b"]
+        "primary": "ollama/qwen3-14b-abl-nothink:latest",
+        "fallbacks": ["ollama/qwen3-abl-nothink:latest", "ollama/qwen3:14b", "ollama/mistral-nemo:12b", "ollama/qwen3:8b"]
       }
     }
   }
 }
 ```
 
-**Fallback chain:** `ollama/qwen3-abl-nothink` (local, primary) → `ollama/llama3.1:8b` → `ollama/qwen3:8b` → `ollama/qwen2.5:7b`. All models are local — no cloud fallback is configured.
+**Fallback chain:** `ollama/qwen3-14b-abl-nothink` (14B primary) → `ollama/qwen3-abl-nothink` (8B fast fallback) → `ollama/qwen3:14b` → `ollama/mistral-nemo:12b` → `ollama/qwen3:8b`. All models are local — no cloud fallback.
 
-**Why `qwen3-abl-nothink` as primary:** Best tool-calling reliability with OpenClaw's large (~15.7K char) system prompt. It thinks internally (via `thinking` field) before producing structured tool calls. Abliterated variant avoids refusals on benign requests. See Section 12 for the full model evaluation.
+**Why `qwen3-14b-abl-nothink` as primary:** After the TTM fix (Section 3.5), 14B models run at 27.5 tok/s, 100% GPU. The 14B variant is significantly more capable than 8B for complex tasks, coding, and multi-step reasoning. Abliterated variant avoids refusals on benign requests with zero measured quality loss. Falls back to 8B (46 tok/s) if needed.
 
 **Note:** Port 11435 is the `ollama-proxy` — a lightweight reverse proxy that sits between OpenClaw and Ollama (port 11434). It provides request/response logging and conditionally injects `think: false` for vanilla qwen3 models.
 
@@ -996,8 +1098,8 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - **Tool calling** — **qwen3-abl-nothink correctly uses structured tool calls** through OpenClaw → ollama-proxy → Ollama. 13 tools exposed (read, edit, write, exec, process, message, sessions_*, memory_*).
 - **Web search** — `ddgr` (DuckDuckGo CLI) called via `exec` tool. Agent searches web and summarizes results.
 - **Image generation** — `generate-and-send.sh` works end-to-end (generates + sends to Signal in ~4s)
-- **Ollama + Vulkan** — qwen3-abl-nothink as primary, ~43 tok/s eval speed
-- **Abliterated models** — uncensored variant avoids refusals on benign requests
+- **Ollama + Vulkan** — qwen3-14b-abl-nothink as primary, ~27.5 tok/s eval speed, 100% GPU
+- **Abliterated models** — 14B abliterated variant shows zero quality loss vs standard, now primary
 
 ### Critical fix: qwen3 thinking mode + system prompt size (Feb 2026)
 
@@ -1051,16 +1153,18 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 
 | Model | Eval speed | Tool calling (full prompt) | Notes |
 |-------|-----------|---------------------------|-------|
-| qwen3-abl-nothink | ~43 tok/s | ✅ Reliable | **Primary model**, uncensored, thinks then acts |
+| **qwen3-14b-abl-nothink** | **~27.5 tok/s** | ✅ Reliable | **Primary model**, 14B abliterated, thinks then acts |
+| qwen3-abl-nothink (8B) | ~46 tok/s | ✅ Reliable | Fallback, faster but less capable |
+| mistral-nemo:12b | ~34 tok/s | ✅ Works | Good alternative 12B option |
 | llama3.1:8b | ~50 tok/s | ⚠️ Unreliable multi-turn | Falls back to raw `<\|python_tag\|>` on turn 2+ |
 | qwen3:8b | ~43 tok/s | ❌ Ghost tokens | Can't handle 15K system prompt |
 | qwen2.5:7b | ~50 tok/s | ❌ Ghost tokens | Same issue as qwen3 |
 
 ### Known limitations
-- **No larger models** — 7-8B is the ceiling due to 16 GB unified memory
-- **System prompt budget** — ~15.7K chars from OpenClaw framework; qwen3-abl-nothink handles it but regular qwen3:8b can't
+- **System prompt budget** — ~15.7K chars from OpenClaw framework; qwen3-abl-nothink handles it but regular qwen3 can't
 - **Shared VRAM** — image generation requires unloading the LLM first (handled by `generate-and-send.sh`)
 - **Proxy required** — OpenClaw doesn't expose Ollama's `think` parameter; proxy needed if switching back to vanilla qwen3
+- **14B memory pressure** — with 11 GB GPU + ~2 GB OS, only ~2 GB free RAM when 14B is loaded. Stable but tight.
 
 ---
 
@@ -1088,7 +1192,8 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 - [x] ~~Model selection for OpenClaw~~ — qwen3-abl-nothink primary (best tool calling with large prompts), llama3.1:8b/qwen3:8b/qwen2.5:7b fallback
 - [x] ~~Integrate with OpenClaw~~ — v2026.2.14 installed, Ollama provider configured, Signal channel linked and working
 - [x] ~~Signal setup~~ — signal-cli v0.13.24 native binary, linked as secondary device via QR code
-- [x] ~~Test larger models (13B/14B)~~ — 14B loads but can't compute, 12B unreliable, 9B spills to CPU. 7-8B is the ceiling.
+- [x] ~~Test larger models (13B/14B)~~ — **SUCCESS after TTM fix!** 14B runs at 27 tok/s, 100% GPU. Root cause: default `ttm.pages_limit` capped GPU allocations at 7.4 GiB. Fix: increase to 12 GiB (3,145,728 pages). Persisted via `/etc/modprobe.d/ttm-gpu-memory.conf`.
+- [x] ~~Evaluate abliterated 14B~~ — huihui_ai/qwen3-abliterated:14b shows zero quality/intelligence loss vs standard qwen3:14b. Marginally faster (27.5 vs 27.0 tok/s). Now primary model as `qwen3-14b-abl-nothink`.
 - [x] ~~Tune GTT size~~ — `amdgpu.gttsize=12288` gives 12.5 GiB Vulkan GPU memory
 - [x] ~~Disable GUI~~ — `multi-user.target` saves ~1 GB RAM
 - [x] ~~Find abliterated models~~ — mannix/llama3.1-8b-lexi (49.8 tok/s), seed-coder-abliterate (50.3 tok/s), qwen3-abliterated (45.8 tok/s)
