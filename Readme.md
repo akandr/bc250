@@ -1,17 +1,25 @@
-# Running a Local LLM on AMD BC-250
+# AMD BC-250: Local LLM, Image Generation & Signal Bot
 
-A step-by-step guide to getting GPU-accelerated LLM inference working on the AMD BC-250 — an obscure custom APU based on Zen 2 + RDNA 1 (Cyan Skillfish). Written February 2026.
+<!-- Title updated: the guide covers far more than just LLM — it includes
+     stable-diffusion.cpp image generation, OpenClaw + Signal bot integration,
+     and extensive driver/compute stack documentation. -->
+
+A step-by-step guide to getting GPU-accelerated LLM inference, image generation, and a Signal chat bot working on the AMD BC-250 — an obscure custom APU based on Zen 2 + RDNA 1 (Cyan Skillfish). Written February 2026.
 
 ---
 
 ## 1. Hardware Overview
 
-The AMD BC-250 is a custom APU (originally designed for Samsung crypto-mining appliances) that has found a second life as a cheap, low-power compute board.
+The AMD BC-250 is a custom APU (originally designed for Samsung crypto-mining appliances) that has found a second life as a cheap compute board for hobbyists.
+
+<!-- Note: previously described as "low-power" — at 220W TDP this is NOT a
+     low-power board. Idle with governor tuning is 35-45W, but under load
+     it draws up to ~225W at the wall. -->
 
 | Component | Details |
 |-----------|---------|
 | **CPU** | AMD BC-250, Zen 2 architecture, 6 cores / 12 threads, up to 2.0 GHz |
-| **GPU** | Cyan Skillfish — RDNA 1, GFX1013, 48 SIMDs, 40 CUs |
+| **GPU** | Cyan Skillfish — RDNA 1, GFX1013, 48 SIMDs, **24 CUs** |
 | **Memory** | **16 GB unified** (16 × 1 GB on-package chips), shared between CPU and GPU |
 | **VRAM carveout** | 512 MB dedicated framebuffer, rest accessible as GTT |
 | **GTT (GPU-accessible RAM)** | Default: 7.4 GiB (50% of RAM), **tuned to 12 GiB** via `amdgpu.gttsize=12288` |
@@ -19,7 +27,28 @@ The AMD BC-250 is a custom APU (originally designed for Samsung crypto-mining ap
 | **NPU** | None — pre-XDNA architecture, no neural accelerator |
 | **Storage** | 475 GB NVMe (~423 GB free) |
 | **OS** | Fedora 43, kernel 6.18.9, **headless** (multi-user.target) |
-| **TDP** | ~55-58W under load |
+| **TDP** | **220W** (board-level) — see power notes below |
+
+<!-- CU count fix: previously listed as "40 CUs" which was wrong.
+     48 SIMDs ÷ 2 SIMDs/CU = 24 CUs. 24 CUs × 64 stream processors = 1536 SPs,
+     matching videocardz.net specs. The "40 CUs" figure likely confused this with
+     Navi 10 (RX 5700 XT, which has 40 CUs). The official bc250-documentation
+     repo (github.com/mothenjoyer69/bc250-documentation) also confirms 24 CUs.
+     Note: that repo calls the GPU "RDNA2" but LLVM's AMDGPU target table lists
+     GFX1013 under GFX10.1 (RDNA 1), not GFX10.3 (RDNA 2). The Cyan Skillfish
+     silicon is a unique hybrid — RDNA 1 base with some RDNA 2 features (like
+     basic ray tracing). We label it RDNA 1 here per the LLVM classification. -->
+
+<!-- TDP fix: previously listed as "~55-58W under load" which was WRONG.
+     The BC-250 board TDP is 220W per the official bc250-documentation repo:
+     "Keep in mind the BC-250 has a TDP of 220W" and community measurements.
+     Real-world power consumption at the wall:
+       - Idle (stock firmware, no governor):  70-130W (!)
+       - Idle (with oberon-governor tuned):   35-45W
+       - Under full GPU load (gaming/compute): ~200-225W
+     The old "55-58W" figure was likely a misreading of idle-with-governor power.
+     Sources: reddit.com/r/linux_gaming, reddit.com/r/homelab, and
+     github.com/mothenjoyer69/bc250-documentation -->
 
 ### Key insight: unified memory is your friend (but needs tuning)
 
@@ -611,7 +640,10 @@ signal-cli --version
 
 ### 10.3 Model Provider Configuration
 
-OpenClaw supports multiple LLM providers simultaneously. We use **local Ollama as primary** (free, private, fast) with **Google Gemini as cloud fallback** (for complex tasks the local 8B model can't handle).
+OpenClaw supports multiple LLM providers simultaneously. We use **local Ollama exclusively** — all 6 models run on the BC-250 via Vulkan, with no cloud fallback configured.
+
+<!-- Updated Feb 2026: previously described Gemini cloud fallback. Current
+     setup is 100% local — no API keys needed beyond the Ollama placeholder. -->
 
 #### Environment setup
 
@@ -619,17 +651,17 @@ API keys go in `~/.openclaw/.env` (auto-loaded by OpenClaw, never committed):
 
 ```bash
 # ~/.openclaw/.env (chmod 600)
-GEMINI_API_KEY=<your-gemini-api-key>
+# Only Ollama is used — no cloud API keys needed.
+# The OLLAMA_API_KEY is a placeholder required by OpenClaw's provider config.
 ```
 
-Also add keys to the systemd service override:
+Also add the Ollama key to the systemd service override:
 
 ```bash
 mkdir -p ~/.config/systemd/user/openclaw-gateway.service.d
 cat > ~/.config/systemd/user/openclaw-gateway.service.d/ollama.conf << EOF
 [Service]
 Environment=OLLAMA_API_KEY=ollama-local
-Environment=GEMINI_API_KEY=<your-gemini-api-key>
 EOF
 chmod 600 ~/.config/systemd/user/openclaw-gateway.service.d/ollama.conf
 systemctl --user daemon-reload
@@ -637,19 +669,26 @@ systemctl --user daemon-reload
 
 #### Model routing in `~/.openclaw/openclaw.json`
 
+<!-- Updated Feb 2026: this section now matches the actual deployed config.
+     Previously showed llama3.1:8b as primary on port 11434 with Gemini fallback.
+     Actual config uses qwen3-abl-nothink as primary through ollama-proxy on
+     port 11435, with 6 local models and no cloud fallback. -->
+
 ```json
 {
   "models": {
     "providers": {
       "ollama": {
-        "baseUrl": "http://127.0.0.1:11434",
+        "baseUrl": "http://127.0.0.1:11435",
         "apiKey": "ollama-local",
         "api": "ollama",
         "models": [
-          { "id": "llama3.1:8b",       "name": "Llama 3.1 8B",       "contextWindow": 16384, "maxTokens": 8192 },
-          { "id": "qwen2.5:7b",       "name": "Qwen 2.5 7B",        "contextWindow": 16384, "maxTokens": 8192 },
-          { "id": "qwen2.5-coder:7b", "name": "Qwen 2.5 Coder 7B", "contextWindow": 16384, "maxTokens": 8192 },
-          { "id": "qwen3:8b",         "name": "Qwen 3 8B",          "contextWindow": 16384, "maxTokens": 8192, "reasoning": true }
+          { "id": "qwen3-abl-nothink:latest", "name": "Qwen 3 8B Abliterated NoThink", "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen3:8b",                 "name": "Qwen 3 8B",                   "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "llama3.1:8b",               "name": "Llama 3.1 8B",                "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen2.5:7b",               "name": "Qwen 2.5 7B",                 "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "qwen2.5-coder:7b",         "name": "Qwen 2.5 Coder 7B",           "contextWindow": 16384, "maxTokens": 4096 },
+          { "id": "huihui_ai/qwen3-abliterated:8b", "name": "Qwen 3 8B Abliterated", "contextWindow": 16384, "maxTokens": 4096 }
         ]
       }
     }
@@ -657,24 +696,19 @@ systemctl --user daemon-reload
   "agents": {
     "defaults": {
       "model": {
-        "primary": "ollama/llama3.1:8b",
-        "fallbacks": ["ollama/qwen2.5:7b", "google/gemini-2.0-flash"]
-      },
-      "models": {
-        "ollama/llama3.1:8b":       { "alias": "llama" },
-        "ollama/qwen2.5:7b":       { "alias": "qwen" },
-        "ollama/qwen2.5-coder:7b": { "alias": "coder" },
-        "ollama/qwen3:8b":         { "alias": "qwen3" },
-        "google/gemini-2.0-flash":  { "alias": "gemini" }
+        "primary": "ollama/qwen3-abl-nothink:latest",
+        "fallbacks": ["ollama/llama3.1:8b", "ollama/qwen3:8b", "ollama/qwen2.5:7b"]
       }
     }
   }
 }
 ```
 
-**Fallback chain:** `ollama/llama3.1:8b` (local, free) → `ollama/qwen2.5:7b` (local backup) → `google/gemini-2.0-flash` (cloud, for hard tasks). The user can switch models mid-session via `/model gemini` in chat.
+**Fallback chain:** `ollama/qwen3-abl-nothink` (local, primary) → `ollama/llama3.1:8b` → `ollama/qwen3:8b` → `ollama/qwen2.5:7b`. All models are local — no cloud fallback is configured.
 
-**Why `llama3.1:8b` as primary:** Best tool-calling support for OpenClaw's agentic prompt format. `qwen2.5-coder:7b` responds with `NO_REPLY` sentinel — it misinterprets the system prompt. Gemini is the "big brain" fallback for complex reasoning.
+**Why `qwen3-abl-nothink` as primary:** Best tool-calling reliability with OpenClaw's large (~15.7K char) system prompt. It thinks internally (via `thinking` field) before producing structured tool calls. Abliterated variant avoids refusals on benign requests. See Section 12 for the full model evaluation.
+
+**Note:** Port 11435 is the `ollama-proxy` — a lightweight reverse proxy that sits between OpenClaw and Ollama (port 11434). It provides request/response logging and conditionally injects `think: false` for vanilla qwen3 models.
 
 > **⚠️ Context window is capped at 16384.** OpenClaw requires ≥16000 tokens context, but 128k (llama3.1 default) creates a 16 GB KV cache that OOM-kills Ollama on 16 GB systems. Set globally via `OLLAMA_CONTEXT_LENGTH=16384` in the Ollama systemd override.
 
@@ -714,11 +748,16 @@ These files are read at session start and injected into the system prompt. The a
 
 The default OpenClaw tool set includes browser, canvas, cron, and many features that don't apply to a headless Linux server. Disabling unused tools **reduces the system prompt from ~11k to ~4k tokens**, cutting response time nearly in half.
 
+<!-- Updated to match actual deployed config. Previously showed "messaging"
+     profile with "allow" key. Actual config uses "coding" profile with
+     "alsoAllow" (additive, not restrictive). See "Critical fix: tools.allow
+     vs tools.alsoAllow" in Section 12 for why this matters. -->
+
 ```json
 {
   "tools": {
-    "profile": "messaging",
-    "allow": ["group:fs", "group:runtime", "group:sessions", "exec", "process", "message"],
+    "profile": "coding",
+    "alsoAllow": ["message", "group:messaging"],
     "deny": ["browser", "canvas", "nodes", "cron", "gateway"]
   },
   "skills": {
@@ -727,7 +766,7 @@ The default OpenClaw tool set includes browser, canvas, cron, and many features 
 }
 ```
 
-This keeps: file read/write, shell exec, session management, Signal messaging. Disables: browser automation, canvas, macOS nodes, cron, and all 50+ bundled skills (most require macOS or specific APIs).
+This keeps: file read/write, shell exec, session management, Signal messaging (via `alsoAllow`). Disables: browser automation, canvas, macOS nodes, cron, and all 50+ bundled skills (most require macOS or specific APIs). **Important:** Use `alsoAllow` (additive), not `allow` (restrictive whitelist) — see Section 12.
 
 ### 10.6 Custom Skills
 
@@ -879,7 +918,9 @@ With optimized tool profile (messaging instead of full), the system prompt drops
 |----------|------|-------|
 | Cold start (first message) | ~60-90s | Model load + inference |
 | Warm (model loaded) | ~30-60s | Inference only |
-| Gemini cloud fallback | ~3-5s | Network latency only |
+
+<!-- Removed "Gemini cloud fallback | ~3-5s" row — no Gemini provider is
+     configured in the actual openclaw.json. All inference is local-only. -->
 
 ### 10.11 Why OpenClaw (vs alternatives)
 
@@ -899,7 +940,7 @@ All config files, scripts, and systemd units are tracked in this repo. Deploy to
 
 ```
 bc250/
-├── BC250_LLM_SETUP.md          # This file — the full setup guide
+├── Readme.md                    # This file — the full setup guide
 ├── openclaw/
 │   ├── openclaw.json            # → ~/.openclaw/openclaw.json
 │   ├── skills/
