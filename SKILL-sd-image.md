@@ -1,6 +1,6 @@
 ---
 name: sd-image
-description: Generate images using FLUX.1-schnell and send via Signal
+description: "Generate images. exec tool: /opt/stable-diffusion.cpp/generate-and-send.sh <english prompt without quotes>. Takes ~50s. Sends via Signal automatically."
 user-invocable: true
 metadata: {"openclaw": {"always": true, "emoji": "🎨"}}
 ---
