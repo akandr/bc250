@@ -11,8 +11,56 @@
         "api": "ollama",
         "models": [
           {
+            "id": "qwen3-14b-abl-nothink:latest",
+            "name": "Qwen 3 14B Abliterated NoThink",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
             "id": "qwen3-abl-nothink:latest",
             "name": "Qwen 3 8B Abliterated NoThink",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen3:14b",
+            "name": "Qwen 3 14B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 16384,
+            "maxTokens": 4096
+          },
+          {
+            "id": "mistral-nemo:12b",
+            "name": "Mistral Nemo 12B",
             "reasoning": false,
             "input": [
               "text"
@@ -43,40 +91,8 @@
             "maxTokens": 4096
           },
           {
-            "id": "llama3.1:8b",
-            "name": "Llama 3.1 8B",
-            "reasoning": false,
-            "input": [
-              "text"
-            ],
-            "cost": {
-              "input": 0,
-              "output": 0,
-              "cacheRead": 0,
-              "cacheWrite": 0
-            },
-            "contextWindow": 16384,
-            "maxTokens": 4096
-          },
-          {
-            "id": "qwen2.5:7b",
-            "name": "Qwen 2.5 7B",
-            "reasoning": false,
-            "input": [
-              "text"
-            ],
-            "cost": {
-              "input": 0,
-              "output": 0,
-              "cacheRead": 0,
-              "cacheWrite": 0
-            },
-            "contextWindow": 16384,
-            "maxTokens": 4096
-          },
-          {
-            "id": "qwen2.5-coder:7b",
-            "name": "Qwen 2.5 Coder 7B",
+            "id": "huihui_ai/qwen3-abliterated:14b",
+            "name": "Qwen 3 14B Abliterated",
             "reasoning": false,
             "input": [
               "text"
@@ -113,11 +129,12 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "ollama/qwen3-abl-nothink:latest",
+        "primary": "ollama/qwen3-14b-abl-nothink:latest",
         "fallbacks": [
-          "ollama/llama3.1:8b",
-          "ollama/qwen3:8b",
-          "ollama/qwen2.5:7b"
+          "ollama/qwen3-abl-nothink:latest",
+          "ollama/qwen3:14b",
+          "ollama/mistral-nemo:12b",
+          "ollama/qwen3:8b"
         ]
       }
     },
