@@ -486,6 +486,7 @@ def page_wrap(title, body, active_page="index"):
         ("/index.html", "DASHBOARD", "index"),
         ("/hosts.html", "HOSTS", "hosts"),
         ("/presence.html", "PRESENCE", "presence"),
+        ("/lkml.html", "LKML", "lkml"),
         ("/security.html", "SECURITY", "security"),
         ("/history.html", "HISTORY", "history"),
         ("/log.html", "LOG", "log"),
@@ -1415,6 +1416,194 @@ def gen_presence():
     return page_wrap("PRESENCE", body, "presence")
 
 
+# ─── Page: LKML Digest (lkml.html) ───
+
+def gen_lkml():
+    """Generate linux-media mailing list digest page."""
+    lkml_dir = os.path.join(DATA_DIR, "lkml")
+
+    # Load all available digests (newest first)
+    digests = []
+    if os.path.isdir(lkml_dir):
+        for fn in sorted(os.listdir(lkml_dir), reverse=True):
+            if fn.startswith("digest-") and fn.endswith(".json"):
+                d = load_json(os.path.join(lkml_dir, fn))
+                if d:
+                    digests.append(d)
+
+    if not digests:
+        body = """
+<div class="section">
+  <div class="section-title">LINUX-MEDIA MAILING LIST DIGEST</div>
+  <div class="section-body">
+    <div style="color:var(--fg-dim);text-align:center;padding:40px 0">
+      <div style="font-size:3rem;margin-bottom:16px">📡</div>
+      <div style="font-size:1.1rem;color:var(--amber)">No digests generated yet</div>
+      <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+        Daily digest runs at 4:00 AM — summarizing linux-media mailing list<br>
+        camera drivers, V4L2, ISP, MIPI sensors, libcamera, UVC<br>
+        Powered by local LLM via Ollama
+      </div>
+    </div>
+  </div>
+</div>"""
+        return page_wrap("LKML DIGEST", body, "lkml")
+
+    # Latest digest — show full bulletin
+    latest = digests[0]
+    bulletin_raw = latest.get("bulletin", latest.get("bulletin_sent", ""))
+    # Convert plain text to HTML (preserve newlines, escape HTML)
+    bulletin_html = e(bulletin_raw).replace("\n", "<br>")
+
+    # Stats
+    stats_parts = []
+    stats_parts.append(f'{latest.get("total_messages", "?")} messages')
+    stats_parts.append(f'{latest.get("total_threads", "?")} threads')
+    stats_parts.append(f'{latest.get("camera_threads", "?")} camera-relevant')
+    if latest.get("ollama_model"):
+        stats_parts.append(f'Model: {e(latest["ollama_model"])}')
+    if latest.get("ollama_time_s"):
+        stats_parts.append(f'LLM: {latest["ollama_time_s"]}s')
+    stats_line = " &nbsp;│&nbsp; ".join(stats_parts)
+
+    latest_html = f"""
+<div class="section">
+  <div class="section-title">📡 LATEST DIGEST — {e(latest.get('date', '?'))}</div>
+  <div class="section-body">
+    <div style="font-family:monospace;white-space:pre-wrap;line-height:1.6;font-size:0.9rem;color:var(--fg)">{bulletin_html}</div>
+    <div style="margin-top:16px;padding-top:10px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--fg-dim)">
+      {stats_line}<br>
+      Generated: {e(latest.get('generated', '?'))}
+    </div>
+  </div>
+</div>"""
+
+    # Top threads: detailed analysis cards
+    top_threads = latest.get("top_threads", [])
+    detail_cards = ""
+    if top_threads:
+        for i, t in enumerate(top_threads[:15]):
+            subj = e(t.get("subject", "?"))
+            score = t.get("score", 0)
+            n_msg = t.get("messages", 0)
+            authors = e(", ".join(t.get("authors", [])))
+            kws = t.get("keywords", [])
+            kw_chips = " ".join(f'<span class="port-chip">{e(k)}</span>' for k in kws[:6])
+            patch_tag = ' 📦' if t.get("is_patch") else ""
+            ver = f' {e(t["patch_version"])}' if t.get("patch_version") else ""
+            score_cls = "green" if score >= 8 else ("amber" if score >= 4 else "fg-dim")
+
+            # Link to lore
+            link_html = ""
+            links = t.get("links", [])
+            if links:
+                link_html = f' <a href="{e(links[0])}" style="font-size:0.8rem;color:var(--cyan)">[lore]</a>'
+
+            # Per-thread LLM analysis
+            analysis = t.get("llm_analysis", "")
+            analysis_html = ""
+            if analysis:
+                # Parse structured fields for nicer display
+                analysis_lines = analysis.strip().split("\n")
+                formatted = []
+                for ln in analysis_lines:
+                    ln_s = ln.strip()
+                    if not ln_s:
+                        formatted.append("")
+                        continue
+                    # Highlight field labels
+                    for field in ("SUBJECT:", "TYPE:", "SUBSYSTEM:", "IMPORTANCE:",
+                                  "SUMMARY:", "KEY PEOPLE:", "STATUS:", "IMPACT:"):
+                        if ln_s.startswith(field):
+                            value = ln_s[len(field):].strip()
+                            # Color-code importance
+                            if field == "IMPORTANCE:":
+                                imp_color = "var(--green)" if "low" in value.lower() else (
+                                    "var(--amber)" if "medium" in value.lower() else "var(--red)")
+                                ln_s = f'<span style="color:var(--cyan)">{field}</span> <span style="color:{imp_color}">{e(value)}</span>'
+                            elif field == "STATUS:":
+                                st_color = "var(--green)" if "accepted" in value.lower() else (
+                                    "var(--amber)" if "revision" in value.lower() else "var(--fg)")
+                                ln_s = f'<span style="color:var(--cyan)">{field}</span> <span style="color:{st_color}">{e(value)}</span>'
+                            elif field in ("SUMMARY:", "IMPACT:"):
+                                ln_s = f'<span style="color:var(--cyan)">{field}</span> {e(value)}'
+                            else:
+                                ln_s = f'<span style="color:var(--cyan)">{field}</span> {e(value)}'
+                            break
+                    else:
+                        ln_s = e(ln_s)
+                    formatted.append(ln_s)
+                analysis_html = f'<div style="margin-top:10px;padding:10px;background:var(--bg);border-left:2px solid var(--green2);font-size:0.85rem;line-height:1.7;white-space:pre-wrap">{"<br>".join(formatted)}</div>'
+
+            detail_cards += f"""<div style="border:1px solid var(--border);background:var(--bg2);padding:14px;margin-bottom:12px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+    <div>
+      <span style="color:var(--{score_cls});font-weight:bold;margin-right:8px">[{score:.0f}]</span>
+      <span style="color:var(--fg);font-size:1rem">{subj}{patch_tag}{ver}</span>{link_html}
+    </div>
+    <span style="color:var(--fg-dim);font-size:0.85rem;white-space:nowrap">{n_msg} msgs</span>
+  </div>
+  <div style="margin-top:6px;font-size:0.85rem;color:var(--fg-dim)">👤 {authors}</div>
+  <div style="margin-top:4px">{kw_chips}</div>
+  {analysis_html}
+</div>"""
+
+    threads_html = ""
+    if detail_cards:
+        threads_html = f"""
+<div class="section">
+  <div class="section-title">CAMERA-RELEVANT THREADS — detailed analysis</div>
+  <div class="section-body">{detail_cards}</div>
+</div>"""
+
+    # Archive: previous digests
+    archive_rows = ""
+    for d in digests[1:30]:  # last 30, skip latest
+        dt = e(d.get("date", "?"))
+        msgs = d.get("total_messages", "?")
+        cam = d.get("camera_threads", "?")
+        model_t = d.get("total_llm_time_s", d.get("ollama_time_s", "?"))
+        # First line of bulletin as preview
+        preview_lines = d.get("bulletin", "").strip().split("\n")
+        # Find first non-empty, non-header line
+        preview = ""
+        for ln in preview_lines[2:6]:
+            ln = ln.strip()
+            if ln and not ln.startswith("📡") and not ln.startswith("==="):
+                preview = ln[:100]
+                break
+        archive_rows += f'<tr><td style="white-space:nowrap">{dt}</td><td>{msgs}</td><td>{cam}</td><td>{model_t}s</td><td style="color:var(--fg-dim);font-size:0.85rem">{e(preview)}</td></tr>'
+
+    archive_html = ""
+    if archive_rows:
+        archive_html = f"""
+<div class="section">
+  <div class="section-title">DIGEST ARCHIVE</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Date</th><th>Msgs</th><th>Camera</th><th>LLM</th><th>Preview</th></tr></thead>
+      <tbody>{archive_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # Info section
+    info_html = """
+<div class="section">
+  <div class="section-title">ABOUT</div>
+  <div class="section-body" style="font-size:0.85rem;color:var(--fg-dim)">
+    📡 Source: <a href="https://lore.kernel.org/linux-media/">lore.kernel.org/linux-media</a> &nbsp;│&nbsp;
+    🕐 Daily at 4:00 AM &nbsp;│&nbsp;
+    🤖 Local LLM summarization via Ollama &nbsp;│&nbsp;
+    📱 Signal bulletin delivery<br>
+    Focus: camera drivers, V4L2, ISP, MIPI CSI, sensors, libcamera, UVC, videobuf2
+  </div>
+</div>"""
+
+    body = latest_html + threads_html + archive_html + info_html
+    return page_wrap("LKML DIGEST", body, "lkml")
+
+
 # ─── Page: History (history.html) ───
 
 def gen_history(all_scans):
@@ -1557,6 +1746,7 @@ def main():
         "index.html": lambda: gen_dashboard(all_scans),
         "hosts.html": lambda: gen_hosts(scan),
         "presence.html": gen_presence,
+        "lkml.html": gen_lkml,
         "security.html": lambda: gen_security(scan),
         "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
