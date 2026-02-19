@@ -485,6 +485,7 @@ def page_wrap(title, body, active_page="index"):
     nav_items = [
         ("/index.html", "DASHBOARD", "index"),
         ("/hosts.html", "HOSTS", "hosts"),
+        ("/presence.html", "PRESENCE", "presence"),
         ("/security.html", "SECURITY", "security"),
         ("/history.html", "HISTORY", "history"),
         ("/log.html", "LOG", "log"),
@@ -822,7 +823,33 @@ def gen_dashboard(all_scans):
   </div>
 </div>"""
 
-    body = stats + types_section + diff_html + port_change_html + security_html + health_html + top_html
+    # Presence widget (who's home)
+    presence_html = ""
+    pstate = load_json(f"{DATA_DIR}/presence-state.json") or {}
+    pphones = load_json(f"{DATA_DIR}/phones.json") or {}
+    ptracked = {mac: info for mac, info in pphones.items()
+                if isinstance(info, dict) and info.get("track", True) and not mac.startswith("__")}
+    if ptracked:
+        plines = []
+        for mac, info in sorted(ptracked.items(), key=lambda x: x[1].get("name", "")):
+            name = e(info.get("name", mac[:8]))
+            s = pstate.get(mac, {})
+            status = s.get("status", "unknown")
+            if status == "home":
+                plines.append(f'<span style="color:var(--green)">🏠 {name}</span>')
+            elif status == "away":
+                plines.append(f'<span style="color:var(--fg-dim)">👋 {name}</span>')
+            else:
+                plines.append(f'<span style="color:var(--fg-dim)">❓ {name}</span>')
+        presence_html = f"""
+<div class="section">
+  <div class="section-title">WHO'S HOME — <a href="/presence.html" style="color:var(--cyan)">presence tracker →</a></div>
+  <div class="section-body">
+    <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:1.05rem">{"".join(plines)}</div>
+  </div>
+</div>"""
+
+    body = stats + types_section + presence_html + diff_html + port_change_html + security_html + health_html + top_html
     return page_wrap("DASHBOARD", body, "index")
 
 
@@ -1191,6 +1218,203 @@ def gen_host_detail(ip, h, all_scans):
     return page_wrap(f"HOST {ip}", body, "hosts")
 
 
+# ─── Page: Presence tracker (presence.html) ───
+
+def gen_presence():
+    """Generate presence tracking page showing who's home/away + event log."""
+    phones = load_json(f"{DATA_DIR}/phones.json") or {}
+    state = load_json(f"{DATA_DIR}/presence-state.json") or {}
+    events = load_json(f"{DATA_DIR}/presence-log.json") or []
+
+    tracked = {mac: info for mac, info in phones.items()
+               if isinstance(info, dict) and info.get("track", True) and not mac.startswith("__")}
+
+    now = datetime.now()
+
+    if not tracked:
+        body = """
+<div class="section">
+  <div class="section-title">PHONE PRESENCE TRACKER</div>
+  <div class="section-body">
+    <div style="color:var(--fg-dim);text-align:center;padding:40px 0">
+      <div style="font-size:3rem;margin-bottom:16px">📱</div>
+      <div style="font-size:1.1rem;color:var(--amber)">No phones configured yet</div>
+      <div style="margin-top:12px;max-width:500px;margin-left:auto;margin-right:auto;text-align:left">
+        <p style="color:var(--fg)">Phones are auto-detected from network scans, or add manually:</p>
+        <pre style="background:var(--bg);padding:12px;border:1px solid var(--border);margin-top:8px;color:var(--green);font-size:0.85rem">
+# Edit /opt/netscan/data/phones.json
+{
+  "AA:BB:CC:DD:EE:FF": {
+    "name": "My Phone",
+    "track": true
+  }
+}</pre>
+        <p style="color:var(--fg-dim);margin-top:8px;font-size:0.85rem">
+          💡 Find your phone's WiFi MAC in Settings → Wi-Fi → (i)
+          <br>Modern phones randomize MACs — use the "private address" for your home network.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>"""
+        return page_wrap("PRESENCE", body, "presence")
+
+    # ── Status cards ──
+    home_cards = []
+    away_cards = []
+    for mac, info in sorted(tracked.items(), key=lambda x: x[1].get("name", "")):
+        name = e(info.get("name", mac))
+        s = state.get(mac, {})
+        status = s.get("status", "unknown")
+        last_seen_str = s.get("last_seen", "")
+        last_change_str = s.get("last_change", "")
+        last_ip = s.get("last_ip", "—")
+
+        try:
+            last_seen_dt = datetime.fromisoformat(last_seen_str) if last_seen_str else None
+        except:
+            last_seen_dt = None
+        try:
+            last_change_dt = datetime.fromisoformat(last_change_str) if last_change_str else None
+        except:
+            last_change_dt = None
+
+        if status == "home":
+            icon = "🏠"
+            status_text = "HOME"
+            status_color = "var(--green)"
+            border_color = "var(--green2)"
+            duration = ""
+            if last_change_dt:
+                td = now - last_change_dt
+                total_min = int(td.total_seconds() / 60)
+                if total_min < 60:
+                    duration = f"{total_min}m"
+                elif total_min < 1440:
+                    duration = f"{total_min // 60}h {total_min % 60}m"
+                else:
+                    days = total_min // 1440
+                    hours = (total_min % 1440) // 60
+                    duration = f"{days}d {hours}h"
+            seen_str = last_seen_dt.strftime("%H:%M") if last_seen_dt else "—"
+            card = f"""<div style="border:1px solid {border_color};background:var(--bg3);padding:16px;min-width:200px;flex:1;max-width:300px">
+  <div style="font-size:2rem;margin-bottom:6px">{icon}</div>
+  <div style="font-size:1.1rem;color:{status_color};font-weight:bold">{name}</div>
+  <div style="font-size:0.9rem;color:{status_color};margin:4px 0">{status_text}{' — ' + duration if duration else ''}</div>
+  <div style="font-size:0.8rem;color:var(--fg-dim)">IP: {e(last_ip)}</div>
+  <div style="font-size:0.8rem;color:var(--fg-dim)">Last seen: {seen_str}</div>
+  <div style="font-size:0.75rem;color:var(--fg-dim);margin-top:4px">{e(mac)}</div>
+</div>"""
+            home_cards.append(card)
+        else:
+            icon = "👋"
+            status_text = "AWAY"
+            status_color = "var(--fg-dim)"
+            border_color = "var(--border)"
+            duration = ""
+            if last_change_dt:
+                td = now - last_change_dt
+                total_min = int(td.total_seconds() / 60)
+                if total_min < 60:
+                    duration = f"{total_min}m"
+                elif total_min < 1440:
+                    duration = f"{total_min // 60}h {total_min % 60}m"
+                else:
+                    days = total_min // 1440
+                    hours = (total_min % 1440) // 60
+                    duration = f"{days}d {hours}h"
+            seen_str = last_seen_dt.strftime("%H:%M") if last_seen_dt else "never"
+            card = f"""<div style="border:1px solid {border_color};background:var(--bg2);padding:16px;min-width:200px;flex:1;max-width:300px;opacity:0.6">
+  <div style="font-size:2rem;margin-bottom:6px">{icon}</div>
+  <div style="font-size:1.1rem;color:{status_color}">{name}</div>
+  <div style="font-size:0.9rem;color:{status_color};margin:4px 0">{status_text}{' — ' + duration if duration else ''}</div>
+  <div style="font-size:0.8rem;color:var(--fg-dim)">Last IP: {e(last_ip)}</div>
+  <div style="font-size:0.8rem;color:var(--fg-dim)">Last seen: {seen_str}</div>
+  <div style="font-size:0.75rem;color:var(--fg-dim);margin-top:4px">{e(mac)}</div>
+</div>"""
+            away_cards.append(card)
+
+    all_cards = home_cards + away_cards
+    cards_html = f"""
+<div class="section">
+  <div class="section-title">WHO'S HOME — {len(home_cards)} home, {len(away_cards)} away</div>
+  <div class="section-body">
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      {"".join(all_cards)}
+    </div>
+  </div>
+</div>"""
+
+    # ── Event log ──
+    event_rows = ""
+    shown_events = [ev for ev in events if ev.get("event") not in ("baseline_home", "baseline_away")][:100]
+    if shown_events:
+        for ev in shown_events:
+            ts = ev.get("ts", "")
+            try:
+                ts_dt = datetime.fromisoformat(ts)
+                ts_fmt = ts_dt.strftime("%d %b %H:%M")
+            except:
+                ts_fmt = ts[:16] if ts else "—"
+            ev_name = e(ev.get("name", ev.get("mac", "?")))
+            ev_type = ev.get("event", "?")
+            ev_ip = ev.get("ip", "—")
+
+            if ev_type == "arrived":
+                icon = "🏠"
+                label = "ARRIVED"
+                color = "var(--green)"
+                away_min = ev.get("away_min", 0)
+                extra = f"away {away_min // 60}h {away_min % 60}m" if away_min >= 60 else f"away {away_min}m"
+            elif ev_type == "left":
+                icon = "👋"
+                label = "LEFT"
+                color = "var(--red)"
+                home_min = ev.get("home_min", 0)
+                extra = f"was home {home_min // 60}h {home_min % 60}m" if home_min >= 60 else f"was home {home_min}m"
+            else:
+                icon = "📱"
+                label = ev_type.upper()
+                color = "var(--fg-dim)"
+                extra = ""
+
+            event_rows += f"""<tr>
+  <td style="white-space:nowrap;color:var(--fg-dim)">{ts_fmt}</td>
+  <td style="color:{color}">{icon} {label}</td>
+  <td>{ev_name}</td>
+  <td style="color:var(--fg-dim)">{e(ev_ip)}</td>
+  <td style="color:var(--fg-dim);font-size:0.85rem">{extra}</td>
+</tr>"""
+    else:
+        event_rows = '<tr><td colspan="5" style="text-align:center;color:var(--fg-dim);padding:20px">No events recorded yet — waiting for arrivals and departures</td></tr>'
+
+    events_html = f"""
+<div class="section">
+  <div class="section-title">EVENT LOG — last {len(shown_events)} events</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Time</th><th>Event</th><th>Phone</th><th>IP</th><th>Details</th></tr></thead>
+      <tbody>{event_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ── Config info ──
+    config_html = f"""
+<div class="section">
+  <div class="section-title">TRACKING CONFIG</div>
+  <div class="section-body" style="font-size:0.85rem;color:var(--fg-dim)">
+    📱 Tracked phones: {len(tracked)} &nbsp;│&nbsp;
+    ⏱ Scan interval: 5 min &nbsp;│&nbsp;
+    🎚 Threshold: 30 min &nbsp;│&nbsp;
+    📄 Config: /opt/netscan/data/phones.json
+  </div>
+</div>"""
+
+    body = cards_html + events_html + config_html
+    return page_wrap("PRESENCE", body, "presence")
+
+
 # ─── Page: History (history.html) ───
 
 def gen_history(all_scans):
@@ -1332,6 +1556,7 @@ def main():
     pages = {
         "index.html": lambda: gen_dashboard(all_scans),
         "hosts.html": lambda: gen_hosts(scan),
+        "presence.html": gen_presence,
         "security.html": lambda: gen_security(scan),
         "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
