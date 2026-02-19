@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 generate-html.py — Phrack/BBS-style network dashboard generator
+v3: security page, per-host detail pages, mDNS names, port change display,
+    persistent inventory stats, security scoring display.
 Reads scan JSON from /opt/netscan/data/, outputs static HTML to /opt/netscan/web/
 Location on bc250: /opt/netscan/generate-html.py
 """
@@ -11,6 +13,7 @@ from html import escape
 DATA_DIR = "/opt/netscan/data"
 WEB_DIR = "/opt/netscan/web"
 os.makedirs(WEB_DIR, exist_ok=True)
+os.makedirs(os.path.join(WEB_DIR, "host"), exist_ok=True)
 
 # ─── ASCII art / branding ───
 
@@ -157,7 +160,7 @@ nav a::after { content: ' ]'; color: var(--fg-dim); }
 /* Stats grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 8px;
 }
 .stat-box {
@@ -173,6 +176,9 @@ nav a::after { content: ' ]'; color: var(--fg-dim); }
   text-shadow: var(--glow);
   line-height: 1.2;
 }
+.stat-val.amber { color: var(--amber); }
+.stat-val.red { color: var(--red); }
+.stat-val.cyan { color: var(--cyan); }
 .stat-label {
   font-size: 0.75rem;
   color: var(--fg-dim);
@@ -241,6 +247,8 @@ nav a::after { content: ' ]'; color: var(--fg-dim); }
   color: var(--cyan);
 }
 .port-chip.common { border-color: var(--green2); color: var(--green); }
+.port-chip.port-new { border-color: var(--green); color: var(--green); font-weight: bold; }
+.port-chip.port-gone { border-color: var(--red); color: var(--red); text-decoration: line-through; opacity: 0.7; }
 
 /* Health bars */
 .health-row {
@@ -289,7 +297,7 @@ nav a::after { content: ' ]'; color: var(--fg-dim); }
 }
 .log-ts { color: var(--green2); }
 
-/* History chart (simple ASCII) */
+/* History chart */
 .ascii-chart {
   font-size: 0.8rem;
   line-height: 1.1;
@@ -297,6 +305,96 @@ nav a::after { content: ' ]'; color: var(--fg-dim); }
   overflow-x: auto;
   white-space: pre;
 }
+
+/* Security score badges */
+.score {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  min-width: 36px;
+  text-align: center;
+}
+.score-ok { background: #1a3a1a; color: #33ff33; border: 1px solid #22aa22; }
+.score-warn { background: #3a3a1a; color: #ffaa00; border: 1px solid #aa7700; }
+.score-crit { background: #3a1a1a; color: #ff3333; border: 1px solid #cc2222; }
+
+/* Security flags */
+.flag-item {
+  padding: 4px 8px;
+  margin: 2px 0;
+  font-size: 0.82rem;
+  border-left: 3px solid var(--border);
+  background: var(--bg);
+}
+.flag-crit { border-left-color: var(--red); }
+.flag-warn { border-left-color: var(--amber); }
+
+/* mDNS name */
+.mdns-name { color: var(--cyan); font-weight: bold; }
+.mdns-sub { color: var(--fg-dim); font-size: 0.75rem; }
+
+/* Host detail page */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 720px) { .detail-grid { grid-template-columns: 1fr; } }
+.detail-kv {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.detail-key { color: var(--fg-dim); min-width: 110px; flex-shrink: 0; }
+.detail-val { color: var(--fg); word-break: break-all; }
+
+/* Score meter (large) */
+.score-meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.score-meter .score-num {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-shadow: var(--glow);
+  line-height: 1;
+}
+.score-meter .score-num.ok { color: var(--green); }
+.score-meter .score-num.warn { color: var(--amber); }
+.score-meter .score-num.crit { color: var(--red); }
+.score-meter .score-label { color: var(--fg-dim); font-size: 0.85rem; }
+
+/* Timeline */
+.timeline-item {
+  padding: 6px 0 6px 16px;
+  border-left: 2px solid var(--border);
+  margin-left: 8px;
+  font-size: 0.82rem;
+}
+.timeline-item.online { border-left-color: var(--green2); }
+.timeline-item.offline { border-left-color: var(--red); opacity: 0.5; }
+.timeline-date { color: var(--green2); font-weight: bold; }
+
+/* mDNS service chips */
+.svc-chip {
+  display: inline-block;
+  padding: 1px 6px;
+  margin: 1px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--magenta);
+}
+
+/* IP link */
+.ip-link { color: var(--cyan); }
+.ip-link:hover { color: var(--green); text-decoration: underline; }
 
 /* Footer */
 .footer {
@@ -329,8 +427,11 @@ COMMON_PORTS = {22,53,80,443,8080,8443,3389,445,139,21,25,110,143,993,995,
 
 def load_json(path):
     if os.path.exists(path):
-        with open(path) as f:
-            return json.load(f)
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except:
+            pass
     return None
 
 def get_scan_dates():
@@ -356,6 +457,16 @@ def get_log(date):
             return f.read()
     return ""
 
+def load_all_scans(max_days=30):
+    """Load recent scans for history tracking."""
+    dates = get_scan_dates()
+    scans = {}
+    for d in dates[-max_days:]:
+        s = load_json(f"{DATA_DIR}/scan-{d}.json")
+        if s:
+            scans[d] = s
+    return scans
+
 # ─── Device icons ───
 
 DEVICE_ICONS = {
@@ -372,10 +483,11 @@ def e(s):
 
 def page_wrap(title, body, active_page="index"):
     nav_items = [
-        ("index.html", "DASHBOARD", "index"),
-        ("hosts.html", "HOST INVENTORY", "hosts"),
-        ("history.html", "HISTORY", "history"),
-        ("log.html", "SCAN LOG", "log"),
+        ("/index.html", "DASHBOARD", "index"),
+        ("/hosts.html", "HOSTS", "hosts"),
+        ("/security.html", "SECURITY", "security"),
+        ("/history.html", "HISTORY", "history"),
+        ("/log.html", "LOG", "log"),
     ]
     nav_html = "\n".join(
         f'<a href="{href}" class="{"active" if page==active_page else ""}">{label}</a>'
@@ -400,7 +512,7 @@ def page_wrap(title, body, active_page="index"):
 {body}
 <div class="footer">
 <pre style="font-size:0.55rem;color:var(--fg-dim);line-height:1">{SKULL}</pre>
-NETSCAN v2.0 // bc250 // generated {ts}<br>
+NETSCAN v3.0 // bc250 // generated {ts}<br>
 "The Net treats censorship as damage and routes around it."
 </div>
 </div>
@@ -420,7 +532,6 @@ document.querySelectorAll('.host-table th').forEach((th, i) => {
     rows.sort((a, b) => {
       let av = a.children[i]?.textContent.trim() || '';
       let bv = b.children[i]?.textContent.trim() || '';
-      // Try numeric sort for IPs and numbers
       const an = av.split('.').map(x=>x.padStart(3,'0')).join('.');
       const bn = bv.split('.').map(x=>x.padStart(3,'0')).join('.');
       if (/^\\d/.test(av) && /^\\d/.test(bv)) { av = an; bv = bn; }
@@ -434,16 +545,40 @@ document.querySelectorAll('.host-table th').forEach((th, i) => {
 def badge(device_type):
     dt = device_type or "unknown"
     icon = DEVICE_ICONS.get(dt, "❓")
-    css = dt.replace("-","")
     return f'<span class="badge badge-{e(dt)}"><span class="type-icon">{icon}</span>{e(dt)}</span>'
 
-def port_chips(ports):
-    if not ports:
+def score_badge(score):
+    s = int(score) if score is not None else 100
+    if s >= 80:
+        cls = "score-ok"
+    elif s >= 50:
+        cls = "score-warn"
+    else:
+        cls = "score-crit"
+    return f'<span class="score {cls}">{s}</span>'
+
+def best_name(h):
+    """Best display name for a host."""
+    return h.get("mdns_name") or h.get("hostname") or h.get("vendor_oui") or h.get("vendor_nmap") or ""
+
+def port_chips(ports, port_changes=None):
+    if not ports and not port_changes:
         return '<span style="color:var(--fg-dim)">—</span>'
     chips = []
-    for p in sorted(ports, key=lambda x: x["port"]):
-        cls = "port-chip common" if p["port"] in COMMON_PORTS else "port-chip"
-        chips.append(f'<span class="{cls}" title="{e(p["service"])}">{p["port"]}/{e(p["proto"])}</span>')
+    # Current ports
+    new_ports = set()
+    if port_changes:
+        new_ports = {(p["port"], p["proto"]) for p in port_changes.get("new", [])}
+    for p in sorted(ports or [], key=lambda x: x["port"]):
+        if (p["port"], p["proto"]) in new_ports:
+            chips.append(f'<span class="port-chip port-new" title="{e(p["service"])} (NEW)">+{p["port"]}/{e(p["proto"])}</span>')
+        else:
+            cls = "port-chip common" if p["port"] in COMMON_PORTS else "port-chip"
+            chips.append(f'<span class="{cls}" title="{e(p["service"])}">{p["port"]}/{e(p["proto"])}</span>')
+    # Gone ports
+    if port_changes:
+        for p in port_changes.get("gone", []):
+            chips.append(f'<span class="port-chip port-gone" title="CLOSED">-{p["port"]}/{e(p["proto"])}</span>')
     return " ".join(chips)
 
 def health_bar(label, value_pct, value_text):
@@ -458,10 +593,29 @@ def health_bar(label, value_pct, value_text):
   <span class="health-val">{e(value_text)}</span>
 </div>"""
 
+def ip_link(ip):
+    """Clickable IP that links to host detail page."""
+    safe = ip.replace(".", "-")
+    return f'<a href="/host/{safe}.html" class="ip-link">{e(ip)}</a>'
+
+def format_date(d):
+    """Format YYYYMMDD to more readable form."""
+    try:
+        return datetime.strptime(str(d), "%Y%m%d").strftime("%d %b %Y")
+    except:
+        return str(d)
+
+def short_date(d):
+    """Format YYYYMMDD to short form."""
+    try:
+        return datetime.strptime(str(d), "%Y%m%d").strftime("%d %b")
+    except:
+        return str(d)
+
 
 # ─── Page: Dashboard (index.html) ───
 
-def gen_dashboard():
+def gen_dashboard(all_scans):
     scan = get_latest_scan()
     health = get_latest_health()
     dates = get_scan_dates()
@@ -470,13 +624,18 @@ def gen_dashboard():
         return page_wrap("DASHBOARD", '<div class="section"><div class="section-body">NO SCAN DATA YET</div></div>')
 
     hosts = scan["hosts"]
-    total_ports = sum(len(h["ports"]) for h in hosts.values())
+    total_ports = sum(len(h.get("ports",[])) for h in hosts.values())
     types = {}
     for h in hosts.values():
         dt = h.get("device_type", "unknown")
         types[dt] = types.get(dt, 0) + 1
 
+    sec = scan.get("security", {})
+    mdns_count = scan.get("mdns_devices", 0)
+    inv_total = scan.get("inventory_total", 0)
+
     # Stats boxes
+    sec_cls = "red" if sec.get("critical", 0) > 0 else ("amber" if sec.get("warning", 0) > 0 else "")
     stats = f"""
 <div class="section">
   <div class="section-title">NETWORK OVERVIEW — {e(scan.get('date',''))}</div>
@@ -485,7 +644,9 @@ def gen_dashboard():
       <div class="stat-box"><div class="stat-val">{scan['host_count']}</div><div class="stat-label">Hosts</div></div>
       <div class="stat-box"><div class="stat-val">{total_ports}</div><div class="stat-label">Open Ports</div></div>
       <div class="stat-box"><div class="stat-val">{len(types)}</div><div class="stat-label">Device Types</div></div>
-      <div class="stat-box"><div class="stat-val">{len(dates)}</div><div class="stat-label">Scan Days</div></div>
+      <div class="stat-box"><div class="stat-val cyan">{mdns_count}</div><div class="stat-label">mDNS Named</div></div>
+      <div class="stat-box"><div class="stat-val {sec_cls}">{sec.get('avg_score', '?')}</div><div class="stat-label">Security Avg</div></div>
+      <div class="stat-box"><div class="stat-val">{inv_total}</div><div class="stat-label">Inventory Total</div></div>
     </div>
   </div>
 </div>"""
@@ -521,17 +682,82 @@ def gen_dashboard():
             if new_ips:
                 for ip in sorted(new_ips):
                     h = hosts[ip]
-                    diff_lines.append(f'<div class="diff-new">{e(ip)} — {badge(h.get("device_type",""))} {e(h.get("vendor_oui","") or h.get("vendor_nmap",""))}</div>')
+                    name = best_name(h)
+                    name_str = f" — {e(name)}" if name else ""
+                    diff_lines.append(f'<div class="diff-new">{ip_link(ip)}{name_str} {badge(h.get("device_type",""))}</div>')
             if gone_ips:
                 for ip in sorted(gone_ips):
                     h = prev["hosts"].get(ip, {})
-                    diff_lines.append(f'<div class="diff-gone">{e(ip)} — {e(h.get("vendor_oui","") or h.get("vendor_nmap",""))}</div>')
+                    name = best_name(h)
+                    name_str = f" — {e(name)}" if name else ""
+                    diff_lines.append(f'<div class="diff-gone">{e(ip)}{name_str}</div>')
             if not new_ips and not gone_ips:
-                diff_lines.append('<div style="color:var(--fg-dim)">No changes from previous scan</div>')
+                diff_lines.append('<div style="color:var(--fg-dim)">No host changes from previous scan</div>')
             diff_html = f"""
 <div class="section">
   <div class="section-title">NETWORK CHANGES (vs {e(dates[-2])})</div>
   <div class="section-body">{"".join(diff_lines)}</div>
+</div>"""
+
+    # Port changes
+    pc = scan.get("port_changes", {})
+    port_change_html = ""
+    if pc.get("hosts_changed", 0) > 0:
+        pc_lines = []
+        pc_lines.append(f'<div style="margin-bottom:8px;color:var(--fg)">+{pc["new_ports"]} new ports, -{pc["gone_ports"]} closed — {pc["hosts_changed"]} hosts changed</div>')
+        # Show individual host port changes
+        for ip, h in sorted(hosts.items()):
+            pch = h.get("port_changes")
+            if not pch:
+                continue
+            name = best_name(h)
+            new_str = ", ".join(f'+{p["port"]}/{p["proto"]}' for p in pch.get("new",[]))
+            gone_str = ", ".join(f'-{p["port"]}/{p["proto"]}' for p in pch.get("gone",[]))
+            changes = []
+            if new_str: changes.append(f'<span style="color:var(--green)">{new_str}</span>')
+            if gone_str: changes.append(f'<span style="color:var(--red)">{gone_str}</span>')
+            name_str = f' <span style="color:var(--fg-dim)">({e(name)})</span>' if name else ""
+            pc_lines.append(f'<div style="margin:3px 0">{ip_link(ip)}{name_str}: {" ".join(changes)}</div>')
+        port_change_html = f"""
+<div class="section">
+  <div class="section-title">PORT CHANGES</div>
+  <div class="section-body">{"".join(pc_lines)}</div>
+</div>"""
+
+    # Security summary
+    security_html = ""
+    if sec:
+        issues = []
+        for ip, h in sorted(hosts.items(), key=lambda x: x[1].get("security_score", 100)):
+            flags = h.get("security_flags", [])
+            if not flags:
+                continue
+            score = h.get("security_score", 100)
+            if score >= 80:
+                continue
+            name = best_name(h)
+            name_str = f" — {e(name)}" if name else ""
+            flag_html = "".join(
+                f'<div class="flag-item {"flag-crit" if score < 50 else "flag-warn"}">{e(f)}</div>'
+                for f in flags[:3]
+            )
+            extra = f' <span style="color:var(--fg-dim)">+{len(flags)-3} more</span>' if len(flags) > 3 else ""
+            issues.append(f'<div style="margin:6px 0">{ip_link(ip)}{name_str} {badge(h.get("device_type",""))} {score_badge(score)}{flag_html}{extra}</div>')
+
+        if issues:
+            security_html = f"""
+<div class="section">
+  <div class="section-title">SECURITY ALERTS — <a href="/security.html" style="color:var(--amber)">view full report →</a></div>
+  <div class="section-body">
+    <div style="margin-bottom:8px">
+      🔴 Critical: {sec.get('critical',0)} &nbsp;│&nbsp;
+      🟡 Warning: {sec.get('warning',0)} &nbsp;│&nbsp;
+      🟢 OK: {sec.get('ok',0)} &nbsp;│&nbsp;
+      Average: {score_badge(sec.get('avg_score',100))}
+    </div>
+    {"".join(issues[:8])}
+    {'<div style="color:var(--fg-dim);margin-top:6px">...more on <a href="/security.html">security page</a></div>' if len(issues) > 8 else ""}
+  </div>
 </div>"""
 
     # Health
@@ -578,52 +804,52 @@ def gen_dashboard():
   </div>
 </div>"""
 
-    # Top talkers (hosts with most open ports)
+    # Top talkers
     top_hosts = sorted(hosts.items(), key=lambda x: len(x[1].get("ports",[])), reverse=True)[:10]
     top_html = ""
-    if any(len(h["ports"])>0 for _,h in top_hosts):
+    if any(len(h.get("ports",[]))>0 for _,h in top_hosts):
         rows = ""
         for ip, h in top_hosts:
-            if not h["ports"]: continue
-            rows += f'<tr><td>{e(ip)}</td><td>{badge(h.get("device_type",""))}</td><td>{port_chips(h["ports"])}</td></tr>'
+            if not h.get("ports"): continue
+            name = best_name(h)
+            rows += f'<tr><td>{ip_link(ip)}</td><td>{e(name) if name else "—"}</td><td>{badge(h.get("device_type",""))}</td><td>{score_badge(h.get("security_score",100))}</td><td>{port_chips(h["ports"], h.get("port_changes"))}</td></tr>'
         if rows:
             top_html = f"""
 <div class="section">
   <div class="section-title">TOP HOSTS BY OPEN PORTS</div>
   <div class="section-body">
-    <table class="host-table"><thead><tr><th>IP</th><th>Type</th><th>Open Ports</th></tr></thead><tbody>{rows}</tbody></table>
+    <table class="host-table"><thead><tr><th>IP</th><th>Name</th><th>Type</th><th>Score</th><th>Open Ports</th></tr></thead><tbody>{rows}</tbody></table>
   </div>
 </div>"""
 
-    body = stats + types_section + diff_html + health_html + top_html
+    body = stats + types_section + diff_html + port_change_html + security_html + health_html + top_html
     return page_wrap("DASHBOARD", body, "index")
 
 
 # ─── Page: Host inventory (hosts.html) ───
 
-def gen_hosts():
-    scan = get_latest_scan()
+def gen_hosts(scan):
     if not scan:
         return page_wrap("HOSTS", '<div class="section"><div class="section-body">NO DATA</div></div>', "hosts")
 
     hosts = scan["hosts"]
     rows = ""
     for ip, h in hosts.items():
-        vendor = h.get("vendor_oui","") or h.get("vendor_nmap","") or "—"
-        hostname = h.get("hostname","") or "—"
+        name = best_name(h)
         mac = h.get("mac","") or "—"
         latency = f'{h.get("latency_ms",0)}ms' if h.get("latency_ms") else "—"
+        first_seen = short_date(h.get("first_seen","")) if h.get("first_seen") else "—"
         rows += f"""<tr>
-  <td style="white-space:nowrap">{e(ip)}</td>
+  <td style="white-space:nowrap">{ip_link(ip)}</td>
+  <td class="mdns-name">{e(name) if name else '<span style="color:var(--fg-dim)">—</span>'}</td>
   <td style="font-size:0.75rem;white-space:nowrap">{e(mac)}</td>
-  <td style="font-size:0.78rem">{e(vendor)}</td>
-  <td>{e(hostname)}</td>
   <td>{badge(h.get("device_type",""))}</td>
-  <td>{port_chips(h.get("ports",[]))}</td>
+  <td style="text-align:center">{score_badge(h.get("security_score",100))}</td>
+  <td>{port_chips(h.get("ports",[]), h.get("port_changes"))}</td>
+  <td style="font-size:0.78rem;white-space:nowrap">{first_seen}</td>
   <td style="text-align:right">{latency}</td>
 </tr>"""
 
-    # Summary line
     total = len(hosts)
     total_ports = sum(len(h.get("ports",[])) for h in hosts.values())
     types = {}
@@ -636,18 +862,32 @@ def gen_hosts():
         icon = DEVICE_ICONS.get(dt, "❓")
         filter_buttons += f'<button class="badge badge-{e(dt)}" onclick="filterType(\'{e(dt)}\')" style="cursor:pointer;margin:2px">{icon} {e(dt)} ({cnt})</button> '
 
+    # Security filter buttons
+    sec_counts = {"crit": 0, "warn": 0, "ok": 0}
+    for h in hosts.values():
+        s = h.get("security_score", 100)
+        if s < 50: sec_counts["crit"] += 1
+        elif s < 80: sec_counts["warn"] += 1
+        else: sec_counts["ok"] += 1
+
     body = f"""
 <div class="section">
   <div class="section-title">HOST INVENTORY — {total} hosts, {total_ports} open ports — scan {e(scan.get('date',''))}</div>
   <div class="section-body">
-    <div style="margin-bottom:10px">
+    <div style="margin-bottom:6px">
       <button class="badge badge-unknown" onclick="filterType('all')" style="cursor:pointer;margin:2px">ALL ({total})</button>
       {filter_buttons}
+    </div>
+    <div style="margin-bottom:10px">
+      <button class="score score-crit" onclick="filterScore(0,49)" style="cursor:pointer;margin:2px">🔴 Critical ({sec_counts["crit"]})</button>
+      <button class="score score-warn" onclick="filterScore(50,79)" style="cursor:pointer;margin:2px">🟡 Warning ({sec_counts["warn"]})</button>
+      <button class="score score-ok" onclick="filterScore(80,100)" style="cursor:pointer;margin:2px">🟢 OK ({sec_counts["ok"]})</button>
+      <button class="badge badge-unknown" onclick="filterType('all')" style="cursor:pointer;margin:2px">Reset</button>
     </div>
     <div style="overflow-x:auto">
     <table class="host-table" id="hostTable">
       <thead><tr>
-        <th>IP Address</th><th>MAC</th><th>Vendor</th><th>Hostname</th><th>Type</th><th>Open Ports</th><th>Latency</th>
+        <th>IP Address</th><th>Name</th><th>MAC</th><th>Type</th><th>Score</th><th>Open Ports</th><th>Since</th><th>Latency</th>
       </tr></thead>
       <tbody>{rows}</tbody>
     </table>
@@ -663,24 +903,310 @@ function filterType(type) {{
     tr.style.display = t.includes(type) ? '' : 'none';
   }});
 }}
+function filterScore(min, max) {{
+  document.querySelectorAll('#hostTable tbody tr').forEach(tr => {{
+    const scoreEl = tr.querySelector('.score');
+    const s = scoreEl ? parseInt(scoreEl.textContent) : 100;
+    tr.style.display = (s >= min && s <= max) ? '' : 'none';
+  }});
+}}
 </script>"""
     return page_wrap("HOST INVENTORY", body, "hosts")
 
 
+# ─── Page: Security (security.html) ───
+
+def gen_security(scan):
+    if not scan:
+        return page_wrap("SECURITY", '<div class="section"><div class="section-body">NO DATA</div></div>', "security")
+
+    hosts = scan["hosts"]
+    sec = scan.get("security", {})
+
+    # Overview
+    avg = sec.get("avg_score", 100)
+    avg_cls = "ok" if avg >= 80 else ("warn" if avg >= 50 else "crit")
+
+    overview = f"""
+<div class="section">
+  <div class="section-title">SECURITY OVERVIEW</div>
+  <div class="section-body">
+    <div class="score-meter">
+      <div class="score-num {avg_cls}">{avg}</div>
+      <div class="score-label">/ 100<br>Average Network Score</div>
+    </div>
+    <div class="stats-grid" style="margin-top:12px">
+      <div class="stat-box"><div class="stat-val red">{sec.get('critical',0)}</div><div class="stat-label">Critical (&lt;50)</div></div>
+      <div class="stat-box"><div class="stat-val amber">{sec.get('warning',0)}</div><div class="stat-label">Warning (50-79)</div></div>
+      <div class="stat-box"><div class="stat-val">{sec.get('ok',0)}</div><div class="stat-label">OK (80+)</div></div>
+      <div class="stat-box"><div class="stat-val">{scan['host_count']}</div><div class="stat-label">Total Hosts</div></div>
+    </div>
+  </div>
+</div>"""
+
+    # Hosts sorted by score (worst first) — only show those with flags
+    flagged = [(ip, h) for ip, h in hosts.items() if h.get("security_flags")]
+    flagged.sort(key=lambda x: x[1].get("security_score", 100))
+
+    critical_html = ""
+    warning_html = ""
+    crit_rows = []
+    warn_rows = []
+
+    for ip, h in flagged:
+        score = h.get("security_score", 100)
+        name = best_name(h)
+        name_str = f" — {e(name)}" if name else ""
+        flags_html = ""
+        for f in h.get("security_flags", []):
+            cls = "flag-crit" if score < 50 else "flag-warn"
+            flags_html += f'<div class="flag-item {cls}">{e(f)}</div>'
+        block = f"""<div style="margin:10px 0;padding:8px;border:1px solid var(--border);background:var(--bg)">
+  <div style="margin-bottom:6px">{ip_link(ip)}{name_str} {badge(h.get("device_type",""))} {score_badge(score)}</div>
+  {flags_html}
+</div>"""
+        if score < 50:
+            crit_rows.append(block)
+        elif score < 80:
+            warn_rows.append(block)
+
+    if crit_rows:
+        critical_html = f"""
+<div class="section">
+  <div class="section-title">🔴 CRITICAL ISSUES (score &lt; 50)</div>
+  <div class="section-body">{"".join(crit_rows)}</div>
+</div>"""
+
+    if warn_rows:
+        warning_html = f"""
+<div class="section">
+  <div class="section-title">🟡 WARNINGS (score 50-79)</div>
+  <div class="section-body">{"".join(warn_rows)}</div>
+</div>"""
+
+    # Full host table sorted by score
+    rows = ""
+    all_sorted = sorted(hosts.items(), key=lambda x: x[1].get("security_score", 100))
+    for ip, h in all_sorted:
+        name = best_name(h)
+        score = h.get("security_score", 100)
+        flags = h.get("security_flags", [])
+        flag_str = "; ".join(flags[:3]) if flags else "—"
+        if len(flags) > 3:
+            flag_str += f" +{len(flags)-3}"
+        rows += f"""<tr>
+  <td>{ip_link(ip)}</td>
+  <td>{e(name) if name else "—"}</td>
+  <td>{badge(h.get("device_type",""))}</td>
+  <td style="text-align:center">{score_badge(score)}</td>
+  <td style="font-size:0.78rem">{e(flag_str)}</td>
+  <td>{port_chips(h.get("ports",[]))}</td>
+</tr>"""
+
+    table_html = f"""
+<div class="section">
+  <div class="section-title">ALL HOSTS BY SECURITY SCORE</div>
+  <div class="section-body" style="overflow-x:auto">
+    <table class="host-table" id="secTable">
+      <thead><tr><th>IP</th><th>Name</th><th>Type</th><th>Score</th><th>Issues</th><th>Ports</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # Recommendations
+    recs = []
+    cam_http = sum(1 for h in hosts.values() if h.get("device_type") == "camera" and any(p["port"]==80 for p in h.get("ports",[])))
+    if cam_http:
+        recs.append(f"📷 {cam_http} camera(s) with unencrypted HTTP — consider HTTPS-only or VLAN isolation")
+    telnet_count = sum(1 for h in hosts.values() if any(p["port"]==23 for p in h.get("ports",[])))
+    if telnet_count:
+        recs.append(f"⚠️ {telnet_count} host(s) with Telnet — disable and use SSH instead")
+    rdp_count = sum(1 for h in hosts.values() if any(p["port"]==3389 for p in h.get("ports",[])))
+    if rdp_count:
+        recs.append(f"🖥 {rdp_count} host(s) with RDP exposed — restrict to VPN/internal only")
+    unknown_svc = sum(1 for h in hosts.values() if h.get("device_type") in ("unknown","unknown-web") and len(h.get("ports",[])) >= 3)
+    if unknown_svc:
+        recs.append(f"❓ {unknown_svc} unknown device(s) with multiple services — identify and classify")
+    if not recs:
+        recs.append("✅ No critical recommendations — network looks good!")
+
+    recs_html = f"""
+<div class="section">
+  <div class="section-title">RECOMMENDATIONS</div>
+  <div class="section-body">
+    {"".join(f'<div style="padding:4px 0">{r}</div>' for r in recs)}
+  </div>
+</div>"""
+
+    body = overview + critical_html + warning_html + table_html + recs_html
+    return page_wrap("SECURITY REPORT", body, "security")
+
+
+# ─── Page: Host detail (host/192-168-3-X.html) ───
+
+def gen_host_detail(ip, h, all_scans):
+    safe_ip = ip.replace(".", "-")
+    name = best_name(h)
+    title_name = f" — {name}" if name else ""
+
+    # Info section
+    kv_items = [
+        ("IP Address", ip),
+        ("MAC Address", h.get("mac","") or "—"),
+        ("Vendor (OUI)", h.get("vendor_oui","") or "—"),
+        ("Vendor (nmap)", h.get("vendor_nmap","") or "—"),
+        ("Hostname", h.get("hostname","") or "—"),
+        ("mDNS Name", f'<span class="mdns-name">{e(h.get("mdns_name",""))}</span>' if h.get("mdns_name") else "—"),
+        ("Device Type", badge(h.get("device_type",""))),
+        ("Latency", f'{h.get("latency_ms",0)}ms' if h.get("latency_ms") else "—"),
+        ("First Seen", format_date(h.get("first_seen","")) if h.get("first_seen") else "—"),
+        ("Last Seen", format_date(h.get("last_seen","")) if h.get("last_seen") else "—"),
+        ("Days Tracked", str(h.get("days_tracked","1"))),
+    ]
+    info_html = ""
+    for key, val in kv_items:
+        info_html += f'<div class="detail-kv"><span class="detail-key">{key}</span><span class="detail-val">{val}</span></div>'
+
+    # Security section
+    score = h.get("security_score", 100)
+    score_cls = "ok" if score >= 80 else ("warn" if score >= 50 else "crit")
+    flags = h.get("security_flags", [])
+    flags_html = ""
+    if flags:
+        for f in flags:
+            cls = "flag-crit" if score < 50 else "flag-warn"
+            flags_html += f'<div class="flag-item {cls}">{e(f)}</div>'
+    else:
+        flags_html = '<div style="color:var(--green)">✅ No security issues detected</div>'
+
+    security_sec = f"""
+<div class="section">
+  <div class="section-title">SECURITY</div>
+  <div class="section-body">
+    <div class="score-meter">
+      <div class="score-num {score_cls}">{score}</div>
+      <div class="score-label">/ 100</div>
+    </div>
+    {flags_html}
+  </div>
+</div>"""
+
+    # mDNS services
+    mdns_html = ""
+    mdns_svcs = h.get("mdns_services", [])
+    if mdns_svcs:
+        chips = " ".join(f'<span class="svc-chip">{e(s)}</span>' for s in mdns_svcs)
+        mdns_html = f"""
+<div class="section">
+  <div class="section-title">mDNS SERVICES</div>
+  <div class="section-body">{chips}</div>
+</div>"""
+
+    # Open ports
+    ports = h.get("ports", [])
+    port_rows = ""
+    new_ports = set()
+    pch = h.get("port_changes")
+    if pch:
+        new_ports = {(p["port"], p["proto"]) for p in pch.get("new", [])}
+    for p in sorted(ports, key=lambda x: x["port"]):
+        is_new = (p["port"], p["proto"]) in new_ports
+        new_tag = ' <span style="color:var(--green);font-weight:bold">NEW</span>' if is_new else ""
+        cls = "port-chip common" if p["port"] in COMMON_PORTS else "port-chip"
+        port_rows += f'<tr><td><span class="{cls}">{p["port"]}</span></td><td>{e(p["proto"])}</td><td>{e(p["service"])}</td><td>{new_tag}</td></tr>'
+    # Add gone ports
+    if pch:
+        for p in pch.get("gone", []):
+            port_rows += f'<tr style="opacity:0.5"><td><span class="port-chip port-gone">{p["port"]}</span></td><td>{e(p["proto"])}</td><td>—</td><td><span style="color:var(--red)">CLOSED</span></td></tr>'
+
+    ports_html = ""
+    if port_rows:
+        ports_html = f"""
+<div class="section">
+  <div class="section-title">OPEN PORTS ({len(ports)})</div>
+  <div class="section-body">
+    <table class="host-table"><thead><tr><th>Port</th><th>Proto</th><th>Service</th><th>Status</th></tr></thead>
+    <tbody>{port_rows}</tbody></table>
+  </div>
+</div>"""
+    else:
+        ports_html = f"""
+<div class="section">
+  <div class="section-title">OPEN PORTS</div>
+  <div class="section-body" style="color:var(--fg-dim)">No open ports detected</div>
+</div>"""
+
+    # History timeline
+    timeline_items = []
+    sorted_dates = sorted(all_scans.keys())
+    for d in reversed(sorted_dates):
+        s = all_scans[d]
+        if ip in s.get("hosts", {}):
+            sh = s["hosts"][ip]
+            port_count = len(sh.get("ports", []))
+            port_list = ", ".join(str(p["port"]) for p in sorted(sh.get("ports",[]), key=lambda x: x["port"])[:8])
+            if len(sh.get("ports",[])) > 8:
+                port_list += "..."
+            sc = sh.get("security_score", "?")
+            timeline_items.append(f'<div class="timeline-item online"><span class="timeline-date">{e(d)}</span> — ● online — {port_count} ports [{port_list}] — score {sc}</div>')
+        else:
+            timeline_items.append(f'<div class="timeline-item offline"><span class="timeline-date">{e(d)}</span> — ○ offline</div>')
+
+    history_html = ""
+    if timeline_items:
+        history_html = f"""
+<div class="section">
+  <div class="section-title">SCAN HISTORY (last {len(sorted_dates)} scans)</div>
+  <div class="section-body">{"".join(timeline_items)}</div>
+</div>"""
+
+    # Header
+    header = f"""
+<div class="section">
+  <div class="section-title">HOST DETAIL: {e(ip)}{e(title_name)}</div>
+  <div class="section-body">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:1.4rem;color:var(--cyan);font-weight:bold">{e(ip)}</span>
+      {badge(h.get("device_type",""))}
+      {score_badge(score)}
+      {f'<span class="mdns-name" style="font-size:1.1rem">{e(name)}</span>' if name else ""}
+    </div>
+  </div>
+</div>"""
+
+    body = header + f'<div class="detail-grid"><div>{info_html}</div><div>{security_sec}</div></div>' + mdns_html + ports_html + history_html
+
+    # Wrap in info section
+    body = header + f"""
+<div class="detail-grid">
+  <div class="section">
+    <div class="section-title">DEVICE INFO</div>
+    <div class="section-body">{info_html}</div>
+  </div>
+  {security_sec}
+</div>
+""" + mdns_html + ports_html + history_html
+
+    return page_wrap(f"HOST {ip}", body, "hosts")
+
+
 # ─── Page: History (history.html) ───
 
-def gen_history():
+def gen_history(all_scans):
     dates = get_scan_dates()
     if not dates:
         return page_wrap("HISTORY", '<div class="section"><div class="section-body">NO DATA</div></div>', "history")
 
-    # Load all scans for chart
+    # Load data for chart
     history_data = []
-    for d in dates[-30:]:  # last 30 days
-        s = load_json(f"{DATA_DIR}/scan-{d}.json")
+    for d in dates[-30:]:
+        s = all_scans.get(d)
         if s:
             total_ports = sum(len(h.get("ports",[])) for h in s["hosts"].values())
-            history_data.append({"date": d, "hosts": s["host_count"], "ports": total_ports})
+            mdns = s.get("mdns_devices", sum(1 for h in s["hosts"].values() if h.get("mdns_name")))
+            sec_avg = s.get("security", {}).get("avg_score", "?")
+            history_data.append({"date": d, "hosts": s["host_count"], "ports": total_ports, "mdns": mdns, "sec": sec_avg})
 
     # ASCII bar chart
     if history_data:
@@ -697,27 +1223,41 @@ def gen_history():
     else:
         chart_html = "  No data"
 
-    # Day-by-day changes table
+    # Day-by-day changes table (enhanced with port changes)
     diff_rows = ""
     for i in range(len(dates)-1, 0, -1):
-        curr = load_json(f"{DATA_DIR}/scan-{dates[i]}.json")
-        prev = load_json(f"{DATA_DIR}/scan-{dates[i-1]}.json")
+        curr = all_scans.get(dates[i])
+        prev = all_scans.get(dates[i-1])
         if not curr or not prev:
             continue
         curr_ips = set(curr["hosts"].keys())
         prev_ips = set(prev["hosts"].keys())
         new_ips = curr_ips - prev_ips
         gone_ips = prev_ips - curr_ips
+
         new_str = ", ".join(sorted(new_ips)[:5])
         if len(new_ips)>5: new_str += f" +{len(new_ips)-5}"
         gone_str = ", ".join(sorted(gone_ips)[:5])
         if len(gone_ips)>5: gone_str += f" +{len(gone_ips)-5}"
+
+        # Port changes
+        pc = curr.get("port_changes", {})
+        pc_str = ""
+        if pc.get("hosts_changed", 0) > 0:
+            pc_str = f'+{pc["new_ports"]}/-{pc["gone_ports"]} ({pc["hosts_changed"]}h)'
+
+        # Security
+        sec_avg = curr.get("security", {}).get("avg_score", "?")
+        mdns = curr.get("mdns_devices", 0)
 
         diff_rows += f"""<tr>
   <td>{e(dates[i])}</td>
   <td>{curr['host_count']}</td>
   <td style="color:var(--green)">{f'+{len(new_ips)}' if new_ips else '—'}</td>
   <td style="color:var(--red)">{f'-{len(gone_ips)}' if gone_ips else '—'}</td>
+  <td style="font-size:0.75rem">{e(pc_str) if pc_str else '—'}</td>
+  <td style="text-align:center">{score_badge(sec_avg) if sec_avg != '?' else '—'}</td>
+  <td style="text-align:center">{mdns}</td>
   <td style="font-size:0.75rem;color:var(--green)">{e(new_str) if new_str else ''}</td>
   <td style="font-size:0.75rem;color:var(--red)">{e(gone_str) if gone_str else ''}</td>
 </tr>"""
@@ -733,8 +1273,8 @@ def gen_history():
   <div class="section-title">DAILY CHANGES</div>
   <div class="section-body" style="overflow-x:auto">
     <table class="host-table">
-      <thead><tr><th>Date</th><th>Total</th><th>New</th><th>Gone</th><th>New IPs</th><th>Gone IPs</th></tr></thead>
-      <tbody>{diff_rows if diff_rows else '<tr><td colspan="6" style="color:var(--fg-dim)">Need at least 2 scans for history</td></tr>'}</tbody>
+      <thead><tr><th>Date</th><th>Total</th><th>New</th><th>Gone</th><th>Port Δ</th><th>SecAvg</th><th>mDNS</th><th>New IPs</th><th>Gone IPs</th></tr></thead>
+      <tbody>{diff_rows if diff_rows else '<tr><td colspan="9" style="color:var(--fg-dim)">Need at least 2 scans for history</td></tr>'}</tbody>
     </table>
   </div>
 </div>"""
@@ -751,7 +1291,6 @@ def gen_log():
         log = get_log(d)
         if not log:
             continue
-        # Highlight timestamps
         highlighted = re.sub(
             r'\[([^\]]+)\]',
             r'<span class="log-ts">[\1]</span>',
@@ -760,7 +1299,6 @@ def gen_log():
         tabs += f'<a href="#log-{d}" onclick="showLog(\'{d}\')" style="margin-right:8px">{d}</a>'
         content += f'<div id="log-{d}" class="log-view" style="display:none">{highlighted}</div>'
 
-    # Show latest by default
     if dates:
         latest = dates[-1]
         content = content.replace(f'id="log-{latest}" class="log-view" style="display:none"',
@@ -787,10 +1325,15 @@ function showLog(d) {{
 # ─── Generate all pages ───
 
 def main():
+    scan = get_latest_scan()
+    all_scans = load_all_scans(30)
+
+    # Main pages
     pages = {
-        "index.html": gen_dashboard,
-        "hosts.html": gen_hosts,
-        "history.html": gen_history,
+        "index.html": lambda: gen_dashboard(all_scans),
+        "hosts.html": lambda: gen_hosts(scan),
+        "security.html": lambda: gen_security(scan),
+        "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
     }
     for fname, gen_fn in pages.items():
@@ -801,7 +1344,19 @@ def main():
         size = len(html)
         print(f"  [{fname}] {size:,} bytes")
 
-    print(f"Dashboard generated: {len(pages)} pages in {WEB_DIR}/")
+    # Per-host detail pages
+    host_count = 0
+    if scan:
+        for ip, h in scan["hosts"].items():
+            safe_ip = ip.replace(".", "-")
+            html = gen_host_detail(ip, h, all_scans)
+            path = os.path.join(WEB_DIR, "host", f"{safe_ip}.html")
+            with open(path, "w") as f:
+                f.write(html)
+            host_count += 1
+
+    total_pages = len(pages) + host_count
+    print(f"Dashboard generated: {total_pages} pages ({len(pages)} main + {host_count} host details) in {WEB_DIR}/")
 
 if __name__ == "__main__":
     main()
