@@ -895,7 +895,7 @@ Personality is defined in workspace markdown files:
 | `IDENTITY.md` | Name, creature type, vibe, emoji |
 | `SOUL.md` | Core behavior rules, tone, boundaries |
 | `USER.md` | Info about the human (timezone, preferences) |
-| `TOOLS.md` | Environment-specific notes (SSH hosts, device names) |
+| `TOOLS.md` | Explicit tool commands (image gen, web search, system diagnostics) |
 | `HEARTBEAT.md` | Periodic check-in tasks |
 
 These files are read at session start and injected into the system prompt. The agent can update them to build persistent memory across sessions.
@@ -1169,6 +1169,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - **Tool calling** — Thinking model correctly uses structured tool calls through OpenClaw → Ollama (direct, no proxy). 13 tools exposed (read, edit, write, exec, process, message, sessions_*, memory_*).
 - **Web search** — `ddgr` (DuckDuckGo CLI) called via `exec` tool. Agent searches web and summarizes results. BTC price queries work end-to-end.
 - **Image generation (FLUX.1-schnell)** — Async two-script architecture: wrapper returns instantly, background worker stops Ollama → runs SD → sends image → restarts Ollama. 512×512 in ~48s, image delivered via Signal. **No OOM kills.**
+- **System diagnostics** — Full diagnostic toolkit installed: `sensors`, `htop`, `radeontop`, `perf`, `strace`, `nmap`, `iftop`, `nethogs`, `iostat`, `smartctl`, `stress-ng`, `psutil`, plus raw sysfs GPU metrics. All commands documented in TOOLS.md — the bot can self-diagnose temps, memory pressure, GPU utilization, network traffic, disk health, and run stress tests.
 - **TOOLS.md approach** — Explicit command instructions injected as Project Context into system prompt. More reliable than skill-read chains for 14B models.
 - **Image generation (SD-Turbo fallback)** — 512×512 in ~3s, much faster but lower quality
 - **Ollama + Vulkan** — `huihui_ai/qwen3-abliterated:14b` as primary, ~27 tok/s eval speed, 100% GPU
@@ -1254,6 +1255,7 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 ## 13. TODO
 
 - [ ] Test concurrent requests under load
+- [x] ~~Install system diagnostic tools~~ — **Done!** `htop`, `sysstat` (iostat/mpstat/sar), `strace`, `nmap`, `iftop`, `nethogs`, `iperf3`, `socat`, `ncdu`, `nload`, `radeontop`, `python3-psutil`, `powertop`, `stress-ng`, `perf`. All documented in TOOLS.md for the bot to use autonomously.
 - [ ] Set up cron job for daily health check / greeting
 - [ ] Consider reducing OpenClaw system prompt overhead (~9.6K framework chars)
 - [ ] Try higher FLUX resolution (768×768) — will need more VRAM, may require further quantization
