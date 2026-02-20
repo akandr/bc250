@@ -27,6 +27,18 @@ if os.path.exists(_feeds_path):
     except Exception:
         pass
 
+# ─── Repo feeds config ───
+
+REPO_FEEDS = {}
+_repo_feeds_path = os.path.join(SCRIPT_DIR, "repo-feeds.json")
+if os.path.exists(_repo_feeds_path):
+    try:
+        with open(_repo_feeds_path) as _f:
+            _raw = json.load(_f)
+            REPO_FEEDS = {k: v for k, v in _raw.items() if isinstance(v, dict)}
+    except Exception:
+        pass
+
 # ─── ASCII art / branding ───
 
 BANNER = r"""
@@ -504,6 +516,10 @@ def page_wrap(title, body, active_page="index"):
         slug = fcfg.get("page_slug", fid)
         label = fcfg.get("nav_label", fid.upper())
         nav_items.append((f"/{slug}.html", label, slug))
+    # Issues and Notes pages (only if configs exist)
+    if REPO_FEEDS:
+        nav_items.append(("/issues.html", "ISSUES", "issues"))
+    nav_items.append(("/notes.html", "NOTES", "notes"))
     nav_items += [
         ("/security.html", "SECURITY", "security"),
         ("/history.html", "HISTORY", "history"),
@@ -1630,6 +1646,217 @@ def gen_feed_page(feed_id, feed_cfg):
     return page_wrap(f"{scored_label} DIGEST", body, page_slug)
 
 
+# ─── Page: Issues (issues.html) — GitHub/GitLab repo issue tracker ───
+
+def gen_issues():
+    """Generate the repository issues monitoring page."""
+    if not REPO_FEEDS:
+        body = """
+<div class="section">
+  <div class="section-title">🐛 REPOSITORY ISSUE TRACKER</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    No repository feeds configured (repo-feeds.json)
+  </div>
+</div>"""
+        return page_wrap("ISSUES", body, "issues")
+
+    all_cards = ""
+    total_interesting = 0
+    total_repos_checked = 0
+
+    for rid, rcfg in REPO_FEEDS.items():
+        repo_dir = os.path.join(DATA_DIR, rcfg.get("data_dir", f"repos/{rid}"))
+        latest_path = os.path.join(repo_dir, "latest.json")
+        repo_name = rcfg.get("name", rid)
+        repo_emoji = rcfg.get("emoji", "📦")
+        web_url = rcfg.get("web_url", "")
+
+        data = load_json(latest_path) if os.path.exists(latest_path) else None
+
+        if not data:
+            all_cards += f"""
+<div class="section">
+  <div class="section-title">{repo_emoji} {e(repo_name.upper())}</div>
+  <div class="section-body" style="color:var(--fg-dim);padding:16px">
+    ⏳ Not checked yet — waiting for first repo-watch run
+  </div>
+</div>"""
+            continue
+
+        total_repos_checked += 1
+        interesting = data.get("interesting", [])
+        total_interesting += len(interesting)
+        checked = data.get("checked", "?")
+        total_items = data.get("total_items", 0)
+        other_count = data.get("other_count", 0)
+
+        # Build issue/MR cards
+        item_rows = ""
+        for item in interesting[:20]:
+            iid = item.get("id", "?")
+            itype = item.get("type", "issue")
+            title = e(item.get("title", "?"))
+            score = item.get("score", 0)
+            author = e(item.get("author", "?"))
+            url = item.get("url", "")
+            labels = item.get("labels", [])
+            comments = item.get("comments", 0)
+            reactions = item.get("reactions", 0)
+            keywords = item.get("keywords", [])
+            is_new = item.get("is_new", False)
+            body_preview = e(item.get("body_preview", "")[:200])
+
+            type_icon = "🔀" if "merge" in itype or "pull" in itype else "🐛"
+            new_badge = ' <span style="background:var(--green);color:#000;padding:1px 6px;font-size:0.75rem;font-weight:bold">NEW</span>' if is_new else ""
+            score_cls = "green" if score >= 8 else ("amber" if score >= 4 else "fg-dim")
+            kw_chips = " ".join(f'<span class="port-chip">{e(k)}</span>' for k in keywords[:5])
+            label_chips = " ".join(f'<span style="background:var(--bg3);color:var(--magenta);padding:1px 4px;font-size:0.75rem;border:1px solid var(--border)">{e(l)}</span>' for l in labels[:4])
+
+            link_html = f'<a href="{e(url)}" style="color:var(--cyan)">#{iid}</a>' if url else f"#{iid}"
+
+            item_rows += f"""<div style="border:1px solid var(--border);background:var(--bg2);padding:10px;margin-bottom:8px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px">
+    <div>
+      {type_icon} <span style="color:var(--{score_cls});font-weight:bold">[{score:.0f}]</span>
+      {link_html} {title}{new_badge}
+    </div>
+    <span style="color:var(--fg-dim);font-size:0.8rem;white-space:nowrap">💬{comments} 👍{reactions}</span>
+  </div>
+  <div style="margin-top:4px;font-size:0.8rem;color:var(--fg-dim)">👤 {author}</div>
+  <div style="margin-top:4px">{kw_chips} {label_chips}</div>
+  {"<div style='margin-top:6px;font-size:0.82rem;color:var(--fg-dim);border-left:2px solid var(--border);padding-left:8px'>" + body_preview + "</div>" if body_preview else ""}
+</div>"""
+
+        web_link = f' &nbsp;│&nbsp; <a href="{e(web_url)}">{e(web_url.replace("https://", ""))}</a>' if web_url else ""
+
+        all_cards += f"""
+<div class="section">
+  <div class="section-title">{repo_emoji} {e(repo_name.upper())} — {len(interesting)} interesting of {total_items} checked</div>
+  <div class="section-body">
+    <div style="margin-bottom:10px;font-size:0.82rem;color:var(--fg-dim)">
+      Last check: {e(checked)} &nbsp;│&nbsp; Other: {other_count} low-relevance items{web_link}
+    </div>
+    {item_rows if item_rows else '<div style="color:var(--fg-dim);padding:12px">No interesting items found</div>'}
+  </div>
+</div>"""
+
+    # Summary header
+    summary_html = f"""
+<div class="section">
+  <div class="section-title">🐛 REPOSITORY ISSUE TRACKER</div>
+  <div class="section-body">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--green);font-size:1.5rem;font-weight:bold">{total_interesting}</span><br><span style="color:var(--fg-dim)">interesting items</span></div>
+      <div><span style="color:var(--cyan);font-size:1.5rem;font-weight:bold">{len(REPO_FEEDS)}</span><br><span style="color:var(--fg-dim)">repos monitored</span></div>
+      <div><span style="color:var(--amber);font-size:1.5rem;font-weight:bold">{total_repos_checked}</span><br><span style="color:var(--fg-dim)">checked today</span></div>
+    </div>
+    <div style="margin-top:12px;font-size:0.82rem;color:var(--fg-dim)">
+      Monitoring: {', '.join(rcfg.get('name', rid) for rid, rcfg in REPO_FEEDS.items())} &nbsp;│&nbsp;
+      Scored by keyword relevance + user interest profile
+    </div>
+  </div>
+</div>"""
+
+    body = summary_html + all_cards
+    return page_wrap("ISSUES", body, "issues")
+
+
+# ─── Page: Notes (notes.html) — LLM thinking/research notes ───
+
+def gen_notes():
+    """Generate the thinking notes / research insights page."""
+    think_dir = os.path.join(DATA_DIR, "think")
+
+    # Load notes index
+    index_path = os.path.join(think_dir, "notes-index.json")
+    index = []
+    if os.path.exists(index_path):
+        index = load_json(index_path) or []
+
+    if not index:
+        body = """
+<div class="section">
+  <div class="section-title">🧠 RESEARCH NOTES</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🧠</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No thinking notes yet</div>
+    <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+      ClawdBot generates research notes during idle time:<br>
+      weekly briefings, trend analysis, cross-feed insights, deep dives.<br>
+      Notes will appear here after the first idle-think run.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("NOTES", body, "notes")
+
+    # Load actual note contents
+    note_cards = ""
+    type_icons = {
+        "weekly": "📋", "trends": "📈",
+        "crossfeed": "🔗", "research": "🔬",
+    }
+    type_colors = {
+        "weekly": "var(--green)", "trends": "var(--amber)",
+        "crossfeed": "var(--cyan)", "research": "var(--magenta)",
+    }
+
+    for entry in index[:20]:
+        note_path = os.path.join(think_dir, entry.get("file", ""))
+        note = load_json(note_path) if os.path.exists(note_path) else None
+        if not note:
+            continue
+
+        ntype = note.get("type", "note")
+        title = e(note.get("title", "Untitled"))
+        content = note.get("content", "")
+        generated = e(note.get("generated", "?"))
+        chars = len(content)
+        icon = type_icons.get(ntype, "📝")
+        color = type_colors.get(ntype, "var(--fg)")
+        type_label = ntype.upper()
+
+        # Format content: preserve whitespace, escape HTML
+        content_html = e(content).replace("\n", "<br>")
+
+        note_cards += f"""
+<div class="section">
+  <div class="section-title">
+    {icon} <span style="color:{color}">[{type_label}]</span> {title}
+    <span style="float:right;font-size:0.8rem;color:var(--fg-dim)">{generated} &nbsp;│&nbsp; {chars} chars</span>
+  </div>
+  <div class="section-body">
+    <div style="font-family:monospace;white-space:pre-wrap;line-height:1.6;font-size:0.88rem;color:var(--fg)">{content_html}</div>
+  </div>
+</div>"""
+
+    # Type distribution
+    type_counts = {}
+    for entry in index:
+        t = entry.get("type", "other")
+        type_counts[t] = type_counts.get(t, 0) + 1
+
+    dist_html = " &nbsp;│&nbsp; ".join(
+        f'{type_icons.get(t, "📝")} {t}: {c}' for t, c in sorted(type_counts.items())
+    )
+
+    summary = f"""
+<div class="section">
+  <div class="section-title">🧠 RESEARCH NOTES — ClawdBot thinking log</div>
+  <div class="section-body">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--green);font-size:1.5rem;font-weight:bold">{len(index)}</span><br><span style="color:var(--fg-dim)">total notes</span></div>
+    </div>
+    <div style="margin-top:8px;font-size:0.82rem;color:var(--fg-dim)">
+      {dist_html}<br>
+      Generated during idle time by local LLM &nbsp;│&nbsp; Auto-rotates: weekly → trends → crossfeed → research
+    </div>
+  </div>
+</div>"""
+
+    body = summary + note_cards
+    return page_wrap("NOTES", body, "notes")
+
+
 # Keep backward compat alias
 def gen_lkml():
     if "linux-media" in DIGEST_FEEDS:
@@ -1782,11 +2009,15 @@ def main():
         "security.html": lambda: gen_security(scan),
         "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
+        "notes.html": gen_notes,
     }
     # Dynamic feed pages from digest-feeds.json
     for fid, fcfg in DIGEST_FEEDS.items():
         slug = fcfg.get("page_slug", fid)
         pages[f"{slug}.html"] = (lambda _fid=fid, _fcfg=fcfg: gen_feed_page(_fid, _fcfg))
+    # Issues page (only if repo feeds configured)
+    if REPO_FEEDS:
+        pages["issues.html"] = gen_issues
     for fname, gen_fn in pages.items():
         html = gen_fn()
         path = os.path.join(WEB_DIR, fname)

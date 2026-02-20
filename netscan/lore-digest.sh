@@ -90,6 +90,15 @@ LORE_LIST = FEED["lore_list"]
 FEED_DIR = os.path.join(DATA_DIR, FEED["data_dir"])
 os.makedirs(FEED_DIR, exist_ok=True)
 
+# Load user profile for dashboard URL and signal preferences
+PROFILE_PATH = os.path.join(os.path.dirname(FEEDS_JSON), "profile.json")
+PROFILE = {}
+if os.path.exists(PROFILE_PATH):
+    with open(PROFILE_PATH) as _pf:
+        PROFILE = json.load(_pf)
+DASHBOARD_URL = PROFILE.get("dashboard_url", "http://192.168.3.151:8888")
+SIGNAL_STYLE = PROFILE.get("signal", {}).get("style", "short")
+
 print(f"  Feed: {FEED_NAME} ({LORE_LIST})")
 print(f"  Data: {FEED_DIR}")
 
@@ -775,9 +784,36 @@ with open(detail_path, "w") as f:
     json.dump(thread_summaries, f, indent=2, default=str)
 print(f"  Saved: {detail_path}")
 
-if send_signal(bulletin_text):
-    n_chunks = max(1, (len(bulletin_text) + SIGNAL_CHUNK_SIZE - 1) // SIGNAL_CHUNK_SIZE)
-    print(f"  ✅ Signal bulletin sent ({len(bulletin_text)} chars, {n_chunks} message{'s' if n_chunks > 1 else ''})")
+# Build short Signal alert with dashboard link instead of full bulletin
+page_slug = FEED.get("page_slug", FEED_ID)
+alert_url = f"{DASHBOARD_URL}/{page_slug}.html"
+
+# Extract top thread subjects from thread_summaries for the alert
+top_subjects = []
+for ts in thread_summaries[:4]:
+    analysis = ts.get("llm_analysis", "")
+    subj_line = ts["subject"]
+    for al in analysis.split("\n"):
+        al_s = al.strip()
+        if al_s.startswith("SUBJECT:"):
+            subj_line = al_s.replace("SUBJECT:", "").strip()
+            break
+    top_subjects.append(subj_line[:75])
+
+alert_lines = [
+    f"{FEED_EMOJI} {FEED_NAME.upper()} digest ready — {dt_label}",
+    f"📊 {total_messages} msgs, {len(scored_threads_data)} relevant threads analyzed",
+    "",
+]
+for subj in top_subjects:
+    alert_lines.append(f"• {subj}")
+if len(thread_summaries) > 4:
+    alert_lines.append(f"  ...+{len(thread_summaries) - 4} more")
+alert_lines.append(f"\n🔗 {alert_url}")
+
+alert_text = "\n".join(alert_lines)
+if send_signal(alert_text):
+    print(f"  ✅ Signal alert sent ({len(alert_text)} chars)")
 else:
     print("  ⚠ Signal send failed — bulletin saved to file only")
 

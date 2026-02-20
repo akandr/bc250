@@ -1,0 +1,58 @@
+{
+  "__comment": "User profile for LLM context, interest scoring, and proactive alerts",
+
+  "name": "AK",
+  "role": "Embedded Linux / multimedia developer",
+  "dashboard_url": "http://192.168.3.151:8888",
+
+  "signal": {
+    "from": "+48532825716",
+    "to": "+48503326388",
+    "rpc": "http://127.0.0.1:8080/api/v1/rpc",
+    "style": "short",
+    "max_alert_chars": 500
+  },
+
+  "interests": [
+    "Camera / imaging pipelines on embedded Linux (V4L2, libcamera, ISP, MIPI CSI-2)",
+    "ARM SoC bringup — Qualcomm, Rockchip, MediaTek, Amlogic, Allwinner, NXP i.MX",
+    "GStreamer video pipelines, v4l2src, hardware-accelerated encode/decode",
+    "FFmpeg hardware acceleration, VAAPI, Vulkan video, AMF",
+    "AMD GPU — RDNA, Vulkan compute, ROCm, Mesa radv driver",
+    "Local LLM inference on consumer/edge hardware",
+    "RISC-V SoC enablement (StarFive, T-Head)",
+    "Device tree bindings, clock/pinctrl/regulator frameworks",
+    "USB video (UVC), USB gadget, USB3 camera"
+  ],
+
+  "hardware": [
+    "AMD BC-250 (Zen 2 6c/12t + Cyan Skillfish RDNA1 gfx1013, 16GB GDDR6)",
+    "Various ARM SBCs (Rockchip, Qualcomm, Allwinner)"
+  ],
+
+  "interest_keywords": {
+    "high": [
+      "v4l2", "libcamera", "isp", "mipi", "csi-2", "camera", "uvc",
+      "gstreamer", "v4l2src", "vaapi", "vulkan video",
+      "rockchip", "qualcomm", "qcom", "mediatek", "amlogic", "allwinner",
+      "rk3588", "rk3566", "imx8m", "sm8", "mt8", "sun50i",
+      "device tree", "devicetree", "dt-binding",
+      "rdna", "amdgpu", "radv", "cyan skillfish", "gfx1013",
+      "ollama", "llama.cpp", "gguf", "vulkan compute"
+    ],
+    "medium": [
+      "sensor", "imx", "omnivision", "pixel format", "bayer",
+      "clock", "pinctrl", "regulator", "pmic", "power-domain",
+      "ffmpeg", "hwaccel", "encode", "decode",
+      "usb", "gadget", "xhci",
+      "risc-v", "starfive", "thead",
+      "mesa", "drm", "kms"
+    ],
+    "low": [
+      "arm64", "dts", "soc", "platform_driver",
+      "mmc", "emmc", "sdio",
+      "pcie", "nvme",
+      "thermal", "cpufreq"
+    ]
+  }
+}
