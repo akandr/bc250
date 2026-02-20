@@ -4,8 +4,8 @@
 #
 # Usage:
 #   repo-watch.sh --repo gstreamer        (check one repo)
-#   repo-watch.sh --repo libcamera
-#   repo-watch.sh --all                   (check all repos)
+#   repo-watch.sh --all                   (silent — collect only)
+#   repo-watch.sh --all --notify          (collect + send daily digest)
 #
 # Config: repo-feeds.json (repo definitions), profile.json (interest scoring)
 # Location on bc250: /opt/netscan/repo-watch.sh
@@ -26,12 +26,14 @@ usage() {
 # Parse arguments
 REPO_ID=""
 RUN_ALL=false
+NOTIFY=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --repo) REPO_ID="$2"; shift 2 ;;
-        --all)  RUN_ALL=true; shift ;;
-        *)      usage ;;
+        --repo)   REPO_ID="$2"; shift 2 ;;
+        --all)    RUN_ALL=true; shift ;;
+        --notify) NOTIFY=true; shift ;;
+        *)        usage ;;
     esac
 done
 
@@ -50,6 +52,84 @@ if [[ "$RUN_ALL" == "true" ]]; then
     if [[ -f /opt/netscan/generate-html.py ]]; then
         python3 /opt/netscan/generate-html.py 2>/dev/null || true
         echo "  Dashboard regenerated"
+    fi
+
+    # Daily digest: send ONE combined Signal summary (only with --notify)
+    if [[ "$NOTIFY" == "true" ]]; then
+        echo "  Preparing daily digest..."
+        python3 - "$REPO_FEEDS" "$PROFILE_JSON" "$DATA_DIR" << 'DIGESTEOF'
+import sys, os, json, urllib.request
+
+REPO_FEEDS = sys.argv[1]
+PROFILE_JSON = sys.argv[2]
+DATA_DIR = sys.argv[3]
+
+with open(REPO_FEEDS) as f:
+    all_repos = json.load(f)
+with open(PROFILE_JSON) as f:
+    profile = json.load(f)
+
+dashboard_url = profile.get("dashboard_url", "http://192.168.3.151:8888")
+sig = profile.get("signal", {})
+max_chars = sig.get("max_alert_chars", 500)
+
+lines = ["\U0001f4cb Daily repo digest", ""]
+total_new = 0
+
+for repo_id, repo in all_repos.items():
+    if not isinstance(repo, dict):
+        continue
+    state_file = os.path.join(DATA_DIR, repo["data_dir"], "state.json")
+    if not os.path.exists(state_file):
+        continue
+    with open(state_file) as f:
+        state = json.load(f)
+    daily = state.get("daily_new", [])
+    if not daily:
+        continue
+
+    total_new += len(daily)
+    top = sorted(daily, key=lambda x: -x.get("score", 0))[:3]
+    lines.append(f"{repo['emoji']} {repo['name']}: {len(daily)} new")
+    for item in top:
+        lines.append(f"  [{item['score']}] {item['title'][:70]}")
+    if len(daily) > 3:
+        lines.append(f"  ...+{len(daily)-3} more")
+    lines.append("")
+
+    # Clear daily_new
+    state["daily_new"] = []
+    with open(state_file, "w") as f:
+        json.dump(state, f, indent=2)
+
+if total_new == 0:
+    print("  No new items today — no daily digest needed")
+    sys.exit(0)
+
+lines.append(f"\U0001f517 {dashboard_url}/issues.html")
+msg = "\n".join(lines)
+
+if len(msg) > max_chars:
+    msg = msg[:max_chars - 30].rsplit("\n", 1)[0] + f"\n\n\U0001f517 {dashboard_url}/issues.html"
+
+try:
+    payload = json.dumps({
+        "jsonrpc": "2.0", "method": "send",
+        "params": {
+            "account": sig.get("from", "+48532825716"),
+            "recipient": [sig.get("to", "+48503326388")],
+            "message": msg
+        }, "id": "repowatch-daily"
+    })
+    req = urllib.request.Request(
+        sig.get("rpc", "http://127.0.0.1:8080/api/v1/rpc"),
+        data=payload.encode(), headers={"Content-Type": "application/json"}
+    )
+    urllib.request.urlopen(req, timeout=15)
+    print(f"  \u2705 Daily digest sent ({len(msg)} chars, {total_new} items across repos)")
+except Exception as ex:
+    print(f"  \u26a0 Daily digest send failed: {ex}")
+DIGESTEOF
     fi
     exit 0
 fi
@@ -474,46 +554,24 @@ state["seen_ids"] = list(seen_ids)[-500:]  # keep last 500 IDs to avoid unlimite
 state["last_check"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 save_state(state)
 
-# ─── Signal alert for truly new interesting items ───
+# ─── Accumulate new items for daily digest (no per-run Signal) ───
 
 if truly_new:
-    # Short alert style: summary + dashboard link
-    type_counts = {}
+    # Append to daily_new in state for later digest
+    daily_items = state.get("daily_new", [])
     for i in truly_new:
-        k = i["type"].replace("_", " ")
-        type_counts[k] = type_counts.get(k, 0) + 1
-
-    count_str = ", ".join(f"{v} {k}{'s' if v > 1 else ''}" for k, v in type_counts.items())
-
-    lines = [
-        f"{REPO_EMOJI} {REPO_NAME}: {count_str} of interest",
-        ""
-    ]
-
-    # Top 5 items, compact
-    for i in truly_new[:5]:
-        type_icon = "🔀" if "merge" in i["type"] or "pull" in i["type"] else ("📩" if "patch" in i["type"] else "🐛")
-        lines.append(f"{type_icon} #{i['id']}: {i['title'][:80]}")
-        if i["keywords"]:
-            lines.append(f"   [{', '.join(i['keywords'][:4])}]")
-
-    if len(truly_new) > 5:
-        lines.append(f"   ...+{len(truly_new) - 5} more")
-
-    lines.append(f"\n🔗 {DASHBOARD_URL}/issues.html")
-
-    alert = "\n".join(lines)
-
-    # Respect max_alert_chars
-    if len(alert) > MAX_ALERT_CHARS:
-        alert = alert[:MAX_ALERT_CHARS - 20].rsplit("\n", 1)[0] + f"\n\n🔗 {DASHBOARD_URL}/issues.html"
-
-    if _signal_send(alert):
-        print(f"  ✅ Signal alert sent ({len(alert)} chars, {len(truly_new)} new items)")
-    else:
-        print(f"  ⚠ Signal send failed")
+        daily_items.append({
+            "id": i["id"], "type": i["type"],
+            "title": i["title"][:100],
+            "score": i["score"],
+            "keywords": i["keywords"][:4],
+            "url": i["url"],
+        })
+    state["daily_new"] = daily_items
+    save_state(state)
+    print(f"  Queued {len(truly_new)} new items for daily digest (total queued: {len(daily_items)})")
 else:
-    print(f"  No new interesting items — no alert needed")
+    print(f"  No new items this run")
 
 print(f"  Done: {REPO_NAME}")
 
