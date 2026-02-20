@@ -1795,10 +1795,14 @@ def gen_notes():
     type_icons = {
         "weekly": "📋", "trends": "📈",
         "crossfeed": "🔗", "research": "🔬",
+        "career": "🎯", "crawl": "🌐",
+        "learn": "🧠", "signal": "📡",
     }
     type_colors = {
         "weekly": "var(--green)", "trends": "var(--amber)",
         "crossfeed": "var(--cyan)", "research": "var(--magenta)",
+        "career": "var(--amber)", "crawl": "var(--blue)",
+        "learn": "var(--green)", "signal": "var(--red)",
     }
 
     for entry in index[:20]:

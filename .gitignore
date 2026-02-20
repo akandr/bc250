@@ -12,6 +12,7 @@ __pycache__/
 # Private user data — career, profile, PDFs (NEVER commit)
 netscan/profile-private.json
 netscan/crawl-targets.json
+netscan/watchlist.json
 *.pdf
 
 # Secrets (systemd units may contain tokens)
