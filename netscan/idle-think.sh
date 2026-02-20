@@ -1,7 +1,8 @@
 #!/bin/bash
 # idle-think.sh — Background LLM thinking during idle time
-# Generates research notes, weekly summaries, trend analysis, and cross-feed insights
-# by reviewing recent digests and repo issues.
+# Generates research notes, weekly summaries, trend analysis, cross-feed insights,
+# career intelligence, web crawl digests, and self-learning reviews
+# by reviewing recent digests, repo issues, and private career profile.
 #
 # Usage:
 #   idle-think.sh                  (pick next task from rotation)
@@ -9,6 +10,13 @@
 #   idle-think.sh --task trends
 #   idle-think.sh --task crossfeed
 #   idle-think.sh --task research
+#   idle-think.sh --task career    (career-aware analysis)
+#   idle-think.sh --task crawl     (fetch & analyze web sources)
+#   idle-think.sh --task learn     (self-review of past notes)
+#
+# Schedule:
+#   Mon=weekly, Tue=crossfeed, Wed=career, Thu=crawl,
+#   Fri=trends, Sat=research, Sun=learn
 #
 # Guards: Checks if Ollama is already busy (lore-digest / repo-watch running)
 #         before starting. Exits gracefully if system is occupied.
@@ -20,6 +28,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 DATA_DIR="/opt/netscan/data"
 THINK_DIR="$DATA_DIR/think"
 PROFILE_JSON="${SCRIPT_DIR}/profile.json"
+PROFILE_PRIVATE="${SCRIPT_DIR}/profile-private.json"
 DIGEST_FEEDS="${SCRIPT_DIR}/digest-feeds.json"
 REPO_FEEDS="${SCRIPT_DIR}/repo-feeds.json"
 
@@ -29,7 +38,7 @@ TASK=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --task) TASK="$2"; shift 2 ;;
-        *)      echo "Usage: $0 [--task weekly|trends|crossfeed|research]"; exit 1 ;;
+        *)      echo "Usage: $0 [--task weekly|trends|crossfeed|research|career|crawl|learn]"; exit 1 ;;
     esac
 done
 
@@ -46,7 +55,7 @@ OLLAMA_PS=$(curl -s http://localhost:11434/api/ps 2>/dev/null || echo '{"models"
 RUNNING=$(echo "$OLLAMA_PS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('models',[])))" 2>/dev/null || echo "0")
 # Having a model loaded is fine — it means Ollama is ready. We only skip if digest/watch are running.
 
-python3 - "$TASK" "$THINK_DIR" "$DATA_DIR" "$PROFILE_JSON" "$DIGEST_FEEDS" "$REPO_FEEDS" << 'PYEOF'
+python3 - "$TASK" "$THINK_DIR" "$DATA_DIR" "$PROFILE_JSON" "$DIGEST_FEEDS" "$REPO_FEEDS" "$PROFILE_PRIVATE" << 'PYEOF'
 import sys, os, json, glob, time, hashlib
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -57,6 +66,7 @@ DATA_DIR = sys.argv[3]
 PROFILE_JSON = sys.argv[4]
 DIGEST_FEEDS_PATH = sys.argv[5]
 REPO_FEEDS_PATH = sys.argv[6]
+PROFILE_PRIVATE_PATH = sys.argv[7] if len(sys.argv) > 7 else ""
 
 # ─── Load configs ───
 
@@ -64,6 +74,12 @@ PROFILE = {}
 if os.path.exists(PROFILE_JSON):
     with open(PROFILE_JSON) as f:
         PROFILE = json.load(f)
+
+PROFILE_PRIVATE = {}
+if PROFILE_PRIVATE_PATH and os.path.exists(PROFILE_PRIVATE_PATH):
+    with open(PROFILE_PRIVATE_PATH) as f:
+        PROFILE_PRIVATE = json.load(f)
+    print(f"  Loaded private profile: {PROFILE_PRIVATE_PATH}")
 
 DIGEST_FEEDS = {}
 if os.path.exists(DIGEST_FEEDS_PATH):
@@ -149,6 +165,8 @@ def load_recent_digests(days=7):
     """Load recent digest bulletins across all feeds."""
     digests = []
     for fid, fcfg in DIGEST_FEEDS.items():
+        if not isinstance(fcfg, dict):
+            continue
         feed_dir = os.path.join(DATA_DIR, fcfg["data_dir"])
         for f in sorted(glob.glob(os.path.join(feed_dir, "digest-*.json")), reverse=True)[:days]:
             try:
@@ -174,6 +192,8 @@ def load_recent_issues():
     """Load recent repo watch results."""
     issues = []
     for rid, rcfg in REPO_FEEDS.items():
+        if not isinstance(rcfg, dict):
+            continue
         latest_path = os.path.join(DATA_DIR, rcfg["data_dir"], "latest.json")
         if os.path.exists(latest_path):
             try:
@@ -225,6 +245,64 @@ def save_note(task_type, title, content, context=None):
     return note
 
 
+def career_context_block():
+    """Build a formatted career context string from profile-private.json for LLM prompts."""
+    if not PROFILE_PRIVATE:
+        return ""
+    ident = PROFILE_PRIVATE.get("identity", {})
+    role = PROFILE_PRIVATE.get("current_role", {})
+    ctx = PROFILE_PRIVATE.get("career_context", {})
+    phd = PROFILE_PRIVATE.get("phd_interest", {})
+    t5 = PROFILE_PRIVATE.get("t5_requirements", {})
+    strengths = PROFILE_PRIVATE.get("strengths_for_llm_context", [])
+    watch = PROFILE_PRIVATE.get("watch_topics", {})
+
+    lines = []
+    lines.append(f"=== CAREER CONTEXT (confidential — for analysis only) ===")
+    lines.append(f"Role: {ident.get('title', '')} ({ident.get('career_level', '')}) at {ident.get('employer', '')}")
+    lines.append(f"Division: {ident.get('division', '')}")
+    lines.append(f"Team: {role.get('team', '')} — {role.get('program', '')}")
+    lines.append(f"Customers: {', '.join(role.get('customers', []))}")
+    lines.append(f"Goal: {ident.get('career_level', '')} → {ident.get('target_level', '')}")
+    lines.append(f"Preference: {ctx.get('preference', '')}")
+    lines.append(f"Situation: {ctx.get('situation', '')}")
+    if ctx.get("opportunities"):
+        lines.append(f"Opportunities: {'; '.join(ctx['opportunities'][:3])}")
+    if ctx.get("growth_areas"):
+        lines.append(f"Growth areas: {'; '.join(ctx['growth_areas'])}")
+    if phd.get("thesis_topics"):
+        lines.append(f"PhD topics of interest: {'; '.join(phd['thesis_topics'][:2])}")
+    if watch.get("career_relevant"):
+        lines.append(f"Career keywords: {', '.join(watch['career_relevant'][:10])}")
+    if strengths:
+        lines.append(f"Note: {'; '.join(strengths[:2])}")
+    return "\n".join(lines)
+
+
+def load_recent_notes(count=10, task_type=None):
+    """Load recent thinking notes for self-learning."""
+    index_path = os.path.join(THINK_DIR, "notes-index.json")
+    if not os.path.exists(index_path):
+        return []
+    try:
+        with open(index_path) as f:
+            index = json.load(f)
+    except:
+        return []
+    if task_type:
+        index = [n for n in index if n.get("type") == task_type]
+    notes = []
+    for entry in index[:count]:
+        note_path = os.path.join(THINK_DIR, entry["file"])
+        if os.path.exists(note_path):
+            try:
+                with open(note_path) as f:
+                    notes.append(json.load(f))
+            except:
+                pass
+    return notes
+
+
 # ─── Task definitions ───
 
 def task_weekly():
@@ -253,13 +331,16 @@ def task_weekly():
             issue_text += f"  • #{item['id']}: {item['title']} (score {item['score']})\n"
 
     user_interests = "\n".join(f"- {i}" for i in PROFILE.get("interests", []))
+    career = career_context_block()
 
     system = f"""You are a research assistant for an embedded Linux / multimedia developer.
 You produce a weekly research intelligence briefing. Be technical, concise, and insightful.
 Focus on actionable insights and emerging trends relevant to the developer's work.
 
 Developer's interests:
-{user_interests}"""
+{user_interests}
+
+{career}"""
 
     prompt = f"""Based on this week's monitoring data, produce a WEEKLY RESEARCH BRIEFING.
 
@@ -279,6 +360,10 @@ Each with 2-3 sentences explaining why it matters.
 📈 TRENDS
 Patterns you notice across multiple sources. What subsystems are most active?
 What hardware platforms are getting the most attention?
+
+🎯 CAREER RELEVANCE (what connects to the developer's professional context)
+Highlight items that could be useful for their domain expertise growth,
+potential conference talks, or technical leadership visibility.
 
 💡 ACTION ITEMS / OPPORTUNITIES
 Things the developer might want to:
@@ -323,12 +408,16 @@ def task_trends():
     keywords_text = "\n".join(f"  {kw}: {count}x" for kw, count in top_keywords)
 
     user_interests = "\n".join(f"- {i}" for i in PROFILE.get("interests", []))
+    career = career_context_block()
 
     system = f"""You are a technical trend analyst for Linux kernel and multimedia development.
 Identify patterns, emerging work areas, and notable shifts in development activity.
+Also note trends relevant to the developer's career growth and domain expertise.
 
 Developer's interests:
-{user_interests}"""
+{user_interests}
+
+{career}"""
 
     prompt = f"""Analyze these development trends from the past 2 weeks:
 
@@ -452,15 +541,19 @@ def task_research():
 
     user_interests = "\n".join(f"- {i}" for i in PROFILE.get("interests", []))
     hardware = "\n".join(f"- {h}" for h in PROFILE.get("hardware", []))
+    career = career_context_block()
 
     system = f"""You are a technical research assistant specializing in Linux kernel and multimedia.
 Write a focused research note that helps a developer understand a topic in depth.
+Connect findings to the developer's professional context where relevant.
 
 Developer's context:
 {user_interests}
 
 Hardware:
-{hardware}"""
+{hardware}
+
+{career}"""
 
     prompt = f"""Research topic: **{topic}**
 
@@ -485,6 +578,279 @@ Focus on practical knowledge, not Wikipedia-style overview."""
         return save_note("research", f"Research: {topic}", result, {"topic": topic})
 
 
+def task_career():
+    """Career-focused analysis: connect monitoring data to professional growth."""
+    print("\n[TASK] Career Intelligence")
+    if not PROFILE_PRIVATE:
+        print("  No private profile — skipping career task")
+        return
+
+    digests = load_recent_digests(7)
+    issues = load_recent_issues()
+    recent_notes = load_recent_notes(5)
+
+    # Gather recent monitoring data
+    data_text = ""
+    for d in digests:
+        data_text += f"\n--- {d['feed_name']} ({d['date']}) ---\n"
+        for t in d["top_threads"][:5]:
+            data_text += f"  • {t['subject']} (score {t['score']}, kw: {', '.join(t.get('keywords', [])[:3])})\n"
+    for i in issues:
+        data_text += f"\n--- {i['repo_name']} ---\n"
+        for item in i["interesting"][:8]:
+            data_text += f"  • #{item['id']}: {item['title']} (score {item['score']})\n"
+
+    # Include recent notes summaries for continuity
+    notes_text = ""
+    for n in recent_notes[:3]:
+        notes_text += f"\n[{n.get('type', '?')} — {n.get('generated', '')[:10]}] {n.get('title', '')}\n"
+        notes_text += n.get("content", "")[:500] + "\n"
+
+    career = career_context_block()
+    ctx = PROFILE_PRIVATE.get("career_context", {})
+    t5 = PROFILE_PRIVATE.get("t5_requirements", {})
+    phd = PROFILE_PRIVATE.get("phd_interest", {})
+
+    t5_tech = "\n".join(f"- {r}" for r in t5.get("technical", []))
+    t5_lead = "\n".join(f"- {r}" for r in t5.get("leadership", []))
+    phd_topics = "\n".join(f"- {t}" for t in phd.get("thesis_topics", []))
+
+    system = f"""You are a career intelligence advisor for an automotive embedded Linux engineer.
+You analyze technical activity for career-relevant insights.
+Your analysis is PRIVATE and direct — speak frankly about opportunities and gaps.
+
+{career}
+
+T5 REQUIREMENTS (technical):
+{t5_tech}
+
+T5 REQUIREMENTS (leadership):
+{t5_lead}
+
+PhD topics of interest:
+{phd_topics}"""
+
+    prompt = f"""Analyze this week's technical activity through the lens of career growth.
+
+=== RECENT MONITORING DATA ===
+{data_text if data_text else "(no recent data)"}
+
+=== RECENT ANALYSIS NOTES ===
+{notes_text if notes_text else "(no recent notes)"}
+
+Produce a CAREER INTELLIGENCE BRIEF:
+
+🎯 CAREER INTEL — {datetime.now().strftime('%d %b %Y')}
+
+📌 T5-RELEVANT ITEMS
+Activity from monitoring that directly relates to T5 requirements:
+- Domain authority opportunities (areas to deepen or demonstrate expertise)
+- Systems thinking angles (cross-subsystem connections)
+- Innovation hooks (potential whitepapers, talks, or contributions)
+
+📊 INDUSTRY POSITIONING
+What's the industry doing that affects the developer's domain?
+ADAS trends, camera tech shifts, SoC platform changes.
+
+🎓 PHD CONNECTIONS
+Any monitoring items that connect to the thesis topics?
+New papers, kernel changes, or industry developments relevant to the PhD.
+
+💡 SUGGESTED ACTIONS (2-3 concrete things)
+What should the developer do this week? Be specific:
+- Review a particular patch series
+- Write a short whitepaper on topic X
+- Reach out to maintainer Y about Z
+
+Keep under 2500 chars. Be direct and actionable, not generic."""
+
+    result = call_ollama(system, prompt, temperature=0.4, max_tokens=2500, label="career")
+    if result:
+        return save_note("career", f"Career Intel — {datetime.now().strftime('%d %b %Y')}", result,
+                         {"digests": len(digests), "repos": len(issues)})
+
+
+def task_crawl():
+    """Fetch and analyze crawl target URLs for career-relevant content."""
+    print("\n[TASK] Web Crawl & Analyze")
+    sources = PROFILE_PRIVATE.get("crawl_sources", {})
+    if not sources:
+        print("  No crawl sources configured — skipping")
+        return
+
+    # Collect all sources into a flat list
+    all_sources = []
+    for category, items in sources.items():
+        if category.startswith("_"):
+            continue
+        if isinstance(items, list):
+            all_sources.extend(items)
+
+    if not all_sources:
+        print("  No valid crawl sources found")
+        return
+
+    # Pick 2-3 sources to crawl (rotate based on day)
+    day_offset = datetime.now().timetuple().tm_yday % len(all_sources)
+    selected = []
+    for i in range(min(3, len(all_sources))):
+        idx = (day_offset + i) % len(all_sources)
+        selected.append(all_sources[idx])
+
+    # Fetch pages
+    crawl_results = []
+    for src in selected:
+        url = src.get("url", "")
+        label = src.get("label", url)
+        print(f"  Crawling: {label} ({url})")
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; bc250-bot/1.0)"
+            })
+            resp = urllib.request.urlopen(req, timeout=20)
+            raw = resp.read().decode("utf-8", errors="replace")
+            # Strip HTML tags for rough text extraction
+            import re
+            text = re.sub(r'<script[^>]*>.*?</script>', '', raw, flags=re.DOTALL)
+            text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
+            text = re.sub(r'<[^>]+>', ' ', text)
+            text = re.sub(r'\s+', ' ', text).strip()
+            # Keep first 3000 chars
+            crawl_results.append({
+                "label": label,
+                "url": url,
+                "what": src.get("what", ""),
+                "text": text[:3000]
+            })
+            print(f"    Got {len(text)} chars")
+        except Exception as ex:
+            print(f"    Failed: {ex}")
+
+    if not crawl_results:
+        print("  No pages fetched successfully")
+        return
+
+    crawl_text = ""
+    for cr in crawl_results:
+        crawl_text += f"\n=== {cr['label']} ({cr['what']}) ===\n"
+        crawl_text += f"URL: {cr['url']}\n"
+        crawl_text += cr["text"][:2000] + "\n"
+
+    career = career_context_block()
+    watch_topics = PROFILE_PRIVATE.get("watch_topics", {})
+    career_kw = watch_topics.get("career_relevant", [])
+    industry_kw = watch_topics.get("industry_tracking", [])
+
+    system = f"""You are a web intelligence analyst for an automotive embedded Linux engineer.
+You extract career-relevant insights from web pages.
+
+{career}
+
+Career keywords to watch: {', '.join(career_kw[:8])}
+Industry keywords: {', '.join(industry_kw[:8])}"""
+
+    prompt = f"""Analyze these freshly crawled web pages for relevant content:
+
+{crawl_text}
+
+Produce a CRAWL DIGEST:
+
+🌐 CRAWL DIGEST — {datetime.now().strftime('%d %b %Y')}
+
+For each source, extract:
+- KEY FINDINGS relevant to the developer's domain
+- NEWS items (product launches, announcements, regulation changes)
+- TECHNICAL items (new drivers, patches, tools, standards)
+
+Then a combined:
+🎯 MOST RELEVANT ITEMS (top 3-5 across all sources)
+Each with why it matters and suggested follow-up.
+
+Skip irrelevant content. If a page has nothing useful, say so briefly.
+Keep under 2500 chars. Focus on actionable intelligence."""
+
+    result = call_ollama(system, prompt, temperature=0.3, max_tokens=2500, label="crawl")
+    if result:
+        return save_note("crawl", f"Crawl Digest — {datetime.now().strftime('%d %b %Y')}", result,
+                         {"sources": [s["label"] for s in selected],
+                          "fetched": len(crawl_results)})
+
+
+def task_learn():
+    """Self-learning: review accumulated notes, identify patterns, suggest improvements."""
+    print("\n[TASK] Self-Learning Review")
+    all_notes = load_recent_notes(15)
+
+    if len(all_notes) < 3:
+        print("  Not enough notes for self-learning (need >= 3)")
+        return
+
+    # Summarize what we've been generating
+    notes_summary = ""
+    type_counts = {}
+    all_topics = []
+    for n in all_notes:
+        ntype = n.get("type", "unknown")
+        type_counts[ntype] = type_counts.get(ntype, 0) + 1
+        notes_summary += f"\n[{ntype} — {n.get('generated', '')[:10]}] {n.get('title', '')}\n"
+        notes_summary += n.get("content", "")[:800] + "\n---\n"
+        # Collect topics from research notes
+        topic = n.get("context", {}).get("topic")
+        if topic:
+            all_topics.append(topic)
+
+    type_text = ", ".join(f"{t}: {c}" for t, c in sorted(type_counts.items()))
+
+    career = career_context_block()
+    user_interests = "\n".join(f"- {i}" for i in PROFILE.get("interests", []))
+
+    system = f"""You are a meta-cognitive assistant — you analyze your own outputs to improve.
+You review notes generated by an automated research system and provide feedback
+on how to be more useful. Be self-critical and constructive.
+
+Developer's interests:
+{user_interests}
+
+{career}"""
+
+    prompt = f"""Review these {len(all_notes)} recent notes generated by the system:
+
+Note distribution: {type_text}
+Research topics covered: {', '.join(all_topics) if all_topics else 'none tracked'}
+
+=== RECENT NOTES ===
+{notes_summary}
+
+Produce a LEARNING REVIEW:
+
+🧠 LEARNING REVIEW — {datetime.now().strftime('%d %b %Y')}
+
+📊 COVERAGE ASSESSMENT
+- What topics are well-covered? What's missing?
+- Are we spending too much time on any area?
+- What's the quality trend? (improving, declining, stale?)
+
+🕳️ BLIND SPOTS
+- Topics relevant to the developer but NOT covered in recent notes
+- Career-relevant areas we should be tracking but aren't
+- Technical depth gaps (too surface-level on important topics)
+
+🔧 IMPROVEMENT SUGGESTIONS
+- Specific topics to research next
+- Types of analysis that would be more useful
+- Any repetitive patterns to break
+
+📋 SUGGESTED NEXT TASKS (3-5 specific items)
+Concrete tasks the system should prioritize in coming days.
+
+Keep under 2500 chars. Be specific and constructive."""
+
+    result = call_ollama(system, prompt, temperature=0.5, max_tokens=2500, label="learn")
+    if result:
+        return save_note("learn", f"Learning Review — {datetime.now().strftime('%d %b %Y')}", result,
+                         {"notes_reviewed": len(all_notes), "types": type_counts})
+
+
 # ─── Task selection ───
 
 TASKS = {
@@ -492,21 +858,33 @@ TASKS = {
     "trends": task_trends,
     "crossfeed": task_crossfeed,
     "research": task_research,
+    "career": task_career,
+    "crawl": task_crawl,
+    "learn": task_learn,
 }
 
 if TASK_ARG and TASK_ARG in TASKS:
     task_name = TASK_ARG
 else:
-    # Auto-rotate: pick task based on day of week and existing notes
+    # Auto-rotate: career-aware schedule
+    # Mon: weekly briefing (covers everything)
+    # Tue: crossfeed (connections across sources)
+    # Wed: career (career intelligence from recent data)
+    # Thu: crawl (fetch web sources for news)
+    # Fri: trends (pattern analysis)
+    # Sat: research (deep dive on a topic)
+    # Sun: learn (self-assessment and improvement)
     dow = datetime.now().weekday()  # 0=Mon, 6=Sun
-    if dow == 0:  # Monday
-        task_name = "weekly"
-    elif dow in (2, 4):  # Wed, Fri
-        task_name = "trends"
-    elif dow in (1, 5):  # Tue, Sat
-        task_name = "crossfeed"
-    else:  # Thu, Sun
-        task_name = "research"
+    schedule = {
+        0: "weekly",
+        1: "crossfeed",
+        2: "career",
+        3: "crawl",
+        4: "trends",
+        5: "research",
+        6: "learn",
+    }
+    task_name = schedule.get(dow, "research")
 
     # Check if we already ran this task today
     today = datetime.now().strftime("%Y%m%d")
