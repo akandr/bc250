@@ -82,18 +82,18 @@
   },
 
   "ffmpeg": {
-    "name": "FFmpeg",
+    "name": "FFmpeg Patches",
     "emoji": "🎞️",
-    "type": "github",
-    "owner": "FFmpeg",
-    "repo": "FFmpeg",
-    "web_url": "https://github.com/FFmpeg/FFmpeg",
-    "track": ["pull_requests"],
+    "type": "patchwork",
+    "api_base": "https://patchwork.ffmpeg.org/api/1.3",
+    "project_id": 1,
+    "web_url": "https://patchwork.ffmpeg.org/project/ffmpeg/list/",
+    "track": ["patches"],
     "data_dir": "repos/ffmpeg",
     "nav_label": "FFMPEG",
     "page_slug": "issues",
     "relevance": {
-      "vaapi": 5, "vulkan": 5, "vulkan video": 5,
+      "vaapi": 5, "vulkan": 5, "vulkan video": 5, "spir-v": 4, "spirv": 4,
       "amf": 5, "amd": 3, "radeon": 3,
       "v4l2": 4, "v4l2_m2m": 5, "libcamera": 4,
       "hwaccel": 4, "hwcontext": 4, "hwframe": 3,
@@ -105,6 +105,35 @@
       "libavcodec": 2, "libavfilter": 2, "libavdevice": 3,
       "rockchip": 3, "mediatek": 3, "hantro": 3, "rkmpp": 4,
       "docs": -1, "changelog": -2, "typo": -2, "cosmetic": -2
+    },
+    "min_score": 3
+  },
+
+  "linuxtv": {
+    "name": "LinuxTV / linux-media",
+    "emoji": "📺",
+    "type": "patchwork",
+    "api_base": "https://patchwork.linuxtv.org/api/1.3",
+    "project_id": 1,
+    "web_url": "https://patchwork.linuxtv.org/project/linux-media/list/",
+    "track": ["patches"],
+    "data_dir": "repos/linuxtv",
+    "nav_label": "LINUXTV",
+    "page_slug": "issues",
+    "relevance": {
+      "v4l2": 5, "v4l2-ctl": 5, "v4l2-compliance": 5,
+      "media-ctl": 4, "subdev": 4,
+      "camera": 4, "libcamera": 4, "sensor": 4,
+      "isp": 5, "rkisp1": 5, "rkisp": 5, "camss": 5, "mali-c55": 4, "pisp": 4,
+      "rockchip": 4, "qualcomm": 4, "mediatek": 3, "samsung": 3,
+      "v4l2-mem2mem": 4, "hantro": 4, "rkmpp": 4, "cedrus": 4, "wave5": 4,
+      "dma-buf": 3, "dmabuf": 3,
+      "raw": 2, "bayer": 3, "metadata": 3,
+      "format": 2, "fourcc": 3,
+      "imx": 3, "omnivision": 3, "sony": 3,
+      "uvc": 3, "usb": 2,
+      "vimc": 2, "vivid": 2,
+      "cec": -1, "dvb": -2, "rc": -2, "ir": -2, "radio": -2
     },
     "min_score": 3
   }

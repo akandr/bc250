@@ -1706,7 +1706,7 @@ def gen_issues():
             is_new = item.get("is_new", False)
             body_preview = e(item.get("body_preview", "")[:200])
 
-            type_icon = "🔀" if "merge" in itype or "pull" in itype else "🐛"
+            type_icon = "🔀" if "merge" in itype or "pull" in itype else ("📩" if "patch" in itype else ("📦" if "series" in itype else "🐛"))
             new_badge = ' <span style="background:var(--green);color:#000;padding:1px 6px;font-size:0.75rem;font-weight:bold">NEW</span>' if is_new else ""
             score_cls = "green" if score >= 8 else ("amber" if score >= 4 else "fg-dim")
             kw_chips = " ".join(f'<span class="port-chip">{e(k)}</span>' for k in keywords[:5])
