@@ -2637,12 +2637,14 @@ def gen_notes():
         "crossfeed": "🔗", "research": "🔬",
         "career": "🎯", "crawl": "🌐",
         "learn": "🧠", "signal": "📡",
+        "home": "🏠",
     }
     type_colors = {
         "weekly": "var(--green)", "trends": "var(--amber)",
         "crossfeed": "var(--cyan)", "research": "var(--magenta)",
         "career": "var(--amber)", "crawl": "var(--blue)",
         "learn": "var(--green)", "signal": "var(--red)",
+        "home": "var(--cyan)",
     }
 
     for entry in index[:20]:
@@ -2971,6 +2973,7 @@ def gen_load():
         ("repo-watch ×3", "00:00, 06:00, 12:00", "~5–10 min", "Silent repo monitoring"),
         ("repo-watch +notify", "18:00", "~5–10 min", "Daily repo digest + Signal alert"),
         ("idle-think ×2", "10:00, 15:00", "~1–3 min", "Research / career / crawl / learn"),
+        ("ha-journal ×4", "01:30, 07:30, 13:30, 19:30", "~1–2 min", "Home Assistant observation journal"),
         ("report", "08:00", "~1 min", "Morning health report"),
     ]
     cap_html = '<div class="section"><div class="section-title">🔧 SCHEDULED JOBS &amp; CAPACITY</div><div class="section-body">'
