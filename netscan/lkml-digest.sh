@@ -139,8 +139,8 @@ def truncate(text, max_chars=2000):
         return text
     return text[:max_chars].rsplit(' ', 1)[0] + ' [...]'
 
-def send_signal(msg):
-    """Send via Signal JSON-RPC."""
+def _signal_send_one(msg):
+    """Send a single message via Signal JSON-RPC."""
     try:
         payload = json.dumps({
             "jsonrpc": "2.0",
@@ -161,6 +161,54 @@ def send_signal(msg):
     except Exception as ex:
         print(f"  Signal send failed: {ex}")
         return False
+
+SIGNAL_CHUNK_SIZE = 2000  # chars per message — Signal displays ~4096 but shorter is more readable
+
+def send_signal(msg):
+    """Send via Signal, splitting long messages into multiple parts at paragraph boundaries."""
+    if len(msg) <= SIGNAL_CHUNK_SIZE:
+        return _signal_send_one(msg)
+
+    # Split at double-newline (paragraph) boundaries
+    paragraphs = msg.split("\n\n")
+    chunks = []
+    current = ""
+    for para in paragraphs:
+        # If adding this paragraph would exceed limit, flush current chunk
+        if current and len(current) + 2 + len(para) > SIGNAL_CHUNK_SIZE:
+            chunks.append(current.strip())
+            current = para
+        else:
+            current = current + "\n\n" + para if current else para
+    if current.strip():
+        chunks.append(current.strip())
+
+    # If any single chunk is still too long, hard-split at newlines
+    final_chunks = []
+    for chunk in chunks:
+        if len(chunk) <= SIGNAL_CHUNK_SIZE:
+            final_chunks.append(chunk)
+        else:
+            lines = chunk.split("\n")
+            sub = ""
+            for line in lines:
+                if sub and len(sub) + 1 + len(line) > SIGNAL_CHUNK_SIZE:
+                    final_chunks.append(sub.strip())
+                    sub = line
+                else:
+                    sub = sub + "\n" + line if sub else line
+            if sub.strip():
+                final_chunks.append(sub.strip())
+
+    total = len(final_chunks)
+    ok = True
+    for i, chunk in enumerate(final_chunks, 1):
+        header = f"[{i}/{total}] " if total > 1 else ""
+        if not _signal_send_one(header + chunk):
+            ok = False
+        if i < total:
+            time.sleep(1)  # small pause between messages
+    return ok
 
 def ollama_health():
     """Check if Ollama is alive and has the model loaded."""
@@ -669,7 +717,8 @@ with open(detail_path, "w") as f:
 print(f"  Saved: {detail_path}")
 
 if send_signal(bulletin_text):
-    print(f"  ✅ Signal bulletin sent ({len(bulletin_text)} chars)")
+    n_chunks = max(1, (len(bulletin_text) + SIGNAL_CHUNK_SIZE - 1) // SIGNAL_CHUNK_SIZE)
+    print(f"  ✅ Signal bulletin sent ({len(bulletin_text)} chars, {n_chunks} message{'s' if n_chunks > 1 else ''})")
 else:
     print("  ⚠ Signal send failed — bulletin saved to file only")
 
