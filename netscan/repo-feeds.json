@@ -1,0 +1,111 @@
+{
+  "__comment": "Repository issue/MR monitors — used by repo-watch.sh",
+  "__api_note": "GitHub: 60 req/hr unauthenticated. GitLab freedesktop.org: 300 req/hr.",
+
+  "gstreamer": {
+    "name": "GStreamer",
+    "emoji": "🎬",
+    "type": "gitlab",
+    "api_base": "https://gitlab.freedesktop.org/api/v4",
+    "project_path": "gstreamer/gstreamer",
+    "web_url": "https://gitlab.freedesktop.org/gstreamer/gstreamer",
+    "track": ["issues", "merge_requests"],
+    "labels_filter": [],
+    "data_dir": "repos/gstreamer",
+    "nav_label": "GSTREAMER",
+    "page_slug": "issues",
+    "relevance": {
+      "v4l2": 5, "v4l2src": 5, "v4l2sink": 4, "v4l2dec": 4, "v4l2enc": 4,
+      "camera": 4, "libcamera": 5, "libcamerasrc": 5,
+      "vaapi": 4, "va": 3, "vah264": 3, "vah265": 3,
+      "vulkan": 4, "vulkan video": 5,
+      "dmabuf": 4, "dma-buf": 4, "drm": 3,
+      "amf": 3, "amd": 3, "radeon": 3,
+      "isp": 3, "raw": 2, "bayer": 3,
+      "encode": 2, "decode": 2, "hwaccel": 3,
+      "pipeline": 2, "caps": 1, "negotiate": 2,
+      "meson": 1, "ci": -1, "docs": -1, "typo": -2
+    },
+    "min_score": 3
+  },
+
+  "libcamera": {
+    "name": "libcamera",
+    "emoji": "📸",
+    "type": "gitlab",
+    "api_base": "https://gitlab.freedesktop.org/api/v4",
+    "project_path": "camera/libcamera",
+    "web_url": "https://gitlab.freedesktop.org/camera/libcamera",
+    "track": ["issues"],
+    "labels_filter": [],
+    "data_dir": "repos/libcamera",
+    "nav_label": "LIBCAMERA",
+    "page_slug": "issues",
+    "relevance": {
+      "isp": 5, "pipeline": 4, "ipa": 5, "sensor": 4,
+      "v4l2": 4, "media-ctl": 3, "subdev": 3,
+      "rkisp": 5, "mali-c55": 4, "pisp": 4, "imx8": 4, "camss": 4,
+      "raw": 3, "bayer": 3, "metadata": 3,
+      "gstreamer": 4, "libcamerasrc": 5,
+      "android": 2, "hal": 2,
+      "control": 2, "property": 2,
+      "rockchip": 4, "qualcomm": 4, "mediatek": 3,
+      "imx": 3, "omnivision": 3, "sony": 3,
+      "usb": 2, "uvc": 3,
+      "format": 2, "drm": 2,
+      "docs": -1, "ci": -1, "style": -2
+    },
+    "min_score": 3
+  },
+
+  "v4l-utils": {
+    "name": "v4l-utils",
+    "emoji": "🔧",
+    "type": "github",
+    "owner": "gjasny",
+    "repo": "v4l-utils",
+    "web_url": "https://github.com/gjasny/v4l-utils",
+    "track": ["pull_requests"],
+    "data_dir": "repos/v4l-utils",
+    "nav_label": "V4L-UTILS",
+    "page_slug": "issues",
+    "relevance": {
+      "v4l2-ctl": 5, "v4l2-compliance": 5, "v4l2-info": 4,
+      "media-ctl": 4, "ir-ctl": 1,
+      "libv4l": 4, "v4l2convert": 3,
+      "subdev": 3, "format": 2, "fourcc": 3,
+      "camera": 3, "sensor": 3,
+      "streaming": 3, "dmabuf": 4, "mmap": 2,
+      "edid": 2, "cec": -1, "dvb": -2
+    },
+    "min_score": 2
+  },
+
+  "ffmpeg": {
+    "name": "FFmpeg",
+    "emoji": "🎞️",
+    "type": "github",
+    "owner": "FFmpeg",
+    "repo": "FFmpeg",
+    "web_url": "https://github.com/FFmpeg/FFmpeg",
+    "track": ["pull_requests"],
+    "data_dir": "repos/ffmpeg",
+    "nav_label": "FFMPEG",
+    "page_slug": "issues",
+    "relevance": {
+      "vaapi": 5, "vulkan": 5, "vulkan video": 5,
+      "amf": 5, "amd": 3, "radeon": 3,
+      "v4l2": 4, "v4l2_m2m": 5, "libcamera": 4,
+      "hwaccel": 4, "hwcontext": 4, "hwframe": 3,
+      "drm": 3, "dmabuf": 3, "prime": 3,
+      "av1": 3, "hevc": 3, "h264": 2, "h265": 3,
+      "decode": 2, "encode": 2,
+      "filter": 2, "scale": 2, "format": 1,
+      "qsv": 2, "nvenc": 1, "cuda": 1,
+      "libavcodec": 2, "libavfilter": 2, "libavdevice": 3,
+      "rockchip": 3, "mediatek": 3, "hantro": 3, "rkmpp": 4,
+      "docs": -1, "changelog": -2, "typo": -2, "cosmetic": -2
+    },
+    "min_score": 3
+  }
+}
