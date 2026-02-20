@@ -109,7 +109,7 @@ USER_AGENT = f"netscan-bc250-digest/2.0 ({FEED_ID} daily digest bot)"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3-14b-abl-nothink:latest"
+OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model — runs during quiet hours
 OLLAMA_TIMEOUT_PER_CALL = 600     # 10 min max per LLM call
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"

@@ -47,6 +47,15 @@ done
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] idle-think starting"
 
+# ─── Quiet hours: 00:00-06:00 = no chat, GPU free for batch ───
+CURRENT_HOUR=$(date +%H)
+if [[ "$CURRENT_HOUR" -ge 0 && "$CURRENT_HOUR" -lt 6 ]]; then
+    QUIET_HOURS=1
+    echo "  Quiet hours (00-06) — GPU free for batch, using abliterated model"
+else
+    QUIET_HOURS=0
+fi
+
 # ─── Guard: don't compete with digest/watch for GPU ───
 if pgrep -f "lore-digest.sh" >/dev/null 2>&1 || pgrep -f "repo-watch.sh" >/dev/null 2>&1; then
     echo "  Another script is using the GPU — skipping idle-think"
@@ -110,7 +119,13 @@ SIGNAL_TO = SIGNAL_CFG.get("to", "+48503326388")
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3-14b-abl-nothink:latest"
+OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model for richer analysis
+
+QUIET_START = 0
+QUIET_END   = 6
+
+def is_quiet_hours():
+    return QUIET_START <= datetime.now().hour < QUIET_END
 
 # ─── Helpers ───
 
