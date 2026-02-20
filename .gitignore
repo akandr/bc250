@@ -9,5 +9,11 @@ test_*.png
 *.pyc
 __pycache__/
 
+# Private user data — career, profile, PDFs (NEVER commit)
+netscan/profile-private.json
+netscan/crawl-targets.json
+*.pdf
+
 # Secrets (systemd units may contain tokens)
 # openclaw-gateway.service is tracked as reference (token redacted)
+user info/
