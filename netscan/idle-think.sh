@@ -13,10 +13,12 @@
 #   idle-think.sh --task career    (career-aware analysis)
 #   idle-think.sh --task crawl     (fetch & analyze web sources)
 #   idle-think.sh --task learn     (self-review of past notes)
+#   idle-think.sh --task signal    (smart Signal filter — only pings if something matches)
 #
 # Schedule:
 #   Mon=weekly, Tue=crossfeed, Wed=career, Thu=crawl,
 #   Fri=trends, Sat=research, Sun=learn
+#   signal runs daily at 19:00 via separate cron (not in rotation)
 #
 # Guards: Checks if Ollama is already busy (lore-digest / repo-watch running)
 #         before starting. Exits gracefully if system is occupied.
@@ -29,6 +31,7 @@ DATA_DIR="/opt/netscan/data"
 THINK_DIR="$DATA_DIR/think"
 PROFILE_JSON="${SCRIPT_DIR}/profile.json"
 PROFILE_PRIVATE="${SCRIPT_DIR}/profile-private.json"
+WATCHLIST_JSON="${SCRIPT_DIR}/watchlist.json"
 DIGEST_FEEDS="${SCRIPT_DIR}/digest-feeds.json"
 REPO_FEEDS="${SCRIPT_DIR}/repo-feeds.json"
 
@@ -38,7 +41,7 @@ TASK=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --task) TASK="$2"; shift 2 ;;
-        *)      echo "Usage: $0 [--task weekly|trends|crossfeed|research|career|crawl|learn]"; exit 1 ;;
+        *)      echo "Usage: $0 [--task weekly|trends|crossfeed|research|career|crawl|learn|signal]"; exit 1 ;;
     esac
 done
 
@@ -55,7 +58,7 @@ OLLAMA_PS=$(curl -s http://localhost:11434/api/ps 2>/dev/null || echo '{"models"
 RUNNING=$(echo "$OLLAMA_PS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('models',[])))" 2>/dev/null || echo "0")
 # Having a model loaded is fine — it means Ollama is ready. We only skip if digest/watch are running.
 
-python3 - "$TASK" "$THINK_DIR" "$DATA_DIR" "$PROFILE_JSON" "$DIGEST_FEEDS" "$REPO_FEEDS" "$PROFILE_PRIVATE" << 'PYEOF'
+python3 - "$TASK" "$THINK_DIR" "$DATA_DIR" "$PROFILE_JSON" "$DIGEST_FEEDS" "$REPO_FEEDS" "$PROFILE_PRIVATE" "$WATCHLIST_JSON" << 'PYEOF'
 import sys, os, json, glob, time, hashlib
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -67,6 +70,7 @@ PROFILE_JSON = sys.argv[4]
 DIGEST_FEEDS_PATH = sys.argv[5]
 REPO_FEEDS_PATH = sys.argv[6]
 PROFILE_PRIVATE_PATH = sys.argv[7] if len(sys.argv) > 7 else ""
+WATCHLIST_PATH = sys.argv[8] if len(sys.argv) > 8 else ""
 
 # ─── Load configs ───
 
@@ -80,6 +84,13 @@ if PROFILE_PRIVATE_PATH and os.path.exists(PROFILE_PRIVATE_PATH):
     with open(PROFILE_PRIVATE_PATH) as f:
         PROFILE_PRIVATE = json.load(f)
     print(f"  Loaded private profile: {PROFILE_PRIVATE_PATH}")
+
+WATCHLIST = {"items": [], "resolved": []}
+if WATCHLIST_PATH and os.path.exists(WATCHLIST_PATH):
+    with open(WATCHLIST_PATH) as f:
+        WATCHLIST = json.load(f)
+    active = [i for i in WATCHLIST.get("items", []) if i.get("status") == "active"]
+    print(f"  Loaded watchlist: {len(active)} active items")
 
 DIGEST_FEEDS = {}
 if os.path.exists(DIGEST_FEEDS_PATH):
@@ -380,8 +391,6 @@ Keep total output under 3000 chars. Be specific with names, versions, functions.
     if result:
         note = save_note("weekly", f"Weekly Briefing — {datetime.now().strftime('%d %b %Y')}", result,
                          {"digests": len(digests), "repos": len(issues)})
-        # Short Signal ping
-        signal_send(f"📋 Weekly briefing ready\n🔗 {DASHBOARD_URL}/notes.html")
         return note
 
 
@@ -851,6 +860,197 @@ Keep under 2500 chars. Be specific and constructive."""
                          {"notes_reviewed": len(all_notes), "types": type_counts})
 
 
+def task_signal():
+    """Smart Signal filter: review all recent data, ping ONLY if something matches watchlist/interests.
+    Also updates the watchlist with new discoveries and resolved items."""
+    print("\n[TASK] Signal Filter")
+
+    # Load everything: recent notes, digests, issues
+    recent_notes = load_recent_notes(10)
+    digests = load_recent_digests(3)
+    issues = load_recent_issues()
+
+    if not recent_notes and not digests and not issues:
+        print("  No data to filter — skipping")
+        return
+
+    # Build watchlist text
+    active_items = [i for i in WATCHLIST.get("items", []) if i.get("status") == "active"]
+    watchlist_text = ""
+    for i, item in enumerate(active_items, 1):
+        watchlist_text += f"  {i}. {item['topic']}"
+        if item.get("why"):
+            watchlist_text += f" — {item['why']}"
+        watchlist_text += "\n"
+
+    # Build data summary (compact — we only need enough for the LLM to spot matches)
+    data_text = ""
+
+    # Recent notes (titles + key excerpts)
+    if recent_notes:
+        data_text += "\n=== RECENT ANALYSIS NOTES ===\n"
+        for n in recent_notes[:6]:
+            data_text += f"[{n.get('type', '?')}] {n.get('title', '')}\n"
+            # First 600 chars of content for matching
+            data_text += n.get("content", "")[:600] + "\n---\n"
+
+    # Digest top threads
+    if digests:
+        data_text += "\n=== RECENT MAILING LIST THREADS ===\n"
+        for d in digests:
+            for t in d.get("top_threads", [])[:8]:
+                data_text += f"  • [{d['feed_name']}] {t['subject']} (score {t['score']})\n"
+
+    # Repo issues
+    if issues:
+        data_text += "\n=== RECENT REPO ACTIVITY ===\n"
+        for i in issues:
+            for item in i["interesting"][:8]:
+                data_text += f"  • [{i['repo_name']}] #{item['id']}: {item['title']} (score {item['score']})\n"
+
+    # Build the core interests from profile
+    user_interests = "\n".join(f"- {i}" for i in PROFILE.get("interests", []))
+    career = career_context_block()
+
+    high_kw = PROFILE.get("interest_keywords", {}).get("high", [])
+
+    system = f"""You are a personal research filter for an embedded Linux engineer.
+Your job is to decide if ANYTHING in the recent data is worth a short Signal notification.
+
+The developer does NOT want to be flooded with messages. Only ping if something is:
+1. A SPECIFIC MATCH to a watchlist item (sensor mainlined, driver merged, regulation changed)
+2. Something UNUSUALLY relevant to their core expertise
+3. A time-sensitive opportunity (CFP deadline, patch needing review, breaking change)
+
+If nothing is truly noteworthy → respond with exactly: NO_SIGNAL
+
+Developer's interests:
+{user_interests}
+
+{career}
+
+High-priority keywords: {', '.join(high_kw[:15])}"""
+
+    prompt = f"""Review this data and decide: should the developer get a Signal notification?
+
+=== ACTIVE WATCHLIST ({len(active_items)} items) ===
+{watchlist_text if watchlist_text else "(empty watchlist)"}
+
+{data_text}
+
+RESPOND IN THIS EXACT FORMAT:
+
+DECISION: SIGNAL or NO_SIGNAL
+
+If SIGNAL, then also provide:
+MESSAGE: <a 1-3 sentence notification, casual tone, mention the specific thing and which report page to check — max 280 chars>
+
+Then ALWAYS provide (even if NO_SIGNAL):
+WATCHLIST_UPDATE:
+- RESOLVE: <item number> (if a watchlist item has been fully addressed/resolved)
+- ADD: <new topic to watch> | <why it matters>
+(you can have 0 or more of each, max 3 ADDs per run, only ADD genuinely new specific things)
+
+Examples of good messages:
+"Hey — that Qualcomm camss PIX path driver got merged upstream. Details in the weekly briefing 🔗 192.168.3.151:8888/notes.html"
+"Euro NCAP just updated DMS requirements for 2027. Crawl digest has the breakdown 🔗 192.168.3.151:8888/notes.html"
+"New libcamera pipeline handler for IMX8MP landed — might be useful for the Snapdragon port. Check issues page"
+
+Examples of NO_SIGNAL situations:
+- General kernel activity, nothing specific to watchlist
+- Trends that are interesting but not actionable right now
+- Things already known / already covered in previous alerts"""
+
+    result = call_ollama(system, prompt, temperature=0.2, max_tokens=800, label="signal-filter")
+    if not result:
+        print("  LLM call failed")
+        return
+
+    # Parse the response
+    lines = result.strip().split("\n")
+    decision = "NO_SIGNAL"
+    message = ""
+    resolves = []
+    adds = []
+
+    for line in lines:
+        line_s = line.strip()
+        if line_s.startswith("DECISION:"):
+            decision = line_s.split(":", 1)[1].strip().upper()
+        elif line_s.startswith("MESSAGE:"):
+            message = line_s.split(":", 1)[1].strip()
+        elif line_s.startswith("- RESOLVE:"):
+            try:
+                idx = int(line_s.split(":", 1)[1].strip().split()[0]) - 1
+                if 0 <= idx < len(active_items):
+                    resolves.append(idx)
+            except:
+                pass
+        elif line_s.startswith("- ADD:"):
+            parts = line_s.split(":", 1)[1].strip().split("|", 1)
+            topic = parts[0].strip()
+            why = parts[1].strip() if len(parts) > 1 else ""
+            if topic and len(topic) > 3:
+                adds.append({"topic": topic, "why": why})
+
+    # Update watchlist
+    updated = False
+    for idx in sorted(resolves, reverse=True):
+        item = active_items[idx]
+        item["status"] = "resolved"
+        item["resolved_date"] = datetime.now().strftime("%Y-%m-%d")
+        WATCHLIST.setdefault("resolved", []).append(item)
+        WATCHLIST["items"].remove(item)
+        print(f"  Resolved watchlist item: {item['topic']}")
+        updated = True
+
+    for add in adds[:3]:
+        new_item = {
+            "topic": add["topic"],
+            "why": add.get("why", ""),
+            "added": datetime.now().strftime("%Y-%m-%d"),
+            "source": "auto",
+            "status": "active",
+        }
+        # Don't add duplicates
+        existing_topics = [i["topic"].lower() for i in WATCHLIST.get("items", [])]
+        if add["topic"].lower() not in existing_topics:
+            WATCHLIST["items"].append(new_item)
+            print(f"  Added watchlist item: {add['topic']}")
+            updated = True
+
+    # Keep resolved list trimmed
+    if "resolved" in WATCHLIST:
+        WATCHLIST["resolved"] = WATCHLIST["resolved"][-20:]
+
+    if updated and WATCHLIST_PATH:
+        with open(WATCHLIST_PATH, "w") as f:
+            json.dump(WATCHLIST, f, indent=2)
+        print(f"  Watchlist updated: {WATCHLIST_PATH}")
+
+    # Send Signal if warranted
+    if "SIGNAL" in decision and "NO" not in decision and message:
+        # Truncate and clean up
+        if len(message) > 400:
+            message = message[:397] + "..."
+        sent = signal_send(message)
+        print(f"  Signal sent: {sent} — {message[:80]}...")
+        save_note("signal", f"Signal Alert — {datetime.now().strftime('%d %b %Y')}", 
+                  f"Decision: SIGNAL\nMessage: {message}\n\nFull LLM response:\n{result}",
+                  {"decision": "signal", "watchlist_items": len(active_items),
+                   "resolved": len(resolves), "added": len(adds)})
+    else:
+        print(f"  Decision: NO_SIGNAL — nothing noteworthy today")
+        # Still save a short note for the record
+        save_note("signal", f"Signal Filter — {datetime.now().strftime('%d %b %Y')} (silent)",
+                  f"Decision: NO_SIGNAL\n\nFull LLM response:\n{result}",
+                  {"decision": "no_signal", "watchlist_items": len(active_items),
+                   "resolved": len(resolves), "added": len(adds)})
+
+    return {"type": "signal", "title": f"Signal Filter — {decision}",
+            "content": result, "generated": datetime.now().isoformat(timespec="seconds")}
+
+
 # ─── Task selection ───
 
 TASKS = {
@@ -861,6 +1061,7 @@ TASKS = {
     "career": task_career,
     "crawl": task_crawl,
     "learn": task_learn,
+    "signal": task_signal,
 }
 
 if TASK_ARG and TASK_ARG in TASKS:
@@ -874,6 +1075,7 @@ else:
     # Fri: trends (pattern analysis)
     # Sat: research (deep dive on a topic)
     # Sun: learn (self-assessment and improvement)
+    # signal runs separately via its own cron entry (19:00 daily), not in rotation
     dow = datetime.now().weekday()  # 0=Mon, 6=Sun
     schedule = {
         0: "weekly",
