@@ -779,6 +779,16 @@ nav a.active {
 }
 .vuln-count-num { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
 .vuln-count-label { font-size: 0.68rem; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Watchdog */
+.wd-checks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.wd-chip { padding: 3px 10px; border-radius: 3px; font-size: 0.75rem; font-family: var(--mono); border: 1px solid var(--border); }
+.wd-ok { color: var(--green); border-color: var(--green); }
+.wd-warn { color: var(--amber); border-color: var(--amber); background: rgba(255,187,51,0.08); }
+.wd-crit { color: var(--red); border-color: var(--red); background: rgba(255,34,68,0.08); }
+.wd-alert { padding: 4px 0; font-size: 0.82rem; border-bottom: 1px solid var(--border); }
+.wd-alert:last-child { border-bottom: none; }
+.wd-ts { font-size: 0.72rem; color: var(--fg-dim); }
 """
 
 COMMON_PORTS = {22,53,80,443,8080,8443,3389,445,139,21,25,110,143,993,995,
@@ -821,6 +831,13 @@ def get_latest_enum():
 def get_latest_vuln():
     """Load latest vulnerability scan results."""
     files = sorted(glob.glob(f"{DATA_DIR}/vuln/vuln-*.json"))
+    if files:
+        return load_json(files[-1])
+    return None
+
+def get_latest_watchdog():
+    """Load latest watchdog report for integrity/alert display."""
+    files = sorted(glob.glob(f"{DATA_DIR}/watchdog/watchdog-*.json"))
     if files:
         return load_json(files[-1])
     return None
@@ -1308,7 +1325,58 @@ def gen_dashboard(all_scans):
   </div>
 </div>"""
 
-    body = stats + types_section + presence_html + diff_html + port_change_html + security_html + vuln_summary_html + health_html + top_html
+    # Watchdog integrity widget
+    wd_html = ""
+    wd_data = get_latest_watchdog()
+    if wd_data:
+        wd_ts = wd_data.get("run_at", "")[:16].replace("T", " ")
+        wd_mode = wd_data.get("mode", "full")
+        checks = wd_data.get("checks", {})
+        # Build check chips
+        check_labels = [
+            ("arp_integrity", "ARP"), ("dns_integrity", "DNS"),
+            ("gateway", "Gateway"), ("device_availability", "Devices"),
+            ("dhcp_integrity", "DHCP"), ("vuln_delta", "Vulns"),
+            ("cert_expiry", "Certs"), ("service_changes", "Services"),
+            ("risky_ports", "Ports"), ("score_trend", "Scores"),
+        ]
+        chips = ""
+        for key, label in check_labels:
+            st = checks.get(key, {}).get("status", "")
+            if not st:
+                continue
+            cls = "wd-ok" if st == "ok" else ("wd-crit" if st == "critical" else "wd-warn")
+            icon = "✓" if st == "ok" else "⚠"
+            chips += f'<span class="wd-chip {cls}">{label} {icon}</span>'
+        # Recent alerts
+        wd_alerts = wd_data.get("alerts", [])
+        alert_lines = ""
+        shown = 0
+        for a in wd_alerts:
+            tier = a.get("tier", "info")
+            if tier not in ("critical", "high", "medium"):
+                continue
+            icon = {"critical": "🔴", "high": "🟠", "medium": "🟡"}.get(tier, "")
+            alert_lines += f'<div class="wd-alert">{icon} {e(a.get("title", ""))}</div>'
+            shown += 1
+            if shown >= 6:
+                break
+        remaining = len([a for a in wd_alerts if a.get("tier") in ("critical","high","medium")]) - shown
+        if remaining > 0:
+            alert_lines += f'<div class="wd-alert" style="color:var(--fg-dim)">…+{remaining} more</div>'
+        counts = wd_data.get("alert_counts", {})
+        count_str = f'🔴{counts.get("critical",0)} 🟠{counts.get("high",0)} 🟡{counts.get("medium",0)}'
+        no_alerts = not alert_lines
+        wd_html = f"""
+<div class="section">
+  <div class="section-title">🛡️ WATCHDOG — {e(wd_ts)} ({e(wd_mode)}) — {count_str if not no_alerts else '✅ all clear'}</div>
+  <div class="section-body">
+    <div class="wd-checks">{chips}</div>
+    {alert_lines if alert_lines else '<div style="color:var(--green);font-size:0.85rem">No integrity issues detected</div>'}
+  </div>
+</div>"""
+
+    body = stats + types_section + presence_html + diff_html + port_change_html + security_html + vuln_summary_html + wd_html + health_html + top_html
     return page_wrap("DASHBOARD", body, "index")
 
 
@@ -1555,7 +1623,7 @@ def gen_security(scan):
 
 # ─── Page: Host detail (host/192-168-3-X.html) ───
 
-def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None):
+def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None, watchdog_data=None):
     safe_ip = ip.replace(".", "-")
     name = best_name(h)
     title_name = f" — {name}" if name else ""
@@ -1569,6 +1637,13 @@ def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None):
     vuln_host = {}
     if vuln_data and "hosts" in vuln_data:
         vuln_host = vuln_data["hosts"].get(ip, {})
+
+    # Get watchdog alerts for this host
+    wd_host_alerts = []
+    if watchdog_data:
+        for a in watchdog_data.get("alerts", []):
+            if a.get("host") == ip:
+                wd_host_alerts.append(a)
 
     # Info section
     kv_items = [
@@ -1994,7 +2069,27 @@ def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None):
   </div>
   {security_sec}
 </div>
-""" + mdns_html + ports_html + enum_html + vuln_html + history_html
+""" + mdns_html + ports_html + enum_html + vuln_html
+
+    # Watchdog alerts for this host
+    wd_detail_html = ""
+    if wd_host_alerts:
+        wd_items = ""
+        for a in wd_host_alerts:
+            tier = a.get("tier", "info")
+            icon = {"critical": "🔴", "high": "🟠", "medium": "🟡"}.get(tier, "🔵")
+            cls = {"critical": "wd-crit", "high": "wd-warn", "medium": ""}.get(tier, "")
+            wd_items += f'<div class="wd-alert {cls}">{icon} <b>{e(a.get("title",""))}</b>'
+            if a.get("detail"):
+                wd_items += f'<br><span style="color:var(--fg-dim);font-size:0.8rem">{e(a["detail"][:120])}</span>'
+            wd_items += '</div>'
+        wd_detail_html = f"""
+<div class="section">
+  <div class="section-title">🛡️ WATCHDOG ALERTS</div>
+  <div class="section-body">{wd_items}</div>
+</div>"""
+
+    body += wd_detail_html + history_html
 
     return page_wrap(f"HOST {ip}", body, "hosts")
 
@@ -3061,6 +3156,7 @@ def main():
     all_scans = load_all_scans(30)
     enum_data = get_latest_enum()
     vuln_data = get_latest_vuln()
+    watchdog_data = get_latest_watchdog()
 
     # Main pages
     pages = {
@@ -3093,7 +3189,7 @@ def main():
     if scan:
         for ip, h in scan["hosts"].items():
             safe_ip = ip.replace(".", "-")
-            html = gen_host_detail(ip, h, all_scans, enum_data, vuln_data)
+            html = gen_host_detail(ip, h, all_scans, enum_data, vuln_data, watchdog_data)
             path = os.path.join(WEB_DIR, "host", f"{safe_ip}.html")
             with open(path, "w") as f:
                 f.write(html)
