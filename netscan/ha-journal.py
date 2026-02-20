@@ -209,6 +209,22 @@ def main():
         except Exception:
             pass
 
+    # Guard: don't evict a model that openclaw-gateway is actively using
+    try:
+        req = urllib.request.Request(f"{OLLAMA_URL}/api/ps")
+        resp = urllib.request.urlopen(req, timeout=5)
+        ps_data = json.loads(resp.read())
+        running_models = ps_data.get("models", [])
+        for m in running_models:
+            name = m.get("name", "")
+            # If the gateway's model is loaded and it's NOT our journal model,
+            # that means the gateway is mid-conversation — back off
+            if name and name != OLLAMA_MODEL:
+                print(f"  Ollama busy with {name} (likely gateway) — skipping")
+                return
+    except Exception:
+        pass  # can't reach ollama — will fail later at call_ollama anyway
+
     # Collect HA data
     print("  Collecting HA data...")
     climate_data = run_ha("climate")
