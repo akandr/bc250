@@ -288,6 +288,85 @@ def fetch_gitlab_items(since_dt):
     return items
 
 
+# ─── Patchwork fetcher ───
+
+def fetch_patchwork_items(since_dt):
+    """Fetch new patches (and optionally series) from a Patchwork instance."""
+    api_base = REPO["api_base"]
+    project_id = REPO.get("project_id", 1)
+    items = []
+
+    # Patchwork: skip 'since' — bc250 clock may differ from server;
+    # rely on seen_ids for dedup instead.
+
+    for track_type in REPO.get("track", ["patches"]):
+        if track_type == "series":
+            url = f"{api_base}/series/?project={project_id}&order=-date&per_page=50"
+
+            data = fetch_json(url)
+            if not data:
+                print(f"    Failed to fetch series")
+                continue
+
+            for s in data:
+                cover = s.get("cover_letter") or {}
+                items.append({
+                    "id": s["id"],
+                    "type": "series",
+                    "title": s.get("name", ""),
+                    "body": (cover.get("name") or "")[:2000],
+                    "state": "complete" if s.get("received_all") else "incomplete",
+                    "author": s.get("submitter", {}).get("name", "?"),
+                    "created": s.get("date", ""),
+                    "updated": s.get("date", ""),
+                    "url": s.get("web_url", ""),
+                    "labels": [f"v{s.get('version', 1)}", f"{s.get('total', 0)} patches"],
+                    "comments": 0,
+                    "reactions": 0,
+                })
+
+            print(f"    Patchwork series: {len([i for i in items if i['type'] == 'series'])} items")
+
+        else:  # patches
+            url = f"{api_base}/patches/?project={project_id}&order=-date&per_page=50"
+
+            data = fetch_json(url)
+            if not data:
+                print(f"    Failed to fetch patches")
+                continue
+
+            for p in data:
+
+                state = p.get("state", "new")
+                check = p.get("check", "pending")
+                labels = [state]
+                if check and check != "pending":
+                    labels.append(f"check:{check}")
+
+                series_list = p.get("series", [])
+                if series_list:
+                    labels.append(f"{len(series_list)} in series")
+
+                items.append({
+                    "id": p["id"],
+                    "type": "patch",
+                    "title": p.get("name", ""),
+                    "body": "",
+                    "state": state,
+                    "author": p.get("submitter", {}).get("name", "?"),
+                    "created": p.get("date", ""),
+                    "updated": p.get("date", ""),
+                    "url": p.get("web_url", ""),
+                    "labels": labels,
+                    "comments": 0,
+                    "reactions": 0,
+                })
+
+            print(f"    Patchwork patches: {len([i for i in items if i['type'] == 'patch'])} items")
+
+    return items
+
+
 # ─── Main logic ───
 
 state = load_state()
@@ -307,6 +386,8 @@ if REPO_TYPE == "github":
     items = fetch_github_items(since_dt)
 elif REPO_TYPE == "gitlab":
     items = fetch_gitlab_items(since_dt)
+elif REPO_TYPE == "patchwork":
+    items = fetch_patchwork_items(since_dt)
 else:
     print(f"  Unknown repo type: {REPO_TYPE}")
     sys.exit(1)
@@ -411,7 +492,7 @@ if truly_new:
 
     # Top 5 items, compact
     for i in truly_new[:5]:
-        type_icon = "🔀" if "merge" in i["type"] or "pull" in i["type"] else "🐛"
+        type_icon = "🔀" if "merge" in i["type"] or "pull" in i["type"] else ("📩" if "patch" in i["type"] else "🐛")
         lines.append(f"{type_icon} #{i['id']}: {i['title'][:80]}")
         if i["keywords"]:
             lines.append(f"   [{', '.join(i['keywords'][:4])}]")
