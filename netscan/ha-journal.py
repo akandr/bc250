@@ -34,7 +34,13 @@ HA_OBSERVE = "/opt/netscan/ha-observe.py"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3-14b-abl-nothink:latest"
+OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model for richer analysis
+
+QUIET_START = 0   # 00:00
+QUIET_END   = 6   # 06:00 — no chat, GPU free for batch jobs
+
+def is_quiet_hours():
+    return QUIET_START <= datetime.now().hour < QUIET_END
 
 os.makedirs(THINK_DIR, exist_ok=True)
 
@@ -194,9 +200,11 @@ Rules:
 def main():
     quick = "--quick" in sys.argv
 
-    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ha-journal starting ({'quick' if quick else 'full'})")
+    quiet = is_quiet_hours()
+    mode_str = f"{'quick' if quick else 'full'}, {'QUIET HOURS' if quiet else 'daytime'}"
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ha-journal starting ({mode_str})")
 
-    # Guard: don't compete for GPU
+    # Guard: don't compete for GPU with other batch scripts
     for proc_name in ["lore-digest.sh", "repo-watch.sh", "idle-think.sh"]:
         try:
             result = subprocess.run(
@@ -209,21 +217,21 @@ def main():
         except Exception:
             pass
 
-    # Guard: don't evict a model that openclaw-gateway is actively using
-    try:
-        req = urllib.request.Request(f"{OLLAMA_URL}/api/ps")
-        resp = urllib.request.urlopen(req, timeout=5)
-        ps_data = json.loads(resp.read())
-        running_models = ps_data.get("models", [])
-        for m in running_models:
-            name = m.get("name", "")
-            # If the gateway's model is loaded and it's NOT our journal model,
-            # that means the gateway is mid-conversation — back off
-            if name and name != OLLAMA_MODEL:
-                print(f"  Ollama busy with {name} (likely gateway) — skipping")
-                return
-    except Exception:
-        pass  # can't reach ollama — will fail later at call_ollama anyway
+    # GPU guard — during quiet hours (00-06) we own the GPU, skip guard
+    if not quiet:
+        try:
+            req = urllib.request.Request(f"{OLLAMA_URL}/api/ps")
+            resp = urllib.request.urlopen(req, timeout=5)
+            ps_data = json.loads(resp.read())
+            for m in ps_data.get("models", []):
+                name = m.get("name", "")
+                if name and name != OLLAMA_MODEL:
+                    print(f"  Ollama busy with {name} (likely gateway) — skipping")
+                    return
+        except Exception:
+            pass
+    else:
+        print("  Quiet hours — GPU free for batch, no chat guard needed")
 
     # Collect HA data
     print("  Collecting HA data...")

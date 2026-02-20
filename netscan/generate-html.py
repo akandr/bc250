@@ -888,6 +888,7 @@ def page_wrap(title, body, active_page="index"):
     if REPO_FEEDS:
         nav_items.append(("/issues.html", "ISSUES", "issues"))
     nav_items.append(("/notes.html", "NOTES", "notes"))
+    nav_items.append(("/career.html", "CAREERS", "career"))
     nav_items.append(("/load.html", "LOAD", "load"))
     nav_items += [
         ("/security.html", "SECURITY", "security"),
@@ -2637,14 +2638,14 @@ def gen_notes():
         "crossfeed": "🔗", "research": "🔬",
         "career": "🎯", "crawl": "🌐",
         "learn": "🧠", "signal": "📡",
-        "home": "🏠",
+        "home": "🏠", "career-scan": "💼",
     }
     type_colors = {
         "weekly": "var(--green)", "trends": "var(--amber)",
         "crossfeed": "var(--cyan)", "research": "var(--magenta)",
         "career": "var(--amber)", "crawl": "var(--blue)",
         "learn": "var(--green)", "signal": "var(--red)",
-        "home": "var(--cyan)",
+        "home": "var(--cyan)", "career-scan": "var(--purple)",
     }
 
     for entry in index[:20]:
@@ -2702,6 +2703,253 @@ def gen_notes():
 
     body = summary + note_cards
     return page_wrap("NOTES", body, "notes")
+
+
+# ─── Page: Career Intelligence (career.html) ───
+
+def gen_careers():
+    """Generate the career intelligence / job scanner page."""
+    career_dir = os.path.join(DATA_DIR, "career")
+    scan_path = os.path.join(career_dir, "latest-scan.json")
+
+    if not os.path.exists(scan_path):
+        body = """
+<div class="section">
+  <div class="section-title">🎯 CAREER INTELLIGENCE</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🎯</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No career scan data yet</div>
+    <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+      career-scan.py scans company career pages, job boards, and intel sites.<br>
+      Scheduled Mon/Thu at 11:00. First scan results will appear here.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("CAREERS", body, "career")
+
+    scan = load_json(scan_path) or {}
+    meta = scan.get("meta", {})
+    jobs = scan.get("jobs", [])
+    intel = scan.get("intel", {})
+    summary_text = scan.get("summary", "")
+    sources = scan.get("source_results", {})
+
+    hot_jobs = [j for j in jobs if j.get("match_score", 0) >= 70]
+    good_jobs = [j for j in jobs if 40 <= j.get("match_score", 0) < 70]
+    remote_jobs = [j for j in jobs if j.get("remote_compatible", False)]
+
+    scan_ts = meta.get("timestamp", "?")
+    duration = meta.get("duration_seconds", 0)
+    mode_label = "FULL" if meta.get("mode") == "full" else "QUICK"
+
+    # ─ Scan overview section ─
+    overview = f"""
+<div class="section">
+  <div class="section-title">🎯 CAREER INTELLIGENCE &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(scan_ts)} ({mode_label}, {duration}s)</span></div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--green);font-size:1.8rem;font-weight:bold">{len(jobs)}</span><br><span style="color:var(--fg-dim)">matches found</span></div>
+      <div><span style="color:var(--red);font-size:1.8rem;font-weight:bold">{len(hot_jobs)}</span><br><span style="color:var(--fg-dim)">hot (≥70%)</span></div>
+      <div><span style="color:var(--amber);font-size:1.8rem;font-weight:bold">{len(good_jobs)}</span><br><span style="color:var(--fg-dim)">good (40-69%)</span></div>
+      <div><span style="color:var(--cyan);font-size:1.8rem;font-weight:bold">{len(remote_jobs)}</span><br><span style="color:var(--fg-dim)">remote-ok</span></div>
+      <div><span style="color:var(--purple);font-size:1.8rem;font-weight:bold">{meta.get('companies_scanned', 0)}</span><br><span style="color:var(--fg-dim)">companies</span></div>
+      <div><span style="color:var(--blue);font-size:1.8rem;font-weight:bold">{meta.get('pages_fetched', 0)}</span><br><span style="color:var(--fg-dim)">pages fetched</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # ─ LLM Summary section ─
+    summary_html = ""
+    if summary_text:
+        summary_content = e(summary_text).replace("\n", "<br>")
+        summary_html = f"""
+<div class="section">
+  <div class="section-title">🤖 AI BRIEFING</div>
+  <div class="section-body">
+    <div style="font-family:monospace;white-space:pre-wrap;line-height:1.6;font-size:0.88rem;color:var(--fg)">{summary_content}</div>
+  </div>
+</div>"""
+
+    # ─ Hot matches section ─
+    hot_html = ""
+    if hot_jobs:
+        hot_cards = ""
+        for j in sorted(hot_jobs, key=lambda x: -x.get("match_score", 0)):
+            score = j.get("match_score", 0)
+            title = e(j.get("title", "Unknown"))
+            company = e(j.get("company", "?"))
+            location = e(j.get("location", "?"))
+            remote = "✅ Remote OK" if j.get("remote_compatible") else "❌ On-site"
+            salary = e(j.get("salary_hint", "—"))
+            reasons = ", ".join(j.get("match_reasons", [])[:4])
+            reqs = ", ".join(j.get("key_requirements", [])[:5])
+            flags = ", ".join(j.get("red_flags", []))
+
+            score_color = "var(--green)" if score >= 85 else "var(--amber)" if score >= 70 else "var(--fg)"
+            flag_html = f'<div style="color:var(--red);margin-top:4px">⚠ {e(flags)}</div>' if flags else ""
+
+            hot_cards += f"""
+    <div style="background:var(--bg3);border:1px solid var(--border-bright);border-radius:6px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="color:{score_color};font-weight:bold;font-size:1.3rem">{score}%</span>
+          <span style="color:var(--cyan);font-weight:bold;margin-left:12px;font-size:1rem">{title}</span>
+          <span style="color:var(--fg-dim);margin-left:8px">@ {company}</span>
+        </div>
+        <div style="font-size:0.82rem;text-align:right">
+          <div style="color:var(--fg-dim)">📍 {location}</div>
+          <div>{remote}</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:0.82rem;color:var(--fg-dim)">
+        <div>✅ <span style="color:var(--green)">{e(reasons)}</span></div>
+        <div style="margin-top:2px">📋 {e(reqs)}</div>
+        <div style="margin-top:2px">💰 {salary}</div>
+        {flag_html}
+      </div>
+    </div>"""
+
+        hot_html = f"""
+<div class="section">
+  <div class="section-title">🔥 HOT MATCHES <span style="color:var(--red)">({len(hot_jobs)} jobs, score ≥ 70%)</span></div>
+  <div class="section-body">{hot_cards}</div>
+</div>"""
+
+    # ─ Good matches table ─
+    good_html = ""
+    if good_jobs:
+        rows = ""
+        for j in sorted(good_jobs, key=lambda x: -x.get("match_score", 0))[:20]:
+            score = j.get("match_score", 0)
+            sc = "var(--amber)" if score >= 55 else "var(--fg-dim)"
+            remote_icon = "✅" if j.get("remote_compatible") else "❌"
+            reasons_short = ", ".join(j.get("match_reasons", [])[:2])
+            rows += f"""<tr>
+  <td style="color:{sc};font-weight:bold">{score}%</td>
+  <td style="color:var(--cyan)">{e(j.get('title', '?'))}</td>
+  <td>{e(j.get('company', '?'))}</td>
+  <td>{e(j.get('location', '?'))}</td>
+  <td>{remote_icon}</td>
+  <td style="color:var(--fg-dim);font-size:0.8rem">{e(reasons_short)}</td>
+</tr>"""
+
+        good_html = f"""
+<div class="section">
+  <div class="section-title">📊 GOOD MATCHES <span style="color:var(--amber)">({len(good_jobs)} jobs, score 40-69%)</span></div>
+  <div class="section-body">
+    <table class="host-table"><thead><tr>
+      <th>Score</th><th>Title</th><th>Company</th><th>Location</th><th>Remote</th><th>Match</th>
+    </tr></thead><tbody>{rows}</tbody></table>
+  </div>
+</div>"""
+
+    # ─ Company intel section ─
+    intel_html = ""
+    if intel and isinstance(intel, dict):
+        alerts = intel.get("alerts", [])
+        benchmarks = intel.get("salary_benchmarks", [])
+        mood = intel.get("market_mood", "")
+
+        alert_cards = ""
+        for a in alerts:
+            sev = a.get("severity", "info")
+            sev_color = {"urgent": "var(--red)", "notable": "var(--amber)"}.get(sev, "var(--fg-dim)")
+            sev_icon = {"urgent": "🚨", "notable": "📢"}.get(sev, "ℹ️")
+            alert_cards += f"""
+    <div style="border-left:3px solid {sev_color};padding:6px 12px;margin-bottom:8px;background:var(--bg3)">
+      <div>{sev_icon} <span style="color:{sev_color};font-weight:bold">{e(a.get('company', '?'))}</span>
+        — <span style="color:var(--fg)">{e(a.get('summary', ''))}</span>
+        <span style="color:var(--fg-dim);font-size:0.8rem;margin-left:8px">[{e(a.get('type', '?'))}]</span>
+      </div>
+      <div style="font-size:0.82rem;color:var(--fg-dim);margin-top:2px">{e(a.get('details', ''))}</div>
+    </div>"""
+
+        bench_rows = ""
+        for b in benchmarks[:10]:
+            bench_rows += f"<tr><td>{e(b.get('role', '?'))}</td><td style='color:var(--green)'>{e(b.get('range', '?'))}</td><td style='color:var(--fg-dim)'>{e(b.get('source', '?'))}</td></tr>"
+
+        bench_html = ""
+        if bench_rows:
+            bench_html = f"""
+    <div style="margin-top:16px">
+      <div style="color:var(--amber);font-weight:bold;margin-bottom:6px">💰 SALARY BENCHMARKS</div>
+      <table class="host-table"><thead><tr><th>Role</th><th>Range</th><th>Source</th></tr></thead>
+      <tbody>{bench_rows}</tbody></table>
+    </div>"""
+
+        mood_html = f'<div style="margin-top:12px;font-size:0.88rem;color:var(--fg);padding:8px;background:var(--bg2);border-radius:4px">{e(mood)}</div>' if mood else ""
+
+        intel_html = f"""
+<div class="section">
+  <div class="section-title">🕵️ COMPANY INTELLIGENCE</div>
+  <div class="section-body">
+    {alert_cards}
+    {bench_html}
+    {mood_html}
+  </div>
+</div>"""
+
+    # ─ Source status section ─
+    source_rows = ""
+    for label, results in [("Career Pages", sources.get("career_pages", {})),
+                           ("Job Boards", sources.get("job_boards", {})),
+                           ("Intel Sources", sources.get("intel_sources", {}))]:
+        for sid, res in results.items():
+            status = res.get("status", "?")
+            st_color = {"ok": "var(--green)", "error": "var(--red)", "no_keywords": "var(--fg-dim)", "insufficient": "var(--amber)"}.get(status, "var(--fg)")
+            source_rows += f"""<tr>
+  <td style="color:var(--cyan)">{e(label)}</td>
+  <td>{e(sid)}</td>
+  <td style="color:{st_color}">{e(status)}</td>
+  <td style="color:var(--fg-dim)">{res.get('chars', '—')}</td>
+  <td>{res.get('jobs_found', '—')}</td>
+</tr>"""
+
+    source_html = f"""
+<div class="section">
+  <div class="section-title">📡 SCAN SOURCES</div>
+  <div class="section-body">
+    <table class="host-table"><thead><tr>
+      <th>Category</th><th>Source</th><th>Status</th><th>Chars</th><th>Jobs</th>
+    </tr></thead><tbody>{source_rows}</tbody></table>
+  </div>
+</div>"""
+
+    # ─ Scan history ─
+    archives = sorted(
+        [f for f in os.listdir(career_dir) if f.startswith("scan-") and f.endswith(".json")],
+        reverse=True,
+    ) if os.path.isdir(career_dir) else []
+
+    history_rows = ""
+    for af in archives[:10]:
+        a = load_json(os.path.join(career_dir, af))
+        if not a:
+            continue
+        am = a.get("meta", {})
+        history_rows += f"""<tr>
+  <td style="color:var(--cyan)">{e(am.get('timestamp', '?')[:16])}</td>
+  <td>{e(am.get('mode', '?'))}</td>
+  <td style="color:var(--green)">{am.get('total_jobs_found', 0)}</td>
+  <td style="color:var(--red)">{am.get('hot_matches', 0)}</td>
+  <td>{am.get('pages_fetched', 0)}</td>
+  <td style="color:var(--fg-dim)">{am.get('duration_seconds', 0)}s</td>
+</tr>"""
+
+    history_html = ""
+    if history_rows:
+        history_html = f"""
+<div class="section">
+  <div class="section-title">📜 SCAN HISTORY</div>
+  <div class="section-body">
+    <table class="host-table"><thead><tr>
+      <th>Timestamp</th><th>Mode</th><th>Jobs</th><th>Hot</th><th>Pages</th><th>Duration</th>
+    </tr></thead><tbody>{history_rows}</tbody></table>
+  </div>
+</div>"""
+
+    body = overview + summary_html + hot_html + good_html + intel_html + source_html + history_html
+    return page_wrap("CAREERS", body, "career")
 
 
 # ─── Page: GPU Load (load.html) ───
@@ -2969,25 +3217,38 @@ def gen_load():
 
     # ─── Capacity planning ───
     cron_jobs = [
-        ("lore-digest", "04:00", "~8–15 min", "Daily digest of mailing list feeds"),
-        ("repo-watch ×3", "00:00, 06:00, 12:00", "~5–10 min", "Silent repo monitoring"),
+        ("⏰ QUIET HOURS", "00:00–06:00", "—", "No Signal chat — GPU free for batch analysis (abliterated model)"),
+        ("lore-digest", "04:00 ☾", "~8–15 min", "Daily digest of mailing list feeds"),
+        ("career-scan ×2/wk", "Mon/Thu 03:30 ☾", "~5–15 min", "Career intelligence scanner (jobs + company intel)"),
+        ("ha-journal ×4", "01:30☾, 07:30, 13:30, 19:30", "~1–2 min", "Home Assistant observation journal"),
+        ("repo-watch ×3", "00:30☾, 06:00, 12:00", "~5–10 min", "Silent repo monitoring"),
         ("repo-watch +notify", "18:00", "~5–10 min", "Daily repo digest + Signal alert"),
-        ("idle-think ×2", "10:00, 15:00", "~1–3 min", "Research / career / crawl / learn"),
-        ("ha-journal ×4", "01:30, 07:30, 13:30, 19:30", "~1–2 min", "Home Assistant observation journal"),
+        ("idle-think ×2", "02:00☾, 15:00", "~1–3 min", "Research / career / crawl / learn"),
         ("report", "08:00", "~1 min", "Morning health report"),
     ]
     cap_html = '<div class="section"><div class="section-title">🔧 SCHEDULED JOBS &amp; CAPACITY</div><div class="section-body">'
+    cap_html += '<div style="margin-bottom:12px;padding:8px;background:var(--bg2);border-left:3px solid var(--purple);border-radius:4px;font-size:0.85rem">'
+    cap_html += '🌙 <span style="color:var(--purple);font-weight:bold">Quiet Hours 00:00–06:00</span> '
+    cap_html += '<span style="color:var(--fg-dim)">— No Signal chat, all batch jobs use </span>'
+    cap_html += '<span style="color:var(--green)">huihui_ai/qwen3-abliterated:14b</span> '
+    cap_html += '<span style="color:var(--fg-dim)">(uncensored, richer analysis). ☾ = runs during quiet hours.</span>'
+    cap_html += '</div>'
     cap_html += '<table class="host-table"><thead><tr>'
     cap_html += '<th>Job</th><th>Schedule</th><th>Est. Duration</th><th>Purpose</th>'
     cap_html += '</tr></thead><tbody>'
     for name, sched, dur, purpose in cron_jobs:
-        cap_html += f'<tr><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
+        row_style = ' style="background:var(--bg3)"' if '☾' in sched or 'QUIET' in name else ''
+        cap_html += f'<tr{row_style}><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
     cap_html += '</tbody></table>'
     # Estimated total
     cap_html += f'''<div style="margin-top:12px;font-size:0.85rem">
   <span style="color:var(--fg-dim)">Estimated daily GPU time:</span>
-  <span style="color:var(--amber)">~30–55 min</span>
-  <span style="color:var(--fg-dim)">out of 1440 min (</span><span style="color:var(--green)">~2–4%</span><span style="color:var(--fg-dim)">)</span>
+  <span style="color:var(--amber)">~35–65 min</span>
+  <span style="color:var(--fg-dim)">out of 1440 min (</span><span style="color:var(--green)">~2–5%</span><span style="color:var(--fg-dim)">)</span>
+  <br>
+  <span style="color:var(--fg-dim)">Quiet hours batch window:</span>
+  <span style="color:var(--purple)">~20–35 min</span>
+  <span style="color:var(--fg-dim)">(uncontested GPU, no chat eviction risk)</span>
   <br>
   <span style="color:var(--fg-dim)">Headroom for additional jobs:</span>
   <span style="color:var(--green)">very high</span>
@@ -3170,6 +3431,7 @@ def main():
         "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
         "notes.html": gen_notes,
+        "career.html": gen_careers,
         "load.html": gen_load,
     }
     # Dynamic feed pages from digest-feeds.json
