@@ -687,6 +687,98 @@ nav a.active {
   vertical-align: middle;
   letter-spacing: 0.5px;
 }
+
+/* Vulnerability scan styles */
+.vuln-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--border);
+  transition: border-color 0.2s;
+}
+.vuln-card:hover { border-left-color: var(--cyan); }
+.vuln-card.vuln-critical { border-left-color: #ff2244; background: #1a0808; }
+.vuln-card.vuln-high { border-left-color: #ff6622; background: #1a0e08; }
+.vuln-card.vuln-medium { border-left-color: #ffbb33; background: #1a1508; }
+.vuln-card.vuln-low { border-left-color: #667788; }
+.vuln-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.vuln-sev {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.sev-critical { background: #ff2244; color: #fff; }
+.sev-high { background: #ff6622; color: #fff; }
+.sev-medium { background: #ffbb33; color: #111; }
+.sev-low { background: #334455; color: #aabbcc; }
+.vuln-cve {
+  color: var(--cyan);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+.vuln-cve a { color: var(--cyan); }
+.vuln-cve a:hover { color: var(--magenta); }
+.vuln-detail { color: var(--fg); font-size: 0.82rem; }
+.vuln-meta { color: var(--fg-dim); font-size: 0.75rem; margin-top: 2px; }
+.vuln-fix {
+  color: var(--green);
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+.vuln-fix::before { content: '💡 '; }
+.vuln-cvss {
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+}
+.cvss-crit { color: #ff2244; border: 1px solid #ff2244; }
+.cvss-high { color: #ff6622; border: 1px solid #ff6622; }
+.cvss-med { color: #ffbb33; border: 1px solid #ffbb33; }
+.cvss-low { color: #667788; border: 1px solid #667788; }
+.risk-meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.risk-num {
+  font-size: 2.2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+.risk-num.risk-ok { color: var(--green); text-shadow: var(--glow-green); }
+.risk-num.risk-warn { color: var(--amber); }
+.risk-num.risk-crit { color: var(--red); }
+.risk-label { color: var(--fg-dim); font-size: 0.82rem; }
+.vuln-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+.vuln-count-box {
+  text-align: center;
+  padding: 8px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.vuln-count-num { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.vuln-count-label { font-size: 0.68rem; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 1px; }
 """
 
 COMMON_PORTS = {22,53,80,443,8080,8443,3389,445,139,21,25,110,143,993,995,
@@ -722,6 +814,13 @@ def get_latest_health():
 def get_latest_enum():
     """Load latest enum JSON for service/fingerprint enrichment."""
     files = sorted(glob.glob(f"{DATA_DIR}/enum/enum-*.json"))
+    if files:
+        return load_json(files[-1])
+    return None
+
+def get_latest_vuln():
+    """Load latest vulnerability scan results."""
+    files = sorted(glob.glob(f"{DATA_DIR}/vuln/vuln-*.json"))
     if files:
         return load_json(files[-1])
     return None
@@ -942,8 +1041,20 @@ def gen_dashboard(all_scans):
         enum_hosts_count = len(enum_hosts_dict)
         enum_svc_count = sum(len(v.get("services", [])) for v in enum_hosts_dict.values())
 
+    # Vuln stats
+    vuln_data = get_latest_vuln()
+    vuln_total = 0
+    vuln_crit = 0
+    vuln_high = 0
+    if vuln_data:
+        vs = vuln_data.get("stats", {})
+        vuln_total = vs.get("total_findings", 0)
+        vuln_crit = vs.get("critical", 0)
+        vuln_high = vs.get("high", 0)
+
     # Stats boxes
     sec_cls = "red" if sec.get("critical", 0) > 0 else ("amber" if sec.get("warning", 0) > 0 else "")
+    vuln_cls = "red" if vuln_crit > 0 else ("amber" if vuln_high > 0 else "")
     stats = f"""
 <div class="section">
   <div class="section-title">NETWORK OVERVIEW — {e(scan.get('date',''))}</div>
@@ -956,7 +1067,7 @@ def gen_dashboard(all_scans):
       <div class="stat-box"><div class="stat-val {sec_cls}">{sec.get('avg_score', '?')}</div><div class="stat-label">Security Avg</div></div>
       <div class="stat-box"><div class="stat-val">{inv_total}</div><div class="stat-label">Inventory Total</div></div>
       <div class="stat-box"><div class="stat-val cyan">{enum_hosts_count}</div><div class="stat-label">Fingerprinted</div></div>
-      <div class="stat-box"><div class="stat-val">{enum_svc_count}</div><div class="stat-label">Services ID'd</div></div>
+      <div class="stat-box"><div class="stat-val {vuln_cls}">{vuln_total}</div><div class="stat-label">Vulns Found</div></div>
     </div>
   </div>
 </div>"""
@@ -1158,7 +1269,46 @@ def gen_dashboard(all_scans):
   </div>
 </div>"""
 
-    body = stats + types_section + presence_html + diff_html + port_change_html + security_html + health_html + top_html
+    # Vulnerability summary widget
+    vuln_summary_html = ""
+    if vuln_data and vuln_data.get("stats", {}).get("total_findings", 0) > 0:
+        vs = vuln_data["stats"]
+        vuln_hosts = vuln_data.get("hosts", {})
+        # Top vulnerable hosts
+        vuln_rows = ""
+        sorted_vuln = sorted(vuln_hosts.items(), key=lambda x: x[1].get("risk_score", 100))
+        for vip, vdata in sorted_vuln[:8]:
+            vname = vdata.get("name", "")
+            vr = vdata.get("risk_score", 100)
+            vc = vdata.get("severity_counts", {})
+            rc = "risk-crit" if vr < 50 else ("risk-warn" if vr < 80 else "risk-ok")
+            sev_pills = ""
+            if vc.get("critical", 0):
+                sev_pills += f'<span class="vuln-sev sev-critical" style="font-size:0.62rem">{vc["critical"]}C</span> '
+            if vc.get("high", 0):
+                sev_pills += f'<span class="vuln-sev sev-high" style="font-size:0.62rem">{vc["high"]}H</span> '
+            if vc.get("medium", 0):
+                sev_pills += f'<span class="vuln-sev sev-medium" style="font-size:0.62rem">{vc["medium"]}M</span> '
+            vuln_rows += f'<tr><td>{ip_link(vip)}</td><td>{e(vname) if vname else "—"}</td><td><span class="{rc}" style="font-weight:bold">{vr}</span></td><td>{sev_pills}</td><td>{vdata.get("finding_count",0)}</td></tr>'
+        delta = ""
+        if vs.get("new_findings") or vs.get("resolved_findings"):
+            delta = f' — <span style="color:var(--green)">+{vs.get("new_findings",0)} new</span> <span style="color:var(--fg-dim)">-{vs.get("resolved_findings",0)} resolved</span>'
+        vuln_summary_html = f"""
+<div class="section">
+  <div class="section-title">VULNERABILITY SCAN — <a href="/security.html" style="color:var(--red)">full report →</a>{delta}</div>
+  <div class="section-body">
+    <div class="vuln-summary-grid">
+      <div class="vuln-count-box"><div class="vuln-count-num" style="color:#ff2244">{vs.get('critical',0)}</div><div class="vuln-count-label">Critical</div></div>
+      <div class="vuln-count-box"><div class="vuln-count-num" style="color:#ff6622">{vs.get('high',0)}</div><div class="vuln-count-label">High</div></div>
+      <div class="vuln-count-box"><div class="vuln-count-num" style="color:#ffbb33">{vs.get('medium',0)}</div><div class="vuln-count-label">Medium</div></div>
+      <div class="vuln-count-box"><div class="vuln-count-num" style="color:#667788">{vs.get('low',0)}</div><div class="vuln-count-label">Low</div></div>
+      <div class="vuln-count-box"><div class="vuln-count-num">{vs.get('hosts_with_findings',0)}</div><div class="vuln-count-label">Hosts</div></div>
+    </div>
+    {f'<table class="host-table" style="margin-top:8px"><thead><tr><th>IP</th><th>Name</th><th>Risk</th><th>Severity</th><th>Count</th></tr></thead><tbody>{vuln_rows}</tbody></table>' if vuln_rows else ''}
+  </div>
+</div>"""
+
+    body = stats + types_section + presence_html + diff_html + port_change_html + security_html + vuln_summary_html + health_html + top_html
     return page_wrap("DASHBOARD", body, "index")
 
 
@@ -1405,7 +1555,7 @@ def gen_security(scan):
 
 # ─── Page: Host detail (host/192-168-3-X.html) ───
 
-def gen_host_detail(ip, h, all_scans, enum_data=None):
+def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None):
     safe_ip = ip.replace(".", "-")
     name = best_name(h)
     title_name = f" — {name}" if name else ""
@@ -1414,6 +1564,11 @@ def gen_host_detail(ip, h, all_scans, enum_data=None):
     enum_host = {}
     if enum_data and "hosts" in enum_data:
         enum_host = enum_data["hosts"].get(ip, {})
+
+    # Get vuln info for this host
+    vuln_host = {}
+    if vuln_data and "hosts" in vuln_data:
+        vuln_host = vuln_data["hosts"].get(ip, {})
 
     # Info section
     kv_items = [
@@ -1725,6 +1880,71 @@ def gen_host_detail(ip, h, all_scans, enum_data=None):
   </div>
 </div>"""
 
+    # ─── Vulnerability findings ───
+    vuln_html = ""
+    if vuln_host and vuln_host.get("findings"):
+        findings = vuln_host["findings"]
+        risk_score = vuln_host.get("risk_score", 100)
+        sev_counts = vuln_host.get("severity_counts", {})
+        risk_cls = "risk-ok" if risk_score >= 80 else ("risk-warn" if risk_score >= 50 else "risk-crit")
+
+        # Summary bar
+        summary = f"""<div class="risk-meter">
+  <div class="risk-num {risk_cls}">{risk_score}</div>
+  <div class="risk-label">/ 100 risk score</div>
+</div>
+<div class="vuln-summary-grid">
+  <div class="vuln-count-box"><div class="vuln-count-num" style="color:#ff2244">{sev_counts.get('critical',0)}</div><div class="vuln-count-label">Critical</div></div>
+  <div class="vuln-count-box"><div class="vuln-count-num" style="color:#ff6622">{sev_counts.get('high',0)}</div><div class="vuln-count-label">High</div></div>
+  <div class="vuln-count-box"><div class="vuln-count-num" style="color:#ffbb33">{sev_counts.get('medium',0)}</div><div class="vuln-count-label">Medium</div></div>
+  <div class="vuln-count-box"><div class="vuln-count-num" style="color:#667788">{sev_counts.get('low',0)}</div><div class="vuln-count-label">Low</div></div>
+</div>"""
+
+        # Individual findings
+        finding_cards = ""
+        for f in findings[:25]:  # Cap display at 25
+            sev = f.get("severity", "low")
+            cve = f.get("cve", "")
+            cvss = f.get("cvss", 0)
+            detail = f.get("detail", "")
+            port = f.get("port", "")
+            rec = f.get("recommendation", "")
+            url = f.get("url", "")
+            product = f.get("product", "")
+            version = f.get("version", "")
+
+            header_parts = [f'<span class="vuln-sev sev-{sev}">{sev}</span>']
+            if cve:
+                cve_link = f'<a href="{e(url)}" target="_blank" rel="noopener">{e(cve)}</a>' if url else e(cve)
+                header_parts.append(f'<span class="vuln-cve">{cve_link}</span>')
+            if cvss > 0:
+                cvss_cls = "cvss-crit" if cvss >= 9 else ("cvss-high" if cvss >= 7 else ("cvss-med" if cvss >= 4 else "cvss-low"))
+                header_parts.append(f'<span class="vuln-cvss {cvss_cls}">CVSS {cvss}</span>')
+            if port:
+                header_parts.append(f'<span class="port-chip">:{port}</span>')
+
+            card = f'<div class="vuln-card vuln-{sev}"><div class="vuln-header">{"".join(header_parts)}</div>'
+            card += f'<div class="vuln-detail">{e(detail)}</div>'
+            if product and version:
+                card += f'<div class="vuln-meta">{e(product)} {e(version)}</div>'
+            if rec:
+                card += f'<div class="vuln-fix">{e(rec)}</div>'
+            card += '</div>'
+            finding_cards += card
+
+        if len(findings) > 25:
+            finding_cards += f'<div style="color:var(--fg-dim);text-align:center;padding:8px">...and {len(findings)-25} more findings</div>'
+
+        scanned_at = vuln_host.get("scanned_at", "")
+        vuln_html = f"""
+<div class="section">
+  <div class="section-title">VULNERABILITY ASSESSMENT — {len(findings)} findings{' — scanned ' + e(scanned_at) if scanned_at else ''}</div>
+  <div class="section-body">
+    {summary}
+    {finding_cards}
+  </div>
+</div>"""
+
     # History timeline
     timeline_items = []
     sorted_dates = sorted(all_scans.keys())
@@ -1774,7 +1994,7 @@ def gen_host_detail(ip, h, all_scans, enum_data=None):
   </div>
   {security_sec}
 </div>
-""" + mdns_html + ports_html + enum_html + history_html
+""" + mdns_html + ports_html + enum_html + vuln_html + history_html
 
     return page_wrap(f"HOST {ip}", body, "hosts")
 
@@ -2840,6 +3060,7 @@ def main():
     scan = get_latest_scan()
     all_scans = load_all_scans(30)
     enum_data = get_latest_enum()
+    vuln_data = get_latest_vuln()
 
     # Main pages
     pages = {
@@ -2872,7 +3093,7 @@ def main():
     if scan:
         for ip, h in scan["hosts"].items():
             safe_ip = ip.replace(".", "-")
-            html = gen_host_detail(ip, h, all_scans, enum_data)
+            html = gen_host_detail(ip, h, all_scans, enum_data, vuln_data)
             path = os.path.join(WEB_DIR, "host", f"{safe_ip}.html")
             with open(path, "w") as f:
                 f.write(html)
