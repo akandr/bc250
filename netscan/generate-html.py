@@ -544,6 +544,149 @@ nav a.active {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+
+/* Enumeration / fingerprint styles */
+.enum-section { margin-top: 8px; }
+.enum-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 720px) { .enum-grid { grid-template-columns: 1fr; } }
+.fp-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+}
+.fp-title {
+  color: var(--purple);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.fp-title::before { content: '◆ '; color: var(--magenta); }
+.fp-row {
+  display: flex; gap: 8px;
+  padding: 3px 0;
+  font-size: 0.82rem;
+}
+.fp-label { color: var(--fg-dim); min-width: 90px; flex-shrink: 0; }
+.fp-value { color: var(--fg); word-break: break-all; }
+.svc-version-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  margin: 2px;
+  background: var(--bg);
+  border: 1px solid var(--purple);
+  border-radius: 3px;
+  font-size: 0.72rem;
+  color: var(--purple);
+}
+.svc-version-chip .port-num { color: var(--cyan); margin-right: 4px; }
+.http-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+.http-card .http-url {
+  color: var(--cyan);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.http-card .http-server { color: var(--green); font-size: 0.78rem; }
+.http-card .http-title { color: var(--amber); font-size: 0.78rem; }
+.tls-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: 0 4px 4px 0;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+.tls-card.expired { border-left-color: var(--red); }
+.tls-cn { color: var(--cyan); font-weight: 600; font-size: 0.82rem; }
+.tls-detail { color: var(--fg-dim); font-size: 0.78rem; }
+.upnp-card {
+  background: linear-gradient(135deg, var(--bg), var(--bg3));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+}
+.upnp-name { color: var(--cyan); font-size: 1rem; font-weight: 600; }
+.upnp-mfr { color: var(--magenta); font-size: 0.82rem; }
+.upnp-model { color: var(--fg); font-size: 0.85rem; }
+.banner-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  font-size: 0.78rem;
+}
+.banner-port { color: var(--cyan); font-weight: 600; }
+.banner-text { color: var(--fg-dim); white-space: pre-wrap; word-break: break-all; font-family: inherit; }
+.phone-hint {
+  padding: 4px 8px;
+  margin: 2px;
+  display: inline-block;
+  background: #201810;
+  border: 1px solid var(--amber);
+  border-radius: 3px;
+  font-size: 0.75rem;
+  color: var(--amber);
+}
+.fp-summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+.fp-os {
+  color: var(--green);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  background: #112218;
+  border: 1px solid var(--green-dim);
+  border-radius: 4px;
+}
+.fp-device {
+  color: var(--magenta);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  background: #201020;
+  border: 1px solid var(--magenta);
+  border-radius: 4px;
+}
+.fp-identifier {
+  display: block;
+  padding: 3px 0;
+  font-size: 0.8rem;
+  color: var(--fg-dim);
+}
+.fp-identifier::before { content: '› '; color: var(--cyan); }
+.enum-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 4px;
+  background: #181030;
+  border: 1px solid var(--purple);
+  border-radius: 3px;
+  font-size: 0.62rem;
+  color: var(--purple);
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
 """
 
 COMMON_PORTS = {22,53,80,443,8080,8443,3389,445,139,21,25,110,143,993,995,
@@ -572,6 +715,13 @@ def get_latest_scan():
 
 def get_latest_health():
     files = sorted(glob.glob(f"{DATA_DIR}/health-*.json"))
+    if files:
+        return load_json(files[-1])
+    return None
+
+def get_latest_enum():
+    """Load latest enum JSON for service/fingerprint enrichment."""
+    files = sorted(glob.glob(f"{DATA_DIR}/enum/enum-*.json"))
     if files:
         return load_json(files[-1])
     return None
@@ -783,6 +933,15 @@ def gen_dashboard(all_scans):
     mdns_count = scan.get("mdns_devices", 0)
     inv_total = scan.get("inventory_total", 0)
 
+    # Enum stats
+    enum_data = get_latest_enum()
+    enum_hosts_count = 0
+    enum_svc_count = 0
+    if enum_data:
+        enum_hosts_dict = enum_data.get("hosts", {})
+        enum_hosts_count = len(enum_hosts_dict)
+        enum_svc_count = sum(len(v.get("services", [])) for v in enum_hosts_dict.values())
+
     # Stats boxes
     sec_cls = "red" if sec.get("critical", 0) > 0 else ("amber" if sec.get("warning", 0) > 0 else "")
     stats = f"""
@@ -796,6 +955,8 @@ def gen_dashboard(all_scans):
       <div class="stat-box"><div class="stat-val cyan">{mdns_count}</div><div class="stat-label">mDNS Named</div></div>
       <div class="stat-box"><div class="stat-val {sec_cls}">{sec.get('avg_score', '?')}</div><div class="stat-label">Security Avg</div></div>
       <div class="stat-box"><div class="stat-val">{inv_total}</div><div class="stat-label">Inventory Total</div></div>
+      <div class="stat-box"><div class="stat-val cyan">{enum_hosts_count}</div><div class="stat-label">Fingerprinted</div></div>
+      <div class="stat-box"><div class="stat-val">{enum_svc_count}</div><div class="stat-label">Services ID'd</div></div>
     </div>
   </div>
 </div>"""
@@ -1008,12 +1169,35 @@ def gen_hosts(scan):
         return page_wrap("HOSTS", '<div class="section"><div class="section-body">NO DATA</div></div>', "hosts")
 
     hosts = scan["hosts"]
+    enum_data = get_latest_enum()
+    enum_hosts = enum_data.get("hosts", {}) if enum_data else {}
+
     rows = ""
     for ip, h in hosts.items():
         name = best_name(h)
         mac = h.get("mac","") or "—"
         latency = f'{h.get("latency_ms",0)}ms' if h.get("latency_ms") else "—"
         first_seen = short_date(h.get("first_seen","")) if h.get("first_seen") else "—"
+        # Fingerprint summary from enum
+        fp_html = ""
+        eh = enum_hosts.get(ip, {})
+        fp = eh.get("fingerprint", {})
+        if fp:
+            parts = []
+            if fp.get("device_guess"):
+                parts.append(f'<span style="color:var(--magenta);font-size:0.72rem">{e(fp["device_guess"])}</span>')
+            elif fp.get("os_guess"):
+                parts.append(f'<span style="color:var(--green);font-size:0.72rem">{e(fp["os_guess"])}</span>')
+            sw = fp.get("software", [])
+            if sw:
+                label = sw[0].get("label","")
+                if label:
+                    parts.append(f'<span style="color:var(--fg-dim);font-size:0.7rem">{e(label)}</span>')
+            fp_html = "<br>".join(parts) if parts else ""
+        if eh.get("phone_hints"):
+            fp_html = (fp_html + "<br>" if fp_html else "") + '<span style="color:var(--amber);font-size:0.7rem">📱 mobile</span>'
+        if not fp_html:
+            fp_html = '<span style="color:var(--fg-muted)">—</span>'
         rows += f"""<tr>
   <td style="white-space:nowrap">{ip_link(ip)}</td>
   <td class="mdns-name">{e(name) if name else '<span style="color:var(--fg-dim)">—</span>'}</td>
@@ -1021,6 +1205,7 @@ def gen_hosts(scan):
   <td>{badge(h.get("device_type",""))}</td>
   <td style="text-align:center">{score_badge(h.get("security_score",100))}</td>
   <td>{port_chips(h.get("ports",[]), h.get("port_changes"))}</td>
+  <td>{fp_html}</td>
   <td style="font-size:0.78rem;white-space:nowrap">{first_seen}</td>
   <td style="text-align:right">{latency}</td>
 </tr>"""
@@ -1062,7 +1247,7 @@ def gen_hosts(scan):
     <div style="overflow-x:auto">
     <table class="host-table" id="hostTable">
       <thead><tr>
-        <th>IP Address</th><th>Name</th><th>MAC</th><th>Type</th><th>Score</th><th>Open Ports</th><th>Since</th><th>Latency</th>
+        <th>IP Address</th><th>Name</th><th>MAC</th><th>Type</th><th>Score</th><th>Open Ports</th><th>Fingerprint</th><th>Since</th><th>Latency</th>
       </tr></thead>
       <tbody>{rows}</tbody>
     </table>
@@ -1220,10 +1405,15 @@ def gen_security(scan):
 
 # ─── Page: Host detail (host/192-168-3-X.html) ───
 
-def gen_host_detail(ip, h, all_scans):
+def gen_host_detail(ip, h, all_scans, enum_data=None):
     safe_ip = ip.replace(".", "-")
     name = best_name(h)
     title_name = f" — {name}" if name else ""
+
+    # Get enum info for this host
+    enum_host = {}
+    if enum_data and "hosts" in enum_data:
+        enum_host = enum_data["hosts"].get(ip, {})
 
     # Info section
     kv_items = [
@@ -1312,6 +1502,229 @@ def gen_host_detail(ip, h, all_scans):
   <div class="section-body" style="color:var(--fg-dim)">No open ports detected</div>
 </div>"""
 
+    # ─── Enumeration / fingerprint sections ───
+    enum_html = ""
+    if enum_host:
+        enum_sections = []
+
+        # Fingerprint summary (top-level overview)
+        fp = enum_host.get("fingerprint", {})
+        if fp:
+            fp_parts = []
+            if fp.get("os_guess"):
+                fp_parts.append(f'<span class="fp-os">{e(fp["os_guess"])}</span>')
+            if fp.get("device_guess"):
+                fp_parts.append(f'<span class="fp-device">{e(fp["device_guess"])}</span>')
+            fp_ids = ""
+            for ident in fp.get("identifiers", []):
+                fp_ids += f'<span class="fp-identifier">{e(ident)}</span>'
+            sw_chips = ""
+            for sw in fp.get("software", []):
+                port_num = sw.get("port", "")
+                label = sw.get("label", "")
+                if port_num:
+                    sw_chips += f'<span class="svc-version-chip"><span class="port-num">:{port_num}</span> {e(label)}</span>'
+                else:
+                    sw_chips += f'<span class="svc-version-chip">{e(label)}</span>'
+            fp_body = '<div class="fp-summary">' + "".join(fp_parts) + '</div>'
+            if sw_chips:
+                fp_body += f'<div style="margin:6px 0">{sw_chips}</div>'
+            if fp_ids:
+                fp_body += f'<div style="margin-top:6px">{fp_ids}</div>'
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">FINGERPRINT</div>
+  <div class="section-body">{fp_body}</div>
+</div>""")
+
+        # Service versions (nmap -sV)
+        services = enum_host.get("services", [])
+        if services:
+            svc_rows = ""
+            for svc in sorted(services, key=lambda x: x.get("port", 0)):
+                product = svc.get("product", "")
+                version = svc.get("version", "")
+                svc_name = svc.get("service", "")
+                extra = svc.get("extrainfo", "")
+                cpe = svc.get("cpe", "")
+                label = product
+                if version:
+                    label += f" {version}"
+                if not label:
+                    label = svc_name
+                cpe_html = f'<span style="color:var(--fg-muted);font-size:0.7rem;margin-left:8px">{e(cpe)}</span>' if cpe else ""
+                extra_html = f'<span style="color:var(--fg-dim);font-size:0.78rem"> ({e(extra)})</span>' if extra else ""
+                svc_rows += f'<tr><td><span class="port-chip">{svc.get("port","")}</span></td><td>{e(svc_name)}</td><td style="color:var(--green)">{e(label)}{extra_html}</td><td>{cpe_html}</td></tr>'
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">SERVICE VERSIONS ({len(services)} detected)</div>
+  <div class="section-body">
+    <table class="host-table"><thead><tr><th>Port</th><th>Service</th><th>Product / Version</th><th>CPE</th></tr></thead>
+    <tbody>{svc_rows}</tbody></table>
+  </div>
+</div>""")
+
+        # HTTP fingerprints
+        http_list = enum_host.get("http", [])
+        if http_list:
+            http_cards = ""
+            for hf in http_list:
+                port = hf.get("port", "")
+                status = hf.get("status_code", 0)
+                server = hf.get("server", "")
+                title = hf.get("title", "")
+                powered = hf.get("powered_by", "")
+                gen = hf.get("generator", "")
+                redirect = hf.get("redirect", "")
+                fav = hf.get("favicon_hash", "")
+                status_color = "var(--green)" if 200 <= status < 300 else ("var(--amber)" if 300 <= status < 400 else "var(--red)")
+                lines = []
+                lines.append(f'<div class="http-url">:{port} → <span style="color:{status_color}">{status}</span></div>')
+                if server:
+                    lines.append(f'<div class="http-server">Server: {e(server)}</div>')
+                if title:
+                    lines.append(f'<div class="http-title">Title: {e(title)}</div>')
+                if powered:
+                    lines.append(f'<div style="color:var(--fg-dim);font-size:0.78rem">X-Powered-By: {e(powered)}</div>')
+                if gen:
+                    lines.append(f'<div style="color:var(--fg-dim);font-size:0.78rem">Generator: {e(gen)}</div>')
+                if redirect:
+                    lines.append(f'<div style="color:var(--fg-dim);font-size:0.78rem">→ {e(redirect)}</div>')
+                if fav:
+                    lines.append(f'<div style="color:var(--fg-muted);font-size:0.7rem">Favicon: {e(fav[:16])}…</div>')
+                http_cards += f'<div class="http-card">{"".join(lines)}</div>'
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">HTTP FINGERPRINTS ({len(http_list)})</div>
+  <div class="section-body">{http_cards}</div>
+</div>""")
+
+        # TLS certificates
+        tls_list = enum_host.get("tls", [])
+        if tls_list:
+            tls_cards = ""
+            for t in tls_list:
+                port = t.get("port", "")
+                cn = t.get("cn", "")
+                org = t.get("org", "")
+                issuer_cn = t.get("issuer_cn", "")
+                issuer_org = t.get("issuer_org", "")
+                not_after = t.get("not_after", "")
+                proto = t.get("protocol", "")
+                cipher = t.get("cipher", "")
+                san = t.get("san", [])
+                fp_sha = t.get("fingerprint_sha256", "")
+                # Check if expired
+                expired_cls = ""
+                if not_after:
+                    try:
+                        from datetime import datetime as _dt
+                        exp_date = _dt.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
+                        if exp_date < _dt.now():
+                            expired_cls = " expired"
+                    except:
+                        pass
+                lines = []
+                if cn:
+                    lines.append(f'<div class="tls-cn">:{port} — {e(cn)}</div>')
+                elif fp_sha:
+                    lines.append(f'<div class="tls-cn">:{port} — [binary cert]</div>')
+                if org:
+                    lines.append(f'<div class="tls-detail">Org: {e(org)}</div>')
+                if issuer_cn or issuer_org:
+                    issuer = issuer_cn or issuer_org
+                    lines.append(f'<div class="tls-detail">Issuer: {e(issuer)}</div>')
+                if san:
+                    san_str = ", ".join(san[:5])
+                    if len(san) > 5:
+                        san_str += f" +{len(san)-5} more"
+                    lines.append(f'<div class="tls-detail">SAN: {e(san_str)}</div>')
+                if not_after:
+                    lines.append(f'<div class="tls-detail">Expires: {e(not_after)}</div>')
+                if proto and cipher:
+                    lines.append(f'<div class="tls-detail" style="color:var(--fg-muted)">{e(proto)} / {e(cipher)}</div>')
+                if fp_sha:
+                    lines.append(f'<div class="tls-detail" style="color:var(--fg-muted);font-size:0.7rem">SHA256: {e(fp_sha[:32])}…</div>')
+                tls_cards += f'<div class="tls-card{expired_cls}">{"".join(lines)}</div>'
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">TLS CERTIFICATES ({len(tls_list)})</div>
+  <div class="section-body">{tls_cards}</div>
+</div>""")
+
+        # UPnP device info
+        upnp = enum_host.get("upnp", {})
+        if upnp:
+            upnp_lines = []
+            if upnp.get("friendly_name"):
+                upnp_lines.append(f'<div class="upnp-name">{e(upnp["friendly_name"])}</div>')
+            if upnp.get("manufacturer"):
+                upnp_lines.append(f'<div class="upnp-mfr">{e(upnp["manufacturer"])}</div>')
+            if upnp.get("model_name"):
+                model = upnp["model_name"]
+                if upnp.get("model_number"):
+                    model += f' ({upnp["model_number"]})'
+                upnp_lines.append(f'<div class="upnp-model">{e(model)}</div>')
+            if upnp.get("model_description"):
+                upnp_lines.append(f'<div style="color:var(--fg-dim);font-size:0.82rem">{e(upnp["model_description"])}</div>')
+            if upnp.get("device_type"):
+                upnp_lines.append(f'<div style="color:var(--fg-muted);font-size:0.78rem">{e(upnp["device_type"])}</div>')
+            if upnp.get("serial_number"):
+                upnp_lines.append(f'<div style="color:var(--fg-muted);font-size:0.72rem">S/N: {e(upnp["serial_number"])}</div>')
+            ssdp = enum_host.get("ssdp", {})
+            if ssdp.get("server"):
+                upnp_lines.append(f'<div style="color:var(--fg-muted);font-size:0.72rem;margin-top:4px">SSDP: {e(ssdp["server"])}</div>')
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">UPnP DEVICE</div>
+  <div class="section-body"><div class="upnp-card">{"".join(upnp_lines)}</div></div>
+</div>""")
+
+        # TCP banners
+        banners = enum_host.get("banners", [])
+        if banners:
+            banner_html = ""
+            for b in banners:
+                banner_html += f'<div class="banner-box"><span class="banner-port">:{b.get("port","")}</span> <span class="banner-text">{e(b.get("banner",""))}</span></div>'
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">TCP BANNERS ({len(banners)})</div>
+  <div class="section-body">{banner_html}</div>
+</div>""")
+
+        # mDNS TXT records (from enum, more detailed than base scan)
+        mdns_txts = enum_host.get("mdns_txt", [])
+        if mdns_txts:
+            txt_rows = ""
+            for mt in mdns_txts:
+                txt_rows += f'<div class="banner-box"><span class="banner-port">{e(mt.get("service",""))}</span> <span class="banner-text">{e(mt.get("txt",""))}</span></div>'
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">mDNS TXT RECORDS ({len(mdns_txts)})</div>
+  <div class="section-body">{txt_rows}</div>
+</div>""")
+
+        # Phone / mobile hints
+        phone_hints = enum_host.get("phone_hints", [])
+        if phone_hints:
+            chips = " ".join(f'<span class="phone-hint">📱 {e(hint)}</span>' for hint in phone_hints)
+            enum_sections.append(f"""
+<div class="section">
+  <div class="section-title">PHONE / MOBILE INDICATORS</div>
+  <div class="section-body">{chips}</div>
+</div>""")
+
+        # Probed timestamp
+        probed_at = enum_host.get("probed_at", "")
+        if enum_sections:
+            enum_html = f"""
+<div class="section">
+  <div class="section-title">ENUMERATION DATA{' — probed ' + e(probed_at) if probed_at else ''}</div>
+  <div class="section-body">
+    {"".join(enum_sections)}
+  </div>
+</div>"""
+
     # History timeline
     timeline_items = []
     sorted_dates = sorted(all_scans.keys())
@@ -1361,7 +1774,7 @@ def gen_host_detail(ip, h, all_scans):
   </div>
   {security_sec}
 </div>
-""" + mdns_html + ports_html + history_html
+""" + mdns_html + ports_html + enum_html + history_html
 
     return page_wrap(f"HOST {ip}", body, "hosts")
 
@@ -2426,6 +2839,7 @@ function showLog(d) {{
 def main():
     scan = get_latest_scan()
     all_scans = load_all_scans(30)
+    enum_data = get_latest_enum()
 
     # Main pages
     pages = {
@@ -2458,7 +2872,7 @@ def main():
     if scan:
         for ip, h in scan["hosts"].items():
             safe_ip = ip.replace(".", "-")
-            html = gen_host_detail(ip, h, all_scans)
+            html = gen_host_detail(ip, h, all_scans, enum_data)
             path = os.path.join(WEB_DIR, "host", f"{safe_ip}.html")
             with open(path, "w") as f:
                 f.write(html)
