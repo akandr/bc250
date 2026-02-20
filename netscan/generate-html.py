@@ -12,8 +12,20 @@ from html import escape
 
 DATA_DIR = "/opt/netscan/data"
 WEB_DIR = "/opt/netscan/web"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(WEB_DIR, exist_ok=True)
 os.makedirs(os.path.join(WEB_DIR, "host"), exist_ok=True)
+
+# ─── Digest feeds config ───
+
+DIGEST_FEEDS = {}
+_feeds_path = os.path.join(SCRIPT_DIR, "digest-feeds.json")
+if os.path.exists(_feeds_path):
+    try:
+        with open(_feeds_path) as _f:
+            DIGEST_FEEDS = json.load(_f)
+    except Exception:
+        pass
 
 # ─── ASCII art / branding ───
 
@@ -486,7 +498,13 @@ def page_wrap(title, body, active_page="index"):
         ("/index.html", "DASHBOARD", "index"),
         ("/hosts.html", "HOSTS", "hosts"),
         ("/presence.html", "PRESENCE", "presence"),
-        ("/lkml.html", "LKML", "lkml"),
+    ]
+    # Dynamic feed pages from digest-feeds.json
+    for fid, fcfg in DIGEST_FEEDS.items():
+        slug = fcfg.get("page_slug", fid)
+        label = fcfg.get("nav_label", fid.upper())
+        nav_items.append((f"/{slug}.html", label, slug))
+    nav_items += [
         ("/security.html", "SECURITY", "security"),
         ("/history.html", "HISTORY", "history"),
         ("/log.html", "LOG", "log"),
@@ -1418,57 +1436,65 @@ def gen_presence():
 
 # ─── Page: LKML Digest (lkml.html) ───
 
-def gen_lkml():
-    """Generate linux-media mailing list digest page."""
-    lkml_dir = os.path.join(DATA_DIR, "lkml")
+def gen_feed_page(feed_id, feed_cfg):
+    """Generate a mailing list digest page for any configured feed."""
+    feed_dir = os.path.join(DATA_DIR, feed_cfg.get("data_dir", feed_id))
+    feed_name = feed_cfg.get("name", feed_id)
+    feed_emoji = feed_cfg.get("emoji", "📰")
+    lore_list = feed_cfg.get("lore_list", feed_id)
+    page_slug = feed_cfg.get("page_slug", feed_id)
+    about_url = feed_cfg.get("about_url", f"https://lore.kernel.org/{lore_list}/")
+    about_text = feed_cfg.get("about_text", feed_cfg.get("description", ""))
+    scored_label = feed_cfg.get("nav_label", feed_id.upper())  # for display
 
     # Load all available digests (newest first)
     digests = []
-    if os.path.isdir(lkml_dir):
-        for fn in sorted(os.listdir(lkml_dir), reverse=True):
+    if os.path.isdir(feed_dir):
+        for fn in sorted(os.listdir(feed_dir), reverse=True):
             if fn.startswith("digest-") and fn.endswith(".json"):
-                d = load_json(os.path.join(lkml_dir, fn))
+                d = load_json(os.path.join(feed_dir, fn))
                 if d:
                     digests.append(d)
 
     if not digests:
-        body = """
+        body = f"""
 <div class="section">
-  <div class="section-title">LINUX-MEDIA MAILING LIST DIGEST</div>
+  <div class="section-title">{feed_emoji} {e(feed_name.upper())} MAILING LIST DIGEST</div>
   <div class="section-body">
     <div style="color:var(--fg-dim);text-align:center;padding:40px 0">
-      <div style="font-size:3rem;margin-bottom:16px">📡</div>
+      <div style="font-size:3rem;margin-bottom:16px">{feed_emoji}</div>
       <div style="font-size:1.1rem;color:var(--amber)">No digests generated yet</div>
       <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
-        Daily digest runs at 4:00 AM — summarizing linux-media mailing list<br>
-        camera drivers, V4L2, ISP, MIPI sensors, libcamera, UVC<br>
+        Daily digest — summarizing {e(lore_list)} mailing list<br>
+        {e(about_text)}<br>
         Powered by local LLM via Ollama
       </div>
     </div>
   </div>
 </div>"""
-        return page_wrap("LKML DIGEST", body, "lkml")
+        return page_wrap(f"{scored_label} DIGEST", body, page_slug)
 
     # Latest digest — show full bulletin
     latest = digests[0]
     bulletin_raw = latest.get("bulletin", latest.get("bulletin_sent", ""))
-    # Convert plain text to HTML (preserve newlines, escape HTML)
     bulletin_html = e(bulletin_raw).replace("\n", "<br>")
 
-    # Stats
+    # Stats — support both old (camera_threads) and new (scored_threads) field names
+    n_scored = latest.get("scored_threads", latest.get("camera_threads", "?"))
     stats_parts = []
     stats_parts.append(f'{latest.get("total_messages", "?")} messages')
     stats_parts.append(f'{latest.get("total_threads", "?")} threads')
-    stats_parts.append(f'{latest.get("camera_threads", "?")} camera-relevant')
+    stats_parts.append(f'{n_scored} relevant')
     if latest.get("ollama_model"):
         stats_parts.append(f'Model: {e(latest["ollama_model"])}')
-    if latest.get("ollama_time_s"):
-        stats_parts.append(f'LLM: {latest["ollama_time_s"]}s')
+    llm_time = latest.get("total_llm_time_s", latest.get("ollama_time_s"))
+    if llm_time:
+        stats_parts.append(f'LLM: {llm_time}s')
     stats_line = " &nbsp;│&nbsp; ".join(stats_parts)
 
     latest_html = f"""
 <div class="section">
-  <div class="section-title">📡 LATEST DIGEST — {e(latest.get('date', '?'))}</div>
+  <div class="section-title">{feed_emoji} LATEST DIGEST — {e(latest.get('date', '?'))}</div>
   <div class="section-body">
     <div style="font-family:monospace;white-space:pre-wrap;line-height:1.6;font-size:0.9rem;color:var(--fg)">{bulletin_html}</div>
     <div style="margin-top:16px;padding-top:10px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--fg-dim)">
@@ -1552,7 +1578,7 @@ def gen_lkml():
     if detail_cards:
         threads_html = f"""
 <div class="section">
-  <div class="section-title">CAMERA-RELEVANT THREADS — detailed analysis</div>
+  <div class="section-title">RELEVANT THREADS — detailed analysis</div>
   <div class="section-body">{detail_cards}</div>
 </div>"""
 
@@ -1561,7 +1587,7 @@ def gen_lkml():
     for d in digests[1:30]:  # last 30, skip latest
         dt = e(d.get("date", "?"))
         msgs = d.get("total_messages", "?")
-        cam = d.get("camera_threads", "?")
+        cam = d.get("scored_threads", d.get("camera_threads", "?"))
         model_t = d.get("total_llm_time_s", d.get("ollama_time_s", "?"))
         # First line of bulletin as preview
         preview_lines = d.get("bulletin", "").strip().split("\n")
@@ -1581,27 +1607,34 @@ def gen_lkml():
   <div class="section-title">DIGEST ARCHIVE</div>
   <div class="section-body">
     <table class="host-table">
-      <thead><tr><th>Date</th><th>Msgs</th><th>Camera</th><th>LLM</th><th>Preview</th></tr></thead>
+      <thead><tr><th>Date</th><th>Msgs</th><th>Relevant</th><th>LLM</th><th>Preview</th></tr></thead>
       <tbody>{archive_rows}</tbody>
     </table>
   </div>
 </div>"""
 
     # Info section
-    info_html = """
+    info_html = f"""
 <div class="section">
   <div class="section-title">ABOUT</div>
   <div class="section-body" style="font-size:0.85rem;color:var(--fg-dim)">
-    📡 Source: <a href="https://lore.kernel.org/linux-media/">lore.kernel.org/linux-media</a> &nbsp;│&nbsp;
-    🕐 Daily at 4:00 AM &nbsp;│&nbsp;
+    {feed_emoji} Source: <a href="{e(about_url)}">{e(about_url.replace('https://', ''))}</a> &nbsp;│&nbsp;
+    🕐 Daily digest &nbsp;│&nbsp;
     🤖 Local LLM summarization via Ollama &nbsp;│&nbsp;
     📱 Signal bulletin delivery<br>
-    Focus: camera drivers, V4L2, ISP, MIPI CSI, sensors, libcamera, UVC, videobuf2
+    {e(about_text)}
   </div>
 </div>"""
 
     body = latest_html + threads_html + archive_html + info_html
-    return page_wrap("LKML DIGEST", body, "lkml")
+    return page_wrap(f"{scored_label} DIGEST", body, page_slug)
+
+
+# Keep backward compat alias
+def gen_lkml():
+    if "linux-media" in DIGEST_FEEDS:
+        return gen_feed_page("linux-media", DIGEST_FEEDS["linux-media"])
+    return page_wrap("LKML DIGEST", '<div class="section"><div class="section-body">No feed config</div></div>', "lkml")
 
 
 # ─── Page: History (history.html) ───
@@ -1746,11 +1779,14 @@ def main():
         "index.html": lambda: gen_dashboard(all_scans),
         "hosts.html": lambda: gen_hosts(scan),
         "presence.html": gen_presence,
-        "lkml.html": gen_lkml,
         "security.html": lambda: gen_security(scan),
         "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
     }
+    # Dynamic feed pages from digest-feeds.json
+    for fid, fcfg in DIGEST_FEEDS.items():
+        slug = fcfg.get("page_slug", fid)
+        pages[f"{slug}.html"] = (lambda _fid=fid, _fcfg=fcfg: gen_feed_page(_fid, _fcfg))
     for fname, gen_fn in pages.items():
         html = gen_fn()
         path = os.path.join(WEB_DIR, fname)
