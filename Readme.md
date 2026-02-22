@@ -1322,8 +1322,8 @@ Alerts are sent via `signal-cli`'s JSON-RPC API:
 curl -X POST http://127.0.0.1:8080/api/v1/rpc \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"send","params":{
-    "account":"+<BOT_PHONE>",
-    "recipient":["+<OWNER_PHONE>"],
+    "account":"+1BOTPHONENUMBER",
+    "recipient":["+1YOURPHONENUMBER"],
     "message":"⚡ Hot match (75%): Senior Embedded Linux Engineer @ Nvidia\n🏠 Remote | 💰 B2B 45-65k PLN/mo"
   },"id":"1"}'
 ```
@@ -1441,7 +1441,7 @@ OpenClaw's agent (Clawd 🦞) has a persistent workspace at `~/.openclaw/workspa
 | `SOUL.md` | Core personality — "act, don't ask", direct, chill lobster vibes, no corporate speak |
 | `IDENTITY.md` | Name ("Clawd"), creature type, emoji (🦞) |
 | `USER.md` | Info about AK — timezone (Europe/Warsaw), preferences |
-| `AGENTS.md` | Trimmed agent instructions (~1K chars, down from 7.8K to save context) |
+| `AGENTS.md` | Agent instructions + **grounding rules** — "only report facts you can verify from files" |
 | `TOOLS.md` | Explicit tool commands (image gen, web search, system diagnostics) |
 | `skills/career-intel/SKILL.md` | Career scanner instructions — how to trigger scans, check results, interpret scores |
 | `skills/sd-image/SKILL.md` | Image generation instructions — FLUX.1-schnell async pipeline |
@@ -1469,6 +1469,16 @@ Clawd has **no built-in persistent memory** across context resets. The memory sy
 
 This is the key file that OpenClaw's Post-Compaction Audit reads after every context reset. It defines what Clawd does "when waking up with amnesia":
 
+**Grounding Rules (top of file, read first):**
+- NEVER invent tasks, project names, SoC names, or work status
+- The netscan ecosystem MONITORS upstream work — it is NOT Clawd's work
+- Before reporting anything as "in progress", verify it exists in a memory file
+- Prefer "I don't have context on that" over a confident hallucination
+- idle-think research notes are LLM analysis of feeds, not active projects
+
+> **Why this matters:** After context compaction, the LLM loses nuance and confabulates specific tasks from general monitoring capabilities. Without explicit grounding, Clawd invents things like "Broadcom BCM2815x SoC kernel patches" from the fact that soc-bringup feeds exist.
+
+**Session start ritual:**
 1. **Read memory** — today + yesterday's `memory/YYYY-MM-DD.md`
 2. **Read HEARTBEAT.md** — what needs periodic attention
 3. **Scan fresh data** — latest career scan, research notes, cron logs
@@ -1526,7 +1536,10 @@ bc250/
 │   │   └── web-search/
 │   │       └── SKILL.md         # → ~/.openclaw/workspace/skills/web-search/SKILL.md
 │   └── workspace/
-│       ├── AGENTS.md            # → ~/.openclaw/workspace/AGENTS.md (trimmed to ~1K chars)
+│       ├── AGENTS.md            # → ~/.openclaw/workspace/AGENTS.md (grounding rules + session protocol)
+│       ├── WORKFLOW_AUTO.md     # → ~/.openclaw/workspace/WORKFLOW_AUTO.md (autonomous behavior loop)
+│       ├── HEARTBEAT.md         # → ~/.openclaw/workspace/HEARTBEAT.md (cron schedule awareness)
+│       ├── ECOSYSTEM.md         # → ~/.openclaw/workspace/ECOSYSTEM.md (full netscan documentation)
 │       ├── SOUL.md              # → ~/.openclaw/workspace/SOUL.md
 │       └── IDENTITY.md          # → ~/.openclaw/workspace/IDENTITY.md
 ├── openclaw/
