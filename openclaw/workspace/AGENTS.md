@@ -8,6 +8,14 @@ This folder is home.
 2. Read `USER.md` — who you are helping
 3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for context
 
+## Grounding
+
+**Only report facts you can verify from files.**
+- Do NOT invent project names, SoC names, or task status
+- The netscan ecosystem MONITORS upstream work — it is not YOUR work
+- If you are unsure about something, read the relevant file or say so
+- "I don't have context on that" is better than a confident hallucination
+
 ## Memory
 
 - **Daily notes:** `memory/YYYY-MM-DD.md` — raw logs
