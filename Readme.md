@@ -1119,6 +1119,10 @@ The system runs **autonomously via cron** — no human intervention needed. Duri
 | Script | Purpose | GPU? |
 |--------|---------|------|
 | `career-scan.py` | Two-phase career intelligence scanner (see §12) | Yes — phi4:14b |
+| `salary-tracker.py` | Salary & rate intelligence — NoFluffJobs, career-scan extraction, trends (see §12.11) | Yes |
+| `company-intel.py` | Deep company intelligence — GoWork, DDG news, layoffs for 13 entities (see §12.12) | Yes |
+| `patent-watch.py` | IR/RGB camera & kernel driver patent monitor — Google Patents, Lens.org (see §12.13) | Yes |
+| `event-scout.py` | Meetup/conference tracker — Łódź, Warsaw, Poland, Europe (see §12.14) | Yes |
 | `idle-think.sh` | The brain — 8 task types producing JSON research notes | Yes |
 | `repo-watch.sh` | Monitors 5 upstream repos (GStreamer, libcamera, v4l-utils, FFmpeg, LinuxTV) | No |
 | `lore-digest.sh` | Kernel mailing list digests (linux-media, soc-bringup) | Yes |
@@ -1144,6 +1148,10 @@ The system runs **autonomously via cron** — no human intervention needed. Duri
 | 23:30 | `repo-watch.sh --all` | No | |
 | 00:30 | `ha-journal.py` | Yes (locked) | |
 | 01:00 | `career-scan.py` | Yes (locked) | Two-phase, 15–60 min |
+| 02:00 | `salary-tracker.py` | Yes (locked) | ~3 min typical |
+| 02:30 | `company-intel.py` | Yes (locked) | 13 companies, ~20 min |
+| 03:00 | `patent-watch.py` | Yes (locked) | 6 queries, ~15 min |
+| 03:30 | `event-scout.py` | Yes (locked) | Multi-source, ~15 min |
 | 04:00 | `scan.sh` | No | Network scan |
 | 04:30 | `enumerate.sh` | No | Deep service enum |
 | 05:00 | `lore-digest.sh --all` | Yes (locked) | |
@@ -1191,7 +1199,11 @@ The system runs **autonomously via cron** — no human intervention needed. Duri
 | System events | `/opt/netscan/data/syslog/events-<date>.log` (timeouts, OOM, restarts) |
 | Gateway journal | `/opt/netscan/data/syslog/gateway-<date>.log` (persisted from journald) |
 | Ollama journal | `/opt/netscan/data/syslog/ollama-<date>.log` (persisted from journald) |
-| Cron logs | `/opt/netscan/data/{think,career,ha-journal}-cron.log` |
+| Salary snapshots | `/opt/netscan/data/salary/salary-<date>.json` (daily, 180-day history) |
+| Company intel | `/opt/netscan/data/intel/intel-<date>.json` (daily deep-dive + rolling DB) |
+| Patent watch | `/opt/netscan/data/patents/patents-<date>.json` (daily + rolling DB) |
+| Event calendar | `/opt/netscan/data/events/events-<date>.json` (daily + rolling DB) |
+| Cron logs | `/opt/netscan/data/{think,career,ha-journal,salary,intel,patent,event}-cron.log` |
 | Watchlist | `/opt/netscan/watchlist.json` (auto-evolving interest tracker) |
 
 ### 11.5 Dashboard
@@ -1431,6 +1443,78 @@ Each nightly scan saves a GoWork snapshot to `/opt/netscan/data/career/company-i
 - Tracks rating changes, review count growth, sentiment shifts
 - Review text gives insider info on layoffs, salary, management, culture
 
+### 12.11 Salary & Rate Intelligence (`salary-tracker.py`)
+
+**Added Feb 2026.** Nightly salary tracking at 02:00 — collects compensation data from multiple sources and tracks trends for embedded Linux / camera driver roles in Poland.
+
+**Sources:**
+- **Career-scan extraction** — harvests salary fields from the last 7 days of career-scan JSONs (already parsed B2B/UoP ranges)
+- **NoFluffJobs API** — live salary data filtered by embedded/linux/camera/driver keywords
+- **JustJoinIT API** — backup source (API endpoints change frequently)
+- **Bulldogjob API** — backup source
+
+**Pipeline:** Collect → deduplicate → compute statistics (min/P25/median/P75/max, by source) → LLM trend analysis (compares to history) → save JSON + update rolling 180-day history.
+
+**Output:** `/opt/netscan/data/salary/salary-YYYYMMDD.json` — first run collected **208 records, 192 valid B2B ranges**, median **20,160 PLN/month** B2B net, top paying: Amazon Ring at 50,000 PLN.
+
+### 12.12 Deep Company Intelligence (`company-intel.py`)
+
+**Added Feb 2026.** Nightly at 02:30 — deepens intelligence on all 13 tracked GoWork entities plus 4 software houses.
+
+**Per company:**
+1. GoWork.pl reviews (new reviews, rating changes)
+2. DuckDuckGo news search (2 queries per company)
+3. Layoffs.fyi check
+4. Company news page scrape (if available)
+5. LLM analysis → structured JSON: sentiment, score (-5 to +5), red flags, growth signals, ADAS relevance (0-10)
+
+**Cross-company synthesis:** After all companies are analyzed, a final LLM call synthesizes market mood, top companies with positive signals, and specific weekly action items.
+
+**Output:** `/opt/netscan/data/intel/intel-YYYYMMDD.json` + rolling DB `/opt/netscan/data/intel/company-intel-deep.json` (90 snapshots per company).
+
+### 12.13 Patent Watch (`patent-watch.py`)
+
+**Added Feb 2026.** Nightly at 03:00 — monitors patent publications related to IR/RGB cameras at the kernel driver level.
+
+**6 search queries:**
+| Query ID | Focus |
+|----------|-------|
+| `mipi_csi_camera` | MIPI CSI camera driver, image sensor interface |
+| `ir_rgb_dual_camera` | IR/RGB dual camera, DMS/OMS driver monitoring |
+| `isp_pipeline` | Image signal processor pipeline, kernel/firmware |
+| `automotive_camera_adas` | Automotive camera ADAS, surround view, functional safety |
+| `camera_sensor_fusion` | Camera-radar sensor fusion, embedded perception |
+| `v4l2_libcamera` | V4L2, video4linux, libcamera framework patents |
+
+**Sources:** Google Patents (detail pages with abstracts), Lens.org, DuckDuckGo patent news.
+
+**Scoring:** Relevance keywords × watched assignee bonus (Qualcomm, NVIDIA, Samsung, Harman, Bosch, etc.) × kernel/driver level indicators × IR/RGB specifics.
+
+**LLM analysis:** Per-query batch analysis + cross-query synthesis identifying technology direction, active assignees, and impact on open-source camera subsystems.
+
+**Output:** `/opt/netscan/data/patents/patents-YYYYMMDD.json` + rolling DB `/opt/netscan/data/patents/patent-db.json` (max 2000 entries, 365-day retention).
+
+### 12.14 Event & Conference Scout (`event-scout.py`)
+
+**Added Feb 2026.** Nightly at 03:30 — discovers tech events matching user interests with geographic prioritization.
+
+**Location tiers:**
+| Tier | Score | Why |
+|------|-------|-----|
+| Łódź | 10 | Home city, no travel |
+| Warsaw | 8 | 1.5h train |
+| Other Poland | 5 | Same-day possible |
+| Europe | 3 | Need employer sponsorship |
+| Online | 9 | Zero travel, high convenience |
+
+**Sources:** Crossweb.pl (Polish aggregator), Konfeo.com, Meetup.com (6 location×topic queries), Eventbrite, DuckDuckGo event search (6 queries), 9 known conference websites (ELC, LPC, FOSDEM, Automotive Linux Summit, Embedded World, OSSEU, GStreamer Conf, Yocto Summit, KernelCI).
+
+**Scoring:** `combined_score = topic_score × location_multiplier`. Primary keywords (embedded linux, camera driver, V4L2, MIPI CSI, ADAS, etc.) score 3 points each; secondary (C++, Rust embedded, computer vision, etc.) score 1.
+
+**LLM analysis:** Prioritizes events into must-attend / worth-considering / skip, identifies networking opportunities, suggests talks to submit for T5 promotion visibility.
+
+**Output:** `/opt/netscan/data/events/events-YYYYMMDD.json` + rolling DB `/opt/netscan/data/events/event-db.json`.
+
 ---
 
 ## 13. Clawd Bot Workspace & Memory
@@ -1514,6 +1598,10 @@ bc250/
 ├── ollama-proxy.py              # HISTORICAL — ollama-proxy (disabled since OpenClaw 2026.2.17)
 ├── netscan/                     # → /opt/netscan/ (monitoring ecosystem)
 │   ├── career-scan.py           # Two-phase anti-hallucination career scanner
+│   ├── salary-tracker.py        # Salary & rate intelligence tracker
+│   ├── company-intel.py         # Deep company intelligence scanner
+│   ├── patent-watch.py          # IR/RGB camera patent monitor
+│   ├── event-scout.py           # Meetup/conference event tracker
 │   ├── generate-html.py         # Dashboard builder — all data → HTML
 │   ├── idle-think.sh            # The brain — 8 task types, JSON research notes
 │   ├── repo-watch.sh            # Upstream repo monitor (GStreamer, libcamera, etc.)
