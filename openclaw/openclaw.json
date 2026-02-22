@@ -12,7 +12,7 @@
         "models": [
           {
             "id": "huihui_ai/qwen3-abliterated:14b",
-            "name": "Qwen 3 14B Abliterated (Thinking)",
+            "name": "Qwen 3 14B Abliterated",
             "reasoning": true,
             "input": [
               "text"
@@ -25,54 +25,6 @@
             },
             "contextWindow": 24576,
             "maxTokens": 12288
-          },
-          {
-            "id": "qwen3:14b",
-            "name": "Qwen 3 14B (Thinking)",
-            "reasoning": true,
-            "input": [
-              "text"
-            ],
-            "cost": {
-              "input": 0,
-              "output": 0,
-              "cacheRead": 0,
-              "cacheWrite": 0
-            },
-            "contextWindow": 24576,
-            "maxTokens": 12288
-          },
-          {
-            "id": "qwen3-14b-abl-nothink:latest",
-            "name": "Qwen 3 14B Abliterated NoThink",
-            "reasoning": false,
-            "input": [
-              "text"
-            ],
-            "cost": {
-              "input": 0,
-              "output": 0,
-              "cacheRead": 0,
-              "cacheWrite": 0
-            },
-            "contextWindow": 24576,
-            "maxTokens": 6144
-          },
-          {
-            "id": "mistral-nemo:12b",
-            "name": "Mistral Nemo 12B",
-            "reasoning": false,
-            "input": [
-              "text"
-            ],
-            "cost": {
-              "input": 0,
-              "output": 0,
-              "cacheRead": 0,
-              "cacheWrite": 0
-            },
-            "contextWindow": 24576,
-            "maxTokens": 6144
           }
         ]
       }
@@ -81,12 +33,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "ollama/huihui_ai/qwen3-abliterated:14b",
-        "fallbacks": [
-          "ollama/qwen3:14b",
-          "ollama/qwen3-14b-abl-nothink:latest",
-          "ollama/mistral-nemo:12b"
-        ]
+        "primary": "ollama/huihui_ai/qwen3-abliterated:14b"
       },
       "thinkingDefault": "high",
       "timeoutSeconds": 1800
