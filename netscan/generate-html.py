@@ -2778,23 +2778,49 @@ def gen_careers():
             score = j.get("match_score", 0)
             title = e(j.get("title", "Unknown"))
             company = e(j.get("company", "?"))
-            location = e(j.get("location", "?"))
+            location = e(j.get("remote_details") or j.get("location", "?"))
             remote = "✅ Remote OK" if j.get("remote_compatible") else "❌ On-site"
-            salary = e(j.get("salary_hint", "—"))
+            # Salary: prefer new structured fields, fall back to salary_hint
+            b2b = j.get("salary_b2b_net_pln")
+            uop = j.get("salary_uop_gross_pln")
+            sal_src = j.get("salary_source", "")
+            sal_note = j.get("salary_note", "")
+            if b2b or uop:
+                sal_parts = []
+                if b2b:
+                    sal_parts.append(f"B2B net: {b2b}")
+                if uop:
+                    sal_parts.append(f"UoP gross: {uop}")
+                zus = j.get("salary_has_zus_akup")
+                if zus is True:
+                    sal_parts.append("+ ZUS/akup")
+                elif zus is False:
+                    sal_parts.append("no akup")
+                src_label = {"from_offer": "📋 from offer", "estimated": "📊 estimated", "not_possible": "❓"}.get(sal_src, "")
+                salary = e(" | ".join(sal_parts))
+                salary_badge = f' <span style="font-size:0.75rem;color:var(--purple)">[{e(src_label)}]</span>' if src_label else ""
+            else:
+                salary = e(j.get("salary_hint", "—"))
+                salary_badge = ""
+            sw_badge = ' <span style="color:var(--purple);font-size:0.75rem">[SW House]</span>' if j.get("via_software_house") else ""
             reasons = ", ".join(j.get("match_reasons", [])[:4])
             reqs = ", ".join(j.get("key_requirements", [])[:5])
             flags = ", ".join(j.get("red_flags", []))
+            job_url = j.get("job_url", "")
 
             score_color = "var(--green)" if score >= 85 else "var(--amber)" if score >= 70 else "var(--fg)"
             flag_html = f'<div style="color:var(--red);margin-top:4px">⚠ {e(flags)}</div>' if flags else ""
+            remote_feas = j.get("remote_feasibility", "")
+            feas_html = f'<div style="color:var(--amber);margin-top:4px;font-size:0.8rem">🌍 {e(remote_feas)}</div>' if remote_feas else ""
+            title_html = f'<a href="{e(job_url)}" target="_blank" style="color:var(--cyan);font-weight:bold;margin-left:12px;font-size:1rem;text-decoration:none" title="Open job posting">{title} ↗</a>' if job_url else f'<span style="color:var(--cyan);font-weight:bold;margin-left:12px;font-size:1rem">{title}</span>'
 
             hot_cards += f"""
     <div style="background:var(--bg3);border:1px solid var(--border-bright);border-radius:6px;padding:12px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
           <span style="color:{score_color};font-weight:bold;font-size:1.3rem">{score}%</span>
-          <span style="color:var(--cyan);font-weight:bold;margin-left:12px;font-size:1rem">{title}</span>
-          <span style="color:var(--fg-dim);margin-left:8px">@ {company}</span>
+          {title_html}
+          <span style="color:var(--fg-dim);margin-left:8px">@ {company}{sw_badge}</span>
         </div>
         <div style="font-size:0.82rem;text-align:right">
           <div style="color:var(--fg-dim)">📍 {location}</div>
@@ -2804,8 +2830,9 @@ def gen_careers():
       <div style="margin-top:8px;font-size:0.82rem;color:var(--fg-dim)">
         <div>✅ <span style="color:var(--green)">{e(reasons)}</span></div>
         <div style="margin-top:2px">📋 {e(reqs)}</div>
-        <div style="margin-top:2px">💰 {salary}</div>
+        <div style="margin-top:2px">💰 {salary}{salary_badge}</div>
         {flag_html}
+        {feas_html}
       </div>
     </div>"""
 
@@ -2824,12 +2851,21 @@ def gen_careers():
             sc = "var(--amber)" if score >= 55 else "var(--fg-dim)"
             remote_icon = "✅" if j.get("remote_compatible") else "❌"
             reasons_short = ", ".join(j.get("match_reasons", [])[:2])
+            b2b_g = j.get("salary_b2b_net_pln", "")
+            sal_src_g = j.get("salary_source", "")
+            sal_short = e(b2b_g) if b2b_g else e(j.get("salary_hint", "—"))
+            sal_src_icon = {"from_offer": "📋", "estimated": "📊", "not_possible": "❓"}.get(sal_src_g, "")
+            sw_icon = "🏢" if j.get("via_software_house") else ""
+            job_url_g = j.get("job_url", "")
+            title_g = e(j.get('title', '?'))
+            title_cell = f'<a href="{e(job_url_g)}" target="_blank" style="color:var(--cyan);text-decoration:none">{title_g} ↗</a>' if job_url_g else f'<span style="color:var(--cyan)">{title_g}</span>'
             rows += f"""<tr>
   <td style="color:{sc};font-weight:bold">{score}%</td>
-  <td style="color:var(--cyan)">{e(j.get('title', '?'))}</td>
-  <td>{e(j.get('company', '?'))}</td>
-  <td>{e(j.get('location', '?'))}</td>
+  <td>{title_cell}</td>
+  <td>{e(j.get('company', '?'))} {sw_icon}</td>
+  <td>{e(j.get('remote_details') or j.get('location', '?'))}</td>
   <td>{remote_icon}</td>
+  <td style="color:var(--green);font-size:0.8rem">{sal_short} {sal_src_icon}</td>
   <td style="color:var(--fg-dim);font-size:0.8rem">{e(reasons_short)}</td>
 </tr>"""
 
@@ -2838,7 +2874,7 @@ def gen_careers():
   <div class="section-title">📊 GOOD MATCHES <span style="color:var(--amber)">({len(good_jobs)} jobs, score 40-69%)</span></div>
   <div class="section-body">
     <table class="host-table"><thead><tr>
-      <th>Score</th><th>Title</th><th>Company</th><th>Location</th><th>Remote</th><th>Match</th>
+      <th>Score</th><th>Title</th><th>Company</th><th>Location</th><th>Remote</th><th>Salary (B2B net)</th><th>Match</th>
     </tr></thead><tbody>{rows}</tbody></table>
   </div>
 </div>"""
@@ -2948,7 +2984,72 @@ def gen_careers():
   </div>
 </div>"""
 
-    body = overview + summary_html + hot_html + good_html + intel_html + source_html + history_html
+    # ─ Career page health check section ─
+    url_health = scan.get("url_health", {})
+    health_html = ""
+    if url_health:
+        health_rows = ""
+        # Sort: errors first, then by company name
+        sorted_urls = sorted(url_health.items(),
+                             key=lambda x: (x[1].get("http_code", 0) == 200,
+                                            x[1].get("company", "")))
+        for url, h in sorted_urls:
+            http_code = h.get("http_code", 0)
+            resp_time = h.get("response_time", 0)
+            company = h.get("company", "?")
+            company_id = h.get("company_id", "?")
+            is_sw_house = h.get("software_house", False)
+            status = h.get("status", "unknown")
+
+            # Color coding for HTTP status
+            if http_code == 200:
+                code_color = "var(--green)"
+                code_icon = "✅"
+            elif http_code == 0:
+                code_color = "var(--red)"
+                code_icon = "❌"
+            elif 300 <= http_code < 400:
+                code_color = "var(--amber)"
+                code_icon = "↩️"
+            else:
+                code_color = "var(--red)"
+                code_icon = "⚠️"
+
+            # Response time color
+            if resp_time > 0 and resp_time < 3:
+                time_color = "var(--green)"
+            elif resp_time < 8:
+                time_color = "var(--amber)"
+            else:
+                time_color = "var(--red)"
+
+            tier_badge = '<span style="color:var(--purple);font-size:0.75rem;margin-left:4px">[SW House]</span>' if is_sw_house else ""
+            short_url = url[:80] + ("..." if len(url) > 80 else "")
+
+            health_rows += f"""<tr>
+  <td style="color:var(--cyan)">{e(company)}{tier_badge}</td>
+  <td>{code_icon} <span style="color:{code_color};font-weight:bold">{http_code or 'FAIL'}</span></td>
+  <td style="color:{time_color}">{f'{resp_time:.1f}s' if resp_time > 0 else '—'}</td>
+  <td style="color:var(--fg-dim);font-size:0.78rem" title="{e(url)}">{e(short_url)}</td>
+</tr>"""
+
+        # Count stats
+        total = len(url_health)
+        ok_count = sum(1 for h in url_health.values() if h.get("http_code") == 200)
+        fail_count = total - ok_count
+        health_color = "var(--green)" if fail_count == 0 else "var(--red)" if fail_count > 2 else "var(--amber)"
+
+        health_html = f"""
+<div class="section">
+  <div class="section-title">🏥 CAREER PAGE HEALTH CHECK &nbsp;<span style="color:{health_color};font-size:0.85rem">({ok_count}/{total} OK)</span></div>
+  <div class="section-body">
+    <table class="host-table"><thead><tr>
+      <th>Company</th><th>HTTP</th><th>Response</th><th>URL</th>
+    </tr></thead><tbody>{health_rows}</tbody></table>
+  </div>
+</div>"""
+
+    body = overview + summary_html + hot_html + good_html + intel_html + health_html + source_html + history_html
     return page_wrap("CAREERS", body, "career")
 
 
