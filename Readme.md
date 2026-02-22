@@ -1129,6 +1129,7 @@ The system runs **autonomously via cron** — no human intervention needed. Duri
 | `vulnscan.sh` | Weekly vulnerability scan (Sundays) | No |
 | `presence.sh` | Phone presence tracker (AK's phone MAC detection) | No |
 | `gpu-monitor.sh` | Samples Ollama `/api/ps` every minute, logs to TSV | No |
+| `syslog.sh` | System activity logger — health metrics, journal capture, event detection | No |
 | `watchdog.py` | Integrity checks — cron health, disk space, service status | No |
 | `generate-html.py` | Builds the entire web dashboard from all data sources | No |
 | `report.sh` | Morning HTML report rebuild | No |
@@ -1167,6 +1168,7 @@ The system runs **autonomously via cron** — no human intervention needed. Duri
 
 | Frequency | Script | Notes |
 |-----------|--------|-------|
+| Every 5 min | `syslog.sh` | System health metrics + journal capture |
 | Every 5 min | `presence.sh` | Phone detection |
 | Every 1 min | `gpu-monitor.sh` | GPU utilization log |
 | Every 30 min | `watchdog.py --live-only` | Live integrity checks |
@@ -1185,6 +1187,10 @@ The system runs **autonomously via cron** — no human intervention needed. Duri
 | Network hosts | `/opt/netscan/data/hosts-db.json` |
 | Phone presence | `/opt/netscan/data/presence-state.json` |
 | GPU load log | `/opt/netscan/data/gpu-load.tsv` |
+| System health | `/opt/netscan/data/syslog/health-<date>.tsv` (5-min snapshots, 30-day retention) |
+| System events | `/opt/netscan/data/syslog/events-<date>.log` (timeouts, OOM, restarts) |
+| Gateway journal | `/opt/netscan/data/syslog/gateway-<date>.log` (persisted from journald) |
+| Ollama journal | `/opt/netscan/data/syslog/ollama-<date>.log` (persisted from journald) |
 | Cron logs | `/opt/netscan/data/{think,career,ha-journal}-cron.log` |
 | Watchlist | `/opt/netscan/watchlist.json` (auto-evolving interest tracker) |
 
@@ -1518,6 +1524,7 @@ bc250/
 │   ├── enumerate.sh             # Deep service enumeration
 │   ├── vulnscan.sh              # Weekly vulnerability scan
 │   ├── presence.sh              # Phone presence detection
+│   ├── syslog.sh                # System activity logger (health TSV + journal + events)
 │   ├── gpu-monitor.sh           # GPU utilization sampler
 │   ├── watchdog.py              # Cron health, disk, service integrity
 │   ├── report.sh                # Morning HTML report rebuild
