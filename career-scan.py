@@ -1508,14 +1508,14 @@ def send_hot_alerts(jobs, intel_data):
         company = j.get("company", "").lower()
         return any(sh in company for sh in software_house_names)
 
+    # Hot matches: >=70 score, not software houses — alert regardless of remote
     hot_jobs = [j for j in jobs if j.get("match_score", 0) >= 70
-                and j.get("remote_compatible", False)
                 and not is_software_house(j)]
 
-    maybe_remote = [j for j in jobs if j.get("match_score", 0) >= 75
-                    and not j.get("remote_compatible", False)
-                    and j.get("remote_feasibility", "")
-                    and not is_software_house(j)]
+    # Worth checking: 55-69% with remote capability
+    worth_checking = [j for j in jobs if 55 <= j.get("match_score", 0) < 70
+                      and j.get("remote_compatible", False)
+                      and not is_software_house(j)]
 
     urgent_intel = []
     if intel_data and "alerts" in intel_data:
@@ -1523,18 +1523,22 @@ def send_hot_alerts(jobs, intel_data):
 
     alerts_sent = 0
 
-    for j in hot_jobs[:3]:
+    for j in hot_jobs[:5]:
         b2b = j.get('salary_b2b_net_pln') or '?'
         uop = j.get('salary_uop_gross_pln') or '?'
         src = j.get('salary_source', '?')
         sal_line = f'B2B net: {b2b} | UoP gross: {uop} [{src}]'
-        remote_detail = j.get('remote_details', j.get('location', '?'))
+        location = j.get('remote_details', j.get('location', '?'))
+        remote = j.get('remote_compatible', False)
+        icon = "🎯" if remote else "⚡"
+        label = "HOT REMOTE MATCH" if remote else "HOT MATCH"
+        loc_icon = "🏠" if remote else "📍"
         job_link = j.get('job_url', '')
         link_line = f"🔗 {job_link}" if job_link else "🔗 Check dashboard → career.html"
         msg = (
-            f"🎯 HOT JOB MATCH ({j.get('match_score', 0)}%)\n"
+            f"{icon} {label} ({j.get('match_score', 0)}%)\n"
             f"{j.get('title', '?')} @ {j.get('company', '?')}\n"
-            f"📍 {remote_detail}\n"
+            f"{loc_icon} {location}\n"
             f"✅ {chr(44).join(j.get('match_reasons', [])[:3])}\n"
             f"💰 {sal_line}\n"
             f"{link_line}"
@@ -1543,25 +1547,24 @@ def send_hot_alerts(jobs, intel_data):
             alerts_sent += 1
             print(f"  📡 Signal alert sent: {j.get('title', '?')}")
 
-    for j in maybe_remote[:2]:
+    for j in worth_checking[:2]:
         b2b = j.get('salary_b2b_net_pln') or '?'
         uop = j.get('salary_uop_gross_pln') or '?'
         src = j.get('salary_source', '?')
         sal_line = f'B2B net: {b2b} | UoP gross: {uop} [{src}]'
-        feas = j.get('remote_feasibility', 'no analysis')
         job_link = j.get('job_url', '')
         link_line = f"🔗 {job_link}" if job_link else "🔗 Check dashboard → career.html"
         msg = (
             f"🌍 WORTH CHECKING ({j.get('match_score', 0)}%)\n"
             f"{j.get('title', '?')} @ {j.get('company', '?')}\n"
-            f"📍 {j.get('remote_details', j.get('location', '?'))}\n"
-            f"🌍 PL feasibility: {feas[:150]}\n"
+            f"🏠 {j.get('remote_details', j.get('location', '?'))}\n"
+            f"✅ {chr(44).join(j.get('match_reasons', [])[:3])}\n"
             f"💰 {sal_line}\n"
             f"{link_line}"
         )
         if signal_send(msg):
             alerts_sent += 1
-            print(f"  📡 Signal feasibility alert: {j.get('title', '?')}")
+            print(f"  📡 Signal worth-checking alert: {j.get('title', '?')}")
 
     for a in urgent_intel[:2]:
         msg = (
