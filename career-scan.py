@@ -131,7 +131,7 @@ COMPANIES = {
     "tcl": {
         "name": "TCL Research Europe",
         "career_urls": [
-            "https://tcl-research.pl/career/",
+            "https://tcl-research.pl/careers/",
         ],
         "keywords": ["linux", "driver", "camera", "video", "AI", "embedded", "computer vision"],
         "industry": "consumer_electronics",
@@ -250,15 +250,23 @@ JOB_BOARDS = {
 INTEL_SOURCES = {
     "gowork": {
         "name": "GoWork.pl",
+        "fetcher": "gowork_reviews",
         "urls": [
-            "https://www.gowork.pl/opinie/harman-connected-services;eid,2830399",
-            "https://www.gowork.pl/opinie/nvidia;eid,5060921",
-            "https://www.gowork.pl/opinie/intel;eid,5065655",
-            "https://www.gowork.pl/opinie/samsung;eid,5060924",
-            "https://www.gowork.pl/opinie/amd;eid,5065659",
-            "https://www.gowork.pl/opinie/qualcomm;eid,5098383",
-            "https://www.gowork.pl/opinie/ericsson;eid,5060920",
-            "https://www.gowork.pl/opinie/google;eid,5060916",
+            # OLD opinie_czytaj format — server-rendered, scrapeable
+            # (new /opinie/ SPA format is client-rendered, returns no reviews)
+            "https://www.gowork.pl/opinie_czytaj,8528",         # Ericsson (Warszawa)
+            "https://www.gowork.pl/opinie_czytaj,21451047",     # Samsung Electronics Polska
+            "https://www.gowork.pl/opinie_czytaj,1036892",      # Harman Connected Services
+            "https://www.gowork.pl/opinie_czytaj,930747",       # Intel Technology Poland
+            "https://www.gowork.pl/opinie_czytaj,21622584",     # Nvidia Poland
+            "https://www.gowork.pl/opinie_czytaj,20727487",     # Qualcomm Wireless Business Solutions
+            "https://www.gowork.pl/opinie_czytaj,26904732",     # AMD Poland
+            "https://www.gowork.pl/opinie_czytaj,949234",       # Google Poland
+            "https://www.gowork.pl/opinie_czytaj,23971017",     # Arm Poland
+            "https://www.gowork.pl/opinie_czytaj,365816",       # Fujitsu Technology Solutions
+            "https://www.gowork.pl/opinie_czytaj,239192",       # Thales DIS Polska
+            "https://www.gowork.pl/opinie_czytaj,1026920",      # Amazon Development Center
+            "https://www.gowork.pl/opinie_czytaj,23966243",     # TCL Research Europe
         ],
     },
     "layoffs": {
@@ -558,6 +566,101 @@ def fetch_nofluff_salary_api(url, timeout=25):
         return f"[fetch_error: {ex}]"
 
 
+def fetch_gowork_reviews(url, timeout=25):
+    """Fetch GoWork.pl old-style opinie_czytaj page and extract reviews.
+
+    The NEW /opinie/ URLs are Next.js SPAs that render client-side only.
+    The OLD /opinie_czytaj,{id} format returns server-rendered HTML with
+    actual review content, ratings, and dates — fully scrapeable.
+    """
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": UA,
+            "Accept": "text/html,application/xhtml+xml,*/*",
+            "Accept-Language": "pl,en;q=0.9",
+        })
+        t0 = time.time()
+        resp = urllib.request.urlopen(req, timeout=timeout)
+        elapsed = time.time() - t0
+        http_code = resp.getcode()
+        raw = resp.read().decode("utf-8", errors="replace")
+        fetch_page._last_health = {"http_code": http_code, "response_time": round(elapsed, 2)}
+
+        # Extract company name from title: "Opinie Company City - N opinii - GoWork.pl"
+        title_m = re.search(r'<title>(.*?)</title>', raw)
+        title = title_m.group(1) if title_m else ""
+        company_m = re.match(r'Opinie\s+(.+?)(?:\s+-\s+\d+\s+opini|\s+-\s+GoWork)', title)
+        company_name = company_m.group(1).strip() if company_m else "Unknown"
+
+        # Strip scripts/styles, then split into text lines
+        text = re.sub(r'<script[^>]*>.*?</script>', ' ', raw, flags=re.DOTALL)
+        text = re.sub(r'<style[^>]*>.*?</style>', ' ', text, flags=re.DOTALL)
+        text = re.sub(r'<[^>]+>', '\n', text)
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        lines = [l.strip() for l in text.split('\n') if l.strip()]
+
+        # Extract rating and review count from meta/title
+        rating_m = re.search(r'(\d+[.,]\d+)\s*/\s*5', ' '.join(lines[:50]))
+        rating = rating_m.group(1).replace(',', '.') if rating_m else "?"
+        count_m = re.search(r'Opinie\s*\(\s*(\d+)', ' '.join(lines[:50]))
+        review_count = count_m.group(1) if count_m else "?"
+
+        # Extract individual reviews: date + role + text
+        reviews = []
+        date_pattern = re.compile(r'^(\d{1,2}\.\d{1,2}\.\d{4})\s+(\d{1,2}:\d{2})$')
+        role_keywords = {"Pracownik", "Były pracownik", "Kandydat", "Inne", "Pytanie"}
+        i = 0
+        while i < len(lines):
+            dm = date_pattern.match(lines[i])
+            if dm:
+                date_str = dm.group(1)
+                role = ""
+                review_text = []
+                j = i + 1
+                # Next line(s) might be role type
+                if j < len(lines) and lines[j] in role_keywords:
+                    role = lines[j]
+                    j += 1
+                # Skip '@' reply indicators
+                if j < len(lines) and lines[j] == "@":
+                    j += 1
+                if j < len(lines) and lines[j] in role_keywords:
+                    j += 1
+                # Collect review text until next date or stopper
+                while j < len(lines):
+                    if date_pattern.match(lines[j]):
+                        break
+                    if lines[j] in ("Odpowiedz", "Zgłoś sygnał"):
+                        j += 1
+                        continue
+                    # Skip short numeric-only lines (vote counts)
+                    if re.match(r'^\d{1,3}$', lines[j]):
+                        j += 1
+                        continue
+                    review_text.append(lines[j])
+                    j += 1
+                    if len(review_text) > 5:
+                        break
+                body = " ".join(review_text).strip()
+                if body and len(body) > 10:
+                    reviews.append({"date": date_str, "role": role, "text": body[:500]})
+                i = j
+            else:
+                i += 1
+
+        # Build LLM-readable output
+        out = [f"GoWork.pl — {company_name}"]
+        out.append(f"Rating: {rating}/5 | Reviews: {review_count} | URL: {url}")
+        out.append(f"Recent reviews ({len(reviews)} extracted):")
+        for r in reviews[:15]:
+            out.append(f"\n[{r['date']}] ({r['role']}) {r['text']}")
+
+        return "\n".join(out)
+    except Exception as ex:
+        fetch_page._last_health = {"http_code": 0, "response_time": 0, "error": str(ex)[:120]}
+        return f"[fetch_error: {ex}]"
+
+
 # Registry of custom fetchers
 API_FETCHERS = {
     "amazon_api": fetch_amazon_api,
@@ -565,6 +668,7 @@ API_FETCHERS = {
     "google_careers": fetch_google_careers,
     "hn_api": fetch_hn_api,
     "nofluff_salary_api": fetch_nofluff_salary_api,
+    "gowork_reviews": fetch_gowork_reviews,
 }
 
 
@@ -938,17 +1042,22 @@ trends, salary data, and market conditions for a senior embedded Linux engineer
 in Poland (Łódź). 15 years of kernel/driver/camera experience.
 
 Analyze the raw text from company intel sources and produce a thorough briefing.
+Pay special attention to GoWork.pl employee reviews — they contain insider
+information about company culture, salaries, management, and hiring activity.
 
 Output a JSON object:
 {
   "alerts": [
     {
       "company": "Company name",
-      "type": "layoff|hiring_surge|salary_data|company_news|warning",
+      "type": "layoff|hiring_surge|salary_data|company_news|warning|employee_sentiment",
       "severity": "info|notable|urgent",
       "summary": "One-line summary",
       "details": "2-3 sentences with specifics"
     }
+  ],
+  "gowork_summary": [
+    {"company": "Name", "rating": "X.X/5", "reviews": N, "sentiment": "positive|mixed|negative", "key_themes": "top 2-3 themes from reviews"}
   ],
   "salary_benchmarks": [
     {"role": "description", "range": "salary range in PLN", "type": "B2B net or UoP gross", "source": "source name", "notes": "any context"}
@@ -957,10 +1066,12 @@ Output a JSON object:
 }
 
 Rules:
-- Focus on target companies: Nvidia, Google, AMD, Intel, Samsung, Amazon, Harman, Qualcomm, Arm, Ericsson
+- Focus on target companies: Nvidia, Google, AMD, Intel, Samsung, Amazon, Harman, Qualcomm, Arm, Ericsson, Fujitsu, Thales, TCL
 - Flag layoffs as URGENT, hiring surges as NOTABLE
+- For GoWork reviews: identify sentiment trends, salary mentions, management complaints, hiring/firing signals
 - Extract ALL salary data points found. Convert to PLN (4.3/EUR, 4.0/USD).
 - Distinguish B2B net vs UoP gross
+- nofluffjobs.com is a JOB BOARD (aggregator), NOT a hiring company
 
 Output ONLY valid JSON. No markdown.
 """
@@ -1401,10 +1512,22 @@ def scan_job_boards():
 
 
 def scan_intel_sources():
-    """Scan company intelligence sources."""
+    """Scan company intelligence sources with persistent Gowork tracking."""
     print("\n  ═══ Scanning company intel ═══")
     combined_text = ""
     intel_results = {}
+
+    # ── Persistent Gowork intel storage ──
+    gowork_db_path = os.path.join(CAREER_DIR, "company-intel.json")
+    gowork_db = {}
+    if os.path.exists(gowork_db_path):
+        try:
+            with open(gowork_db_path) as f:
+                gowork_db = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            gowork_db = {}
+
+    today = datetime.now().strftime("%Y-%m-%d")
 
     for sid, source in INTEL_SOURCES.items():
         name = source["name"]
@@ -1413,13 +1536,69 @@ def scan_intel_sources():
         for url in source["urls"]:
             print(f"  [{name}] Fetching: {url[:80]}...")
             text = fetcher_fn(url)
+            # Rate-limit Gowork to avoid 429s (13 company pages)
+            if sid == "gowork":
+                time.sleep(3)
             if not text.startswith("[fetch_error"):
                 combined_text += f"\n=== {name}: {url[:60]} ===\n{text[:5000]}\n"
                 print(f"    Got {len(text)} chars")
+
+                # ── Persist Gowork review snapshots ──
+                if sid == "gowork" and fetcher_name == "gowork_reviews":
+                    # Parse the structured output from fetch_gowork_reviews
+                    header = text.split("\n")[0] if text else ""
+                    rating_m = re.search(r'Rating:\s*([\d.?]+)/5', text)
+                    count_m = re.search(r'Reviews:\s*(\d+)', text)
+                    company_m = re.search(r'^GoWork\.pl\s*[—–-]\s*(.+)', text)
+                    entity_m = re.search(r'opinie_czytaj,(\d+)', url)
+                    entity_id = entity_m.group(1) if entity_m else url
+
+                    company_key = company_m.group(1).strip() if company_m else entity_id
+                    rating = rating_m.group(1) if rating_m else "?"
+                    reviews = count_m.group(1) if count_m else "?"
+
+                    # Extract review texts for this snapshot
+                    review_texts = re.findall(
+                        r'\[(\d{1,2}\.\d{1,2}\.\d{4})\]\s*\(([^)]*)\)\s*(.+)',
+                        text)
+                    latest_reviews = [
+                        {"date": d, "role": r, "text": t[:300]}
+                        for d, r, t in review_texts[:10]
+                    ]
+
+                    if company_key not in gowork_db:
+                        gowork_db[company_key] = {
+                            "entity_id": entity_id,
+                            "url": url,
+                            "snapshots": [],
+                        }
+
+                    entry = gowork_db[company_key]
+                    # Avoid duplicate same-day snapshots
+                    existing_dates = {s["scan_date"] for s in entry.get("snapshots", [])}
+                    if today not in existing_dates:
+                        entry["snapshots"].append({
+                            "scan_date": today,
+                            "rating": rating,
+                            "review_count": reviews,
+                            "latest_reviews": latest_reviews,
+                        })
+                        # Keep last 90 days of snapshots
+                        entry["snapshots"] = entry["snapshots"][-90:]
+
             else:
                 print(f"    ✗ {text}")
 
         intel_results[sid] = {"status": "ok" if len(combined_text) > 200 else "insufficient"}
+
+    # ── Save persistent Gowork DB ──
+    if gowork_db:
+        try:
+            with open(gowork_db_path, "w") as f:
+                json.dump(gowork_db, f, indent=2, ensure_ascii=False)
+            print(f"  Saved company intel DB ({len(gowork_db)} companies)")
+        except OSError as ex:
+            print(f"  ✗ Failed to save intel DB: {ex}")
 
     if len(combined_text) < 300:
         return None, intel_results

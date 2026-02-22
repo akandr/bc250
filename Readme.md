@@ -907,7 +907,7 @@ The default OpenClaw tool set includes browser, canvas, cron, and many features 
 <!-- Updated to match actual deployed config. Previously showed "messaging"
      profile with "allow" key. Actual config uses "coding" profile with
      "alsoAllow" (additive, not restrictive). See "Critical fix: tools.allow
-     vs tools.alsoAllow" in Section 12 for why this matters. -->
+     vs tools.alsoAllow" in Section 15 for why this matters. -->
 
 ```json
 {
@@ -922,7 +922,7 @@ The default OpenClaw tool set includes browser, canvas, cron, and many features 
 }
 ```
 
-This keeps: file read/write, shell exec, session management, Signal messaging (via `alsoAllow`). Disables: browser automation, canvas, macOS nodes, cron, and all 50+ bundled skills (most require macOS or specific APIs). **Important:** Use `alsoAllow` (additive), not `allow` (restrictive whitelist) — see Section 12.
+This keeps: file read/write, shell exec, session management, Signal messaging (via `alsoAllow`). Disables: browser automation, canvas, macOS nodes, cron, and all 50+ bundled skills (most require macOS or specific APIs). **Important:** Use `alsoAllow` (additive), not `allow` (restrictive whitelist) — see Section 15.
 
 ### 10.6 Custom Skills
 
@@ -1101,19 +1101,434 @@ No C++ or Go ports exist. OpenClaw has first-class Ollama support with native `/
 
 ---
 
-## 11. Repository Structure
+## 11. Netscan Monitoring Ecosystem
+
+A comprehensive research, monitoring, and intelligence system built on the BC-250. Everything lives under `/opt/netscan/` on the server. The web dashboard is at `http://192.168.3.151:8888`.
+
+### 11.1 Architecture
+
+```
+Cron schedule → Scripts (bash/python) → Ollama (phi4:14b via Vulkan) → JSON data → generate-html.py → Dashboard
+                                                                     → Signal alerts (career, watchlist)
+```
+
+The system runs **autonomously via cron** — no human intervention needed. During quiet hours (23:00–08:00), the OpenClaw gateway is stopped and the GPU is exclusively available for batch processing. During daytime, the gateway runs and cron jobs use a GPU lock to avoid conflicts with chat.
+
+### 11.2 Scripts
+
+| Script | Purpose | GPU? |
+|--------|---------|------|
+| `career-scan.py` | Two-phase career intelligence scanner (see §12) | Yes — phi4:14b |
+| `idle-think.sh` | The brain — 8 task types producing JSON research notes | Yes |
+| `repo-watch.sh` | Monitors 5 upstream repos (GStreamer, libcamera, v4l-utils, FFmpeg, LinuxTV) | No |
+| `lore-digest.sh` | Kernel mailing list digests (linux-media, soc-bringup) | Yes |
+| `ha-journal.py` | Home Assistant analysis (climate, sensors, anomalies) | Yes |
+| `ha-observe.py` | Quick HA queries (weather, climate, specific sensors) | No |
+| `scan.sh` | Network scan via nmap (192.168.3.0/24) | No |
+| `enumerate.sh` | Deep service enumeration of discovered hosts | No |
+| `vulnscan.sh` | Weekly vulnerability scan (Sundays) | No |
+| `presence.sh` | Phone presence tracker (AK's phone MAC detection) | No |
+| `gpu-monitor.sh` | Samples Ollama `/api/ps` every minute, logs to TSV | No |
+| `watchdog.py` | Integrity checks — cron health, disk space, service status | No |
+| `generate-html.py` | Builds the entire web dashboard from all data sources | No |
+| `report.sh` | Morning HTML report rebuild | No |
+
+### 11.3 Cron Schedule
+
+#### Quiet Hours (23:00–08:00) — Gateway stopped, GPU free for batch
+
+| Time | Script | GPU? | Notes |
+|------|--------|------|-------|
+| 22:55 | `systemctl --user stop openclaw-gateway` | — | Chat offline |
+| 23:30 | `repo-watch.sh --all` | No | |
+| 00:30 | `ha-journal.py` | Yes (locked) | |
+| 01:00 | `career-scan.py` | Yes (locked) | Two-phase, 15–60 min |
+| 04:00 | `scan.sh` | No | Network scan |
+| 04:30 | `enumerate.sh` | No | Deep service enum |
+| 05:00 | `lore-digest.sh --all` | Yes (locked) | |
+| 05:30 | `vulnscan.sh` (Sundays) | No | Weekly only |
+| 06:00 | `watchdog.py` | No | Full run |
+| 06:30 | `idle-think.sh` | Yes (locked) | |
+| 07:00 | `idle-think.sh` | Yes (locked) | |
+| 08:00 | `systemctl --user start openclaw-gateway` | — | Chat online |
+
+#### Daytime (08:00–22:59) — Signal chat active, GPU guard on
+
+| Time | Script | GPU? | Notes |
+|------|--------|------|-------|
+| 08:00, 14:00 | `repo-watch.sh --all` | No | |
+| 08:30 | `report.sh` | No | Morning HTML rebuild |
+| 09:30, 15:30, 20:30 | `ha-journal.py` | Yes (locked) | |
+| 16:00 | `idle-think.sh` | Yes (locked) | Afternoon session |
+| 18:00 | `repo-watch.sh --all --notify` | No | |
+| 19:00 | `idle-think.sh --task signal` | Yes (locked) | THE daily notification |
+
+#### Always Running
+
+| Frequency | Script | Notes |
+|-----------|--------|-------|
+| Every 5 min | `presence.sh` | Phone detection |
+| Every 1 min | `gpu-monitor.sh` | GPU utilization log |
+| Every 30 min | `watchdog.py --live-only` | Live integrity checks |
+
+### 11.4 Data Locations
+
+| Data | Path |
+|------|------|
+| Research notes | `/opt/netscan/data/think/note-<type>-<date>-<time>.json` |
+| Notes index | `/opt/netscan/data/think/notes-index.json` |
+| Career scans | `/opt/netscan/data/career/scan-<date>.json` |
+| Latest career scan | `/opt/netscan/data/career/latest-scan.json` (symlink) |
+| Repo items | `/opt/netscan/data/repos/<project>/items-<date>.json` |
+| Repo digests | `/opt/netscan/data/repos/<project>/digest-<date>.json` |
+| Mailing list digests | `/opt/netscan/data/lkml/digest-<date>.json`, `.../soc/...` |
+| Network hosts | `/opt/netscan/data/hosts-db.json` |
+| Phone presence | `/opt/netscan/data/presence-state.json` |
+| GPU load log | `/opt/netscan/data/gpu-load.tsv` |
+| Cron logs | `/opt/netscan/data/{think,career,ha-journal}-cron.log` |
+| Watchlist | `/opt/netscan/watchlist.json` (auto-evolving interest tracker) |
+
+### 11.5 Dashboard
+
+The web dashboard at `http://192.168.3.151:8888` (served by nginx) provides:
+
+- **DASHBOARD** — Overview with host count, presence status, latest notes
+- **HOSTS** — All discovered network devices
+- **PRESENCE** — Phone detection timeline
+- **LINUX-MEDIA / SOC-BRINGUP** — Kernel mailing list digests
+- **GSTREAMER / LIBCAMERA / V4L-UTILS / FFMPEG / LINUXTV** — Repo feeds
+- **ISSUES** — LLM-generated issues/concerns from analysis
+- **NOTES** — All idle-think research notes
+- **LOAD** — GPU utilization heatmap and breakdown
+- **SECURITY** — Host security scoring
+- **CAREER** — Career scan results (`career.html`)
+- **HISTORY** — Changelog
+- **LOG** — Raw scan logs
+
+### 11.6 Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `profile.json` | Public interests — tracked repos, keywords, technologies |
+| `profile-private.json` | Career context — target companies, salary expectations (gitignored) |
+| `watchlist.json` | Auto-evolving interest tracker — topics, sources, status |
+| `digest-feeds.json` | RSS/feed URLs for mailing list digests |
+| `repo-feeds.json` | Repository URLs and API endpoints for repo-watch |
+
+### 11.7 GPU Contention & Model Eviction
+
+The BC-250 has **16 GB unified memory** shared between CPU and GPU. Only one large LLM model can be loaded at a time.
+
+**The problem (discovered Feb 2026):** The career-scan cron job at 01:00 uses `phi4:14b` (~10.1 GiB), but `qwen3-14b-abl-nothink` from the OpenClaw gateway was still resident in Ollama with `keep_alive: 60m`, consuming ~11 GiB. With both models, Ollama reported: *"model requires 10.1 GiB but only 9.4 GiB is available"*.
+
+**The fix:** Explicit model eviction before preloading the career scanner's model:
+
+```python
+# Evict ALL loaded models before starting
+for model in loaded_models:
+    requests.post("http://localhost:11434/api/generate",
+                  json={"model": model["name"], "keep_alive": 0})
+
+# Then preload the scanner's model
+requests.post("http://localhost:11434/api/generate",
+              json={"model": "phi4:14b", "keep_alive": "60m"})
+```
+
+This pattern should be used by **any batch script** that needs the GPU during quiet hours.
+
+---
+
+## 12. Career Intelligence Scanner (`career-scan.py`)
+
+An automated career opportunity scanner that scrapes company career pages, job boards, and intelligence sites, then uses a local LLM to analyze matches against a candidate profile.
+
+### 12.1 Two-Phase Anti-Hallucination Architecture
+
+<!-- Implemented Feb 2026, commit 74cfa0d. Previous single-phase approach had
+     the LLM seeing the candidate profile during extraction, causing it to
+     hallucinate job listings that matched the profile but didn't exist. -->
+
+The scanner uses a **two-phase approach** to prevent LLM hallucination:
+
+**Phase 1 — Profile-Free Extraction:** The LLM extracts job listings from raw HTML **without seeing the candidate profile**. It only receives the page content and instructions to extract structured job data. This prevents the model from "helpfully" inventing jobs that match the candidate.
+
+**Phase 2 — Individual Job Analysis:** Each extracted job is analyzed **one at a time** against the candidate profile. The LLM scores relevance, assesses remote compatibility, and identifies matching skills. By analyzing jobs individually (not in batches), the model can't cross-contaminate results.
+
+```
+Page HTML → Phase 1 (extract, no profile) → Raw job list
+                                                    ↓
+Candidate Profile + Single Job → Phase 2 (analyze) → Scored match
+                                                    ↓ (repeat per job)
+                                              Aggregated results → JSON + Signal alerts
+```
+
+### 12.2 Scoring & Alerts
+
+| Category | Score | Signal Alert? | Criteria |
+|----------|-------|---------------|----------|
+| ⚡ Hot match | ≥ 70% | ✅ Yes (up to 5 per scan) | Any location, not software houses |
+| 🌍 Worth checking | 55–69% | ✅ Yes (up to 2 per scan) | Must be remote-compatible |
+| Good match | 40–54% | ❌ Dashboard only | |
+| Weak/No match | < 40% | ❌ Dashboard only | |
+
+**Software house filter:** Companies like SII, GlobalLogic, Sysgo, etc. appear on the dashboard but **never trigger Signal alerts** — they're body-shopping intermediaries.
+
+### 12.3 Salary Estimation
+
+Deterministic Python-based estimation (no LLM) using `SALARY_TIERS` and `COMPANY_TIER_MAP`:
+
+| Tier | Examples | B2B (PLN/mo) | UoP (PLN/mo) |
+|------|----------|--------------|---------------|
+| Tier 1 (FAANG) | Google, Nvidia, AMD | 45–65k | 32–48k |
+| Tier 2 (Big tech) | Samsung, Qualcomm, Intel | 35–50k | 25–38k |
+| Tier 3 (Good) | Ericsson, Fujitsu, Arm | 28–40k | 20–30k |
+| Tier 4 (Average) | TCL Research, Thales | 22–32k | 16–24k |
+
+### 12.4 Target Companies
+
+| Company | Industry | Interest |
+|---------|----------|----------|
+| Nvidia | Silicon | Tegra, Jetson, kernel drivers |
+| Google | Silicon | ChromeOS, Pixel, Android camera |
+| AMD | Silicon | GPU drivers, ROCm, RDNA |
+| Intel | Silicon | IPU, camera, kernel team |
+| Samsung | Silicon | Exynos, camera ISP |
+| Amazon | Tech | Ring, Alexa, embedded Linux |
+| Qualcomm | Silicon | Snapdragon camera, MIPI CSI |
+| Arm | Silicon | Mali GPU, kernel |
+| Ericsson | Telecom | Platform SW, Linköping/remote |
+| Fujitsu | Enterprise | Mainboard FW, Augsburg/remote |
+| Thales | Defense | DIS, embedded, Kraków |
+| HARMAN | Automotive | Current employer monitoring |
+
+### 12.5 Technical Details
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Model | `phi4:14b` | Best extraction accuracy; abliterated variant avoids refusals |
+| `num_ctx` | 6144 | UMA memory constraint — 16k wastes KV cache on a 16 GB system |
+| `keep_alive` | 60m | Keeps model hot between pages (scan takes 15–60 min) |
+| `temperature` | 0.3 | Low for deterministic extraction |
+| HTTP timeout | 120s per LLM call | Some pages are large |
+| HTTP 500 retry | 45s wait, 1 retry | Ollama occasionally 500s under memory pressure |
+| GoWork delay | 3s between pages | Avoids 429 rate limiting (13 companies ≈ 40s) |
+| Selenium | 4.41.0 + geckodriver | Installed but unused — old GoWork URLs are SSR |
+
+### 12.6 Signal Alert Delivery
+
+Alerts are sent via `signal-cli`'s JSON-RPC API:
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"send","params":{
+    "account":"+48532825716",
+    "recipient":["+48503326388"],
+    "message":"⚡ Hot match (75%): Senior Embedded Linux Engineer @ Nvidia\n🏠 Remote | 💰 B2B 45-65k PLN/mo"
+  },"id":"1"}'
+```
+
+### 12.7 Cron Stdout Buffering Fix
+
+<!-- Discovered Feb 2026, commit 81b5995. The career-scan.py cron job
+     produced zero output because Python's stdout was fully buffered
+     when running under cron (no TTY). -->
+
+**Problem:** `career-scan.py` produced **zero output** when run from cron. The script crashed mid-execution, but the crash message was lost because stdout was fully buffered (no TTY under cron).
+
+**Fix:** Add at the top of the script:
+
+```python
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
+```
+
+This ensures every `print()` is flushed immediately, so cron log files capture output even if the script crashes.
+
+### 12.8 Schedule
+
+- **Nightly at 01:00** — Full scan via cron (quiet hours, GPU locked)
+- Results written to `/opt/netscan/data/career/scan-YYYY-MM-DD.json`
+- `latest-scan.json` symlinked to most recent scan
+- Dashboard at `http://bc250:8888/career.html`
+
+### 12.9 GoWork.pl Company Intelligence
+
+<!-- Implemented Feb 2026. The NEW GoWork.pl is a Next.js SPA that renders
+     all company reviews client-side (React Server Components). Simple HTTP
+     scraping returns only the global homepage feed, not company-specific
+     reviews. Even Selenium+headless Firefox fails — the page detects
+     automation and doesn't load company content.
+     
+     SOLUTION: The OLD opinie_czytaj,{entity_id} URLs are still served
+     with full server-side rendering (SSR). These pages contain actual
+     review text, ratings, dates, and role types. -->
+
+**The problem:** GoWork.pl rewrote their site as a Next.js SPA. The new `/opinie/{company};eid,{id}` URLs return a client-rendered shell — all review content is loaded via JavaScript. Neither `urllib` nor headless Firefox can extract actual reviews.
+
+**The fix:** GoWork still serves the OLD `/opinie_czytaj,{entity_id}` format as fully server-rendered HTML. These pages contain:
+- Company name, city, industry
+- Overall rating (X.X/5) and total review count
+- Individual reviews with dates, role type, and full text
+
+| Company | Entity ID | Reviews | Rating |
+|---------|-----------|---------|--------|
+| Ericsson | 8528 | ~97 | 2.2/5 |
+| Samsung | 21451047 | ~435 | 1.8/5 |
+| HARMAN | 1036892 | ~161 | 2.6/5 |
+| Intel | 930747 | ~336 | 2.3/5 |
+| NVIDIA | 21622584 | ~6 | 2.8/5 |
+| Qualcomm | 20727487 | ~0 | — |
+| AMD | 26904732 | ~0 | — |
+| Google | 949234 | ~65 | 2.4/5 |
+| Arm | 23971017 | ~0 | — |
+| Fujitsu | 365816 | ~1083 | 2.3/5 |
+| Thales | 239192 | ~1633 | — |
+| Amazon | 1026920 | ~918 | 1.9/5 |
+| TCL Research | 23966243 | ~32 | — |
+
+**Rate limiting:** GoWork serves 429 if fetched too fast. The scanner adds a 3-second delay between pages (~40s total for 13 companies).
+
+**Entity ID discovery:** Old entity IDs were found via DuckDuckGo search (Google returns CAPTCHAs from servers). The IDs are NOT the same as the `eid` parameter in the new SPA URLs.
+
+### 12.10 Persistent Company Intel Database
+
+<!-- Implemented Feb 2026. Previously, scan_intel_sources() discarded all
+     intel data after one LLM analysis call. Now GoWork review snapshots
+     are stored persistently with dates for trend tracking. -->
+
+Each nightly scan saves a GoWork snapshot to `/opt/netscan/data/career/company-intel.json`:
+
+```json
+{
+  "Samsung Electronics Polska Warszawa": {
+    "entity_id": "21451047",
+    "url": "https://www.gowork.pl/opinie_czytaj,21451047",
+    "snapshots": [
+      {
+        "scan_date": "2026-02-23",
+        "rating": "1.8",
+        "review_count": "435",
+        "latest_reviews": [
+          {"date": "04.02.2026", "role": "Inne", "text": "przygotujcie sie na powrót do biur 5 dni..."},
+          {"date": "18.02.2026", "role": "Pracownik", "text": "Praca w tej firmie to podręcznikowy przykład pułapki lojalności..."}
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Features:**
+- Accumulates over time — old data preserved with dates
+- Keeps last 90 days of snapshots per company
+- Tracks rating changes, review count growth, sentiment shifts
+- Review text gives insider info on layoffs, salary, management, culture
+
+---
+
+## 13. Clawd Bot Workspace & Memory
+
+OpenClaw's agent (Clawd 🦞) has a persistent workspace at `~/.openclaw/workspace/` on bc250. These files survive context compaction and define the bot's autonomous behavior and memory.
+
+### 13.1 Workspace Files
+
+| File | Purpose |
+|------|---------|
+| `WORKFLOW_AUTO.md` | **Autonomous behavior loop** — read on every context reset. Defines session start ritual, proactive behaviors, memory protocol, quiet hours, GPU awareness |
+| `HEARTBEAT.md` | Periodic awareness — full cron schedule (quiet/daytime tables), role description, commands for checking fresh data |
+| `ECOSYSTEM.md` | Complete netscan documentation — scripts, data locations, cron schedule, dashboard pages, how to help AK |
+| `SOUL.md` | Core personality — "act, don't ask", direct, chill lobster vibes, no corporate speak |
+| `IDENTITY.md` | Name ("Clawd"), creature type, emoji (🦞) |
+| `USER.md` | Info about AK — timezone (Europe/Warsaw), preferences |
+| `AGENTS.md` | Trimmed agent instructions (~1K chars, down from 7.8K to save context) |
+| `TOOLS.md` | Explicit tool commands (image gen, web search, system diagnostics) |
+| `skills/career-intel/SKILL.md` | Career scanner instructions — how to trigger scans, check results, interpret scores |
+| `skills/sd-image/SKILL.md` | Image generation instructions — FLUX.1-schnell async pipeline |
+| `skills/web-search/SKILL.md` | Web search via `ddgr` (DuckDuckGo CLI) |
+
+### 13.2 Memory System
+
+Clawd has **no built-in persistent memory** across context resets. The memory system is a convention using markdown files:
+
+```
+~/.openclaw/workspace/memory/
+└── 2026-02-22.md    # Daily notes — decisions, findings, action items
+```
+
+**Protocol:**
+1. After meaningful conversations, Clawd appends to `memory/YYYY-MM-DD.md`
+2. On every context reset, `WORKFLOW_AUTO.md` instructs Clawd to read today + yesterday's memory files
+3. This is the bot's **only persistent memory** — everything else is lost on compaction
+
+**What gets remembered:** Career decisions, technical insights, tasks and outcomes, monitoring findings, user preferences/feedback.
+
+**What doesn't:** Casual greetings, generic questions, image generation requests.
+
+### 13.3 WORKFLOW_AUTO.md — The Autonomous Loop
+
+This is the key file that OpenClaw's Post-Compaction Audit reads after every context reset. It defines what Clawd does "when waking up with amnesia":
+
+1. **Read memory** — today + yesterday's `memory/YYYY-MM-DD.md`
+2. **Read HEARTBEAT.md** — what needs periodic attention
+3. **Scan fresh data** — latest career scan, research notes, cron logs
+4. **Proactive behaviors:**
+   - Morning briefing (08:00–10:00): check overnight data, weather, anomalies
+   - Career awareness: check latest scan when asked about jobs
+   - Home awareness: HA queries when asked about the house
+   - Repo/kernel watch: check upstream activity when asked
+5. **GPU awareness** — check `ollama/api/ps` before running heavy tasks
+6. **Quiet hours** — no proactive messages 23:00–08:00
+
+---
+
+## 14. Repository Structure
 
 All config files, scripts, and systemd units are tracked in this repo. Deploy to bc250 with `scp` or a simple sync script.
 
 ```
 bc250/
 ├── Readme.md                    # This file — the full setup guide
+├── career-scan.py               # → /opt/netscan/career-scan.py (two-phase career scanner)
 ├── openclaw.json                # → ~/.openclaw/openclaw.json (thinking model config)
 ├── SKILL-sd-image.md            # → ~/.openclaw/workspace/skills/sd-image/SKILL.md
 ├── generate-and-send.sh         # → /opt/stable-diffusion.cpp/generate-and-send.sh (async wrapper)
 ├── generate-and-send-worker.sh  # → /opt/stable-diffusion.cpp/generate-and-send-worker.sh (background worker)
 ├── openclaw-gateway.service     # → ~/.config/systemd/user/openclaw-gateway.service (ref)
 ├── ollama-proxy.py              # HISTORICAL — ollama-proxy (disabled since OpenClaw 2026.2.17)
+├── netscan/                     # → /opt/netscan/ (monitoring ecosystem)
+│   ├── career-scan.py           # Two-phase anti-hallucination career scanner
+│   ├── generate-html.py         # Dashboard builder — all data → HTML
+│   ├── idle-think.sh            # The brain — 8 task types, JSON research notes
+│   ├── repo-watch.sh            # Upstream repo monitor (GStreamer, libcamera, etc.)
+│   ├── lore-digest.sh           # Kernel mailing list digests
+│   ├── ha-journal.py            # Home Assistant journal analysis
+│   ├── ha-observe.py            # Quick HA queries
+│   ├── scan.sh                  # Network scan (nmap)
+│   ├── enumerate.sh             # Deep service enumeration
+│   ├── vulnscan.sh              # Weekly vulnerability scan
+│   ├── presence.sh              # Phone presence detection
+│   ├── gpu-monitor.sh           # GPU utilization sampler
+│   ├── watchdog.py              # Cron health, disk, service integrity
+│   ├── report.sh                # Morning HTML report rebuild
+│   ├── profile.json             # Public interests/keywords
+│   ├── profile-private.json     # Career context (gitignored)
+│   ├── watchlist.json           # Auto-evolving interest tracker
+│   ├── digest-feeds.json        # Mailing list feed URLs
+│   └── repo-feeds.json          # Repository API endpoints
+├── openclaw/
+│   ├── TOOLS.md                 # → ~/.openclaw/workspace/TOOLS.md (injected into system prompt)
+│   ├── SKILL-web-search.md      # → ~/.openclaw/workspace/skills/web-search/SKILL.md
+│   ├── openclaw.json            # Alternative/reference openclaw config
+│   ├── skills/
+│   │   ├── sd-image/
+│   │   │   └── SKILL.md         # → ~/.openclaw/workspace/skills/sd-image/SKILL.md
+│   │   └── web-search/
+│   │       └── SKILL.md         # → ~/.openclaw/workspace/skills/web-search/SKILL.md
+│   └── workspace/
+│       ├── AGENTS.md            # → ~/.openclaw/workspace/AGENTS.md (trimmed to ~1K chars)
+│       ├── SOUL.md              # → ~/.openclaw/workspace/SOUL.md
+│       └── IDENTITY.md          # → ~/.openclaw/workspace/IDENTITY.md
 ├── openclaw/
 │   ├── TOOLS.md                 # → ~/.openclaw/workspace/TOOLS.md (injected into system prompt)
 │   ├── SKILL-web-search.md      # → ~/.openclaw/workspace/skills/web-search/SKILL.md
@@ -1161,7 +1576,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 ---
 
-## 12. Current State & Known Issues
+## 15. Current State & Known Issues
 
 ### What works
 - **Clawd bot on Signal** — responds to messages with **deep thinking** (reasoning:true), **reliably calls tools** (exec, read, write, etc.), runs shell commands, reads/writes files, does sysadmin tasks
@@ -1169,6 +1584,10 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - **Tool calling** — Thinking model correctly uses structured tool calls through OpenClaw → Ollama (direct, no proxy). 13 tools exposed (read, edit, write, exec, process, message, sessions_*, memory_*).
 - **Web search** — `ddgr` (DuckDuckGo CLI) called via `exec` tool. Agent searches web and summarizes results. BTC price queries work end-to-end.
 - **Image generation (FLUX.1-schnell)** — Async two-script architecture: wrapper returns instantly, background worker stops Ollama → runs SD → sends image → restarts Ollama. 512×512 in ~48s, image delivered via Signal. **No OOM kills.**
+- **Netscan monitoring ecosystem** — 14+ scripts running on cron, covering career scanning, repo monitoring, mailing list digests, Home Assistant analysis, network scanning, research note generation, and watchlist-based Signal notifications. Full dashboard at `http://bc250:8888`.
+- **Career scanner (two-phase)** — Anti-hallucination architecture: Phase 1 extracts jobs without candidate profile, Phase 2 scores individually. Signal alerts for hot (≥70%) and worth-checking (55-69% + remote) matches. Salary estimation is deterministic Python, not LLM. Nightly at 01:00 via cron.
+- **Bot memory system** — WORKFLOW_AUTO.md (autonomous behavior loop), HEARTBEAT.md (cron schedule awareness), ECOSYSTEM.md (full monitoring docs), memory/ directory for daily conversation notes. Clawd reads memory on every context reset.
+- **Model eviction for batch jobs** — Explicit `keep_alive=0` eviction of competing models before GPU-heavy cron jobs. Solves the "qwen3 still resident, phi4 can't load" problem.
 - **System diagnostics** — Full diagnostic toolkit installed: `sensors`, `htop`, `radeontop`, `perf`, `strace`, `nmap`, `iftop`, `nethogs`, `iostat`, `smartctl`, `stress-ng`, `psutil`, plus raw sysfs GPU metrics. All commands documented in TOOLS.md — the bot can self-diagnose temps, memory pressure, GPU utilization, network traffic, disk health, and run stress tests.
 - **TOOLS.md approach** — Explicit command instructions injected as Project Context into system prompt. More reliable than skill-read chains for 14B models.
 - **Image generation (SD-Turbo fallback)** — 512×512 in ~3s, much faster but lower quality
@@ -1243,24 +1662,32 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 
 ### Known limitations
 - **Shared VRAM** — image generation requires stopping Ollama entirely (handled by async worker with 45s safety delay). Bot is offline during SD generation (~50s).
+- **Single-model GPU** — Only one 14B model fits at a time. Batch jobs (career-scan, idle-think) must explicitly evict the gateway's model before loading their own. See §11.7 for the eviction pattern.
+- **Cron stdout buffering** — Python scripts run by cron have fully buffered stdout (no TTY). Crashes lose all output. Fix: `sys.stdout.reconfigure(line_buffering=True)` at script start. See §12.7.
 - **Chinese thinking token leakage** — The abliterated Qwen3 model occasionally outputs Chinese reasoning fragments (e.g., `句话`) even with `/no_think` in TOOLS.md. Cosmetic issue — doesn't affect functionality.
 - **OpenClaw doesn't send `think: true` to Ollama** — The `createOllamaStreamFn` in model-auth-CxlTW8uU.js doesn't include the `think` parameter in the API body. Qwen3 operates in `/no_think` mode. Thinking works through the model's natural reasoning, not Ollama's explicit thinking mode.
 - **sd-cli hangs on GFX1013** — Vulkan cleanup bug requires background kill workaround
 - **14B memory pressure** — with 11 GB GPU + ~2 GB OS, only ~2 GB free RAM when 14B is loaded. Stable but tight.
 - **FLUX generation time** — ~48s per image (including model load). Fast enough for chat but not interactive.
 - **Cold start latency** — First request after Ollama restart takes 30-60s (model loading). Subsequent requests are 10-20s.
+- **Career scan duration** — 15–60 min per full scan (scraping + LLM analysis). Runs at 01:00 during quiet hours to avoid impacting chat.
 
 ---
 
-## 13. TODO
+## 16. TODO
 
 - [ ] Test concurrent requests under load
 - [x] ~~Install system diagnostic tools~~ — **Done!** `htop`, `sysstat` (iostat/mpstat/sar), `strace`, `nmap`, `iftop`, `nethogs`, `iperf3`, `socat`, `ncdu`, `nload`, `radeontop`, `python3-psutil`, `powertop`, `stress-ng`, `perf`. All documented in TOOLS.md for the bot to use autonomously.
-- [ ] Set up cron job for daily health check / greeting
+- [x] ~~Set up cron job for daily health check / greeting~~ — **Done!** Full netscan cron ecosystem running — see §11.3. Morning report at 08:30, health checks via watchdog every 30 min, Signal notification at 19:00.
 - [ ] Consider reducing OpenClaw system prompt overhead (~9.6K framework chars)
 - [ ] Try higher FLUX resolution (768×768) — will need more VRAM, may require further quantization
 - [ ] Fix Chinese thinking token leakage — try stronger `/no_think` enforcement or model switch
 - [ ] Re-enable Ollama `think: true` once OpenClaw properly handles thinking blocks separately from content
+- [ ] Add cron failure detection to WORKFLOW_AUTO.md — proactively check `*-cron.log` for errors
+- [ ] Weekly career summary — synthesize a week's worth of scans into a condensed Signal report
+- [x] ~~Career intelligence scanner~~ — **Done!** Two-phase anti-hallucination architecture (commit 74cfa0d). Phase 1: profile-free extraction. Phase 2: individual job analysis. Signal alerts for hot (≥70%) and worth-checking (55-69% + remote). See §12.
+- [x] ~~Fix career scan cron failure~~ — **Done!** (commits 81b5995, aa13b88). Three root causes: (1) stdout buffered under cron, (2) qwen3 model still resident blocking phi4, (3) alert threshold too strict (≥80 AND remote → ≥70 any location). Fixes: `line_buffering=True`, explicit model eviction, relaxed thresholds.
+- [x] ~~Bot memory & workspace setup~~ — **Done!** WORKFLOW_AUTO.md, HEARTBEAT.md, ECOSYSTEM.md, career-intel SKILL.md, memory/ directory. See §13.
 - [x] ~~End-to-end Signal test: text message → thinking model → response~~ — **Working!** BTC price query, general questions, all functional.
 - [x] ~~End-to-end Signal test: image request → FLUX generation → image delivery~~ — **Working!** Async architecture: wrapper returns instantly, worker stops Ollama → SD → Signal → restart. No OOM.
 - [x] ~~Fix image gen OOM kill~~ — **Two-script async architecture.** Wrapper (`generate-and-send.sh`) returns instantly, worker (`generate-and-send-worker.sh`) runs in background: waits 45s for model response → stops Ollama → runs SD → sends Signal → restarts Ollama.
