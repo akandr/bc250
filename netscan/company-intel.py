@@ -9,12 +9,15 @@ Sources per company:
   - Company news pages (press releases, blog)
   - layoffs.fyi (layoff events)
   - DuckDuckGo news search (recent articles)
-  - LinkedIn activity signals (public company page)
+  - 4programmers.net (Polish dev forum — employer opinions, career threads)
+  - Reddit (r/embedded, r/semiconductor, r/cscareerquestionsEU, r/poland, …)
+  - SemiWiki.com forum (semiconductor industry intel — silicon/auto companies)
 
 LLM analysis per company:
   - Sentiment trend (improving/declining/stable)
   - Red flags (layoffs, reorgs, bad reviews)
   - Growth signals (hiring, new offices, products)
+  - Community pulse (developer forum & industry chatter)
   - Relevance to user (ADAS, camera, embedded Linux)
 
 Output: /opt/netscan/data/intel/
@@ -306,6 +309,245 @@ def check_layoffs_fyi(company_name):
     return events[:3]  # last 3 mentions
 
 
+# ── 4programmers.net Forum Search ──────────────────────────────────────────
+
+def search_4programmers(company_name, max_results=5):
+    """Search 4programmers.net for employer opinions & career threads."""
+    results = []
+    # Two searches: employer opinions + general career discussion
+    queries = [
+        f"{company_name} opinie",
+        f"{company_name} praca",
+    ]
+    for query in queries:
+        try:
+            encoded = urllib.parse.quote(query)
+            url = f"https://4programmers.net/Search?q={encoded}"
+            html = fetch_url(url, timeout=20)
+            if not html:
+                continue
+
+            # Extract thread titles and snippets from search results
+            # Threads appear as <a> links to /Forum/ paths with post text below
+            threads = re.findall(
+                r'<a[^>]*href="(https://4programmers\.net/Forum/[^"]*)"[^>]*>\s*(.*?)\s*</a>',
+                html, re.DOTALL,
+            )
+            # Extract snippet text near the results
+            snippets = re.findall(
+                r'class="[^"]*search[^"]*"[^>]*>(.*?)</(?:div|p|li)>',
+                html, re.DOTALL | re.IGNORECASE,
+            )
+
+            seen_urls = {r["url"] for r in results}
+            for i, (href, title_raw) in enumerate(threads):
+                if href in seen_urls:
+                    continue
+                title = strip_html(title_raw).strip()
+                if not title or len(title) < 5:
+                    continue
+                # Identify valuable sections
+                section = ""
+                for sec in ("Opinie_o_pracodawcach", "Kariera", "Embedded",
+                            "Off-Topic", "Flame"):
+                    if sec.lower() in href.lower():
+                        section = sec.replace("_", " ")
+                        break
+                snippet = strip_html(snippets[i]) if i < len(snippets) else ""
+                results.append({
+                    "title": title[:200],
+                    "url": href,
+                    "section": section,
+                    "snippet": snippet[:300],
+                })
+                if len(results) >= max_results:
+                    break
+
+            time.sleep(2)  # rate limit
+        except Exception as e:
+            log(f"  4programmers search error: {e}")
+
+    return results[:max_results]
+
+
+# ── Reddit Search (via DuckDuckGo site: operator) ─────────────────────────
+
+REDDIT_SUBREDDITS = [
+    "r/poland", "r/embedded", "r/semiconductor",
+    "r/cscareerquestionsEU", "r/ExperiencedDevs",
+]
+
+def search_reddit(company_name, search_terms=None, max_results=5):
+    """Search Reddit via DuckDuckGo for company mentions in relevant subs."""
+    results = []
+    subs_str = " OR ".join(REDDIT_SUBREDDITS)
+    queries = [f"site:reddit.com ({subs_str}) {company_name}"]
+    if search_terms:
+        queries.append(f"site:reddit.com {search_terms[0]}")
+
+    for query in queries:
+        try:
+            encoded = urllib.parse.quote(query)
+            url = f"https://html.duckduckgo.com/html/?q={encoded}"
+            html = fetch_url(url, timeout=20)
+            if not html:
+                continue
+
+            snippets = re.findall(
+                r'class="result__snippet"[^>]*>(.*?)</[^>]+>',
+                html, re.DOTALL,
+            )
+            titles = re.findall(
+                r'class="result__a"[^>]*>(.*?)</a>',
+                html, re.DOTALL,
+            )
+            links = re.findall(
+                r'class="result__url"[^>]*href="([^"]*)"',
+                html, re.DOTALL,
+            )
+
+            seen_urls = {r["url"] for r in results}
+            for i in range(min(8, len(snippets))):
+                link = links[i] if i < len(links) else ""
+                if link in seen_urls or "reddit.com" not in link:
+                    continue
+                sub_m = re.search(r'reddit\.com/(r/\w+)', link)
+                subreddit = sub_m.group(1) if sub_m else ""
+                results.append({
+                    "title": strip_html(titles[i]) if i < len(titles) else "",
+                    "snippet": strip_html(snippets[i])[:300],
+                    "url": link,
+                    "subreddit": subreddit,
+                })
+                if len(results) >= max_results:
+                    break
+
+            time.sleep(2)
+        except Exception as e:
+            log(f"  Reddit DDG search error: {e}")
+
+    # Fallback: old.reddit.com search if DDG returned nothing
+    if not results:
+        try:
+            encoded = urllib.parse.quote(company_name)
+            url = f"https://old.reddit.com/search?q={encoded}&sort=new&t=month&restrict_sr=off"
+            html = fetch_url(url, timeout=20)
+            if html:
+                # old.reddit.com has <a class="search-title"> with titles
+                title_links = re.findall(
+                    r'class="search-title[^"]*"[^>]*href="([^"]*)"[^>]*>(.*?)</a>',
+                    html, re.DOTALL,
+                )
+                if not title_links:
+                    # Alternative pattern: data-click-id
+                    title_links = re.findall(
+                        r'<a[^>]*href="(https://(?:old\.)?reddit\.com/r/[^"]*)"[^>]*>\s*<span[^>]*>(.*?)</span>',
+                        html, re.DOTALL,
+                    )
+                for href, title_raw in title_links[:max_results]:
+                    title = strip_html(title_raw).strip()
+                    if not title:
+                        continue
+                    sub_m = re.search(r'reddit\.com/(r/\w+)', href)
+                    subreddit = sub_m.group(1) if sub_m else ""
+                    results.append({
+                        "title": title[:200],
+                        "snippet": "",
+                        "url": href,
+                        "subreddit": subreddit,
+                    })
+                time.sleep(2)
+        except Exception as e:
+            log(f"  Reddit fallback search error: {e}")
+
+    return results[:max_results]
+
+
+# ── SemiWiki Forum Search (via RSS feed + keyword filtering) ───────────────
+
+SEMIWIKI_RSS = "https://semiwiki.com/forum/forums/-/index.rss"
+
+def search_semiwiki(company_name, max_results=5):
+    """Search SemiWiki forum for semiconductor industry intel on a company.
+    Uses the public RSS feed and filters by company name keywords."""
+    results = []
+    try:
+        rss = fetch_url(SEMIWIKI_RSS, timeout=20)
+        if not rss:
+            return results
+
+        # Parse RSS items: <title> + <link> + <description>
+        items = re.findall(
+            r'<item>(.*?)</item>', rss, re.DOTALL
+        )
+        name_lower = company_name.lower()
+        # Also match short forms (e.g. "Intel" in "Intel Foundry")
+        keywords = [name_lower]
+        # Add common abbreviations
+        if name_lower == "samsung electronics":
+            keywords.extend(["samsung", "exynos"])
+        elif name_lower == "harman international":
+            keywords.extend(["harman", "jbl"])
+        elif name_lower == "arm":
+            keywords.extend(["arm holdings", "cortex"])
+
+        for item in items:
+            title_m = re.search(r'<title>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?</title>', item)
+            link_m = re.search(r'<link>(.*?)</link>', item)
+            desc_m = re.search(r'<description>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?</description>', item, re.DOTALL)
+
+            title = title_m.group(1).strip() if title_m else ""
+            link = link_m.group(1).strip() if link_m else ""
+            desc = strip_html(desc_m.group(1)) if desc_m else ""
+
+            text_lower = (title + " " + desc).lower()
+            if any(kw in text_lower for kw in keywords):
+                results.append({
+                    "title": title[:200],
+                    "snippet": desc[:300],
+                    "url": link,
+                })
+                if len(results) >= max_results:
+                    break
+
+    except Exception as e:
+        log(f"  SemiWiki search error: {e}")
+
+    # If RSS had no matches, try DDG news as fallback (semiwiki blog posts)
+    if not results:
+        try:
+            query = f"semiwiki {company_name}"
+            encoded = urllib.parse.quote(query)
+            url = f"https://html.duckduckgo.com/html/?q={encoded}&t=h_&iar=news&ia=news"
+            html = fetch_url(url, timeout=20)
+            if html:
+                snippets = re.findall(
+                    r'class="result__snippet"[^>]*>(.*?)</[^>]+>',
+                    html, re.DOTALL,
+                )
+                titles = re.findall(
+                    r'class="result__a"[^>]*>(.*?)</a>',
+                    html, re.DOTALL,
+                )
+                links = re.findall(
+                    r'class="result__url"[^>]*href="([^"]*)"',
+                    html, re.DOTALL,
+                )
+                for i in range(min(max_results, len(snippets))):
+                    link = links[i] if i < len(links) else ""
+                    if "semiwiki" in link.lower():
+                        results.append({
+                            "title": strip_html(titles[i]) if i < len(titles) else "",
+                            "snippet": strip_html(snippets[i])[:300],
+                            "url": link,
+                        })
+                time.sleep(2)
+        except Exception as e:
+            log(f"  SemiWiki DDG fallback error: {e}")
+
+    return results[:max_results]
+
+
 # ── Per-Company Analysis ───────────────────────────────────────────────────
 
 def analyze_company(key, company, db_entry):
@@ -341,6 +583,24 @@ def analyze_company(key, company, db_entry):
             company_news_text = strip_html(html)[:3000]
         time.sleep(1)
 
+    # 4a. 4programmers.net forum threads (Polish dev community)
+    fourp_results = search_4programmers(company["name"])
+    intel["4programmers"] = fourp_results
+    log(f"  4programmers.net: {len(fourp_results)} threads")
+
+    # 4b. Reddit discussions (global embedded/semiconductor communities)
+    reddit_results = search_reddit(company["name"], company.get("search_terms"))
+    intel["reddit"] = reddit_results
+    log(f"  Reddit: {len(reddit_results)} threads")
+
+    # 4c. SemiWiki forum (semiconductor industry intel)
+    # Only search SemiWiki for silicon/semiconductor companies
+    semiwiki_results = []
+    if company.get("industry") in ("silicon", "automotive", "defence"):
+        semiwiki_results = search_semiwiki(company["name"])
+    intel["semiwiki"] = semiwiki_results
+    log(f"  SemiWiki: {len(semiwiki_results)} threads")
+
     # 5. Previous intel from DB
     prev_rating = None
     prev_sentiment = None
@@ -362,11 +622,24 @@ Respond in JSON format with these keys:
 - growth_signals: list of positive indicators
 - adas_relevance: how relevant to ADAS/camera/embedded work (0-10)
 - key_developments: list of 2-3 most important recent developments
+- community_pulse: one-line summary of developer/industry forum sentiment
 - recommendation: one-line action item for the user
 Output ONLY valid JSON, no markdown. /no_think"""
 
     review_text = "\n".join(f"  [{r['date']}] {r['text'][:200]}" for r in reviews[:5])
     news_text = "\n".join(f"  • {n['title']}: {n['snippet'][:150]}" for n in all_news[:5])
+    fourp_text = "\n".join(
+        f"  • [{r.get('section','forum')}] {r['title']}: {r['snippet'][:150]}"
+        for r in fourp_results[:3]
+    )
+    reddit_text = "\n".join(
+        f"  • [{r.get('subreddit','')}] {r['title'][:100]}: {r['snippet'][:150]}"
+        for r in reddit_results[:3]
+    )
+    semiwiki_text = "\n".join(
+        f"  • {r['title'][:100]}: {r['snippet'][:150]}"
+        for r in semiwiki_results[:3]
+    )
 
     prompt = f"""Company: {company['name']} ({company['industry']})
 GoWork entity: {company['gowork_id']}
@@ -383,6 +656,15 @@ Company news page excerpt:
 
 Layoffs.fyi mentions:
 {chr(10).join(f'  • {l}' for l in layoffs) if layoffs else '  (none)'}
+
+4programmers.net threads (Polish dev community):
+{fourp_text or '  (none)'}
+
+Reddit discussions:
+{reddit_text or '  (none)'}
+
+SemiWiki forum (semiconductor industry):
+{semiwiki_text or '  (none)'}
 
 Context: The user is a Principal Embedded SW Engineer at HARMAN (Samsung subsidiary),
 working on automotive camera drivers (V4L2, MIPI CSI-2, ADAS DMS/OMS).
@@ -464,6 +746,10 @@ def main():
                 "red_flags": intel.get("analysis", {}).get("red_flags", []),
                 "growth_signals": intel.get("analysis", {}).get("growth_signals", []),
                 "adas_relevance": intel.get("analysis", {}).get("adas_relevance"),
+                "community_pulse": intel.get("analysis", {}).get("community_pulse"),
+                "sources_4p": len(intel.get("4programmers", [])),
+                "sources_reddit": len(intel.get("reddit", [])),
+                "sources_semiwiki": len(intel.get("semiwiki", [])),
             })
 
         except Exception as e:

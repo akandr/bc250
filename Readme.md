@@ -1461,12 +1461,16 @@ Each nightly scan saves a GoWork snapshot to `/opt/netscan/data/career/company-i
 
 **Added Feb 2026.** Nightly at 02:30 — deepens intelligence on all 13 tracked GoWork entities plus 4 software houses.
 
-**Per company:**
+**Per company (7 data sources):**
 1. GoWork.pl reviews (new reviews, rating changes)
 2. DuckDuckGo news search (2 queries per company)
 3. Layoffs.fyi check
 4. Company news page scrape (if available)
-5. LLM analysis → structured JSON: sentiment, score (-5 to +5), red flags, growth signals, ADAS relevance (0-10)
+5. 4programmers.net forum (Polish dev community — employer opinions, career threads)
+6. Reddit (r/embedded, r/semiconductor, r/cscareerquestionsEU, r/poland, r/ExperiencedDevs)
+7. SemiWiki.com forum (semiconductor industry intel via RSS feed + DDG fallback, silicon/auto companies only)
+
+**LLM analysis:** Sentiment, score (-5 to +5), red flags, growth signals, ADAS relevance (0-10), **community pulse** (developer/industry forum sentiment), action recommendation.
 
 **Cross-company synthesis:** After all companies are analyzed, a final LLM call synthesizes market mood, top companies with positive signals, and specific weekly action items.
 
