@@ -890,6 +890,7 @@ def page_wrap(title, body, active_page="index"):
     nav_items.append(("/notes.html", "NOTES", "notes"))
     nav_items.append(("/career.html", "CAREERS", "career"))
     nav_items.append(("/load.html", "LOAD", "load"))
+    nav_items.append(("/leaks.html", "LEAKS", "leaks"))
     nav_items += [
         ("/security.html", "SECURITY", "security"),
         ("/history.html", "HISTORY", "history"),
@@ -1491,6 +1492,229 @@ function filterScore(min, max) {{
 }}
 </script>"""
     return page_wrap("HOST INVENTORY", body, "hosts")
+
+
+# ─── Page: Leaks / CTI (leaks.html) ───
+
+def gen_leaks():
+    """Generate the Leak Monitor / Cyber Threat Intelligence page."""
+    leaks_file = os.path.join(DATA_DIR, "leaks", "leak-intel.json")
+    if not os.path.exists(leaks_file):
+        body = '<div class="section"><div class="section-title">🔒 LEAK MONITOR</div><div class="section-body"><p style="color:var(--fg-dim)">No leak intelligence data yet. Run <code>leak-monitor.py scan</code> to collect.</p></div></div>'
+        return page_wrap("LEAKS", body, "leaks")
+    try:
+        db = json.loads(open(leaks_file).read())
+    except Exception:
+        body = '<div class="section"><div class="section-title">🔒 LEAK MONITOR</div><div class="section-body"><p style="color:var(--red)">Error reading leak DB.</p></div></div>'
+        return page_wrap("LEAKS", body, "leaks")
+
+    findings = db.get("findings", [])
+    runs = db.get("runs", [])
+    stats = db.get("stats", {})
+    last_analysis = stats.get("last_analysis", "")
+    last_run = stats.get("last_run", "never")
+
+    # ── Severity counts ──
+    sev = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+    for f in findings:
+        s = f.get("severity", "info")
+        sev[s] = sev.get(s, 0) + 1
+
+    # ── Source counts ──
+    src_counts = {}
+    for f in findings:
+        s = f.get("source", "?")
+        src_counts[s] = src_counts.get(s, 0) + 1
+
+    # ── Category counts ──
+    cat_counts = {}
+    for f in findings:
+        c = f.get("category", "?")
+        cat_counts[c] = cat_counts.get(c, 0) + 1
+
+    # ── Recent findings (last 7 days) ──
+    from datetime import timedelta as _td
+    cutoff_7d = (datetime.now() - _td(days=7)).isoformat()
+    recent = [f for f in findings if f.get("first_seen", "") > cutoff_7d]
+    recent.sort(key=lambda x: x.get("first_seen", ""), reverse=True)
+
+    # ── 24h findings ──
+    cutoff_24h = (datetime.now() - _td(hours=24)).isoformat()
+    last_24h = [f for f in findings if f.get("first_seen", "") > cutoff_24h]
+
+    # ── Stat boxes ──
+    crit_class = "red" if sev["critical"] > 0 else "green"
+    high_class = "amber" if sev["high"] > 0 else "green"
+    stats_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 🔒 LEAK MONITOR — Cyber Threat Intelligence</div>
+      <div class="section-body">
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val">{len(findings)}</div>
+            <div class="stat-label">total findings</div></div>
+          <div class="stat-box"><div class="stat-val">{len(last_24h)}</div>
+            <div class="stat-label">last 24h</div></div>
+          <div class="stat-box"><div class="stat-val {crit_class}">{sev['critical']}</div>
+            <div class="stat-label">critical</div></div>
+          <div class="stat-box"><div class="stat-val {high_class}">{sev['high']}</div>
+            <div class="stat-label">high</div></div>
+          <div class="stat-box"><div class="stat-val">{sev['medium']}</div>
+            <div class="stat-label">medium</div></div>
+          <div class="stat-box"><div class="stat-val">{len(runs)}</div>
+            <div class="stat-label">scans run</div></div>
+          <div class="stat-box"><div class="stat-val">{len(src_counts)}</div>
+            <div class="stat-label">active sources</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:0.7em">{last_run[:16] if last_run != 'never' else 'never'}</div>
+            <div class="stat-label">last scan</div></div>
+        </div>
+      </div>
+    </div>"""
+
+    # ── Source breakdown ──
+    src_rows = ""
+    for src, cnt in sorted(src_counts.items(), key=lambda x: -x[1]):
+        src_sev = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        for f in findings:
+            if f.get("source") == src:
+                src_sev[f.get("severity", "info")] += 1
+        src_rows += f"""<tr>
+          <td style="color:var(--cyan)">{src}</td>
+          <td>{cnt}</td>
+          <td style="color:var(--red)">{src_sev['critical']}</td>
+          <td style="color:var(--amber)">{src_sev['high']}</td>
+          <td>{src_sev['medium']}</td>
+          <td style="color:var(--fg-dim)">{src_sev['low'] + src_sev['info']}</td>
+        </tr>"""
+
+    source_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 📡 INTELLIGENCE SOURCES</div>
+      <div class="section-body">
+        <table class="host-table">
+          <thead><tr><th>Source</th><th>Findings</th><th>Critical</th><th>High</th><th>Medium</th><th>Low/Info</th></tr></thead>
+          <tbody>{src_rows}</tbody>
+        </table>
+      </div>
+    </div>"""
+
+    # ── Category breakdown as badges ──
+    cat_badges = ""
+    cat_icons = {"ransomware_victim": "🔒", "exploited_vuln": "🛡", "exposed_secret": "🔑",
+                 "channel_mention": "📱", "c2_infrastructure": "🦠", "c2_stats": "📊",
+                 "osint_alert": "🐦", "darkweb_mention": "🧅", "breach_intel": "🕵"}
+    for cat, cnt in sorted(cat_counts.items(), key=lambda x: -x[1]):
+        icon = cat_icons.get(cat, "📌")
+        cat_badges += f'<span class="badge" style="margin:2px 4px;padding:4px 10px">{icon} {cat.replace("_"," ")}: {cnt}</span>'
+
+    cat_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 📂 FINDING CATEGORIES</div>
+      <div class="section-body"><div style="padding:6px 0">{cat_badges}</div></div>
+    </div>"""
+
+    # ── LLM Analysis ──
+    analysis_html = ""
+    if last_analysis:
+        analysis_date = stats.get("last_analysis_date", "")[:16]
+        safe_analysis = last_analysis.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        analysis_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 🤖 LLM THREAT ANALYSIS ({analysis_date})</div>
+      <div class="section-body">
+        <div class="log-view" style="max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:0.82em;line-height:1.5">{safe_analysis}</div>
+      </div>
+    </div>"""
+
+    # ── Critical & High findings table ──
+    crit_high = [f for f in findings if f.get("severity") in ("critical", "high")]
+    crit_high.sort(key=lambda x: x.get("first_seen", ""), reverse=True)
+    ch_rows = ""
+    for f in crit_high[:50]:
+        ts = f.get("first_seen", "")[:16]
+        sev_color = "var(--red)" if f["severity"] == "critical" else "var(--amber)"
+        sev_label = f["severity"].upper()[:4]
+        url = f.get("url", "")
+        title_safe = f.get("title", "?")[:120].replace("&", "&amp;").replace("<", "&lt;")
+        if url:
+            title_safe = f'<a href="{url}" target="_blank" rel="noopener" style="color:var(--cyan)">{title_safe}</a>'
+        ch_rows += f"""<tr>
+          <td style="color:var(--fg-dim);white-space:nowrap">{ts}</td>
+          <td style="color:{sev_color};font-weight:bold">{sev_label}</td>
+          <td>{f.get('source','?')}</td>
+          <td>{title_safe}</td>
+        </tr>"""
+
+    crit_html = ""
+    if ch_rows:
+        crit_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 🚨 CRITICAL &amp; HIGH FINDINGS</div>
+      <div class="section-body">
+        <table class="host-table">
+          <thead><tr><th>Time</th><th>Sev</th><th>Source</th><th>Finding</th></tr></thead>
+          <tbody>{ch_rows}</tbody>
+        </table>
+      </div>
+    </div>"""
+
+    # ── Recent findings (all severities, last 7 days) ──
+    recent_rows = ""
+    for f in recent[:100]:
+        ts = f.get("first_seen", "")[:16]
+        sev_map = {"critical": ("var(--red)", "CRIT"), "high": ("var(--amber)", "HIGH"),
+                   "medium": ("var(--fg)", "MED"), "low": ("var(--fg-dim)", "LOW"),
+                   "info": ("var(--fg-dim)", "INFO")}
+        sev_color, sev_label = sev_map.get(f.get("severity", "info"), ("var(--fg-dim)", "?"))
+        title_safe = f.get("title", "?")[:140].replace("&", "&amp;").replace("<", "&lt;")
+        url = f.get("url", "")
+        if url:
+            title_safe = f'<a href="{url}" target="_blank" rel="noopener" style="color:var(--cyan)">{title_safe}</a>'
+        summary = f.get("summary", "")[:200].replace("&", "&amp;").replace("<", "&lt;")
+        recent_rows += f"""<tr>
+          <td style="color:var(--fg-dim);white-space:nowrap">{ts}</td>
+          <td style="color:{sev_color}">{sev_label}</td>
+          <td>{f.get('source','?')}</td>
+          <td>{title_safe}<br><small style="color:var(--fg-dim)">{summary}</small></td>
+        </tr>"""
+
+    recent_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 📋 ALL FINDINGS — LAST 7 DAYS ({len(recent)} total)</div>
+      <div class="section-body">
+        <table class="host-table">
+          <thead><tr><th>Time</th><th>Sev</th><th>Source</th><th>Finding</th></tr></thead>
+          <tbody>{recent_rows if recent_rows else '<tr><td colspan="4" style="color:var(--fg-dim)">No findings in the last 7 days</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>"""
+
+    # ── Scan history ──
+    run_rows = ""
+    for r in reversed(runs[-14:]):
+        ts = r.get("timestamp", "")[:16]
+        new_c = r.get("new_findings", 0)
+        total_c = r.get("total_findings", 0)
+        new_style = "color:var(--green)" if new_c > 0 else "color:var(--fg-dim)"
+        run_rows += f"""<tr>
+          <td style="color:var(--fg-dim)">{ts}</td>
+          <td style="{new_style}">{new_c}</td>
+          <td>{total_c}</td>
+          <td>{r.get('sources_ok', '?')}</td>
+        </tr>"""
+
+    run_html = f"""
+    <div class="section">
+      <div class="section-title">▸ 📆 SCAN HISTORY (last 14 runs)</div>
+      <div class="section-body">
+        <table class="host-table">
+          <thead><tr><th>Timestamp</th><th>New</th><th>Total</th><th>Sources</th></tr></thead>
+          <tbody>{run_rows if run_rows else '<tr><td colspan="4" style="color:var(--fg-dim)">No scan runs recorded</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>"""
+
+    body = stats_html + source_html + cat_html + analysis_html + crit_html + recent_html + run_html
+    return page_wrap("LEAKS", body, "leaks")
 
 
 # ─── Page: Security (security.html) ───
@@ -3756,6 +3980,7 @@ def main():
         "notes.html": gen_notes,
         "career.html": gen_careers,
         "load.html": gen_load,
+        "leaks.html": gen_leaks,
     }
     # Dynamic feed pages from digest-feeds.json
     for fid, fcfg in DIGEST_FEEDS.items():
