@@ -1,8 +1,17 @@
 #!/bin/bash
 # gpu-monitor.sh — Sample Ollama GPU utilization every minute
-# Logs to a TSV file: timestamp, status (busy/idle), model, script, vram_mb
-# Designed to run from cron: * * * * * /opt/netscan/gpu-monitor.sh
+# Logs to a TSV file with 7 columns:
+#   timestamp  status  model  script  vram_mb  gpu_mhz  temp_c
 #
+# Status values (3-state):
+#   generating — model loaded AND GPU clock boosted (actually computing)
+#   loaded     — model in VRAM but GPU at base clock (idle keep-alive)
+#   idle       — no model loaded
+#
+# GPU clock (pp_dpm_sclk) is the ground truth for real utilization:
+#   1000 MHz = idle/base,  1500+ MHz = GPU actively computing
+#
+# Designed to run from cron: * * * * * /opt/netscan/gpu-monitor.sh
 # The TSV is read by generate-html.py to render the LOAD dashboard page.
 # Auto-rotates: keeps last 14 days of samples (~20k lines).
 #
@@ -12,7 +21,15 @@ LOG_DIR="/opt/netscan/data"
 LOG_FILE="$LOG_DIR/gpu-load.tsv"
 TS=$(date '+%Y-%m-%d %H:%M')
 
-# Fetch Ollama process list
+# ─── Read hardware GPU metrics ───
+# GPU clock: parse the active frequency from pp_dpm_sclk (line ending with *)
+GPU_MHZ=$(grep '\*' /sys/class/drm/card1/device/pp_dpm_sclk 2>/dev/null \
+          | grep -oP '\d+(?=Mhz)' || echo "0")
+# Temperature: millidegrees → degrees
+TEMP_MC=$(cat /sys/class/drm/card1/device/hwmon/hwmon2/temp1_input 2>/dev/null || echo "0")
+TEMP_C=$(( TEMP_MC / 1000 ))
+
+# ─── Fetch Ollama process list ───
 PS_JSON=$(curl -s --max-time 5 http://localhost:11434/api/ps 2>/dev/null || echo '{"models":[]}')
 MODEL_COUNT=$(echo "$PS_JSON" | python3 -c "
 import sys, json
@@ -50,13 +67,21 @@ except:
     [ -z "$SCRIPT" ] && pgrep -f "patent-watch.py" >/dev/null 2>&1 && SCRIPT="patent-watch"
     [ -z "$SCRIPT" ] && pgrep -f "event-scout.py" >/dev/null 2>&1 && SCRIPT="event-scout"
     [ -z "$SCRIPT" ] && pgrep -f "ha-journal.py" >/dev/null 2>&1 && SCRIPT="ha-journal"
+    [ -z "$SCRIPT" ] && pgrep -f "leak-monitor.py" >/dev/null 2>&1 && SCRIPT="leak-monitor"
     # Gateway / Signal chat — openclaw or litellm proxy serving interactive queries
     [ -z "$SCRIPT" ] && pgrep -f "openclaw\|litellm" >/dev/null 2>&1 && SCRIPT="gateway"
-    [ -z "$SCRIPT" ] && SCRIPT="manual"
+    [ -z "$SCRIPT" ] && SCRIPT="unknown"
 
-    echo -e "${TS}\tbusy\t${MODEL}\t${SCRIPT}\t${VRAM_MB}" >> "$LOG_FILE"
+    # 3-state: generating (clock boosted) vs loaded (model in VRAM, idle)
+    if [ "$GPU_MHZ" -gt 1200 ]; then
+        STATUS="generating"
+    else
+        STATUS="loaded"
+    fi
+
+    echo -e "${TS}\t${STATUS}\t${MODEL}\t${SCRIPT}\t${VRAM_MB}\t${GPU_MHZ}\t${TEMP_C}" >> "$LOG_FILE"
 else
-    echo -e "${TS}\tidle\t\t\t0" >> "$LOG_FILE"
+    echo -e "${TS}\tidle\t\t\t0\t${GPU_MHZ}\t${TEMP_C}" >> "$LOG_FILE"
 fi
 
 # ─── Rotate: keep last 14 days ───

@@ -3502,7 +3502,12 @@ def gen_power_cost_section():
 
 
 def load_gpu_samples(days=14):
-    """Load GPU load TSV samples. Returns list of (datetime, status, model, script, vram_mb)."""
+    """Load GPU load TSV samples.
+
+    Returns list of (datetime, status, model, script, vram_mb, gpu_mhz, temp_c).
+    Status: 'generating' (GPU active), 'loaded' (model in VRAM, idle), 'idle'.
+    Legacy 'busy' rows are re-mapped using gpu_mhz if available.
+    """
     tsv_path = os.path.join(DATA_DIR, "gpu-load.tsv")
     if not os.path.exists(tsv_path):
         return []
@@ -3526,7 +3531,15 @@ def load_gpu_samples(days=14):
             model = parts[2] if len(parts) > 2 else ""
             script = parts[3] if len(parts) > 3 else ""
             vram = int(parts[4]) if len(parts) > 4 and parts[4].isdigit() else 0
-            samples.append((ts, status, model, script, vram))
+            gpu_mhz = int(parts[5]) if len(parts) > 5 and parts[5].isdigit() else 0
+            temp_c = int(parts[6]) if len(parts) > 6 and parts[6].isdigit() else 0
+            # Re-map legacy "busy" using gpu_mhz if available
+            if status == "busy":
+                if gpu_mhz > 1200:
+                    status = "generating"
+                else:
+                    status = "loaded"
+            samples.append((ts, status, model, script, vram, gpu_mhz, temp_c))
     return samples
 
 
@@ -3553,41 +3566,54 @@ def gen_load():
     today_str = now.strftime("%Y-%m-%d")
 
     # ─── Compute stats ───
+    # Helper: "generating" means GPU is actually computing tokens
+    def is_active(st):
+        return st == "generating"
+
+    def is_model_loaded(st):
+        return st in ("generating", "loaded", "busy")
+
     # Today
-    today_samples = [(s, st, m, sc, v) for s, st, m, sc, v in samples if s.strftime("%Y-%m-%d") == today_str]
-    today_busy = sum(1 for _, st, _, _, _ in today_samples if st == "busy")
+    today_samples = [s for s in samples if s[0].strftime("%Y-%m-%d") == today_str]
+    today_gen = sum(1 for s in today_samples if is_active(s[1]))
+    today_loaded = sum(1 for s in today_samples if is_model_loaded(s[1]))
     today_total = len(today_samples)
-    today_pct = (today_busy / today_total * 100) if today_total > 0 else 0
-    today_busy_min = today_busy  # 1 sample ≈ 1 minute
+    today_pct = (today_gen / today_total * 100) if today_total > 0 else 0
+    today_loaded_pct = (today_loaded / today_total * 100) if today_total > 0 else 0
+    today_busy_min = today_gen  # 1 sample ≈ 1 minute
 
     # Last 7 days
     week_cutoff = now - timedelta(days=7)
-    week_samples = [(s, st, m, sc, v) for s, st, m, sc, v in samples if s >= week_cutoff]
-    week_busy = sum(1 for _, st, _, _, _ in week_samples if st == "busy")
+    week_samples = [s for s in samples if s[0] >= week_cutoff]
+    week_gen = sum(1 for s in week_samples if is_active(s[1]))
+    week_loaded = sum(1 for s in week_samples if is_model_loaded(s[1]))
     week_total = len(week_samples)
-    week_pct = (week_busy / week_total * 100) if week_total > 0 else 0
+    week_pct = (week_gen / week_total * 100) if week_total > 0 else 0
+    week_loaded_pct = (week_loaded / week_total * 100) if week_total > 0 else 0
 
     # Available capacity estimate: 1440 min/day, show how many more 2-min jobs could fit
     daily_capacity = 1440
-    today_idle_min = today_total - today_busy if today_total > 0 else daily_capacity
+    today_idle_min = today_total - today_gen if today_total > 0 else daily_capacity
     avg_job_min = 2  # typical Ollama call ≈ 1-2 minutes
     headroom_jobs = today_idle_min // avg_job_min
 
-    # Per-script breakdown (last 7 days)
+    # Per-script breakdown (last 7 days) — count actual generating minutes
     script_minutes = {}
-    for _, st, _, sc, _ in week_samples:
-        if st == "busy" and sc:
-            script_minutes[sc] = script_minutes.get(sc, 0) + 1
+    for s in week_samples:
+        if is_active(s[1]) and s[3]:
+            script_minutes[s[3]] = script_minutes.get(s[3], 0) + 1
 
     # ─── Daily utilization for last 14 days ───
     daily_stats = {}
-    for s, st, _, _, _ in samples:
-        day = s.strftime("%Y-%m-%d")
+    for s in samples:
+        day = s[0].strftime("%Y-%m-%d")
         if day not in daily_stats:
-            daily_stats[day] = {"busy": 0, "total": 0}
+            daily_stats[day] = {"generating": 0, "loaded": 0, "total": 0}
         daily_stats[day]["total"] += 1
-        if st == "busy":
-            daily_stats[day]["busy"] += 1
+        if is_active(s[1]):
+            daily_stats[day]["generating"] += 1
+        elif is_model_loaded(s[1]):
+            daily_stats[day]["loaded"] += 1
 
     # ─── Hourly heatmap (last 7 days, 24 hours × 7 days) ───
     # Build a grid: rows=hours (0-23), cols=days
@@ -3596,16 +3622,18 @@ def gen_load():
         d = (now - timedelta(days=i)).strftime("%Y-%m-%d")
         heatmap_days.append(d)
 
-    heatmap = {}  # (day, hour) → (busy, total)
-    for s, st, _, _, _ in week_samples:
-        day = s.strftime("%Y-%m-%d")
-        hour = s.hour
+    heatmap = {}  # (day, hour) → [generating, loaded, total]
+    for s in week_samples:
+        day = s[0].strftime("%Y-%m-%d")
+        hour = s[0].hour
         key = (day, hour)
         if key not in heatmap:
-            heatmap[key] = [0, 0]
-        heatmap[key][1] += 1
-        if st == "busy":
+            heatmap[key] = [0, 0, 0]  # generating, loaded, total
+        heatmap[key][2] += 1
+        if is_active(s[1]):
             heatmap[key][0] += 1
+        elif is_model_loaded(s[1]):
+            heatmap[key][1] += 1
 
     # ─── Build HTML ───
 
@@ -3634,19 +3662,19 @@ def gen_load():
     <div class="stats-grid">
       <div class="stat-box">
         <div class="stat-val {pct_class(today_pct)}">{today_pct:.0f}%</div>
-        <div class="stat-label">today util</div>
+        <div class="stat-label">today generating</div>
       </div>
       <div class="stat-box">
         <div class="stat-val {pct_class(week_pct)}">{week_pct:.0f}%</div>
-        <div class="stat-label">7-day util</div>
+        <div class="stat-label">7-day generating</div>
       </div>
       <div class="stat-box">
         <div class="stat-val cyan">{today_busy_min}</div>
-        <div class="stat-label">busy min today</div>
+        <div class="stat-label">gen. min today</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val">{today_total}</div>
-        <div class="stat-label">samples today</div>
+        <div class="stat-val" style="color:var(--fg-dim)">{today_loaded_pct:.0f}%</div>
+        <div class="stat-label">model in VRAM</div>
       </div>
       <div class="stat-box">
         <div class="stat-val" style="color:var(--green)">{headroom_jobs}</div>
@@ -3658,8 +3686,8 @@ def gen_load():
       </div>
     </div>
     <div style="margin-top:10px;font-size:0.82rem;color:var(--fg-dim)">
-      1 sample = 1 minute &nbsp;│&nbsp; free slots = idle minutes ÷ ~{avg_job_min} min/job &nbsp;│&nbsp;
-      Sampling started {samples[0][0].strftime('%Y-%m-%d %H:%M')}
+      1 sample = 1 minute &nbsp;│&nbsp; generating = GPU clock &gt;1.2 GHz (actual compute) &nbsp;│&nbsp;
+      loaded = model in VRAM but GPU idle (keep-alive 30m)
     </div>
   </div>
 </div>"""
@@ -3678,61 +3706,66 @@ def gen_load():
         heatmap_html += f'<tr><td style="padding:2px 6px;color:var(--fg-dim);text-align:right">{h:02d}:00</td>'
         for d in heatmap_days:
             key = (d, h)
-            busy, total = heatmap[key] if key in heatmap else (0, 0)
+            gen, loaded, total = heatmap[key] if key in heatmap else (0, 0, 0)
             if total == 0:
                 # No data (future or not yet sampled)
                 bg = "var(--bg)"
                 label = "·"
                 fg = "var(--fg-dim)"
+            elif gen == 0 and loaded == 0:
+                # All samples idle (no model)
+                bg = "#0d1a0d"
+                label = "░"
+                fg = "#224422"
+            elif gen == 0:
+                # Model loaded in VRAM but not computing — dim indicator
+                bg = "#141e28"
+                label = "▪"
+                fg = "#2a4a5a"
             else:
-                pct = busy / total * 100
-                if pct == 0:
-                    bg = "#0d1a0d"
-                    label = "░"
-                    fg = "#224422"
-                elif pct < 25:
+                # Actual generation happened — show minutes
+                gen_pct = gen / total * 100
+                if gen_pct < 25:
                     bg = "#1a2a1a"
-                    label = f"{busy}m"
                     fg = "var(--green)"
-                elif pct < 50:
+                elif gen_pct < 50:
                     bg = "#2a3a1a"
-                    label = f"{busy}m"
                     fg = "var(--green)"
-                elif pct < 75:
+                elif gen_pct < 75:
                     bg = "#3a3a1a"
-                    label = f"{busy}m"
                     fg = "var(--amber)"
                 else:
                     bg = "#3a2a1a"
-                    label = f"{busy}m"
                     fg = "var(--amber)"
+                label = f"{gen}m"
             heatmap_html += f'<td style="padding:2px 4px;text-align:center;background:{bg};color:{fg};border:1px solid var(--border)">{label}</td>'
         heatmap_html += '</tr>'
     heatmap_html += '</table></div>'
-    heatmap_html += '<div style="margin-top:8px;font-size:0.78rem;color:var(--fg-dim)">░ = idle &nbsp;│&nbsp; Nm = N minutes busy in that hour &nbsp;│&nbsp; · = no data</div>'
+    heatmap_html += '<div style="margin-top:8px;font-size:0.78rem;color:var(--fg-dim)">░ idle &nbsp;│&nbsp; ▪ model in VRAM (not computing) &nbsp;│&nbsp; Nm = N minutes generating &nbsp;│&nbsp; · no data</div>'
     heatmap_html += '</div></div>'
 
     # ─── Daily bar chart ───
     sorted_days = sorted(daily_stats.keys())[-14:]
-    bar_html = '<div class="section"><div class="section-title">📈 DAILY UTILIZATION — last 14 days</div><div class="section-body">'
+    bar_html = '<div class="section"><div class="section-title">📈 DAILY UTILIZATION — last 14 days (generating vs loaded)</div><div class="section-body">'
     for day in sorted_days:
         ds = daily_stats[day]
-        pct = (ds["busy"] / ds["total"] * 100) if ds["total"] > 0 else 0
-        busy_h = ds["busy"] / 60  # convert min to hours
-        total_h = ds["total"] / 60
+        gen_pct = (ds["generating"] / ds["total"] * 100) if ds["total"] > 0 else 0
+        loaded_pct = (ds["loaded"] / ds["total"] * 100) if ds["total"] > 0 else 0
         is_today = day == today_str
         day_label = datetime.strptime(day, "%Y-%m-%d").strftime("%a %d")
-        # Bar width proportional to utilization
-        bar_w = max(pct, 1)
-        bar_color = pct_color(pct)
+        gen_w = max(gen_pct, 0.5) if ds["generating"] > 0 else 0
+        loaded_w = max(loaded_pct, 0.5) if ds["loaded"] > 0 else 0
+        gen_color = pct_color(gen_pct)
         today_marker = " ◀" if is_today else ""
         bar_html += f'''<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:0.82rem">
   <span style="width:52px;text-align:right;color:{'var(--green)' if is_today else 'var(--fg-dim)'};flex-shrink:0">{day_label}</span>
-  <div style="flex:1;height:16px;background:var(--bg);border:1px solid var(--border);position:relative">
-    <div style="height:100%;width:{bar_w}%;background:{bar_color};opacity:0.7"></div>
+  <div style="flex:1;height:16px;background:var(--bg);border:1px solid var(--border);position:relative;display:flex">
+    <div style="height:100%;width:{gen_w}%;background:{gen_color};opacity:0.8"></div>
+    <div style="height:100%;width:{loaded_w}%;background:#1a3a5a;opacity:0.5"></div>
   </div>
-  <span style="width:90px;text-align:right;color:var(--fg-dim);flex-shrink:0">{pct:.0f}% ({ds['busy']}m){today_marker}</span>
+  <span style="width:120px;text-align:right;color:var(--fg-dim);flex-shrink:0">{gen_pct:.0f}% gen ({ds['generating']}m) + {ds['loaded']}m loaded{today_marker}</span>
 </div>'''
+    bar_html += '<div style="margin-top:6px;font-size:0.78rem;color:var(--fg-dim)">■ generating (GPU active) &nbsp;│&nbsp; <span style="color:#2a5a7a">■</span> loaded (model in VRAM, idle)</div>'
     bar_html += '</div></div>'
 
     # ─── Per-script breakdown ───
@@ -3741,7 +3774,10 @@ def gen_load():
         total_busy_week = sum(script_minutes.values())
         script_icons = {
             "lore-digest": "📨", "repo-watch": "👁", "idle-think": "🧠",
-            "report": "📊", "manual": "🖐",
+            "report": "📊", "career-scan": "💼", "salary-tracker": "💰",
+            "company-intel": "🏢", "patent-watch": "📜", "event-scout": "🎤",
+            "ha-journal": "🏠", "leak-monitor": "🔒", "gateway": "🌐",
+            "unknown": "❓",
         }
         # Sort by minutes descending
         sorted_scripts = sorted(script_minutes.items(), key=lambda x: -x[1])
@@ -3757,9 +3793,9 @@ def gen_load():
   </div>
   <span style="width:110px;text-align:right;color:var(--fg-dim);flex-shrink:0">{mins}m ({hours:.1f}h) {sc_pct:.0f}%</span>
 </div>'''
-        script_html += f'<div style="margin-top:8px;font-size:0.82rem;color:var(--fg-dim)">Total busy: {total_busy_week} min ({total_busy_week/60:.1f}h) over 7 days</div>'
+        script_html += f'<div style="margin-top:8px;font-size:0.82rem;color:var(--fg-dim)">Total generating: {total_busy_week} min ({total_busy_week/60:.1f}h) over 7 days</div>'
     else:
-        script_html += '<div style="color:var(--fg-dim)">No per-script data yet (need busy samples with script identification)</div>'
+        script_html += '<div style="color:var(--fg-dim)">No generating data yet (need samples with GPU clock &gt;1.2 GHz)</div>'
     script_html += '</div></div>'
 
     # ─── Capacity planning ───
@@ -3770,6 +3806,7 @@ def gen_load():
         ("ha-journal ×4", "01:30☾, 07:30, 13:30, 19:30", "~1–2 min", "Home Assistant observation journal"),
         ("repo-watch ×3", "00:30☾, 06:00, 12:00", "~5–10 min", "Silent repo monitoring"),
         ("repo-watch +notify", "18:00", "~5–10 min", "Daily repo digest + Signal alert"),
+        ("leak-monitor", "23:00", "~3–10 min", "CTI scan: ransomware, HIBP, Hudson Rock, Telegram, CISA KEV"),
         ("idle-think ×2", "02:00☾, 15:00", "~1–3 min", "Research / career / crawl / learn"),
         ("report", "08:00", "~1 min", "Morning health report"),
     ]
@@ -3808,14 +3845,26 @@ def gen_load():
     recent.reverse()
     log_html = '<div class="section"><div class="section-title">📋 RECENT SAMPLES — last 60 minutes</div><div class="section-body">'
     log_html += '<div class="log-view">'
-    for ts, st, model, script, vram in recent:
+    for s in recent:
+        ts, st, model, script, vram = s[0], s[1], s[2], s[3], s[4]
+        gpu_mhz = s[5] if len(s) > 5 else 0
+        temp_c = s[6] if len(s) > 6 else 0
         ts_str = ts.strftime("%H:%M")
-        if st == "busy":
+        hw_info = ""
+        if gpu_mhz:
+            hw_info = f" {gpu_mhz}MHz"
+        if temp_c:
+            hw_info += f" {temp_c}°C"
+        if st == "generating":
             vram_str = f" [{vram}MB]" if vram else ""
             script_str = f" ← {script}" if script else ""
-            log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:var(--amber)">■ BUSY</span> {e(model)}{vram_str}{script_str}\n'
+            log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:var(--amber)">■ GEN</span> {e(model)}{vram_str}{script_str}{hw_info}\n'
+        elif st in ("loaded", "busy"):
+            vram_str = f" [{vram}MB]" if vram else ""
+            script_str = f" ← {script}" if script and script != "unknown" else ""
+            log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:#2a5a7a">▪ loaded</span> {e(model)}{vram_str}{script_str}{hw_info}\n'
         else:
-            log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:#224422">□ idle</span>\n'
+            log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:#224422">□ idle</span>{hw_info}\n'
     log_html += '</div></div></div>'
 
     power_html = gen_power_cost_section()
