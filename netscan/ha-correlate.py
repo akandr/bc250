@@ -66,6 +66,22 @@ if os.path.exists(ENV_FILE):
                 os.environ.setdefault(k.strip(), v.strip())
     HASS_TOKEN = os.environ.get("HASS_TOKEN", HASS_TOKEN)
 
+# ── Garage car tracker ──────────────────────────────────────────────────────
+# Detects car leaving/returning by correlating gate+door events with temp signature:
+#   Gate opens → garage door opens → temp dips (cold air) → door closes
+#   → If temp then climbs rapidly (+1°C in <30min): car RETURNED (warm engine)
+#   → If temp stays flat or keeps dropping: car LEFT
+GARAGE_TEMP_SENSOR = "sensor.1000becdc2_t"    # Garaż termometr
+GARAGE_HUMIDITY    = "sensor.1000becdc2_h"    # Garaż humidity
+GARAGE_DOOR_SWITCH = "switch.10014d3a8b_2"    # Bramy garazowe-Garaz
+GARAGE_AUTO_SWITCH = "switch.1000ac01ad"       # Garaz auto
+GATE_SWITCH        = "switch.1000aa2079"       # Brama (driveway gate)
+
+# Detection thresholds
+GARAGE_TEMP_RISE_THRESHOLD = 0.8    # °C rise within window → car returned
+GARAGE_TEMP_WINDOW_MIN = 30         # minutes after door event to look for temp change
+GARAGE_EVENT_MERGE_SEC = 300        # merge gate+door events within 5min as one event
+
 # Known device context — don't flag these automation patterns
 KNOWN_DEVICES = {
     "switch.1000becdc2": {
@@ -466,6 +482,152 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=1500):
         return None
 
 
+# ── Garage car tracker ─────────────────────────────────────────────────────
+
+def detect_garage_events(all_history):
+    """Detect car leaving/returning events from garage door + temperature data.
+
+    Pattern:
+      1. Gate/door switch activates (on→off pulse = momentary relay)
+      2. Garage temp briefly dips (cold air ingress)
+      3. If temp then rises sharply within 30min → warm car parked = CAR RETURNED
+      4. If temp stays flat / drops → car drove away = CAR LEFT
+
+    Returns list of event dicts with timestamp, type, temp_before, temp_after, delta.
+    """
+    events = []
+
+    # Get door/gate activation times
+    door_times = []
+    for eid in [GARAGE_DOOR_SWITCH, GATE_SWITCH, GARAGE_AUTO_SWITCH]:
+        if eid not in all_history:
+            continue
+        for p in all_history[eid]:
+            state = p.get("state", "").lower()
+            ts_str = p.get("last_changed", "")
+            if state == "on" and ts_str:  # activation pulse
+                try:
+                    ts = datetime.fromisoformat(
+                        ts_str.replace("+00:00", "").replace("Z", "")
+                    ).replace(tzinfo=timezone.utc)
+                    door_times.append(ts)
+                except Exception:
+                    pass
+
+    if not door_times:
+        return events
+
+    # Merge close timestamps (gate+door fire within seconds)
+    door_times.sort()
+    merged = [door_times[0]]
+    for t in door_times[1:]:
+        if (t - merged[-1]).total_seconds() < GARAGE_EVENT_MERGE_SEC:
+            continue  # skip — same physical event
+        merged.append(t)
+
+    # Get garage temp history
+    if GARAGE_TEMP_SENSOR not in all_history:
+        return events
+
+    temp_points = []
+    for p in all_history[GARAGE_TEMP_SENSOR]:
+        try:
+            v = float(p["state"])
+            ts_str = p.get("last_changed", "")
+            ts = datetime.fromisoformat(
+                ts_str.replace("+00:00", "").replace("Z", "")
+            ).replace(tzinfo=timezone.utc)
+            temp_points.append((ts, v))
+        except (ValueError, TypeError, KeyError):
+            pass
+
+    if not temp_points:
+        return events
+
+    temp_points.sort(key=lambda x: x[0])
+
+    def temp_at(target_ts, tolerance_min=20):
+        """Find closest temp reading within tolerance of target time."""
+        best = None
+        best_delta = timedelta(minutes=tolerance_min)
+        for ts, v in temp_points:
+            d = abs(ts - target_ts)
+            if d < best_delta:
+                best = v
+                best_delta = d
+        return best
+
+    def temp_max_after(target_ts, window_min=GARAGE_TEMP_WINDOW_MIN):
+        """Find max temp within window after target time."""
+        cutoff = target_ts + timedelta(minutes=window_min)
+        temps_in_window = [
+            v for ts, v in temp_points
+            if target_ts <= ts <= cutoff
+        ]
+        return max(temps_in_window) if temps_in_window else None
+
+    def temp_at_after(target_ts, window_min=GARAGE_TEMP_WINDOW_MIN):
+        """Find temp reading closest to end of window (for trend check)."""
+        cutoff = target_ts + timedelta(minutes=window_min)
+        candidates = [
+            (ts, v) for ts, v in temp_points
+            if target_ts + timedelta(minutes=5) <= ts <= cutoff
+        ]
+        if not candidates:
+            return None
+        # Return the latest reading in the window
+        return candidates[-1][1]
+
+    # Analyze each door event
+    for door_ts in merged:
+        temp_before = temp_at(door_ts - timedelta(minutes=10), tolerance_min=30)
+        temp_peak = temp_max_after(door_ts, window_min=GARAGE_TEMP_WINDOW_MIN)
+        temp_end = temp_at_after(door_ts, window_min=GARAGE_TEMP_WINDOW_MIN)
+
+        if temp_before is None:
+            continue
+
+        event = {
+            "timestamp": door_ts.isoformat(timespec="seconds"),
+            "time_local": door_ts.strftime("%H:%M"),
+            "temp_before": round(temp_before, 1),
+        }
+
+        if temp_peak is not None:
+            delta = temp_peak - temp_before
+            event["temp_peak"] = round(temp_peak, 1)
+            event["delta"] = round(delta, 1)
+
+            if delta >= GARAGE_TEMP_RISE_THRESHOLD:
+                event["type"] = "car_returned"
+                event["detail"] = (
+                    f"Temp rose {delta:+.1f}°C "
+                    f"({temp_before:.1f}→{temp_peak:.1f}°C) "
+                    f"within {GARAGE_TEMP_WINDOW_MIN}min — warm engine parked"
+                )
+            else:
+                event["type"] = "car_left"
+                event["detail"] = (
+                    f"Temp change {delta:+.1f}°C "
+                    f"({temp_before:.1f}→{temp_peak:.1f}°C) — "
+                    f"no warm engine detected, car likely left"
+                )
+        elif temp_end is not None:
+            delta = temp_end - temp_before
+            event["temp_end"] = round(temp_end, 1)
+            event["delta"] = round(delta, 1)
+            event["type"] = "car_left" if delta < GARAGE_TEMP_RISE_THRESHOLD else "car_returned"
+            event["detail"] = f"Temp went {delta:+.1f}°C after door event"
+        else:
+            event["type"] = "door_event"
+            event["delta"] = 0.0
+            event["detail"] = "Door activated but no temperature data in follow-up window"
+
+        events.append(event)
+
+    return events
+
+
 # ── Signal ─────────────────────────────────────────────────────────────────
 
 def signal_send(msg):
@@ -573,7 +735,14 @@ def main():
 
     # ── Step 2: Fetch history in bulk ─────────────────────────────────────
     log("Fetching sensor histories...")
-    all_entity_ids = list(numeric_sensors.keys()) + list(switch_entities.keys())
+    # Always include garage tracker entities even if not in discovered lists
+    garage_eids = [
+        GARAGE_TEMP_SENSOR, GARAGE_HUMIDITY, GARAGE_DOOR_SWITCH,
+        GARAGE_AUTO_SWITCH, GATE_SWITCH,
+    ]
+    all_entity_ids = list(set(
+        list(numeric_sensors.keys()) + list(switch_entities.keys()) + garage_eids
+    ))
 
     # HA API has a URL length limit, so batch entity IDs
     BATCH_SIZE = 30
@@ -676,6 +845,39 @@ def main():
 
     log(f"Analyzed {len(duty_cycles)} switch duty cycles")
 
+    # ── Step 5.5: Garage car tracker ──────────────────────────────────────
+    log("Detecting garage car events...")
+    garage_events = detect_garage_events(all_history)
+    if garage_events:
+        log(f"Detected {len(garage_events)} garage event(s):")
+        for ge in garage_events:
+            emoji = "🚗" if ge["type"] == "car_returned" else ("🚙💨" if ge["type"] == "car_left" else "🚪")
+            log(f"  {emoji} {ge['time_local']} — {ge['type']}: {ge['detail']}")
+
+        # Remove garage temp spikes from anomalies — they're explained by car events
+        garage_event_times = set()
+        for ge in garage_events:
+            try:
+                et = datetime.fromisoformat(ge["timestamp"])
+                # Mark a ±30min window around each garage event
+                for m in range(-10, GARAGE_TEMP_WINDOW_MIN + 5):
+                    key = (et + timedelta(minutes=m)).strftime("%Y-%m-%dT%H:%M")
+                    garage_event_times.add(key[:13])  # match by hour
+            except Exception:
+                pass
+
+        before = len(all_anomalies)
+        all_anomalies = [
+            a for a in all_anomalies
+            if not ("Garaż" in a.get("label", "") or "Garage" in a.get("label", "")  # type: ignore
+                    or "termometr" in a.get("label", "").lower())
+            or a["timestamp"][:13] not in garage_event_times
+        ]
+        if len(all_anomalies) < before:
+            log(f"  Filtered {before - len(all_anomalies)} garage anomalies (explained by car events)")
+    else:
+        log("No garage door events detected")
+
     # ── Step 6: Cross-correlations ────────────────────────────────────────
     log("Computing cross-correlations...")
     correlations = []
@@ -777,6 +979,7 @@ def main():
         "duty_cycles": duty_cycles,
         "correlations": correlations[:20],  # top 20
         "anomalies": all_anomalies[:30],    # max 30
+        "garage_events": garage_events,
     }
 
     # ── Step 8: LLM synthesis ─────────────────────────────────────────────
@@ -825,6 +1028,15 @@ def main():
             summary_parts.append(
                 f"  {s['room']} {s['group']}: current {s['current']} {s['unit']} "
                 f"({s['samples']} samples: [{vals_str}])"
+            )
+
+    # Garage car tracker
+    if garage_events:
+        summary_parts.append("\n🚗 GARAGE CAR TRACKER:")
+        for ge in garage_events:
+            emoji = "🚗" if ge["type"] == "car_returned" else "🚙💨"
+            summary_parts.append(
+                f"  {emoji} {ge['time_local']} — {ge['type'].replace('_', ' ').upper()}: {ge['detail']}"
             )
 
     # Duty cycles
@@ -877,6 +1089,7 @@ Rules:
 - Note interesting temporal patterns (day vs. night differences)
 - Use emoji for quick scanning: 🌡️ temp, 💨 air, 💡 lights, ⚡ energy, 📊 pattern, ⚠️ warning, ✅ ok
 - Known devices that are automation-controlled should not be flagged as anomalies
+- Garage temperature spikes correlating with door events are CAR RETURNS (warm engine), not anomalies
 - Translate Polish sensor names in parentheses
 - End with 2-3 actionable recommendations
 - Keep under 500 words
@@ -884,11 +1097,15 @@ Rules:
 
     llm_analysis = call_ollama(system_prompt, data_summary)
 
-    # Sanitize LLM output — strip Chinese prefix / 'sample output' artifacts
+    # Sanitize LLM output — strip Chinese prefix / thinking tokens / artifacts
     if llm_analysis:
         # Remove any leading Chinese characters or non-ASCII junk
         llm_analysis = re.sub(r'^[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef：:]+\s*', '', llm_analysis)
         llm_analysis = re.sub(r'^(?:sample output|example output)[:\s]*', '', llm_analysis, flags=re.IGNORECASE)
+        # Strip qwen3 thinking tags and duplicated content before </think>
+        if '</think>' in llm_analysis:
+            llm_analysis = llm_analysis.split('</think>')[-1]
+        llm_analysis = re.sub(r'<think>.*?</think>', '', llm_analysis, flags=re.DOTALL)
         llm_analysis = llm_analysis.strip()
 
     report["llm_analysis"] = llm_analysis
@@ -958,6 +1175,12 @@ Rules:
     if room_temps:
         temps = [f"{r}: {t['current']:.0f}°C" for r, t in sorted(room_temps.items())]
         alert_parts.append(f"🌡️ {', '.join(temps[:5])}")
+
+    # Garage events
+    if garage_events:
+        for ge in garage_events:
+            emoji = "🚗" if ge["type"] == "car_returned" else "🚙💨"
+            alert_parts.append(f"{emoji} {ge['time_local']} {ge['type'].replace('_', ' ')}: {ge['detail']}")
 
     if correlations:
         alert_parts.append(f"🔗 {len(correlations)} correlations found")
