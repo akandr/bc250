@@ -66,6 +66,18 @@ PRIMARY_KEYWORDS = [
     "risc-v", "open hardware", "fpga",
     "linux plumbers", "embedded linux conference", "fosdem",
     "yocto", "buildroot", "open embedded",
+    # V4L2 / media subsystem deep keywords
+    "v4l2-subdev", "media controller api", "videobuf2", "dma-buf",
+    "media subsystem", "camera pipeline", "video4linux",
+    # Hardware interfaces
+    "mipi csi-2", "i2c driver", "spi driver", "dma engine",
+    "iommu", "device tree binding", "dt binding",
+    # Embedded recipes / specific conferences
+    "embedded recipes", "jesień linuksowa", "jesien linuksowa",
+    "linux autumn", "code::dive", "codedive",
+    # Edge/NPU
+    "edge inference", "npu", "hardware accelerat",
+    "own your silicon", "neural processing unit",
 ]
 
 # Secondary keywords — boost relevance
@@ -79,6 +91,17 @@ SECONDARY_KEYWORDS = [
     "camera", "imaging", "video", "display", "drm", "kms",
     "python", "ci/cd", "devops embedded",
     "security embedded", "secure boot", "tee",
+    # From research report
+    "hackerspace", "hakierspejs", "hardware hacking", "reverse engineer",
+    "electronics workshop", "soldering", "pcb",
+    "bootlin", "collabora", "pengutronix", "linutronix",
+    "free software", "foss", "floss",
+    "plug", "polish linux", "linux user group",
+    "qt embedded", "framebuffer",
+    "zero-copy", "memory management", "dma",
+    "microconference", "devroom", "lightning talk",
+    "ceh", "c-embedded-hardware",
+    "tenstorrent", "lora", "peft", "edge computing",
 ]
 
 # Location tiers with distance scores
@@ -96,6 +119,7 @@ LOCATIONS = {
     "tier3_poland": {
         "keywords": ["kraków", "krakow", "cracow", "wrocław", "wroclaw",
                      "poznań", "poznan", "gdańsk", "gdansk", "katowice",
+                     "rybnik", "toruń", "torun", "lublin", "szczecin",
                      "polska", "poland"],
         "label": "Poland",
         "travel_score": 5,
@@ -104,6 +128,8 @@ LOCATIONS = {
         "keywords": ["berlin", "prague", "praha", "vienna", "wien",
                      "amsterdam", "brussels", "bruxelles", "munich", "münchen",
                      "paris", "barcelona", "copenhagen", "stockholm",
+                     "nice", "nuremberg", "nürnberg", "lyon", "toulouse",
+                     "dublin", "hamburg", "zurich", "zürich", "helsinki",
                      "europe", "eu", "emea"],
         "label": "Europe",
         "travel_score": 3,
@@ -179,6 +205,213 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["kernelci"],
         "relevance": 6,
+    },
+    # ── Added from deep research ──
+    {
+        "name": "Jesień Linuksowa (Linux Autumn)",
+        "url": "https://jesien.org/",
+        "alt_urls": ["https://jesien.org/2025/en/", "https://jesien.org/2026/"],
+        "keywords": ["jesień linuksowa", "linux autumn", "plug", "polish linux"],
+        "relevance": 9,
+    },
+    {
+        "name": "Embedded Recipes",
+        "url": "https://embedded-recipes.org/",
+        "alt_urls": ["https://embedded-recipes.org/2026/"],
+        "keywords": ["embedded recipes", "isp", "libcamera", "yocto"],
+        "relevance": 10,
+    },
+    {
+        "name": "code::dive",
+        "url": "https://codedive.pl/",
+        "alt_urls": ["https://www.codedive.pl/"],
+        "keywords": ["code::dive", "codedive", "c++ conference wrocław"],
+        "relevance": 7,
+    },
+    {
+        "name": "Kernel Recipes",
+        "url": "https://kernel-recipes.org/",
+        "alt_urls": ["https://kernel-recipes.org/en/2026/"],
+        "keywords": ["kernel recipes", "linux kernel conference"],
+        "relevance": 9,
+    },
+    {
+        "name": "Linux Security Summit Europe",
+        "url": "https://events.linuxfoundation.org/linux-security-summit-europe/",
+        "alt_urls": [],
+        "keywords": ["linux security summit"],
+        "relevance": 5,
+    },
+]
+
+# ── Community Sources (RSS / iCal / Discourse) ────────────────────────────
+# Structured endpoints from hackerspaces, user groups, and local communities
+# Tier priority maps to geographic weighting in scoring
+
+COMMUNITY_SOURCES = [
+    # ── Tier 1: Łódź ──
+    {
+        "name": "Hakierspejs Łódź (Mobilizon)",
+        "type": "rss",
+        "url": "https://mobilizon.pl/@hakierspejs_lodz/feed/atom",
+        "alt_urls": [
+            "https://mobilizon.pl/@hakierspejs_lodz/feed/rss",
+            "https://hs-ldz.pl/events.xml",
+        ],
+        "city": "Łódź", "country": "Poland",
+        "tier": "tier1_local",
+        "keywords_boost": ["hardware", "electronics", "embedded", "hacking"],
+        "relevance_base": 6,  # local community — always interesting
+    },
+    {
+        "name": "Hakierspejs Łódź (Wiki)",
+        "type": "html",
+        "url": "https://wiki.hackerspaces.org/Hackerspace_Lodz",
+        "alt_urls": ["https://hs-ldz.pl/"],
+        "city": "Łódź", "country": "Poland",
+        "tier": "tier1_local",
+        "keywords_boost": ["open day", "workshop", "meeting", "spotkanie"],
+        "relevance_base": 5,
+    },
+    {
+        "name": "Crossweb Łódź Embedded/IoT",
+        "type": "html",
+        "url": "https://crossweb.pl/en/events/lodz/?category=development",
+        "alt_urls": [],
+        "city": "Łódź", "country": "Poland",
+        "tier": "tier1_local",
+        "keywords_boost": ["embedded", "c++", "hardware", "iot", "ceh"],
+        "relevance_base": 5,
+    },
+    # ── Tier 2: Warsaw ──
+    {
+        "name": "Warszawski Hackerspace (iCal)",
+        "type": "ical",
+        "url": "https://hsp.sh/calendar.ics",
+        "alt_urls": ["https://hackerspace.pl/calendar.ics"],
+        "city": "Warsaw", "country": "Poland",
+        "tier": "tier2_easy",
+        "keywords_boost": ["hardware", "reverse engineer", "embedded",
+                           "short talk", "lightning", "electronics"],
+        "relevance_base": 5,
+    },
+    {
+        "name": "Warsaw C++ Users Group",
+        "type": "html",
+        "url": "https://cpp.mimuw.edu.pl/",
+        "alt_urls": [],
+        "city": "Warsaw", "country": "Poland",
+        "tier": "tier2_easy",
+        "keywords_boost": ["c++", "systems", "memory", "performance",
+                           "embedded", "low-level", "hardware"],
+        "relevance_base": 5,
+    },
+    {
+        "name": "Crossweb Warsaw Embedded/C++",
+        "type": "html",
+        "url": "https://crossweb.pl/en/events/warszawa/?category=development",
+        "alt_urls": [],
+        "city": "Warsaw", "country": "Poland",
+        "tier": "tier2_easy",
+        "keywords_boost": ["embedded", "c++", "iot", "hardware", "qt"],
+        "relevance_base": 4,
+    },
+    # ── Tier 3: Poland (other cities) ──
+    {
+        "name": "Hackerspace Wrocław (Discourse)",
+        "type": "rss",
+        "url": "https://forum.hswro.org/c/public/public-ogloszenia/5.rss",
+        "alt_urls": [
+            "https://forum.hswro.org/c/public/public-ogloszenia/5.json",
+        ],
+        "city": "Wrocław", "country": "Poland",
+        "tier": "tier3_poland",
+        "keywords_boost": ["hardware", "embedded", "workshop", "electronics"],
+        "relevance_base": 4,
+    },
+    {
+        "name": "Spejs Kraków",
+        "type": "html",
+        "url": "https://spejs.pl/",
+        "alt_urls": ["https://wiki.hackerspaces.org/Spejs"],
+        "city": "Kraków", "country": "Poland",
+        "tier": "tier3_poland",
+        "keywords_boost": ["hardware", "embedded", "hacking", "electronics"],
+        "relevance_base": 3,
+    },
+    {
+        "name": "Crossweb PL — Embedded Meetups",
+        "type": "html",
+        "url": "https://crossweb.pl/en/events/?category=development&tag=embedded",
+        "alt_urls": [
+            "https://crossweb.pl/en/events/?category=iot",
+        ],
+        "city": "", "country": "Poland",
+        "tier": "tier3_poland",
+        "keywords_boost": ["embedded", "iot", "automotive", "hardware"],
+        "relevance_base": 4,
+    },
+    # ── Tier 4: Europe (major conferences — structured feeds) ──
+    {
+        "name": "FOSDEM Schedule",
+        "type": "xml_schedule",
+        "url": "https://fosdem.org/2026/schedule/xml",
+        "alt_urls": [
+            "https://fosdem.org/2027/schedule/xml",
+            "https://fosdem.org/2026/schedule/xml/",
+        ],
+        "city": "Brussels", "country": "Belgium",
+        "tier": "tier4_europe",
+        # Target devrooms for embedded/mobile/microkernel
+        "keywords_boost": ["embedded", "automotive", "mobile", "microkernel",
+                           "camera", "v4l2", "kernel", "boot", "hardware",
+                           "risc-v", "fpga", "driver"],
+        "devroom_filter": ["embedded", "mobile", "automotive", "kernel",
+                          "microkernel", "risc-v", "hardware", "bsd"],
+        "relevance_base": 7,
+    },
+    {
+        "name": "Embedded Recipes",
+        "type": "rss",
+        "url": "https://embedded-recipes.org/feed/",
+        "alt_urls": ["https://embedded-recipes.org/2026/feed/"],
+        "city": "Nice", "country": "France",
+        "tier": "tier4_europe",
+        "keywords_boost": ["embedded", "isp", "libcamera", "v4l2", "yocto",
+                           "bootlin", "kernel", "driver"],
+        "relevance_base": 8,
+    },
+    {
+        "name": "Kernel Recipes",
+        "type": "rss",
+        "url": "https://kernel-recipes.org/feed/",
+        "alt_urls": ["https://kernel-recipes.org/en/2026/feed/"],
+        "city": "Paris", "country": "France",
+        "tier": "tier4_europe",
+        "keywords_boost": ["kernel", "driver", "media", "v4l2", "subsystem"],
+        "relevance_base": 8,
+    },
+    {
+        "name": "Linux Plumbers Conference",
+        "type": "html",
+        "url": "https://lpc.events/",
+        "alt_urls": ["https://lpc.events/event/18/"],
+        "city": "Prague", "country": "Czechia",
+        "tier": "tier4_europe",
+        "keywords_boost": ["media", "camera", "v4l2", "microconference",
+                           "kernel", "plumbing"],
+        "relevance_base": 9,
+    },
+    {
+        "name": "Embedded World Press/News",
+        "type": "rss",
+        "url": "https://www.embedded-world.de/en/press/feed.xml",
+        "alt_urls": ["https://www.embedded-world.de/en/news/feed.xml"],
+        "city": "Nuremberg", "country": "Germany",
+        "tier": "tier4_europe",
+        "keywords_boost": ["soc", "camera", "sensor", "automotive",
+                           "embedded", "arm", "risc-v"],
+        "relevance_base": 5,
     },
 ]
 
@@ -627,6 +860,374 @@ def search_konfeo():
     return events
 
 
+# ── Source: Community RSS/Atom feeds ───────────────────────────────────────
+
+def parse_rss_events(xml_text, source_name, city="", country=""):
+    """Parse RSS or Atom feed XML into event dicts."""
+    events = []
+    if not xml_text:
+        return events
+
+    cutoff = datetime.now() - timedelta(days=60)
+
+    # Try Atom format first (more common for Mobilizon/Discourse)
+    # <entry> ... <title>X</title> <updated>Y</updated> <link href="Z"/> <content>W</content>
+    entries = re.findall(r'<entry>(.*?)</entry>', xml_text, re.DOTALL)
+    if entries:
+        for entry in entries[:25]:
+            title = ""
+            date = ""
+            link = ""
+            desc = ""
+
+            t_m = re.search(r'<title[^>]*>(.*?)</title>', entry, re.DOTALL)
+            if t_m:
+                title = strip_html(t_m.group(1)).strip()
+
+            # Atom dates: <updated>, <published>
+            d_m = re.search(r'<(?:updated|published)>(.*?)</(?:updated|published)>', entry)
+            if d_m:
+                date = d_m.group(1).strip()[:25]
+
+            l_m = re.search(r'<link[^>]*href="([^"]+)"', entry)
+            if l_m:
+                link = l_m.group(1)
+
+            c_m = re.search(r'<(?:content|summary)[^>]*>(.*?)</(?:content|summary)>', entry, re.DOTALL)
+            if c_m:
+                desc = strip_html(c_m.group(1))[:500]
+
+            if title:
+                # Skip old posts
+                skip = False
+                if date:
+                    for dfmt in ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"]:
+                        try:
+                            if datetime.strptime(date[:19], dfmt) < cutoff:
+                                skip = True
+                        except ValueError:
+                            continue
+                if not skip:
+                    events.append({
+                        "name": title, "date": date, "url": link,
+                        "source": f"community_rss:{source_name}",
+                        "city": city, "country": country,
+                        "location": f"{city}, {country}" if city else country,
+                        "description": desc,
+                    })
+        return events
+
+    # Fallback to RSS 2.0: <item> ... <title>X</title> <pubDate>Y</pubDate> ...
+    items = re.findall(r'<item>(.*?)</item>', xml_text, re.DOTALL)
+    for item in items[:25]:
+        title = ""
+        date = ""
+        link = ""
+        desc = ""
+
+        t_m = re.search(r'<title[^>]*>(.*?)</title>', item, re.DOTALL)
+        if t_m:
+            title = strip_html(t_m.group(1)).strip()
+
+        d_m = re.search(r'<pubDate>(.*?)</pubDate>', item)
+        if d_m:
+            date = d_m.group(1).strip()[:25]
+
+        l_m = re.search(r'<link[^>]*>(.*?)</link>', item)
+        if not l_m:
+            l_m = re.search(r'<link[^>]*href="([^"]+)"', item)
+        if l_m:
+            link = l_m.group(1).strip()
+
+        d_m = re.search(r'<description[^>]*>(.*?)</description>', item, re.DOTALL)
+        if d_m:
+            desc = strip_html(d_m.group(1))[:500]
+
+        if title:
+            # Skip old posts
+            skip = False
+            if date:
+                # Try RFC 2822 (pubDate) and ISO formats
+                for dfmt in ["%a, %d %b %Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"]:
+                    try:
+                        if datetime.strptime(date[:25].strip().rstrip(" +0000 GMT UTC"), dfmt) < cutoff:
+                            skip = True
+                        break
+                    except ValueError:
+                        continue
+            if not skip:
+                events.append({
+                    "name": title, "date": date, "url": link,
+                    "source": f"community_rss:{source_name}",
+                    "city": city, "country": country,
+                    "location": f"{city}, {country}" if city else country,
+                    "description": desc,
+                })
+
+    return events
+
+
+def parse_ical_events(ics_text, source_name, city="", country=""):
+    """Parse iCalendar .ics text into event dicts."""
+    events = []
+    if not ics_text:
+        return events
+
+    # Split into VEVENT blocks
+    vevents = re.findall(
+        r'BEGIN:VEVENT(.*?)END:VEVENT', ics_text, re.DOTALL
+    )
+
+    for vevent in vevents[:30]:
+        title = ""
+        date = ""
+        location = ""
+        desc = ""
+        url = ""
+
+        # SUMMARY
+        s_m = re.search(r'SUMMARY[^:]*:(.*)', vevent)
+        if s_m:
+            title = s_m.group(1).strip().replace('\\n', ' ').replace('\\,', ',')
+
+        # DTSTART
+        d_m = re.search(r'DTSTART[^:]*:(\d{4}\d{2}\d{2})', vevent)
+        if d_m:
+            raw = d_m.group(1)
+            date = f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}"
+
+        # LOCATION
+        l_m = re.search(r'LOCATION[^:]*:(.*)', vevent)
+        if l_m:
+            location = l_m.group(1).strip().replace('\\n', ' ').replace('\\,', ',')
+
+        # DESCRIPTION
+        desc_m = re.search(r'DESCRIPTION[^:]*:(.*?)(?=^[A-Z])', vevent, re.DOTALL | re.MULTILINE)
+        if desc_m:
+            desc = desc_m.group(1).strip().replace('\\n', ' ').replace('\\,', ',')[:500]
+
+        # URL
+        u_m = re.search(r'URL[^:]*:(.*)', vevent)
+        if u_m:
+            url = u_m.group(1).strip()
+
+        if not title:
+            continue
+
+        # Skip past events
+        if date:
+            try:
+                ev_date = datetime.strptime(date, "%Y-%m-%d")
+                if ev_date < datetime.now() - timedelta(days=7):
+                    continue
+            except ValueError:
+                pass
+
+        events.append({
+            "name": title, "date": date, "url": url,
+            "source": f"community_ical:{source_name}",
+            "city": city, "country": country,
+            "location": location or (f"{city}, {country}" if city else country),
+            "description": desc,
+        })
+
+    return events
+
+
+def parse_fosdem_xml(xml_text, devroom_filter=None):
+    """Parse FOSDEM Pentabarf XML schedule, filtering by devroom."""
+    events = []
+    if not xml_text:
+        return events
+
+    # Extract <event> blocks with their containing <room>
+    # Structure: <room name="X"> ... <event> ... </event> ... </room>
+    rooms = re.findall(
+        r'<room\s+name="([^"]+)">(.*?)</room>', xml_text, re.DOTALL
+    )
+
+    for room_name, room_content in rooms:
+        # Apply devroom filter if specified
+        if devroom_filter:
+            room_lower = room_name.lower()
+            if not any(f in room_lower for f in devroom_filter):
+                continue
+
+        event_blocks = re.findall(r'<event[^>]*>(.*?)</event>', room_content, re.DOTALL)
+
+        for block in event_blocks:
+            title = ""
+            date = ""
+            desc = ""
+            track = ""
+            persons = ""
+
+            t_m = re.search(r'<title>(.*?)</title>', block)
+            if t_m:
+                title = strip_html(t_m.group(1))
+
+            d_m = re.search(r'<date>(.*?)</date>', block)
+            if d_m:
+                date = d_m.group(1).strip()
+
+            tr_m = re.search(r'<track>(.*?)</track>', block)
+            if tr_m:
+                track = strip_html(tr_m.group(1))
+
+            abs_m = re.search(r'<abstract>(.*?)</abstract>', block, re.DOTALL)
+            if abs_m:
+                desc = strip_html(abs_m.group(1))[:500]
+
+            p_m = re.findall(r'<person[^>]*>(.*?)</person>', block)
+            if p_m:
+                persons = ", ".join(strip_html(p) for p in p_m[:3])
+
+            if title:
+                events.append({
+                    "name": f"[FOSDEM] {title}",
+                    "date": date,
+                    "url": "",  # FOSDEM URLs built from slug
+                    "source": "fosdem_schedule",
+                    "city": "Brussels", "country": "Belgium",
+                    "location": "Brussels, Belgium",
+                    "description": f"Room: {room_name}. Track: {track}. {desc}",
+                    "topics": f"{track} {room_name} {desc}",
+                    "speakers": persons,
+                })
+
+    return events
+
+
+def search_community_sources():
+    """Scan all community sources (hackerspaces, user groups, conference feeds)."""
+    all_events = []
+
+    for src in COMMUNITY_SOURCES:
+        name = src["name"]
+        stype = src["type"]
+        city = src.get("city", "")
+        country = src.get("country", "")
+        tier = src.get("tier", "")
+        base_relevance = src.get("relevance_base", 3)
+        boost_kw = src.get("keywords_boost", [])
+
+        log(f"  Community: {name}")
+        events = []
+
+        # Try primary URL, fall back to alternates
+        urls_to_try = [src["url"]] + src.get("alt_urls", [])
+        text = None
+        for url in urls_to_try:
+            text = fetch_url(url, timeout=20)
+            if text:
+                break
+            time.sleep(1)
+
+        if not text:
+            log(f"    → no data from any URL")
+            time.sleep(1)
+            continue
+
+        if stype == "rss":
+            events = parse_rss_events(text, name, city, country)
+
+        elif stype == "ical":
+            events = parse_ical_events(text, name, city, country)
+
+        elif stype == "xml_schedule":
+            devroom_filter = src.get("devroom_filter", None)
+            events = parse_fosdem_xml(text, devroom_filter)
+
+        elif stype == "html":
+            # Generic HTML scraping — extract event-like blocks
+            page_text = strip_html(text)[:8000]
+
+            # Look for event/meetup/workshop/spotkanie patterns
+            # Extract anything that looks like a dated event
+            patterns = [
+                # "Title — Date" or "Title, Date" patterns
+                r'([A-ZŁŹŻŚĆŃÓĄĘa-ząćęłńóśźż][^\n]{5,80})\s*[-–—,]\s*(\d{1,2}[./]\d{1,2}[./]\d{2,4})',
+                r'(\d{1,2}[./]\d{1,2}[./]\d{2,4})\s*[-–—,]\s*([A-ZŁŹŻa-z][^\n]{5,80})',
+                # "Month DD" style
+                r'([A-Z][a-z]+ \d{1,2}(?:[-–]\d{1,2})?,?\s*\d{4})[^\n]*?([A-Z][^\n]{5,60})',
+            ]
+
+            for pat in patterns:
+                matches = re.findall(pat, page_text)
+                for m in matches[:10]:
+                    # m is (title, date) or (date, title)
+                    a, b = m[0].strip(), m[1].strip()
+                    # Heuristic: the one with digits is the date
+                    if re.search(r'\d{4}|\d{1,2}[./]\d', a):
+                        date_str, title = a, b
+                    else:
+                        title, date_str = a, b
+
+                    events.append({
+                        "name": title[:100],
+                        "date": date_str,
+                        "url": src["url"],
+                        "source": f"community_html:{name}",
+                        "city": city, "country": country,
+                        "location": f"{city}, {country}" if city else country,
+                        "description": "",
+                    })
+
+            # If no dated events found, still record the source as a "hub"
+            # but with low relevance so it doesn't outrank real events
+            if not events:
+                # Check if page text contains any interesting keywords
+                page_lower = page_text.lower()
+                kw_hits = [kw for kw in boost_kw if kw in page_lower]
+                if kw_hits:
+                    events.append({
+                        "name": f"{name} — active community hub",
+                        "date": "",
+                        "url": src["url"],
+                        "source": f"community_hub:{name}",
+                        "city": city, "country": country,
+                        "location": f"{city}, {country}" if city else country,
+                        "description": f"Active community with keywords: {', '.join(kw_hits)}. Check directly for schedule.",
+                        "_is_hub": True,  # mark for lower scoring
+                    })
+
+        # For RSS/Atom sources: filter out posts that have NO keyword relevance
+        # (Discourse feeds include all forum topics — concerts, moving, etc.)
+        if stype == "rss" and events:
+            relevance_kws = set(boost_kw + [
+                "embedded", "linux", "kernel", "hardware", "workshop",
+                "meetup", "conference", "hackathon", "devops",
+                "c++", "programming", "hacking", "electronics",
+                "iot", "automotive", "driver", "camera", "fpga",
+                "risc-v", "arm", "yocto", "python", "rust",
+                "sensor", "firmware", "microcontroller", "pcb",
+            ])
+            filtered = []
+            for ev in events:
+                ev_text = f"{ev.get('name', '')} {ev.get('description', '')}".lower()
+                if any(kw in ev_text for kw in relevance_kws):
+                    filtered.append(ev)
+            events = filtered
+
+        # Apply relevance boost from community source config
+        for ev in events:
+            ev_text = f"{ev.get('name', '')} {ev.get('description', '')}".lower()
+            boost = sum(1 for kw in boost_kw if kw in ev_text)
+            if ev.get("_is_hub"):
+                # Hub entries: cap at 2 so they don't outrank real events
+                ev["community_relevance"] = min(2, base_relevance)
+            else:
+                ev["community_relevance"] = base_relevance + boost
+            ev["community_tier"] = tier
+
+        all_events.extend(events)
+        log(f"    → {len(events)} events")
+        time.sleep(2)
+
+    log(f"Community sources total: {len(all_events)} events")
+    return all_events
+
+
 # ── LLM Analysis ──────────────────────────────────────────────────────────
 
 def llm_analyze_events(events):
@@ -641,6 +1242,9 @@ They're interested in T5 promotion, industrial PhD, and expanding into sensor fu
 
 Analyze the events and recommend which ones to attend.
 Consider: topic relevance, networking value, learning opportunities, travel effort.
+Community sources include local hackerspaces (Hakierspejs Łódź, Warsaw Hackerspace),
+user groups (CEH UG, Warsaw C++), and European conferences (FOSDEM, Embedded Recipes,
+Linux Plumbers, Kernel Recipes). Prioritize Łódź > Warsaw > Poland > Europe.
 
 Respond in JSON:
 - must_attend: list of {name, date, location, why} — high relevance, worth the travel
@@ -733,6 +1337,10 @@ def main():
     all_events.extend(check_known_conferences())
     time.sleep(2)
 
+    # Community sources (hackerspaces, user groups, conference feeds)
+    all_events.extend(search_community_sources())
+    time.sleep(2)
+
     # Crossweb.pl (Polish aggregator)
     all_events.extend(search_crossweb())
     time.sleep(2)
@@ -745,10 +1353,15 @@ def main():
     meetup_queries = [
         ("embedded linux", "Łódź"),
         ("embedded linux", "Warsaw"),
+        ("embedded systems", "Łódź"),
+        ("C++ hardware", "Warsaw"),
         ("automotive software", "Poland"),
         ("IoT embedded", "Łódź"),
         ("camera imaging", "Warsaw"),
         ("kernel linux", "Poland"),
+        ("Qt embedded", "Warsaw"),
+        ("hackerspace", "Łódź"),
+        ("hackerspace", "Warsaw"),
     ]
     for query, city in meetup_queries:
         all_events.extend(search_meetup(query, city))
@@ -767,6 +1380,16 @@ def main():
         ("RISC-V event", "Europe"),
         ("konferencja embedded IoT", "Polska"),
         ("spotkanie linux kernel", "Polska"),
+        # From research report — targeted searches
+        ("hakierspejs łódź spotkanie", "Polska"),
+        ("CEH embedded meetup łódź", "Polska"),
+        ("C-Embedded-Hardware user group", "Poland"),
+        ("embedded meetup katowice wrocław", "Polska"),
+        ("jesień linuksowa 2026", "Polska"),
+        ("embedded recipes 2026 conference", "Europe"),
+        ("linux plumbers conference 2026 media microconference", "Europe"),
+        ("FOSDEM embedded automotive devroom 2026", "Europe"),
+        ("code::dive conference wrocław 2026", "Polska"),
     ]
     for query, region in ddg_queries:
         all_events.extend(search_ddg_events(query, region))
@@ -778,6 +1401,14 @@ def main():
     log("Phase 2: Scoring events...")
     for event in all_events:
         score_event(event)
+
+    # Merge community_relevance into combined_score if not yet scored
+    for e in all_events:
+        comm_rel = e.get("community_relevance", 0)
+        if comm_rel > 0 and e.get("combined_score", 0) == 0:
+            e["combined_score"] = comm_rel
+        elif comm_rel > 0:
+            e["combined_score"] = max(e.get("combined_score", 0), comm_rel)
 
     # Filter: must have some relevance
     relevant = [e for e in all_events if e.get("combined_score", 0) > 0 or e.get("relevance", 0) > 0]
