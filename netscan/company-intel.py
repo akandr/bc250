@@ -60,6 +60,10 @@ COMPANIES = {
         "news_url": "https://nvidianews.nvidia.com/",
         "search_terms": ["NVIDIA Poland", "NVIDIA embedded", "NVIDIA automotive"],
         "industry": "silicon",
+        "careers_urls": [
+            "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite?locations=91c5e2a7058101c99fbb5b4e17044b0e&workerSubType=0c40f6bd1d8f10adf6dae161b458a5d0",
+        ],
+        "careers_location_filter": ["poland", "polska", "warsaw", "warszawa", "remote"],
     },
     "google": {
         "name": "Google",
@@ -81,6 +85,10 @@ COMPANIES = {
         "news_url": "https://newsroom.intel.com/",
         "search_terms": ["Intel Poland", "Intel embedded", "Intel layoffs"],
         "industry": "silicon",
+        "careers_urls": [
+            "https://jobs.intel.com/en/search-jobs/Poland/599/1/6695072/52/20/50/2",
+        ],
+        "careers_location_filter": ["poland", "polska", "gdańsk", "gdansk", "remote"],
     },
     "samsung": {
         "name": "Samsung Electronics",
@@ -95,6 +103,10 @@ COMPANIES = {
         "news_url": "https://www.qualcomm.com/news",
         "search_terms": ["Qualcomm Poland", "Qualcomm automotive", "Snapdragon Ride"],
         "industry": "silicon",
+        "careers_urls": [
+            "https://careers.qualcomm.com/careers?location=Poland&pid=446700590469",
+        ],
+        "careers_location_filter": ["poland", "polska", "wrocław", "wroclaw", "remote"],
     },
     "arm": {
         "name": "Arm",
@@ -151,6 +163,16 @@ COMPANIES = {
         "news_url": "https://hexagon.com/newsroom",
         "search_terms": ["Hexagon Manufacturing Intelligence Poland", "Leica Geosystems Łódź", "Hexagon ADAS lidar"],
         "industry": "metrology",
+        "ats_api": {
+            "type": "brassring",
+            "endpoint": "https://sjobs.brassring.com/TGnewUI/Search/Ajax/ProcessSortAndShowMoreJobs",
+            "partnerId": "25872",
+            "siteId": "5512",
+        },
+        "careers_urls": [
+            "https://hexagon.com/company/careers/job-listings?locations=Poland",
+        ],
+        "careers_location_filter": ["łódź", "lódz", "lodz", "poland", "polska", "remote"],
     },
 }
 
@@ -320,6 +342,220 @@ def check_layoffs_fyi(company_name):
                 events.append(text)
 
     return events[:3]  # last 3 mentions
+
+
+# ── ATS API Integrations ──────────────────────────────────────────────────
+
+def _query_brassring_api(ats_cfg, loc_filter):
+    """Query BrassRing ATS AJAX API directly — returns structured job list."""
+    import ssl
+    endpoint = ats_cfg["endpoint"]
+    payload = json.dumps({
+        "partnerId": ats_cfg["partnerId"],
+        "siteId": ats_cfg["siteId"],
+        "keyword": "",
+        "location": "Poland",
+    }).encode()
+    req = urllib.request.Request(endpoint, data=payload, headers={
+        "Content-Type": "application/json",
+        "User-Agent": UA,
+        "Accept": "application/json",
+    })
+    jobs = []
+    try:
+        ctx = ssl.create_default_context()
+        with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
+            data = json.loads(resp.read())
+        job_list = data.get("Jobs", {})
+        if isinstance(job_list, dict):
+            job_list = job_list.get("Job", [])
+        if isinstance(job_list, dict):  # single result
+            job_list = [job_list]
+        if not isinstance(job_list, list):
+            job_list = []
+
+        for j in job_list:
+            qs = {q["QuestionName"]: q["Value"] for q in j.get("Questions", [])}
+            country = qs.get("formtext2", "").strip()
+            title = qs.get("jobtitle", "").replace("&amp;", "&")
+            reqid = qs.get("autoreq", "")
+            link = j.get("Link", "")
+
+            # Filter by location
+            country_lower = country.lower()
+            if any(lf in country_lower for lf in loc_filter):
+                jobs.append({
+                    "title": title[:120],
+                    "location": country,
+                    "job_id": reqid,
+                    "url": link,
+                    "source": "brassring_api",
+                })
+
+        log(f"  BrassRing API: {data.get('JobsCount', 0)} total jobs, {len(jobs)} match location filter")
+    except Exception as e:
+        log(f"  BrassRing API error: {e}")
+
+    return jobs
+
+
+# ── Careers Page Monitoring ────────────────────────────────────────────────
+
+def check_careers_pages(company):
+    """Find job listings for a company, filtered by target locations.
+
+    Strategy:
+    0. Query ATS API directly (BrassRing, Workday) — most reliable
+    1. Try scraping configured careers_urls (works for server-rendered pages)
+    2. Fall back to DDG search for jobs at this company in Poland/Łódź
+    """
+    loc_filter = company.get("careers_location_filter", ["łódź", "lodz", "poland"])
+    # Also match HTML-mangled versions (DDG returns "Łó d ź" etc.)
+    loc_filter_expanded = list(loc_filter) + [
+        lf.replace("ó", "ó").replace("ł", "ł")  # HTML entities
+        for lf in loc_filter
+    ]
+    # Add substring variants that survive HTML mangling
+    for lf in list(loc_filter):
+        # "łódź" → also match "lod" (ASCII core)
+        ascii_core = lf.replace("ł", "l").replace("ó", "o").replace("ź", "z").replace("ż", "z").replace("ś", "s").replace("ń", "n")
+        if ascii_core not in loc_filter_expanded and len(ascii_core) >= 3:
+            loc_filter_expanded.append(ascii_core)
+    loc_filter = list(set(loc_filter_expanded))
+    company_name = company["name"].split("/")[0].strip()  # "Hexagon / Leica" → "Hexagon"
+    all_jobs = []
+
+    # ── Phase 0: ATS API (structured data — most reliable) ──
+    ats_cfg = company.get("ats_api")
+    if ats_cfg:
+        ats_type = ats_cfg.get("type", "")
+        if ats_type == "brassring":
+            api_jobs = _query_brassring_api(ats_cfg, loc_filter)
+            all_jobs.extend(api_jobs)
+        # Future: elif ats_type == "workday": ...
+
+    # ── Phase 1: Direct URL scraping (skip if ATS API found jobs) ──
+    if not all_jobs:
+        careers_urls = company.get("careers_urls", [])
+        for url in careers_urls:
+            html = fetch_url(url, timeout=25)
+            if not html:
+                continue
+            text = strip_html(html)
+            if len(text) < 50:
+                continue
+
+            jobs_found = _extract_jobs_from_text(text, loc_filter, url)
+            all_jobs.extend(jobs_found)
+            time.sleep(1)
+
+    # ── Phase 2: DDG search fallback (only if no jobs found yet) ──
+    if not all_jobs:
+        ddg_queries = [
+            f'"{company_name}" "Łódź" OR "Lodz" praca engineer',
+            f'"{company_name}" Poland job engineer software',
+        ]
+        for q in ddg_queries:
+            url = f"https://html.duckduckgo.com/html/?q={urllib.request.quote(q)}"
+            html = fetch_url(url, timeout=20)
+            if not html:
+                time.sleep(2)
+                continue
+
+            # Extract DDG result titles and snippets
+            titles = re.findall(r'class="result__a"[^>]*>(.*?)</a>', html, re.DOTALL)
+            snippets = re.findall(r'class="result__snippet"[^>]*>(.*?)</a>', html, re.DOTALL)
+            links = re.findall(r'class="result__a"[^>]*href="([^"]+)"', html)
+
+            for idx in range(min(len(titles), len(snippets), 8)):
+                title = strip_html(titles[idx]).strip()
+                snippet = strip_html(snippets[idx]).strip()
+                link = links[idx] if idx < len(links) else ""
+                combined = f"{title} {snippet}".lower()
+
+                # Must be about this company
+                if company_name.lower() not in combined:
+                    continue
+
+                # Normalize for location matching (handle HTML-mangled Polish chars)
+                combined_norm = re.sub(r'\s+', '', combined)  # collapse spaces: "łó d ź" → "łódź"
+
+                # Must mention a target location and be a job posting
+                is_job = any(kw in combined for kw in [
+                    "engineer", "developer", "architect", "manager", "analyst",
+                    "specialist", "lead", "job", "career", "hiring", "vacancy",
+                    "praca", "stanowisko", "rekrutacja",
+                ])
+                has_location = any(lf in combined for lf in loc_filter) or \
+                               any(lf in combined_norm for lf in loc_filter)
+
+                if is_job and has_location:
+                    all_jobs.append({
+                        "title": title[:120],
+                        "location": "Poland",
+                        "job_id": "",
+                        "url": link or q,
+                        "source": "ddg_search",
+                    })
+
+            time.sleep(2)
+
+    # Dedup by title similarity
+    seen = set()
+    deduped = []
+    for j in all_jobs:
+        key = re.sub(r'[^a-z0-9]+', '', j["title"].lower())[:40]
+        if key not in seen:
+            seen.add(key)
+            deduped.append(j)
+
+    return deduped[:20]
+
+
+def _extract_jobs_from_text(text, loc_filter, source_url):
+    """Extract job-like entries from page text, filtered by location."""
+    jobs = []
+
+    # Pattern 1: "Job Title  Location  JOBID NNN" (BrassRing style)
+    for m in re.finditer(
+        r'([A-Z][A-Za-zÀ-ž /,&()\-]{5,80}?)\s+'
+        r'([A-ZÀ-ž][A-Za-zÀ-ž ,]+(?:Poland|Polska|Remote|Łódź|Lodz)[A-Za-zÀ-ž ,]*)\s*'
+        r'(?:JOBID|Job ID|Req ID)?\s*([A-Z0-9]{3,15})?',
+        text
+    ):
+        title = m.group(1).strip()
+        location = m.group(2).strip()
+        job_id = (m.group(3) or "").strip()
+        if any(lf in location.lower() for lf in loc_filter):
+            jobs.append({
+                "title": title[:120],
+                "location": location[:80],
+                "job_id": job_id,
+                "url": source_url,
+            })
+
+    # Pattern 2: role keywords near location keywords
+    role_kws = ["engineer", "developer", "architect", "manager", "analyst",
+                "scientist", "lead", "specialist", "designer", "technician"]
+    chunks = re.split(r'[\n\r•·|]+', text)
+    for i, chunk in enumerate(chunks):
+        chunk_lower = chunk.lower().strip()
+        if len(chunk_lower) < 10 or len(chunk_lower) > 200:
+            continue
+        loc_match = any(lf in chunk_lower for lf in loc_filter)
+        if not loc_match:
+            nearby = " ".join(chunks[max(0, i-1):i+2]).lower()
+            loc_match = any(lf in nearby for lf in loc_filter)
+        if loc_match and any(rk in chunk_lower for rk in role_kws):
+            if not any(j["title"].lower()[:20] in chunk_lower for j in jobs):
+                jobs.append({
+                    "title": chunk.strip()[:120],
+                    "location": "Poland",
+                    "job_id": "",
+                    "url": source_url,
+                })
+
+    return jobs
 
 
 # ── 4programmers.net Forum Search ──────────────────────────────────────────
@@ -588,7 +824,12 @@ def analyze_company(key, company, db_entry):
     intel["layoffs_mentions"] = layoffs
     log(f"  Layoffs.fyi: {len(layoffs)} mentions")
 
-    # 4. Company news page (if available)
+    # 4. Careers page monitoring
+    careers_jobs = check_careers_pages(company)
+    intel["careers_openings"] = careers_jobs
+    log(f"  Careers pages: {len(careers_jobs)} job(s) in target locations")
+
+    # 5. Company news page (if available)
     company_news_text = ""
     if company.get("news_url"):
         html = fetch_url(company["news_url"], timeout=20)
@@ -596,17 +837,17 @@ def analyze_company(key, company, db_entry):
             company_news_text = strip_html(html)[:3000]
         time.sleep(1)
 
-    # 4a. 4programmers.net forum threads (Polish dev community)
+    # 5a. 4programmers.net forum threads (Polish dev community)
     fourp_results = search_4programmers(company["name"])
     intel["4programmers"] = fourp_results
     log(f"  4programmers.net: {len(fourp_results)} threads")
 
-    # 4b. Reddit discussions (global embedded/semiconductor communities)
+    # 5b. Reddit discussions (global embedded/semiconductor communities)
     reddit_results = search_reddit(company["name"], company.get("search_terms"))
     intel["reddit"] = reddit_results
     log(f"  Reddit: {len(reddit_results)} threads")
 
-    # 4c. SemiWiki forum (semiconductor industry intel)
+    # 5c. SemiWiki forum (semiconductor industry intel)
     # Only search SemiWiki for silicon/semiconductor companies
     semiwiki_results = []
     if company.get("industry") in ("silicon", "automotive", "defence"):
@@ -614,7 +855,7 @@ def analyze_company(key, company, db_entry):
     intel["semiwiki"] = semiwiki_results
     log(f"  SemiWiki: {len(semiwiki_results)} threads")
 
-    # 5. Previous intel from DB
+    # 6. Previous intel from DB
     prev_rating = None
     prev_sentiment = None
     if db_entry:
@@ -624,7 +865,7 @@ def analyze_company(key, company, db_entry):
             prev_rating = last.get("gowork_rating")
             prev_sentiment = last.get("sentiment")
 
-    # 6. LLM analysis
+    # 7. LLM analysis
     system = """You are a corporate intelligence analyst specializing in tech companies
 in Poland, with focus on embedded systems and automotive sectors.
 Analyze the provided data and produce a structured intelligence brief.
@@ -636,6 +877,7 @@ Respond in JSON format with these keys:
 - adas_relevance: how relevant to ADAS/camera/embedded work (0-10)
 - key_developments: list of 2-3 most important recent developments
 - community_pulse: one-line summary of developer/industry forum sentiment
+- hiring_activity: summary of open positions found (titles, locations, relevance)
 - recommendation: one-line action item for the user
 Output ONLY valid JSON, no markdown. /no_think"""
 
@@ -654,9 +896,17 @@ Output ONLY valid JSON, no markdown. /no_think"""
         for r in semiwiki_results[:3]
     )
 
+    careers_text = "\n".join(
+        f"  • {j['title']} — {j['location']}" + (f" (ID: {j['job_id']})" if j.get('job_id') else "")
+        for j in careers_jobs[:10]
+    )
+
     prompt = f"""Company: {company['name']} ({company['industry']})
 GoWork entity: {company['gowork_id']}
 Previous sentiment: {prev_sentiment or 'N/A'}, previous GoWork rating: {prev_rating or 'N/A'}
+
+Open positions in Poland/Łódź ({len(careers_jobs)} found):
+{careers_text or '  (none found on careers page)'}
 
 Recent GoWork reviews ({len(reviews)} found):
 {review_text or '  (none)'}
@@ -760,6 +1010,8 @@ def main():
                 "growth_signals": intel.get("analysis", {}).get("growth_signals", []),
                 "adas_relevance": intel.get("analysis", {}).get("adas_relevance"),
                 "community_pulse": intel.get("analysis", {}).get("community_pulse"),
+                "hiring_activity": intel.get("analysis", {}).get("hiring_activity"),
+                "careers_openings": len(intel.get("careers_openings", [])),
                 "sources_4p": len(intel.get("4programmers", [])),
                 "sources_reddit": len(intel.get("reddit", [])),
                 "sources_semiwiki": len(intel.get("semiwiki", [])),
