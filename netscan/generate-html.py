@@ -3799,44 +3799,89 @@ def gen_load():
     script_html += '</div></div>'
 
     # ─── Capacity planning ───
-    cron_jobs = [
-        ("⏰ QUIET HOURS", "00:00–06:00", "—", "No Signal chat — GPU free for batch analysis (abliterated model)"),
-        ("lore-digest", "04:00 ☾", "~8–15 min", "Daily digest of mailing list feeds"),
-        ("career-scan ×2/wk", "Mon/Thu 03:30 ☾", "~5–15 min", "Career intelligence scanner (jobs + company intel)"),
-        ("ha-journal ×4", "01:30☾, 07:30, 13:30, 19:30", "~1–2 min", "Home Assistant observation journal"),
-        ("repo-watch ×3", "00:30☾, 06:00, 12:00", "~5–10 min", "Silent repo monitoring"),
-        ("repo-watch +notify", "18:00", "~5–10 min", "Daily repo digest + Signal alert"),
-        ("leak-monitor", "23:00", "~3–10 min", "CTI scan: ransomware, HIBP, Hudson Rock, Telegram, CISA KEV"),
-        ("idle-think ×2", "02:00☾, 15:00", "~1–3 min", "Research / career / crawl / learn"),
-        ("report", "08:00", "~1 min", "Morning health report"),
+    # All GPU tasks orchestrated by openclaw cron → Clawd agent turns
+    cron_jobs_night = [
+        ("leak-monitor", "23:00", "~5–10 min", "CTI: ransomware, HIBP, Hudson Rock, Telegram, CISA KEV"),
+        ("idle-think trends", "23:20", "~3–5 min", "Trends analysis from watchlist topics"),
+        ("idle-think research", "23:40", "~3–5 min", "Deep research on high-priority topic"),
+        ("ha-journal", "00:00", "~2–3 min", "Home Assistant observation journal"),
+        ("career-scan", "00:20", "~15–60 min", "Career intelligence (jobs + company + salary)"),
+        ("salary-tracker", "01:30", "~5–10 min", "Salary benchmarking analysis"),
+        ("company-intel", "01:50", "~5–10 min", "Target company deep analysis"),
+        ("patent-watch", "02:10", "~5–10 min", "Patent monitoring for tracked domains"),
+        ("event-scout", "02:30", "~5–10 min", "Tech event / CFP scanner"),
+        ("idle-think crossfeed", "02:50", "~3–5 min", "Cross-feed correlation insights"),
+        ("idle-think career", "03:10", "~3–5 min", "Career strategy refinement"),
+        ("idle-think crawl", "03:30", "~3–5 min", "Web crawl for watchlist topics"),
+        ("idle-think learn", "03:50", "~3–5 min", "Study notes on random tech topic"),
+        ("idle-think weekly", "04:10", "~3–5 min", "Weekly review and planning"),
+        ("lore-digest", "04:30", "~10–15 min", "Mailing list feed digest"),
+        ("idle-think research", "05:00", "~3–5 min", "Research round 2"),
+        ("idle-think trends", "05:20", "~3–5 min", "Trends round 2"),
+        ("ha-correlate", "05:40", "~5–10 min", "HA cross-sensor correlation"),
+        ("idle-think crossfeed", "06:00", "~3–5 min", "Crossfeed round 2"),
+        ("idle-think research", "06:20", "~3–5 min", "Research round 3"),
+        ("ha-journal", "06:40", "~2–3 min", "HA journal round 2"),
+        ("idle-think crawl", "07:00", "~3–5 min", "Crawl round 2"),
+        ("idle-think research", "07:20", "~3–5 min", "Research round 4"),
+        ("leak-monitor", "07:40", "~5–10 min", "Morning CTI scan"),
     ]
-    cap_html = '<div class="section"><div class="section-title">🔧 SCHEDULED JOBS &amp; CAPACITY</div><div class="section-body">'
+    cron_jobs_day = [
+        ("ha-journal", "09:00", "~2–3 min", "HA journal — morning"),
+        ("idle-think research", "10:00", "~3–5 min", "Research round 5"),
+        ("leak-monitor", "11:00", "~5–10 min", "Midday CTI scan"),
+        ("ha-journal", "12:00", "~2–3 min", "HA journal — noon"),
+        ("idle-think trends", "13:00", "~3–5 min", "Trends round 3"),
+        ("idle-think crossfeed", "14:00", "~3–5 min", "Crossfeed round 3"),
+        ("ha-journal", "15:00", "~2–3 min", "HA journal — afternoon"),
+        ("idle-think crawl", "16:00", "~3–5 min", "Crawl round 3"),
+        ("idle-think career", "17:00", "~3–5 min", "Career round 2"),
+        ("ha-journal", "18:00", "~2–3 min", "HA journal — evening"),
+        ("idle-think signal 📱", "19:00", "~3–5 min", "Daily Signal digest → sent to phone"),
+        ("idle-think research", "20:00", "~3–5 min", "Research round 6"),
+        ("ha-journal", "21:00", "~2–3 min", "HA journal — night"),
+        ("idle-think research", "22:00", "~3–5 min", "Research round 7"),
+    ]
+    cap_html = '<div class="section"><div class="section-title">🔧 OPENCLAW CRON — 38 SCHEDULED JOBS</div><div class="section-body">'
     cap_html += '<div style="margin-bottom:12px;padding:8px;background:var(--bg2);border-left:3px solid var(--purple);border-radius:4px;font-size:0.85rem">'
-    cap_html += '🌙 <span style="color:var(--purple);font-weight:bold">Quiet Hours 00:00–06:00</span> '
-    cap_html += '<span style="color:var(--fg-dim)">— No Signal chat, all batch jobs use </span>'
-    cap_html += '<span style="color:var(--green)">huihui_ai/qwen3-abliterated:14b</span> '
-    cap_html += '<span style="color:var(--fg-dim)">(uncensored, richer analysis). ☾ = runs during quiet hours.</span>'
+    cap_html += '🤖 <span style="color:var(--purple);font-weight:bold">All GPU tasks run through Clawd</span> '
+    cap_html += '<span style="color:var(--fg-dim)">via </span>'
+    cap_html += '<span style="color:var(--cyan)">openclaw cron</span> '
+    cap_html += '<span style="color:var(--fg-dim)">→ agent turns → shell tools. Gateway runs 24/7. Signal preempts background work.</span>'
     cap_html += '</div>'
+    # Night table
+    cap_html += '<div style="margin-bottom:6px;color:var(--purple);font-weight:bold;font-size:0.85rem">🌙 Night batch (23:00–07:59) — 24 jobs, back-to-back every ~20 min</div>'
     cap_html += '<table class="host-table"><thead><tr>'
-    cap_html += '<th>Job</th><th>Schedule</th><th>Est. Duration</th><th>Purpose</th>'
+    cap_html += '<th>Job</th><th>Time</th><th>Est. Duration</th><th>Purpose</th>'
     cap_html += '</tr></thead><tbody>'
-    for name, sched, dur, purpose in cron_jobs:
-        row_style = ' style="background:var(--bg3)"' if '☾' in sched or 'QUIET' in name else ''
-        cap_html += f'<tr{row_style}><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
+    for name, sched, dur, purpose in cron_jobs_night:
+        cap_html += f'<tr style="background:var(--bg3)"><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
+    cap_html += '</tbody></table>'
+    # Day table
+    cap_html += '<div style="margin:12px 0 6px;color:var(--amber);font-weight:bold;font-size:0.85rem">☀️ Daytime (08:00–22:59) — 14 jobs, hourly cadence</div>'
+    cap_html += '<table class="host-table"><thead><tr>'
+    cap_html += '<th>Job</th><th>Time</th><th>Est. Duration</th><th>Purpose</th>'
+    cap_html += '</tr></thead><tbody>'
+    for name, sched, dur, purpose in cron_jobs_day:
+        cap_html += f'<tr><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
     cap_html += '</tbody></table>'
     # Estimated total
     cap_html += f'''<div style="margin-top:12px;font-size:0.85rem">
-  <span style="color:var(--fg-dim)">Estimated daily GPU time:</span>
-  <span style="color:var(--amber)">~35–65 min</span>
-  <span style="color:var(--fg-dim)">out of 1440 min (</span><span style="color:var(--green)">~2–5%</span><span style="color:var(--fg-dim)">)</span>
+  <span style="color:var(--fg-dim)">Daily jobs:</span>
+  <span style="color:var(--amber)">38</span>
+  <span style="color:var(--fg-dim)">(24 night + 14 day) — est. GPU time:</span>
+  <span style="color:var(--amber)">~150–250 min</span>
+  <span style="color:var(--fg-dim)">({round(200/1440*100)}% of 24h)</span>
   <br>
-  <span style="color:var(--fg-dim)">Quiet hours batch window:</span>
-  <span style="color:var(--purple)">~20–35 min</span>
-  <span style="color:var(--fg-dim)">(uncontested GPU, no chat eviction risk)</span>
+  <span style="color:var(--fg-dim)">Night window utilization:</span>
+  <span style="color:var(--purple)">~120–180 min</span>
+  <span style="color:var(--fg-dim)">of 540 min available (</span><span style="color:var(--green)">~22–33%</span><span style="color:var(--fg-dim)">)</span>
   <br>
-  <span style="color:var(--fg-dim)">Headroom for additional jobs:</span>
-  <span style="color:var(--green)">very high</span>
-  <span style="color:var(--fg-dim)">— could comfortably add 10–20× more tasks</span>
+  <span style="color:var(--fg-dim)">Orchestration:</span>
+  <span style="color:var(--cyan)">openclaw cron → Clawd → shell tools → scripts → Ollama</span>
+  <br>
+  <span style="color:var(--fg-dim)">Preemption:</span>
+  <span style="color:var(--green)">Signal messages queue and process after current agent turn</span>
 </div>'''
     cap_html += '</div></div>'
 

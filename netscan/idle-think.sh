@@ -1081,6 +1081,7 @@ TASKS = {
 
 if TASK_ARG and TASK_ARG in TASKS:
     task_name = TASK_ARG
+    # Explicit task — always run (no dedup, caller controls frequency)
 else:
     # Auto-rotate: career-aware schedule
     # Mon: weekly briefing (covers everything)
@@ -1103,20 +1104,13 @@ else:
     }
     task_name = schedule.get(dow, "research")
 
-    # Check if we already ran this task today
+    # Check if we already ran this task today (auto-rotation only)
     today = datetime.now().strftime("%Y%m%d")
     existing = glob.glob(os.path.join(THINK_DIR, f"note-{task_name}-{today}*.json"))
     if existing:
-        # Fall back to research (always interesting)
+        # Fall back to research (always interesting, picks different topics)
         if task_name != "research":
             task_name = "research"
-            existing2 = glob.glob(os.path.join(THINK_DIR, f"note-research-{today}*.json"))
-            if existing2:
-                print(f"  Already ran both {task_name} and research today — skipping")
-                sys.exit(0)
-        else:
-            print(f"  Already ran {task_name} today — skipping")
-            sys.exit(0)
 
 print(f"  Task: {task_name}")
 result = TASKS[task_name]()

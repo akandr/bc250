@@ -1,7 +1,19 @@
 # Netscan Monitoring Ecosystem
 
-This is a comprehensive research and monitoring system built by AK on this BC-250 box.
+A comprehensive research, monitoring, and intelligence system built by AK on this BC-250 box.
 Everything lives under `/opt/netscan/`. You (Clawd) have full read access to all of it.
+
+## Architecture
+
+```
+openclaw cron → Clawd agent turns → shell tools → scripts → Ollama (qwen3-abliterated:14b)
+                                                           → JSON data → generate-html.py → Dashboard
+                                                           → Signal alerts (career, watchlist, leaks)
+```
+
+**Key change (Feb 2026):** All GPU tasks are now orchestrated by `openclaw cron` (38 jobs/day).
+The gateway runs 24/7. Signal messages preempt background work (queue until current turn completes).
+Non-GPU tasks (nmap, presence, syslog, watchdog) remain in system crontab.
 
 ## Quick Reference
 
@@ -9,7 +21,7 @@ Everything lives under `/opt/netscan/`. You (Clawd) have full read access to all
 |------|-------|
 | Dashboard | `http://192.168.3.151:8888` (nginx) |
 | Web root | `/opt/netscan/web/` (auto-generated HTML) |
-| Scripts | `/opt/netscan/*.sh`, `/opt/netscan/generate-html.py` |
+| Scripts | `/opt/netscan/*.sh`, `/opt/netscan/*.py` |
 | Data | `/opt/netscan/data/` |
 | Config | `/opt/netscan/profile.json` (public), `/opt/netscan/profile-private.json` (career, gitignored) |
 | Watchlist | `/opt/netscan/watchlist.json` (auto-evolving interest tracker) |
@@ -29,6 +41,39 @@ The main intelligence script. Contains 8 task types, each producing JSON notes:
 - **signal** — THE ONLY Signal notification source. Scans all fresh data against the watchlist, sends one daily ping if something matches
 
 Run: `/opt/netscan/idle-think.sh --task <type>`
+
+### leak-monitor.py — Cyber Threat Intelligence
+Monitors 8 breach/leak sources with Poland-focused hunting:
+- **ransomware.live** — Active ransomware incidents
+- **ransomlook.io** — Ransomware group monitoring
+- **GitHub** — Exposed credentials, leaked databases
+- **CISA KEV** — Known Exploited Vulnerabilities
+- **Telegram** — Breach/leak channels (data dumps, stealer logs)
+- **Feodo Tracker** — C2 botnet infrastructure
+- **HIBP** — New breach notifications
+- **Hudson Rock** — Infostealer/compromised credentials
+
+Run: `python3 /opt/netscan/leak-monitor.py scan`
+Data: `/opt/netscan/data/leaks/`
+
+### career-scan.py — Career Intelligence
+Two-phase anti-hallucination architecture. Phase 1: extract jobs without candidate profile.
+Phase 2: score individual jobs against profile. Includes salary-tracker, company-intel, patent-watch, event-scout.
+
+Run: `python3 /opt/netscan/career-scan.py`
+Data: `/opt/netscan/data/career/`
+
+### ha-journal.py — Home Assistant Analysis
+Reads HA sensor data (climate, energy, air quality) and writes observation notes.
+
+Run: `python3 /opt/netscan/ha-journal.py`
+Data: `/opt/netscan/data/ha-journal/`
+
+### ha-correlate.py — HA Cross-Sensor Correlation
+Correlates multiple HA sensor streams to find anomalies and patterns.
+
+Run: `python3 /opt/netscan/ha-correlate.py`
+Data: `/opt/netscan/data/ha-correlate/`
 
 ### repo-watch.sh — Repository Monitor
 Tracks 5 upstream projects relevant to AK's work:
@@ -51,9 +96,14 @@ Data: `/opt/netscan/data/lkml/` and `/opt/netscan/data/soc/`
 
 ### Other Scripts
 - **scan.sh** — Network scan (nmap), discovers hosts on 192.168.3.0/24
+- **enumerate.sh** — Deep service enumeration of discovered hosts
+- **vulnscan.sh** — Weekly vulnerability scan (Sundays)
 - **presence.sh** — Phone presence tracker (AK's phone MAC detection)
-- **report.sh** — Daily HTML report generation
-- **gpu-monitor.sh** — Samples Ollama `/api/ps` every minute, logs to TSV
+- **syslog.sh** — System activity logger (health TSV + journal capture + events)
+- **gpu-monitor.sh** — Per-minute GPU utilization (3-state: generating/loaded/idle via pp_dpm_sclk clock)
+- **gpu-monitor.py** — GPU data collector + daily heatmap chart generator
+- **watchdog.py** — Integrity checks (cron health, disk space, service status)
+- **report.sh** — Morning HTML report rebuild
 - **generate-html.py** — Builds the entire dashboard from all data sources
 
 ## Data Locations
@@ -63,6 +113,18 @@ Data: `/opt/netscan/data/lkml/` and `/opt/netscan/data/soc/`
 - Notes: `/opt/netscan/data/think/note-<type>-<date>-<time>.json`
 - Each note has: type, title, content (markdown), tags, created timestamp
 
+### Leak Intelligence
+- `/opt/netscan/data/leaks/leak-scan-<date>-<time>.json` — individual scan results
+- `/opt/netscan/data/leaks/leak-db.json` — rolling database (90 days)
+
+### Career Intelligence
+- `/opt/netscan/data/career/scan-<date>.json` — daily career scan
+- `/opt/netscan/data/career/latest-scan.json` (symlink)
+- `/opt/netscan/data/salary/salary-<date>.json` — salary snapshots
+- `/opt/netscan/data/intel/intel-<date>.json` — company intelligence
+- `/opt/netscan/data/patents/patents-<date>.json` — patent watch
+- `/opt/netscan/data/events/events-<date>.json` — event scout
+
 ### Repository Data
 - `/opt/netscan/data/repos/<project>/items-<date>.json` — daily items
 - `/opt/netscan/data/repos/<project>/digest-<date>.json` — LLM digest
@@ -71,76 +133,48 @@ Data: `/opt/netscan/data/lkml/` and `/opt/netscan/data/soc/`
 - `/opt/netscan/data/lkml/digest-<date>.json` — linux-media digest
 - `/opt/netscan/data/soc/digest-<date>.json` — soc-bringup digest
 
-### Network/Presence
+### Home Assistant
+- `/opt/netscan/data/ha-journal/note-home-<date>-<seq>.json` — HA observation journals
+- `/opt/netscan/data/ha-correlate/note-hacorr-<date>-<seq>.json` — correlation analysis
+
+### Network/Presence/GPU
 - `/opt/netscan/data/hosts-db.json` — all discovered network hosts
 - `/opt/netscan/data/presence-state.json` — current phone presence
-- `/opt/netscan/data/gpu-load.tsv` — GPU utilization log
+- `/opt/netscan/data/gpu-load.tsv` — GPU utilization log (7-col TSV: timestamp, status, model, script, vram_mb, gpu_mhz, temp_c)
+
+### System Health
+- `/opt/netscan/data/syslog/health-<date>.tsv` — 5-min health snapshots
+- `/opt/netscan/data/syslog/events-<date>.log` — timeouts, OOM, restarts
+- `/opt/netscan/data/syslog/gateway-<date>.log` — openclaw gateway journal
+- `/opt/netscan/data/syslog/ollama-<date>.log` — Ollama journal
 
 ### Watchlist
 `/opt/netscan/watchlist.json` — JSON with items array. Each item has:
 - topic, context, source, status (active/resolved), added date, auto flag
 - The signal task reads this to decide what is worth alerting about
-- LLM can add new items or resolve existing ones automatically
-
-## Cron Schedule
-
-### Quiet Hours (23:00–08:00)
-```
-55 22 * * *     systemctl --user stop openclaw-gateway
-30 23 * * *     repo-watch.sh --all
-30 0  * * *     ha-journal.py              # GPU locked
-0  1  * * *     career-scan.py             # GPU locked, two-phase, 15-60 min
-0  4  * * *     scan.sh                    # Network scan
-30 4  * * *     enumerate.sh               # Deep service enum
-0  5  * * *     lore-digest.sh --all       # GPU locked
-30 5  * * 0     vulnscan.sh                # Sundays only
-0  6  * * *     watchdog.py                # Full run
-30 6  * * *     idle-think.sh              # GPU locked
-0  7  * * *     idle-think.sh              # GPU locked
-0  8  * * *     systemctl --user start openclaw-gateway
-```
-
-### Daytime (08:00–22:59)
-```
-0  8,14 * * *   repo-watch.sh --all
-30 8  * * *     report.sh                  # Morning HTML rebuild
-30 9,15,20 * *  ha-journal.py              # GPU locked
-0  16 * * *     idle-think.sh              # GPU locked
-0  18 * * *     repo-watch.sh --all --notify
-0  19 * * *     idle-think.sh --task signal # GPU locked, THE notification
-```
-
-### Always
-```
-*/5 * * * *     presence.sh
-*   * * * *     gpu-monitor.sh
-*/30 * * * *    watchdog.py --live-only
-```
 
 ## Dashboard
 The web dashboard at http://192.168.3.151:8888 has these pages:
 - **DASHBOARD** — Overview with host count, presence, latest notes
 - **HOSTS** — All discovered network devices
 - **PRESENCE** — Phone detection timeline
-- **LINUX-MEDIA** — linux-media mailing list digest
-- **SOC-BRINGUP** — soc-bringup mailing list digest
+- **LINUX-MEDIA / SOC-BRINGUP** — Kernel mailing list digests
 - **GSTREAMER / LIBCAMERA / V4L-UTILS / FFMPEG / LINUXTV** — Repo feeds
 - **ISSUES** — LLM-generated issues/concerns from analysis
-- **NOTES** — All idle-think notes (research, trends, career, etc.)
-- **LOAD** — GPU utilization heatmap and breakdown
+- **NOTES** — All idle-think research notes
+- **LOAD** — GPU utilization heatmap (3-state: generating/loaded/idle) and per-script breakdown
 - **SECURITY** — Host security scoring
+- **CAREER** — Career scan results
+- **LEAKS** — Cyber threat intelligence dashboard
 - **HISTORY** — Changelog
 - **LOG** — Raw scan logs
 
 ## How to Help AK With This Data
 
-When AK asks about monitoring results, you can:
-
 1. **Read the latest notes:**
    ```bash
    cat /opt/netscan/data/think/notes-index.json
    ```
-   Then read individual note files for details.
 
 2. **Check the watchlist:**
    ```bash
@@ -157,19 +191,24 @@ When AK asks about monitoring results, you can:
    tail -20 /opt/netscan/data/gpu-load.tsv
    ```
 
-5. **See what is running now:**
+5. **Check leak intelligence:**
+   ```bash
+   ls -t /opt/netscan/data/leaks/leak-scan-*.json | head -3
+   ```
+
+6. **See what is running now:**
    ```bash
    curl -s http://localhost:11434/api/ps
    ```
 
-6. **Read the profile for context:**
+7. **Read the profile for context:**
    ```bash
    cat /opt/netscan/profile.json         # public interests
    cat /opt/netscan/profile-private.json  # career context
    ```
 
-7. **Trigger a specific task manually:**
+8. **Check openclaw cron status:**
    ```bash
-   /opt/netscan/idle-think.sh --task research
+   openclaw cron list
+   openclaw cron runs --last 5
    ```
-   (But be aware this uses the GPU heavily for ~2-5 minutes)
