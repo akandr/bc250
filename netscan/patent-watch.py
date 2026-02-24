@@ -117,6 +117,9 @@ def fetch_url(url, timeout=30):
             "User-Agent": UA,
             "Accept": "text/html,application/xhtml+xml,application/json,*/*",
             "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "identity",
+            "Referer": "https://www.google.com/",
+            "DNT": "1",
         })
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = resp.read()
@@ -181,141 +184,110 @@ def call_ollama(system_prompt, user_prompt, temperature=0.2, max_tokens=2000):
 # ── Google Patents Scraping ────────────────────────────────────────────────
 
 def search_google_patents(query_text, max_results=15):
-    """Search Google Patents and extract patent entries."""
+    """Search Google Patents via DuckDuckGo (search page is JS-rendered SPA).
+    Discover patent IDs through DDG, then fetch detail pages (server-rendered)."""
     patents = []
-    encoded = urllib.parse.quote(query_text)
-    # Google Patents search — filter to last 12 months
-    year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
-    url = (f"https://patents.google.com/?q={encoded}"
-           f"&after=priority:{year_ago}&oq={encoded}")
+    # Use DDG to find patents on Google Patents
+    google_q = urllib.parse.quote(f'site:patents.google.com {query_text}')
+    ddg_url = f"https://html.duckduckgo.com/html/?q={google_q}"
 
-    html = fetch_url(url, timeout=30)
+    html = fetch_url(ddg_url, timeout=25)
     if not html:
         return patents
 
-    # Google Patents renders results in <search-result-item> or <article> tags
-    # Extract patent numbers and titles from the page
-    # Pattern: patent links like /patent/US20250001234A1/
-    patent_links = re.findall(
-        r'href="(/patent/([A-Z]{2}\d{4,}[A-Z0-9]*)/[^"]*)"[^>]*>',
+    # Extract patent IDs from DDG result URLs
+    patent_ids = re.findall(
+        r'patents\.google\.com/patent/([A-Z]{2}\d{4,}[A-Z0-9]*)',
         html
     )
-
-    # Also try to find structured data or result blocks
-    # Google Patents often includes JSON-LD or result snippets
-    titles = re.findall(
-        r'<(?:h3|h4|span)[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>(.*?)</(?:h3|h4|span)>',
-        html, re.DOTALL
-    )
-
-    # Extract result blocks more aggressively
-    result_blocks = re.findall(
-        r'<article[^>]*>(.*?)</article>',
-        html, re.DOTALL
-    )
-
-    if not result_blocks:
-        # Fallback: split by patent number patterns
-        result_blocks = re.split(r'(?=[A-Z]{2}\d{7,})', html)
-
     seen = set()
-    for i, (link, patent_id) in enumerate(patent_links[:max_results]):
-        if patent_id in seen:
-            continue
-        seen.add(patent_id)
+    unique_ids = []
+    for pid in patent_ids:
+        if pid not in seen:
+            seen.add(pid)
+            unique_ids.append(pid)
 
-        # Try to extract title and abstract from the surrounding context
-        title = strip_html(titles[i]) if i < len(titles) else ""
-
-        # Get patent detail page for abstract
+    for patent_id in unique_ids[:max_results]:
         detail_url = f"https://patents.google.com/patent/{patent_id}/en"
         detail = fetch_url(detail_url, timeout=20)
+        title = ""
         abstract = ""
         assignee = ""
         pub_date = ""
         if detail:
-            # Extract abstract
             abs_m = re.search(r'<div class="abstract[^"]*"[^>]*>(.*?)</div>', detail, re.DOTALL)
             if abs_m:
                 abstract = strip_html(abs_m.group(1))[:500]
-
-            # Extract title if not found
-            if not title:
-                title_m = re.search(r'<span class="title[^"]*"[^>]*>(.*?)</span>', detail, re.DOTALL)
-                if title_m:
-                    title = strip_html(title_m.group(1))
-
-            # Extract assignee
-            assignee_m = re.search(r'(?:assignee|applicant)[^>]*>([^<]+)', detail, re.IGNORECASE)
+            title_m = re.search(r'<span class="title[^"]*"[^>]*>(.*?)</span>', detail, re.DOTALL)
+            if not title_m:
+                title_m = re.search(r'<title>(.*?)[-\u2013]', detail)
+            if title_m:
+                title = strip_html(title_m.group(1))
+            assignee_m = re.search(r'(?:Current Assignee|Original Assignee)[^<]*<[^>]*>([^<]+)', detail, re.IGNORECASE)
             if assignee_m:
                 assignee = strip_html(assignee_m.group(1))
-
-            # Extract publication date
-            date_m = re.search(r'(?:publication|filing)\s*date[^>]*>([^<]+)', detail, re.IGNORECASE)
+            date_m = re.search(r'(?:Publication date|Filing date)[^<]*<[^>]*>(\d{4}-\d{2}-\d{2})', detail)
             if date_m:
-                pub_date = strip_html(date_m.group(1)).strip()
+                pub_date = date_m.group(1)
+            time.sleep(2)
 
-            time.sleep(2)  # rate limit detail fetches
-
-        patents.append({
-            "patent_id": patent_id,
-            "title": title,
-            "abstract": abstract,
-            "assignee": assignee,
-            "pub_date": pub_date,
-            "url": f"https://patents.google.com/patent/{patent_id}/en",
-            "source": "google_patents",
-        })
+        if title or abstract:
+            patents.append({
+                "patent_id": patent_id,
+                "title": title,
+                "abstract": abstract,
+                "assignee": assignee,
+                "pub_date": pub_date,
+                "url": detail_url,
+                "source": "google_patents",
+            })
 
     return patents
+
+    html = fetch_url(url, timeout=30)
 
 
 # ── Lens.org Search ────────────────────────────────────────────────────────
 
 def search_lens_org(query_text, max_results=10):
-    """Search Lens.org for patent publications."""
+    """Search for patents via DuckDuckGo (Lens.org is a JS SPA, not scrapeable).
+    Uses DDG to find patent-related results and extracts patent IDs."""
     patents = []
-    encoded = urllib.parse.quote(query_text)
-    url = f"https://www.lens.org/lens/search/patent/list?q={encoded}&dateFilterField=pub_date&dateFilterStartDate=now-365d"
+    encoded = urllib.parse.quote(f'{query_text} patent publication')
+    url = f"https://html.duckduckgo.com/html/?q={encoded}"
 
-    html = fetch_url(url, timeout=30)
+    html = fetch_url(url, timeout=25)
     if not html:
         return patents
 
-    # Lens.org returns structured results
-    # Look for patent entries in the HTML
-    result_blocks = re.findall(
-        r'<div class="[^"]*result-item[^"]*"[^>]*>(.*?)</div>\s*</div>',
-        html, re.DOTALL
+    # Extract patent IDs from DDG results (any source)
+    patent_ids = re.findall(
+        r'\b((?:US|EP|WO|CN|JP|KR)\d{7,}[A-Z0-9]*)\b',
+        html
     )
+    seen = set()
+    unique_ids = []
+    for pid in patent_ids:
+        if pid not in seen:
+            seen.add(pid)
+            unique_ids.append(pid)
 
-    for block in result_blocks[:max_results]:
-        title = ""
-        patent_id = ""
-        assignee = ""
+    # Also extract DDG result titles and snippets as supplementary data
+    ddg_titles = re.findall(r'class="result__a"[^>]*>(.*?)</a>', html, re.DOTALL)
+    ddg_snippets = re.findall(r'class="result__snippet"[^>]*>(.*?)</[^>]+>', html, re.DOTALL)
 
-        title_m = re.search(r'<a[^>]*class="[^"]*title[^"]*"[^>]*>(.*?)</a>', block, re.DOTALL)
-        if title_m:
-            title = strip_html(title_m.group(1))
-
-        id_m = re.search(r'((?:US|EP|WO|CN|JP|KR)\d{4,}[A-Z0-9]*)', block)
-        if id_m:
-            patent_id = id_m.group(1)
-
-        assignee_m = re.search(r'(?:applicant|assignee)[^>]*>([^<]+)', block, re.IGNORECASE)
-        if assignee_m:
-            assignee = strip_html(assignee_m.group(1))
-
-        if patent_id and title:
-            patents.append({
-                "patent_id": patent_id,
-                "title": title,
-                "abstract": "",
-                "assignee": assignee,
-                "pub_date": "",
-                "url": f"https://www.lens.org/lens/patent/{patent_id}",
-                "source": "lens_org",
-            })
+    for i, patent_id in enumerate(unique_ids[:max_results]):
+        title = strip_html(ddg_titles[i]) if i < len(ddg_titles) else ""
+        snippet = strip_html(ddg_snippets[i])[:300] if i < len(ddg_snippets) else ""
+        patents.append({
+            "patent_id": patent_id,
+            "title": title,
+            "abstract": snippet,
+            "assignee": "",
+            "pub_date": "",
+            "url": f"https://patents.google.com/patent/{patent_id}/en",
+            "source": "ddg_patent_search",
+        })
 
     return patents
 

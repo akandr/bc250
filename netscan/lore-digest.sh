@@ -109,7 +109,7 @@ USER_AGENT = f"netscan-bc250-digest/2.0 ({FEED_ID} daily digest bot)"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model — runs during quiet hours
+OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # consolidated model for all batch scripts
 OLLAMA_TIMEOUT_PER_CALL = 600     # 10 min max per LLM call
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
@@ -284,7 +284,9 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2048,
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-        }
+            "num_ctx": 16384,
+        },
+        "keep_alive": "5m",
     })
 
     for attempt in range(2):
@@ -791,7 +793,7 @@ alert_url = f"{DASHBOARD_URL}/{page_slug}.html"
 # Extract top thread subjects from thread_summaries for the alert
 top_subjects = []
 for ts in thread_summaries[:4]:
-    analysis = ts.get("llm_analysis", "")
+    analysis = ts.get("llm_analysis") or ""
     subj_line = ts["subject"]
     for al in analysis.split("\n"):
         al_s = al.strip()

@@ -19,6 +19,7 @@ Location on bc250: /opt/netscan/ha-journal.py
 """
 
 import json
+import re
 import os
 import subprocess
 import sys
@@ -34,7 +35,7 @@ HA_OBSERVE = "/opt/netscan/ha-observe.py"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model for richer analysis
+OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # consolidated model for all batch scripts
 
 QUIET_START = 0   # 00:00
 QUIET_END   = 6   # 06:00 — no chat, GPU free for batch jobs
@@ -92,7 +93,8 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=2000):
             {"role": "user", "content": user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 16384},
+        "keep_alive": "5m",
     })
 
     try:
@@ -194,6 +196,12 @@ Rules:
 - Write in English, translate Polish sensor names
 - End with a one-line overall assessment
 - Keep it under 400 words
+
+Device context (do NOT flag these as anomalies):
+- Garaż termometr (garage heater): turns on automatically when garage humidity exceeds threshold — normal dehumidification behavior
+- Kuchnia ledy góra (kitchen upper LED strips): always on — controlled by physical wall buttons, not HA automation
+- Łazienka piwnica-Wentylator (basement bathroom fan): automated periodic on/off to ventilate room with natural gas water heater — safety ventilation, always expected
+- Łazienka piętro-Wentylator (upstairs bathroom fan): always on — humidity-triggered, runs continuously as designed
 """
 
 
@@ -278,6 +286,9 @@ def main():
     # Ask Ollama
     print("  Calling Ollama for analysis...")
     analysis = call_ollama(SYSTEM_PROMPT, user_prompt)
+    if analysis:
+        # Strip combining-character junk the model sometimes outputs
+        analysis = re.sub(r"^[\u0300-\u036f\u0332]+", "", analysis).lstrip()
     if not analysis:
         print("  Ollama failed — saving raw data as fallback")
         analysis = (

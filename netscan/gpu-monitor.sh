@@ -43,6 +43,15 @@ except:
     pgrep -f "repo-watch.sh" >/dev/null 2>&1 && SCRIPT="repo-watch"
     pgrep -f "idle-think.sh" >/dev/null 2>&1 && SCRIPT="idle-think"
     pgrep -f "report.sh" >/dev/null 2>&1 && SCRIPT="report"
+    # New nightly batch scripts (added 2026-02)
+    [ -z "$SCRIPT" ] && pgrep -f "career-scan.py" >/dev/null 2>&1 && SCRIPT="career-scan"
+    [ -z "$SCRIPT" ] && pgrep -f "salary-tracker.py" >/dev/null 2>&1 && SCRIPT="salary-tracker"
+    [ -z "$SCRIPT" ] && pgrep -f "company-intel.py" >/dev/null 2>&1 && SCRIPT="company-intel"
+    [ -z "$SCRIPT" ] && pgrep -f "patent-watch.py" >/dev/null 2>&1 && SCRIPT="patent-watch"
+    [ -z "$SCRIPT" ] && pgrep -f "event-scout.py" >/dev/null 2>&1 && SCRIPT="event-scout"
+    [ -z "$SCRIPT" ] && pgrep -f "ha-journal.py" >/dev/null 2>&1 && SCRIPT="ha-journal"
+    # Gateway / Signal chat — openclaw or litellm proxy serving interactive queries
+    [ -z "$SCRIPT" ] && pgrep -f "openclaw\|litellm" >/dev/null 2>&1 && SCRIPT="gateway"
     [ -z "$SCRIPT" ] && SCRIPT="manual"
 
     echo -e "${TS}\tbusy\t${MODEL}\t${SCRIPT}\t${VRAM_MB}" >> "$LOG_FILE"

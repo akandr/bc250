@@ -145,6 +145,13 @@ COMPANIES = {
         "search_terms": ["Amazon Development Center Poland"],
         "industry": "faang",
     },
+    "hexagon": {
+        "name": "Hexagon / Leica Geosystems",
+        "gowork_id": "70870",
+        "news_url": "https://hexagon.com/newsroom",
+        "search_terms": ["Hexagon Manufacturing Intelligence Poland", "Leica Geosystems Łódź", "Hexagon ADAS lidar"],
+        "industry": "metrology",
+    },
 }
 
 
@@ -160,6 +167,12 @@ def fetch_url(url, timeout=25):
             "User-Agent": UA,
             "Accept": "text/html,application/xhtml+xml,application/json,*/*",
             "Accept-Language": "en-US,en;q=0.9,pl;q=0.8",
+            "Accept-Encoding": "identity",
+            "Referer": "https://www.google.com/",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "cross-site",
+            "DNT": "1",
         })
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = resp.read()

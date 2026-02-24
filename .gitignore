@@ -18,3 +18,4 @@ netscan/watchlist.json
 # Secrets (systemd units may contain tokens)
 # openclaw-gateway.service is tracked as reference (token redacted)
 user info/
+tmp/
