@@ -65,6 +65,47 @@ COLORS = {
     "hot_zone": "#ef444440",  # red transparent
 }
 
+# ── Electricity cost estimation (G11 tariff, PGE Łódź) ──────────────────────
+# power1_average = PPT = APU SoC power (CPU + GPU + UMA memory controller)
+# Total wall power ≈ (PPT + overhead) / PSU_efficiency
+SYSTEM_OVERHEAD_W = 9       # NVMe SSD ~4W, fans ~2W, board/VRM ~3W
+PSU_EFFICIENCY = 0.87       # typical external brick at 60-80W load
+G11_PLN_PER_KWH = 1.30      # PGE Łódź 2026 gross (energy 0.62 + distribution 0.68)
+
+
+def estimate_wall_power(ppt_w):
+    """Estimate total wall power from APU PPT reading."""
+    return (ppt_w + SYSTEM_OVERHEAD_W) / PSU_EFFICIENCY
+
+
+def calc_energy_cost(rows):
+    """Calculate energy consumption and cost from CSV rows.
+
+    Each row = 1 minute sample. Returns dict with:
+      wall_avg_w, wall_max_w, energy_kwh, cost_pln, hours_covered
+    """
+    power_vals = [r["power_w"] for r in rows if r.get("power_w") is not None]
+    if not power_vals:
+        return None
+
+    wall_powers = [estimate_wall_power(p) for p in power_vals]
+    minutes = len(wall_powers)
+    hours = minutes / 60.0
+    avg_wall = sum(wall_powers) / len(wall_powers)
+    energy_kwh = avg_wall * hours / 1000.0  # kWh = W × h / 1000
+    cost_pln = energy_kwh * G11_PLN_PER_KWH
+
+    return {
+        "ppt_avg_w": sum(power_vals) / len(power_vals),
+        "ppt_max_w": max(power_vals),
+        "wall_avg_w": avg_wall,
+        "wall_max_w": max(wall_powers),
+        "energy_kwh": energy_kwh,
+        "cost_pln": cost_pln,
+        "hours": hours,
+        "samples": minutes,
+    }
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -219,8 +260,18 @@ def chart_power(rows, date_str, out_dir):
     ax1.xaxis.set_major_locator(mdates.HourLocator(interval=2))
     ax1.set_title("Power Draw Over Time", color=COLORS["title"])
 
-    # Stats box
+    # Stats box with cost estimate
+    cost_info = calc_energy_cost(rows)
     stats = f"Min: {min_power:.1f}W\nAvg: {avg_power:.1f}W\nMax: {max_power:.1f}W"
+    if cost_info and cost_info["hours"] > 0:
+        wall_avg = cost_info["wall_avg_w"]
+        daily_kwh = wall_avg * 24 / 1000
+        daily_pln = daily_kwh * G11_PLN_PER_KWH
+        monthly_pln = daily_pln * 30
+        stats += (f"\n\u2500\u2500\u2500 est. wall: {wall_avg:.0f}W \u2500\u2500\u2500"
+                  f"\n{daily_kwh:.2f} kWh/day"
+                  f"\n{daily_pln:.2f} PLN/day"
+                  f"\n{monthly_pln:.1f} PLN/mo")
     ax1.text(0.02, 0.97, stats, transform=ax1.transAxes, fontsize=10,
              verticalalignment="top", color=COLORS["text"],
              bbox=dict(boxstyle="round,pad=0.4", facecolor=COLORS["bg"],
@@ -359,7 +410,9 @@ def chart_dashboard(rows, date_str, out_dir):
         ax.fill_between(t_p, v_p, alpha=0.15, color=COLORS["power"])
         avg = sum(v_p) / len(v_p)
         ax.axhline(y=avg, color="#ffd166", linewidth=1, linestyle=":", alpha=0.6)
-        ax.set_title(f"POWER  (avg: {avg:.1f}W, max: {max(v_p):.1f}W)",
+        wall_est = estimate_wall_power(avg)
+        daily_pln = wall_est * 24 / 1000 * G11_PLN_PER_KWH
+        ax.set_title(f"POWER  (avg: {avg:.1f}W, wall~{wall_est:.0f}W, ~{daily_pln:.2f} PLN/day)",
                      color=COLORS["power"])
     ax.set_ylabel("Watts")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
@@ -483,14 +536,101 @@ def generate_charts(date_str=None):
     print(f"Done — {len(rows)} samples charted")
 
 
+# ── Cost Report ────────────────────────────────────────────────────────────
+
+def cost_report(date_str=None, days=None):
+    """Print electricity cost report for a date or date range."""
+    if days:
+        # Multi-day summary
+        today = datetime.now()
+        all_rows = []
+        daily_stats = []
+        for d in range(days):
+            dt = today - timedelta(days=d)
+            ds = dt.strftime("%Y%m%d")
+            day_rows = load_csv(ds)
+            if day_rows:
+                info = calc_energy_cost(day_rows)
+                if info:
+                    daily_stats.append((ds, info))
+                    all_rows.extend(day_rows)
+
+        if not daily_stats:
+            print("No data found")
+            return
+
+        print(f"\n{'='*60}")
+        print(f"  BC-250 Electricity Cost Report  ({days}-day lookback)")
+        print(f"  G11 tariff: {G11_PLN_PER_KWH:.2f} PLN/kWh (PGE Łódź 2026)")
+        print(f"  System overhead: +{SYSTEM_OVERHEAD_W}W, PSU eff: {PSU_EFFICIENCY*100:.0f}%")
+        print(f"{'='*60}\n")
+
+        total_kwh = 0
+        total_pln = 0
+        for ds, info in sorted(daily_stats):
+            # Project full 24h from the samples we have
+            proj_kwh = info["wall_avg_w"] * 24 / 1000
+            proj_pln = proj_kwh * G11_PLN_PER_KWH
+            total_kwh += proj_kwh
+            total_pln += proj_pln
+            print(f"  {ds}  {info['hours']:5.1f}h sampled  "
+                  f"PPT avg {info['ppt_avg_w']:5.1f}W  "
+                  f"wall ~{info['wall_avg_w']:.0f}W  "
+                  f"~{proj_kwh:.2f} kWh/day  "
+                  f"~{proj_pln:.2f} PLN/day")
+
+        n = len(daily_stats)
+        avg_daily_kwh = total_kwh / n
+        avg_daily_pln = total_pln / n
+        print(f"\n  {'─'*56}")
+        print(f"  Average:  {avg_daily_kwh:.2f} kWh/day  =  {avg_daily_pln:.2f} PLN/day")
+        print(f"  Monthly:  {avg_daily_kwh*30:.1f} kWh/mo   =  {avg_daily_pln*30:.1f} PLN/mo")
+        print(f"  Yearly:   {avg_daily_kwh*365:.0f} kWh/yr   =  {avg_daily_pln*365:.0f} PLN/yr")
+        print()
+
+    else:
+        # Single day
+        if not date_str:
+            date_str = datetime.now().strftime("%Y%m%d")
+        rows = load_csv(date_str)
+        if not rows:
+            print(f"No data for {date_str}")
+            return
+
+        info = calc_energy_cost(rows)
+        if not info:
+            print("No power data in CSV")
+            return
+
+        proj_kwh = info["wall_avg_w"] * 24 / 1000
+        proj_pln = proj_kwh * G11_PLN_PER_KWH
+
+        print(f"\n  BC-250 Power Cost  —  {date_str}")
+        print(f"  {'─'*44}")
+        print(f"  Samples:       {info['samples']} ({info['hours']:.1f} hours)")
+        print(f"  PPT (SoC):     avg {info['ppt_avg_w']:.1f}W, max {info['ppt_max_w']:.1f}W")
+        print(f"  Est. wall:     avg {info['wall_avg_w']:.0f}W, max {info['wall_max_w']:.0f}W")
+        print(f"  Measured:      {info['energy_kwh']:.3f} kWh in {info['hours']:.1f}h")
+        print(f"  Measured cost: {info['cost_pln']:.3f} PLN")
+        print(f"  {'─'*44}")
+        print(f"  Projected 24h: {proj_kwh:.2f} kWh  =  {proj_pln:.2f} PLN/day")
+        print(f"  Monthly est:   {proj_kwh*30:.1f} kWh  =  {proj_pln*30:.1f} PLN/mo")
+        print(f"  Yearly est:    {proj_kwh*365:.0f} kWh  =  {proj_pln*365:.0f} PLN/yr")
+        print(f"  G11 tariff:    {G11_PLN_PER_KWH:.2f} PLN/kWh (PGE Łódź 2026)")
+        print()
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: gpu-monitor.py <collect|chart> [YYYYMMDD]")
+        print("Usage: gpu-monitor.py <collect|chart|cost> [YYYYMMDD|--days=N]")
         print("  collect         — append one sensor reading to today's CSV")
         print("  chart           — generate charts for today (or given date)")
         print("  chart YYYYMMDD  — generate charts for specific date")
+        print("  cost            — show today's electricity cost estimate")
+        print("  cost YYYYMMDD   — cost for specific date")
+        print("  cost --days=N   — cost summary for last N days")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -501,6 +641,14 @@ def main():
     elif cmd == "chart":
         date_str = sys.argv[2] if len(sys.argv) > 2 else None
         generate_charts(date_str)
+
+    elif cmd == "cost":
+        if len(sys.argv) > 2 and sys.argv[2].startswith("--days="):
+            days = int(sys.argv[2].split("=")[1])
+            cost_report(days=days)
+        else:
+            date_str = sys.argv[2] if len(sys.argv) > 2 else None
+            cost_report(date_str)
 
     else:
         print(f"Unknown command: {cmd}")
