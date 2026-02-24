@@ -1601,7 +1601,9 @@ def gen_leaks():
     cat_badges = ""
     cat_icons = {"ransomware_victim": "🔒", "exploited_vuln": "🛡", "exposed_secret": "🔑",
                  "channel_mention": "📱", "c2_infrastructure": "🦠", "c2_stats": "📊",
-                 "osint_alert": "🐦", "darkweb_mention": "🧅", "breach_intel": "🕵"}
+                 "osint_alert": "🐦", "darkweb_mention": "🧅", "breach_intel": "🕵",
+                 "pl_database": "🇵🇱", "source_code_leak": "💻", "target_breach": "🎯",
+                 "major_breach": "📢", "infostealer_exposure": "🔓"}
     for cat, cnt in sorted(cat_counts.items(), key=lambda x: -x[1]):
         icon = cat_icons.get(cat, "📌")
         cat_badges += f'<span class="badge" style="margin:2px 4px;padding:4px 10px">{icon} {cat.replace("_"," ")}: {cnt}</span>'

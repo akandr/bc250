@@ -12,6 +12,8 @@ Sources:
   4. CISA KEV               — known exploited vulnerabilities (govt feed)
   5. Telegram OSINT          — public CTI channel monitoring (no API key)
   6. Feodo C2 Tracker        — botnet C2 IP & malware tracking (abuse.ch)
+  7. HIBP Breach Catalog     — Polish & major breach detection (credentials/PII)
+  8. Hudson Rock             — infostealer exposure for Polish domains
 
 Security:
   - Tor SOCKS5 on 127.0.0.1:9050 (client-only, no relay/exit)
@@ -132,6 +134,54 @@ TELEGRAM_CHANNELS = [
 # ── Feodo C2 Tracker (abuse.ch) ────────────────────────────────────────────
 FEODO_RECENT_URL = "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"
 FEODO_C2_URL = "https://feodotracker.abuse.ch/browse/"
+
+# ── HIBP Breach Catalog ────────────────────────────────────────────────────
+HIBP_BREACHES_URL = "https://haveibeenpwned.com/api/v3/breaches"
+
+# ── Hudson Rock — infostealer exposure for Polish domains ──────────────────
+HUDSON_ROCK_URL = "https://cavalier.hudsonrock.com/api/json/v2/osint-tools/search-by-domain"
+
+# Polish domains to check for stolen credentials (infostealers)
+PL_WATCH_DOMAINS = [
+    # Major Polish services
+    "allegro.pl", "olx.pl", "wp.pl", "onet.pl", "interia.pl",
+    "o2.pl", "morele.net", "x-kom.pl", "ceneo.pl", "pracuj.pl",
+    # Government & critical infrastructure
+    "gov.pl", "zus.pl", "epuap.gov.pl", "mbank.pl", "ing.pl",
+    "pkobp.pl", "santander.pl", "bnpparibas.pl",
+    # Tech / gaming / e-commerce
+    "cdprojekt.com", "cdprojektred.com", "gog.com",
+    "empik.com", "mediamarkt.pl", "reserved.com",
+    # HARMAN & Samsung (always tracked)
+    "harman.com", "samsung.com",
+]
+
+# Poland-specific keywords for database/leak detection in Telegram & forums
+PL_LEAK_KEYWORDS = [
+    # Polish language leak terms
+    "polska", "poland", "polish", "baza danych", "wyciek",
+    # Polish domains & TLDs
+    ".pl ", ".pl/", ".pl\"", "@wp.pl", "@onet.pl", "@interia.pl", "@o2.pl",
+    # PESEL / NIP / ID numbers
+    "pesel", "nip", "dowod osobisty", "regon",
+    # Polish companies & services
+    "allegro", "morele", "cdprojekt", "empik", "mbank", "pkobp",
+    "olx.pl", "pracuj", "x-kom", "reserved",
+    # Database/dump indicators
+    "database download", "db dump", "sql dump", "combolist",
+    "credential dump", "user database", "full db",
+    "stealer logs", "infostealer", "redline logs", "raccoon logs",
+    "lumma logs", "stealc logs", "vidar logs",
+]
+
+# Source code leak keywords
+SOURCE_CODE_KEYWORDS = [
+    "source code", "sourcecode", "src leak", "git dump", "git repo",
+    "full source", "leaked source", "decompiled", "firmware dump",
+    "kernel source", "bootloader source", "sdk leak",
+    "internal repo", "private repo", "proprietary code",
+    "apk source", "ipa source", "mobile app source",
+]
 
 # ── Logging ────────────────────────────────────────────────────────────────
 
@@ -645,15 +695,42 @@ def scan_telegram_public(db):
                                            "stealer", "credential",
                                            "database", "source code",
                                            "firmware", "combolist"])
+            is_poland = any(kw.lower() in combined for kw in PL_LEAK_KEYWORDS)
+            is_source = any(kw.lower() in combined for kw in SOURCE_CODE_KEYWORDS)
 
-            if is_direct or is_supply or is_interesting:
-                severity = "critical" if is_direct else "high" if is_supply else "low"
-                relevance = 9 if is_direct else 5 if is_supply else 2
+            if is_direct or is_supply or is_interesting or is_poland or is_source:
+                if is_direct:
+                    severity, relevance = "critical", 9
+                elif is_poland:
+                    severity, relevance = "high", 7
+                    category = "pl_database" if any(x in combined for x in
+                        ["database", "dump", "db ", "combo", "stealer", "credential",
+                         "baza danych", "wyciek", "pesel"]) else "channel_mention"
+                elif is_source:
+                    severity, relevance = "high", 7
+                elif is_supply:
+                    severity, relevance = "high", 5
+                else:
+                    severity, relevance = "low", 2
 
-                finding_title = f"TG/{channel}: {text[:100]}"
+                # Detect download indicators
+                has_download = any(x in combined for x in
+                    ["download", "mega.nz", "anonfiles", "gofile", "mediafire",
+                     "pixeldrain", "send.exploit", "catbox", "transfer.sh",
+                     "magnet:", "torrent", ".rar", ".zip", ".7z", ".sql",
+                     "telegra.ph", "paste", "link in", "dm for"])
+
+                cat = "pl_database" if is_poland and any(x in combined for x in
+                    ["database", "dump", "credential", "stealer", "combo",
+                     "pesel", "baza"]) else \
+                    "source_code_leak" if is_source else "channel_mention"
+
+                dl_tag = " [DOWNLOAD]" if has_download else ""
+
+                finding_title = f"TG/{channel}{dl_tag}: {text[:100]}"
                 summary = text[:500]
 
-                if add_finding(db, "telegram", "channel_mention",
+                if add_finding(db, "telegram", cat,
                               finding_title, summary,
                               url=f"https://t.me/s/{channel}",
                               severity=severity, relevance=relevance):
@@ -737,6 +814,177 @@ def scan_feodo_c2(db):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+#  Source 7: HIBP Breach Catalog — Poland-focused breach detection
+# ══════════════════════════════════════════════════════════════════════════
+
+def scan_hibp_breaches(db):
+    """Check Have I Been Pwned for new breaches, especially Polish ones."""
+    log("🔐 Scanning HIBP breach catalog...")
+    new_findings = 0
+
+    data = fetch_json(HIBP_BREACHES_URL, timeout=30)
+    if not data or not isinstance(data, list):
+        log("  HIBP: failed to fetch breach catalog")
+        return 0
+
+    log(f"  {len(data)} total breaches in HIBP catalog")
+
+    # Track recently added breaches (last 60 days)
+    cutoff = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
+
+    for breach in data:
+        name = breach.get("Name", "")
+        domain = breach.get("Domain", "").lower()
+        added = breach.get("AddedDate", "")[:10]
+        breach_date = breach.get("BreachDate", "")
+        pwn_count = breach.get("PwnCount", 0)
+        data_classes = breach.get("DataClasses", [])
+        description = breach.get("Description", "")
+        desc_lower = (name + " " + domain + " " + description).lower()
+
+        # ── Check if Poland-related ──
+        is_polish = (
+            domain.endswith(".pl") or
+            any(kw in desc_lower for kw in
+                ["poland", "polska", "polish", "allegro", "morele",
+                 "cdprojekt", "wp.pl", "onet.pl", "interia", "olx.pl",
+                 "mbank", "pkobp", "łódź", "lodz", "warsaw", "warszawa",
+                 "krakow", "kraków", "wroclaw", "wrocław", "gdansk", "gdańsk"])
+        )
+
+        # ── Check if it's a direct target ──
+        is_direct = any(kw.lower() in desc_lower for kw in WATCH_KEYWORDS)
+
+        # ── Check if recently added (regardless of breach date) ──
+        is_recent = added >= cutoff
+
+        # ── Check for interesting data classes ──
+        has_creds = any(c in data_classes for c in
+            ["Passwords", "Password hints", "Security questions and answers"])
+        has_pii = any(c in data_classes for c in
+            ["Physical addresses", "Phone numbers", "Government issued IDs",
+             "Dates of birth", "Social security numbers"])
+        has_financial = any(c in data_classes for c in
+            ["Credit cards", "Bank account numbers", "Financial transactions"])
+
+        # Determine what to report
+        if is_direct:
+            severity = "critical"
+            relevance = 10
+            category = "target_breach"
+        elif is_polish:
+            severity = "high"
+            relevance = 8
+            category = "pl_database"
+        elif is_recent and pwn_count >= 500000 and has_creds:
+            # Large new breach with credentials — noteworthy
+            severity = "medium"
+            relevance = 5
+            category = "major_breach"
+        else:
+            continue  # Skip — not interesting enough
+
+        # Format data classes compactly
+        classes_str = ", ".join(data_classes[:6])
+        title = f"HIBP: {name} ({domain or 'no domain'})"
+        summary = (f"Breach date: {breach_date}, Added: {added}, "
+                  f"Records: {pwn_count:,}\n"
+                  f"Data: {classes_str}\n"
+                  f"{'🇵🇱 POLISH BREACH' if is_polish else ''}"
+                  f"{'💰 Has financial data' if has_financial else ''}"
+                  f"{'🔑 Has credentials' if has_creds else ''}"
+                  f"{'🪪 Has PII' if has_pii else ''}")
+
+        if add_finding(db, "hibp", category,
+                      title, summary,
+                      url=f"https://haveibeenpwned.com/PwnedWebsites#{name}",
+                      severity=severity, relevance=relevance):
+            new_findings += 1
+            emoji = "🇵🇱" if is_polish else "⚠"
+            log(f"  {emoji} NEW: {title} — {pwn_count:,} records")
+
+    log(f"  hibp: {new_findings} new findings")
+    return new_findings
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  Source 8: Hudson Rock — Infostealer exposure for Polish domains
+# ══════════════════════════════════════════════════════════════════════════
+
+def scan_hudson_rock(db):
+    """Check Hudson Rock for infostealer-stolen credentials on Polish domains."""
+    log("🕵 Scanning Hudson Rock infostealer data...")
+    new_findings = 0
+
+    for domain in PL_WATCH_DOMAINS:
+        url = f"{HUDSON_ROCK_URL}?domain={domain}"
+        data = fetch_json(url, timeout=20)
+        if not data or not isinstance(data, dict):
+            # Rate limited or error — skip silently
+            time.sleep(3)
+            continue
+
+        total = data.get("total", 0)
+        employees = data.get("employees", 0)
+        users = data.get("users", 0)
+
+        if total == 0:
+            time.sleep(2)
+            continue
+
+        # Get stealer family breakdown
+        stealers = data.get("stealerFamilies", {})
+        top_stealers = sorted(
+            [(k, v) for k, v in stealers.items() if k != "total" and isinstance(v, int)],
+            key=lambda x: -x[1]
+        )[:5]
+        stealer_str = ", ".join(f"{k}:{v:,}" for k, v in top_stealers)
+
+        # Last compromise dates
+        last_emp = data.get("last_employee_compromised", "")[:10]
+        last_usr = data.get("last_user_compromised", "")[:10]
+
+        # Determine severity based on exposure level and recency
+        is_target = domain in [d for d in WATCH_DOMAINS]
+        recent_30d = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
+        if is_target:
+            severity = "critical"
+            relevance = 9
+        elif employees > 5 or (last_emp and last_emp >= recent_30d):
+            severity = "high"
+            relevance = 7
+        elif total > 10000:
+            severity = "high"
+            relevance = 6
+        elif total > 1000:
+            severity = "medium"
+            relevance = 4
+        else:
+            severity = "low"
+            relevance = 2
+
+        title = f"Hudson Rock: {domain} — {total:,} stolen creds"
+        summary = (f"Total: {total:,} (employees: {employees}, users: {users:,})\n"
+                  f"Last employee compromised: {last_emp or 'N/A'}\n"
+                  f"Last user compromised: {last_usr or 'N/A'}\n"
+                  f"Top stealers: {stealer_str}")
+
+        if add_finding(db, "hudson_rock", "infostealer_exposure",
+                      title, summary,
+                      url=f"https://cavalier.hudsonrock.com/api/json/v2/osint-tools/search-by-domain?domain={domain}",
+                      severity=severity, relevance=relevance):
+            new_findings += 1
+            log(f"  ⚠ NEW: {domain}: {total:,} stolen creds "
+                f"({employees} emp, {users:,} users)")
+
+        time.sleep(4)  # respect rate limits — Hudson Rock is generous but limited
+
+    log(f"  hudson_rock: {new_findings} new findings")
+    return new_findings
+
+
+# ══════════════════════════════════════════════════════════════════════════
 #  LLM Analysis — Triage & Summarize findings
 # ══════════════════════════════════════════════════════════════════════════
 
@@ -769,11 +1017,14 @@ def llm_analyze_findings(db, new_count):
 Analyze the following findings from automated OSINT sources and provide:
 1. A brief executive summary (2-3 sentences)
 2. CRITICAL items that need immediate attention (if any)
-3. Notable trends or patterns
-4. Recommended actions
+3. Polish database leaks — any credential dumps, PII databases, or stealer logs involving .pl domains
+4. Source code leaks — any leaked proprietary source code, firmware dumps, or internal repos
+5. Notable trends or patterns
+6. Recommended actions
 
-Focus on findings related to HARMAN International, Samsung, and their supply chain.
-Also flag any interesting firmware/source code leaks or novel attack techniques.
+Focus on findings related to HARMAN International, Samsung, their supply chain,
+and Polish entities (allegro, morele, government, banks). Flag any downloadable
+databases, credential dumps, or source code leaks with high priority.
 Be concise. Output plain text, no markdown."""
 
     user_prompt = f"""Today's OSINT scan produced {new_count} new findings ({len(recent)} from last 24h).
@@ -782,7 +1033,9 @@ FINDINGS:
 {findings_text}
 
 CONTEXT: Monitoring for HARMAN International (Samsung subsidiary), automotive embedded systems,
-and general cybersecurity threats relevant to embedded/automotive industry in Poland/EU."""
+and general cybersecurity threats relevant to embedded/automotive industry in Poland/EU.
+Also tracking Polish credential databases, infostealer exposure on .pl domains,
+and source code leaks from any interesting targets."""
 
     log("🤖 Running LLM analysis...")
     analysis = call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=1500)
@@ -812,6 +1065,8 @@ def run_full_scan():
         ("cisa_kev", scan_cisa_kev),
         ("telegram", scan_telegram_public),
         ("feodo_c2", scan_feodo_c2),
+        ("hibp", scan_hibp_breaches),
+        ("hudson_rock", scan_hudson_rock),
     ]
 
     for name, scanner in scanners:
