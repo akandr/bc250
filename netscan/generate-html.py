@@ -3055,6 +3055,226 @@ def gen_careers():
 
 # ─── Page: GPU Load (load.html) ───
 
+# ── GPU hardware sensor data (from gpu-monitor.py CSVs) ──
+
+GPU_DATA_DIR = os.path.join(DATA_DIR, "gpu")
+SYSTEM_OVERHEAD_W = 9
+PSU_EFFICIENCY = 0.87
+G11_PLN_PER_KWH = 1.30  # PGE Łódź 2026 gross
+
+
+def _estimate_wall_w(ppt_w):
+    return (ppt_w + SYSTEM_OVERHEAD_W) / PSU_EFFICIENCY
+
+
+def load_gpu_hw_csv(date_str):
+    """Load one day's GPU hardware CSV. Returns list of dicts."""
+    import csv as csv_mod
+    fpath = os.path.join(GPU_DATA_DIR, f"gpu-{date_str}.csv")
+    if not os.path.exists(fpath):
+        return []
+    rows = []
+    with open(fpath) as f:
+        reader = csv_mod.DictReader(f)
+        for r in reader:
+            try:
+                rows.append({
+                    "time": datetime.strptime(r["timestamp"], "%Y-%m-%d %H:%M:%S"),
+                    "power_w": float(r["power_w"]) if r.get("power_w") else None,
+                    "temp_c": float(r["temp_c"]) if r.get("temp_c") else None,
+                    "freq_mhz": float(r["freq_mhz"]) if r.get("freq_mhz") else None,
+                    "vram_mb": float(r["vram_mb"]) if r.get("vram_mb") else None,
+                    "gtt_mb": float(r["gtt_mb"]) if r.get("gtt_mb") else None,
+                })
+            except (ValueError, KeyError):
+                continue
+    return rows
+
+
+def gpu_day_summary(date_str):
+    """Calculate daily GPU hardware summary + cost. Returns dict or None."""
+    rows = load_gpu_hw_csv(date_str)
+    if not rows:
+        return None
+    powers = [r["power_w"] for r in rows if r["power_w"] is not None]
+    temps = [r["temp_c"] for r in rows if r["temp_c"] is not None]
+    freqs = [r["freq_mhz"] for r in rows if r["freq_mhz"] is not None]
+    if not powers:
+        return None
+    wall_powers = [_estimate_wall_w(p) for p in powers]
+    minutes = len(powers)
+    hours = minutes / 60.0
+    avg_wall = sum(wall_powers) / len(wall_powers)
+    daily_kwh = avg_wall * 24 / 1000
+    daily_pln = daily_kwh * G11_PLN_PER_KWH
+    return {
+        "date": date_str,
+        "samples": minutes,
+        "hours": hours,
+        "ppt_avg": sum(powers) / len(powers),
+        "ppt_max": max(powers),
+        "ppt_min": min(powers),
+        "wall_avg": avg_wall,
+        "wall_max": max(wall_powers),
+        "temp_avg": sum(temps) / len(temps) if temps else 0,
+        "temp_max": max(temps) if temps else 0,
+        "freq_avg": sum(freqs) / len(freqs) if freqs else 0,
+        "freq_max": max(freqs) if freqs else 0,
+        "daily_kwh": daily_kwh,
+        "daily_pln": daily_pln,
+    }
+
+
+def gen_power_cost_section():
+    """Generate the GPU hardware power & electricity cost HTML section."""
+    now = datetime.now()
+    today_str = now.strftime("%Y%m%d")
+
+    # Collect up to 14 days of summaries
+    day_summaries = []
+    for i in range(14):
+        ds = (now - timedelta(days=i)).strftime("%Y%m%d")
+        s = gpu_day_summary(ds)
+        if s:
+            day_summaries.append(s)
+
+    if not day_summaries:
+        return ""  # no hardware data yet
+
+    today = day_summaries[0] if day_summaries[0]["date"] == today_str else None
+
+    # Averages across all days with data
+    avg_daily_kwh = sum(d["daily_kwh"] for d in day_summaries) / len(day_summaries)
+    avg_daily_pln = sum(d["daily_pln"] for d in day_summaries) / len(day_summaries)
+    avg_wall = sum(d["wall_avg"] for d in day_summaries) / len(day_summaries)
+    avg_ppt = sum(d["ppt_avg"] for d in day_summaries) / len(day_summaries)
+    max_ppt = max(d["ppt_max"] for d in day_summaries)
+
+    # Current readings from today
+    curr_ppt = f"{today['ppt_avg']:.0f}" if today else "—"
+    curr_wall = f"{today['wall_avg']:.0f}" if today else "—"
+    curr_temp = f"{today['temp_avg']:.0f}" if today else "—"
+    curr_freq = f"{today['freq_avg']:.0f}" if today else "—"
+
+    # Stats boxes
+    html = f"""
+<div class="section">
+  <div class="section-title">⚡ POWER &amp; ELECTRICITY COST — G11 tariff (PGE Łódź)</div>
+  <div class="section-body">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-val" style="color:var(--amber)">{curr_ppt}</div>
+        <div class="stat-label">PPT avg (W)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:#ff6b35">{curr_wall}</div>
+        <div class="stat-label">est. wall (W)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:var(--cyan)">{curr_temp}</div>
+        <div class="stat-label">temp avg (°C)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:var(--purple)">{curr_freq}</div>
+        <div class="stat-label">clock avg (MHz)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:var(--green)">{avg_daily_pln:.2f}</div>
+        <div class="stat-label">PLN / day</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:var(--green)">{avg_daily_pln*30:.0f}</div>
+        <div class="stat-label">PLN / month</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:0.82rem;color:var(--fg-dim)">
+      G11: {G11_PLN_PER_KWH:.2f} PLN/kWh gross &nbsp;│&nbsp;
+      Wall = (PPT + {SYSTEM_OVERHEAD_W}W) / {PSU_EFFICIENCY*100:.0f}% PSU &nbsp;│&nbsp;
+      ~{avg_daily_kwh:.2f} kWh/day &nbsp;│&nbsp;
+      {avg_daily_pln*365:.0f} PLN/year
+    </div>
+  </div>
+</div>"""
+
+    # Daily cost table (last 14 days)
+    html += """
+<div class="section">
+  <div class="section-title">💰 DAILY ELECTRICITY COST — last 14 days</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr>
+        <th>Date</th><th>Samples</th><th>PPT avg</th><th>PPT max</th>
+        <th>Wall est.</th><th>Temp avg</th><th>kWh/day</th><th>PLN/day</th>
+      </tr></thead>
+      <tbody>"""
+
+    for d in sorted(day_summaries, key=lambda x: x["date"], reverse=True):
+        ds_fmt = f"{d['date'][:4]}-{d['date'][4:6]}-{d['date'][6:]}"
+        is_today = d["date"] == today_str
+        row_style = ' style="background:var(--bg3)"' if is_today else ''
+        today_tag = ' ◀' if is_today else ''
+        # Color code the PLN
+        pln_color = "var(--green)" if d["daily_pln"] < 3 else "var(--amber)" if d["daily_pln"] < 5 else "var(--red)"
+        html += f"""<tr{row_style}>
+          <td style="color:{'var(--green)' if is_today else 'var(--fg-dim)'}">{ds_fmt}{today_tag}</td>
+          <td>{d['samples']} ({d['hours']:.1f}h)</td>
+          <td style="color:var(--amber)">{d['ppt_avg']:.1f}W</td>
+          <td>{d['ppt_max']:.1f}W</td>
+          <td style="color:#ff6b35">{d['wall_avg']:.0f}W</td>
+          <td style="color:var(--cyan)">{d['temp_avg']:.1f}°C</td>
+          <td>{d['daily_kwh']:.2f}</td>
+          <td style="color:{pln_color};font-weight:bold">{d['daily_pln']:.2f} zł</td>
+        </tr>"""
+
+    html += """</tbody></table>"""
+
+    # Summary row
+    total_pln = sum(d["daily_pln"] for d in day_summaries)
+    html += f"""
+    <div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap;font-size:0.88rem">
+      <div><span style="color:var(--fg-dim)">Avg daily:</span>
+           <span style="color:var(--green);font-weight:bold">{avg_daily_pln:.2f} PLN</span></div>
+      <div><span style="color:var(--fg-dim)">Monthly est:</span>
+           <span style="color:var(--green);font-weight:bold">{avg_daily_pln*30:.1f} PLN</span></div>
+      <div><span style="color:var(--fg-dim)">Yearly est:</span>
+           <span style="color:var(--amber);font-weight:bold">{avg_daily_pln*365:.0f} PLN</span></div>
+      <div><span style="color:var(--fg-dim)">Avg wall power:</span>
+           <span style="color:#ff6b35">{avg_wall:.0f}W</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # Embedded chart images (if they exist)
+    chart_names = [
+        ("power", "⚡ Power Consumption"),
+        ("temp", "🌡️ Temperature"),
+        ("dashboard", "📊 Full Dashboard"),
+    ]
+    chart_html = ""
+    for suffix, label in chart_names:
+        # Check for today's chart first, then most recent
+        for di in range(14):
+            ds = (now - timedelta(days=di)).strftime("%Y%m%d")
+            chart_file = f"gpu-{ds}-{suffix}.png"
+            chart_path = os.path.join(GPU_DATA_DIR, chart_file)
+            if os.path.exists(chart_path):
+                # Encode as base64 for inline embedding
+                import base64
+                with open(chart_path, "rb") as cf:
+                    b64 = base64.b64encode(cf.read()).decode("ascii")
+                chart_html += f"""
+<div class="section">
+  <div class="section-title">{label} — {ds[:4]}-{ds[4:6]}-{ds[6:]}</div>
+  <div class="section-body" style="text-align:center;padding:8px">
+    <img src="data:image/png;base64,{b64}" alt="{e(label)}" style="max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border)">
+  </div>
+</div>"""
+                break  # found most recent chart for this type
+
+    html += chart_html
+    return html
+
+
 def load_gpu_samples(days=14):
     """Load GPU load TSV samples. Returns list of (datetime, status, model, script, vram_mb)."""
     tsv_path = os.path.join(DATA_DIR, "gpu-load.tsv")
@@ -3372,7 +3592,9 @@ def gen_load():
             log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:#224422">□ idle</span>\n'
     log_html += '</div></div></div>'
 
-    body = stats_html + heatmap_html + bar_html + script_html + cap_html + log_html
+    power_html = gen_power_cost_section()
+
+    body = stats_html + heatmap_html + bar_html + power_html + script_html + cap_html + log_html
     return page_wrap("LOAD", body, "load")
 
 
