@@ -12,6 +12,10 @@ Sources per company:
   - 4programmers.net (Polish dev forum — employer opinions, career threads)
   - Reddit (r/embedded, r/semiconductor, r/cscareerquestionsEU, r/poland, …)
   - SemiWiki.com forum (semiconductor industry intel — silicon/auto companies)
+  - Hacker News (company gossip, tech discussions via Algolia API)
+
+Global sources (once per run, not per company):
+  - HN "Who is Hiring" monthly thread — remote jobs matching embedded/ADAS/camera
 
 LLM analysis per company:
   - Sentiment trend (improving/declining/stable)
@@ -797,6 +801,205 @@ def search_semiwiki(company_name, max_results=5):
     return results[:max_results]
 
 
+# ── Hacker News Search (via Algolia API) ──────────────────────────────────
+
+HN_API = "http://hn.algolia.com/api/v1"
+
+def _hn_api(path, params, timeout=15):
+    """Query HN Algolia API, return parsed JSON or empty dict."""
+    url = f"{HN_API}/{path}?{urllib.parse.urlencode(params)}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read())
+    except Exception as e:
+        log(f"  HN API error ({path}): {e}")
+        return {}
+
+
+def search_hackernews(company_name, search_terms=None, max_results=5):
+    """Search Hacker News for recent stories/comments mentioning a company.
+    Uses Algolia Search API — stories from last 30 days."""
+    import html as html_mod
+    results = []
+    seen_ids = set()
+    ts_30d = int(time.time()) - 30 * 86400
+
+    # Build search queries — company name + optional industry terms
+    queries = [f'"{company_name}"']  # exact match to avoid username noise
+    if search_terms:
+        queries.extend(search_terms[:2])
+
+    for query in queries:
+        # Search stories first (higher signal)
+        for tag_type in ["story", "comment"]:
+            data = _hn_api("search_by_date", {
+                "query": query,
+                "tags": tag_type,
+                "numericFilters": f"created_at_i>{ts_30d}",
+                "hitsPerPage": "10",
+            })
+            for hit in data.get("hits", []):
+                oid = hit["objectID"]
+                if oid in seen_ids:
+                    continue
+                seen_ids.add(oid)
+
+                if tag_type == "story":
+                    title = hit.get("title", "")
+                    text = hit.get("story_text") or ""
+                    url = hit.get("url") or f"https://news.ycombinator.com/item?id={oid}"
+                    points = hit.get("points", 0)
+                    # Skip low-signal stories (< 5 points) unless title mentions company
+                    if points < 5 and company_name.lower() not in title.lower():
+                        continue
+                else:
+                    title = f"Comment by {hit.get('author', '?')}"
+                    text = hit.get("comment_text", "")
+                    url = f"https://news.ycombinator.com/item?id={oid}"
+                    points = hit.get("points", 0)
+                    # For comments, require company name in text (not just matching)
+                    text_clean = re.sub(r'<[^>]+>', ' ', text).lower()
+                    if company_name.lower() not in text_clean:
+                        continue
+
+                # Clean HTML from text
+                snippet = re.sub(r'<[^>]+>', ' ', text)
+                snippet = html_mod.unescape(snippet).strip()[:300]
+
+                results.append({
+                    "title": html_mod.unescape(title)[:200],
+                    "snippet": snippet,
+                    "url": url,
+                    "points": points,
+                    "type": tag_type,
+                })
+
+            if len(results) >= max_results:
+                break
+            time.sleep(0.3)  # be nice to API
+
+        if len(results) >= max_results:
+            break
+
+    # Sort by points (stories first, then by engagement)
+    results.sort(key=lambda r: (r["type"] != "story", -r.get("points", 0)))
+    return results[:max_results]
+
+
+def search_hn_who_is_hiring(max_results=15):
+    """Find the latest HN 'Who is Hiring' thread and extract remote jobs
+    matching embedded/ADAS/camera/Linux/automotive interests.
+
+    Returns list of matching job postings with company, text, and URL."""
+    import html as html_mod
+
+    # Step 1: Find latest "Who is Hiring" thread (posted by whoishiring bot)
+    data = _hn_api("search_by_date", {
+        "query": "Ask HN: Who is hiring",
+        "tags": "story,author_whoishiring",
+        "hitsPerPage": "3",
+    })
+    threads = data.get("hits", [])
+    if not threads:
+        log("  HN Who is Hiring: no threads found")
+        return [], None
+
+    latest = threads[0]
+    story_id = latest["objectID"]
+    thread_title = latest.get("title", "")
+    thread_url = f"https://news.ycombinator.com/item?id={story_id}"
+    log(f"  HN Who is Hiring: {thread_title} ({latest.get('num_comments', 0)} comments)")
+
+    # Step 2: Search comments for relevant keywords
+    # These keywords match user's area of interest
+    search_queries = [
+        "remote embedded",
+        "remote Linux kernel",
+        "remote ADAS",
+        "remote camera",
+        "remote automotive",
+        "remote firmware",
+        "Europe embedded",
+        "Europe automotive",
+        "Poland",
+        "remote C++ Linux",
+        "remote driver development",
+        "remote FPGA",
+        "remote hardware",
+    ]
+
+    seen_ids = set()
+    matches = []
+
+    for q in search_queries:
+        data = _hn_api("search", {
+            "query": q,
+            "tags": f"comment,story_{story_id}",
+            "hitsPerPage": "10",
+        })
+        for hit in data.get("hits", []):
+            oid = hit["objectID"]
+            if oid in seen_ids:
+                continue
+            seen_ids.add(oid)
+
+            raw_text = hit.get("comment_text", "")
+            text = re.sub(r'<[^>]+>', ' ', raw_text)
+            text = html_mod.unescape(text).strip()
+            text_lower = text.lower()
+
+            # Must be a top-level job posting (usually starts with company name)
+            # Skip replies/discussions (they tend to be shorter)
+            if len(text) < 100:
+                continue
+
+            # Check for REMOTE availability
+            is_remote = any(kw in text_lower for kw in [
+                "remote", "fully distributed", "work from anywhere",
+                "wfh", "100% distributed",
+            ])
+            is_europe = any(kw in text_lower for kw in [
+                "europe", "eu ", "poland", "germany", "uk ",
+                "emea", "cet", "gmt", "utc",
+            ])
+
+            # Check for domain relevance
+            relevance_kws = [
+                "embedded", "firmware", "adas", "automotive",
+                "camera", "v4l2", "mipi", "csi",
+                "linux kernel", "driver", "bsp",
+                "fpga", "rtos", "arm ", "aarch64",
+                "c/c++", "c++", "yocto", "buildroot",
+                "lidar", "radar", "sensor fusion",
+                "robotics", "drone", "autonomous",
+            ]
+            relevance_score = sum(1 for kw in relevance_kws if kw in text_lower)
+
+            if (is_remote or is_europe) and relevance_score >= 1:
+                # Extract company name (usually first line or before | or —)
+                first_line = text.split('\n')[0].strip()
+                company = first_line.split('|')[0].split('—')[0].split('–')[0].strip()[:80]
+
+                matches.append({
+                    "company": company,
+                    "text": text[:500],
+                    "url": f"https://news.ycombinator.com/item?id={oid}",
+                    "is_remote": is_remote,
+                    "is_europe": is_europe,
+                    "relevance_score": relevance_score,
+                    "matched_query": q,
+                })
+
+        time.sleep(0.3)
+
+    # Sort by relevance score (highest first), then Europe preference
+    matches.sort(key=lambda m: (-m["relevance_score"], not m["is_europe"]))
+
+    log(f"  HN Who is Hiring: {len(matches)} relevant remote/EU jobs found")
+    return matches[:max_results], thread_url
+
+
 # ── Per-Company Analysis ───────────────────────────────────────────────────
 
 def analyze_company(key, company, db_entry):
@@ -855,6 +1058,11 @@ def analyze_company(key, company, db_entry):
     intel["semiwiki"] = semiwiki_results
     log(f"  SemiWiki: {len(semiwiki_results)} threads")
 
+    # 5d. Hacker News (tech community gossip & discussions)
+    hn_results = search_hackernews(company["name"], company.get("search_terms"))
+    intel["hackernews"] = hn_results
+    log(f"  Hacker News: {len(hn_results)} threads")
+
     # 6. Previous intel from DB
     prev_rating = None
     prev_sentiment = None
@@ -895,6 +1103,10 @@ Output ONLY valid JSON, no markdown. /no_think"""
         f"  • {r['title'][:100]}: {r['snippet'][:150]}"
         for r in semiwiki_results[:3]
     )
+    hn_text = "\n".join(
+        f"  • [{r.get('type','?')}|{r.get('points',0)}pts] {r['title'][:100]}: {r['snippet'][:150]}"
+        for r in hn_results[:4]
+    )
 
     careers_text = "\n".join(
         f"  • {j['title']} — {j['location']}" + (f" (ID: {j['job_id']})" if j.get('job_id') else "")
@@ -928,6 +1140,9 @@ Reddit discussions:
 
 SemiWiki forum (semiconductor industry):
 {semiwiki_text or '  (none)'}
+
+Hacker News discussions:
+{hn_text or '  (none)'}
 
 Context: The user is a Principal Embedded SW Engineer at HARMAN (Samsung subsidiary),
 working on automotive camera drivers (V4L2, MIPI CSI-2, ADAS DMS/OMS).
@@ -1015,6 +1230,7 @@ def main():
                 "sources_4p": len(intel.get("4programmers", [])),
                 "sources_reddit": len(intel.get("reddit", [])),
                 "sources_semiwiki": len(intel.get("semiwiki", [])),
+                "sources_hn": len(intel.get("hackernews", [])),
             })
 
         except Exception as e:
@@ -1022,6 +1238,11 @@ def main():
             day_results.append({"key": key, "name": company["name"], "error": str(e)})
 
         time.sleep(3)  # breathing room between companies
+
+    # ── HN "Who is Hiring" scan (once per run) ──
+    log("Scanning HN 'Who is Hiring' thread...")
+    hn_hiring_jobs, hn_hiring_url = search_hn_who_is_hiring()
+    log(f"  HN Who is Hiring: {len(hn_hiring_jobs)} matching remote/EU jobs")
 
     # ── LLM cross-company summary ──
     log("Cross-company summary...")
@@ -1044,11 +1265,15 @@ Be concise — bullet points only. /no_think"""
 
 {chr(10).join(summary_items)}
 
+HN "Who is Hiring" — remote/EU jobs matching embedded/ADAS/camera/Linux ({len(hn_hiring_jobs)} found):
+{chr(10).join(f"- {j['company'][:60]} (relevance={j['relevance_score']}, remote={j['is_remote']}, europe={j['is_europe']}): {j['text'][:120]}" for j in hn_hiring_jobs[:8]) or '(none found)'}
+
 Provide:
 1. Top 3 companies showing strongest positive signals for embedded/ADAS roles
 2. Any companies with concerning red flags
 3. Market mood: is the embedded/automotive sector in Poland hiring or contracting?
-4. One specific action the user should consider this week"""
+4. Most interesting remote opportunities from HN "Who is Hiring" for an embedded Linux/camera driver engineer
+5. One specific action the user should consider this week"""
 
     cross_summary = call_ollama(summary_system, summary_prompt, temperature=0.3, max_tokens=1500)
 
@@ -1062,6 +1287,11 @@ Provide:
             "companies_with_errors": sum(1 for r in day_results if "error" in r),
         },
         "companies": day_results,
+        "hn_who_is_hiring": {
+            "thread_url": hn_hiring_url,
+            "matching_jobs": hn_hiring_jobs,
+            "total_matches": len(hn_hiring_jobs),
+        },
         "cross_summary": cross_summary or "Summary unavailable.",
     }
 
