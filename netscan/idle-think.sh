@@ -148,7 +148,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=3000, la
         "model": OLLAMA_MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": "/nothink\n" + user_prompt}
         ],
         "stream": False,
         "options": {"temperature": temperature, "num_predict": max_tokens}

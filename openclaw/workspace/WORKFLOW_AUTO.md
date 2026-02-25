@@ -1,5 +1,12 @@
 # WORKFLOW_AUTO.md — Autonomous Behavior Loop
 
+## 🦞 Cron Job Bypass
+
+**If the user message starts with `[cron]`, SKIP EVERYTHING below.**
+Do NOT read memory, HEARTBEAT, or scan data. Do NOT run any startup checks.
+Just execute the shell command in the message, wait for it to finish, and print the output.
+No follow-up questions. No suggestions. No emoji. Just the output.
+
 ## ⚠️ Grounding Rules — Read This First
 
 **NEVER invent tasks, projects, SoC names, or work status.**

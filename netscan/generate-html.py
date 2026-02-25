@@ -3798,84 +3798,106 @@ def gen_load():
         script_html += '<div style="color:var(--fg-dim)">No generating data yet (need samples with GPU clock &gt;1.2 GHz)</div>'
     script_html += '</div></div>'
 
-    # ─── Capacity planning ───
-    # All GPU tasks orchestrated by openclaw cron → Clawd agent turns
-    cron_jobs_night = [
-        ("leak-monitor", "23:00", "~5–10 min", "CTI: ransomware, HIBP, Hudson Rock, Telegram, CISA KEV"),
-        ("idle-think trends", "23:20", "~3–5 min", "Trends analysis from watchlist topics"),
-        ("idle-think research", "23:40", "~3–5 min", "Deep research on high-priority topic"),
-        ("ha-journal", "00:00", "~2–3 min", "Home Assistant observation journal"),
-        ("career-scan", "00:20", "~15–60 min", "Career intelligence (jobs + company + salary)"),
-        ("salary-tracker", "01:30", "~5–10 min", "Salary benchmarking analysis"),
-        ("company-intel", "01:50", "~5–10 min", "Target company deep analysis"),
-        ("patent-watch", "02:10", "~5–10 min", "Patent monitoring for tracked domains"),
-        ("event-scout", "02:30", "~5–10 min", "Tech event / CFP scanner"),
-        ("idle-think crossfeed", "02:50", "~3–5 min", "Cross-feed correlation insights"),
-        ("idle-think career", "03:10", "~3–5 min", "Career strategy refinement"),
-        ("idle-think crawl", "03:30", "~3–5 min", "Web crawl for watchlist topics"),
-        ("idle-think learn", "03:50", "~3–5 min", "Study notes on random tech topic"),
-        ("idle-think weekly", "04:10", "~3–5 min", "Weekly review and planning"),
-        ("lore-digest", "04:30", "~10–15 min", "Mailing list feed digest"),
-        ("idle-think research", "05:00", "~3–5 min", "Research round 2"),
-        ("idle-think trends", "05:20", "~3–5 min", "Trends round 2"),
-        ("ha-correlate", "05:40", "~5–10 min", "HA cross-sensor correlation"),
-        ("idle-think crossfeed", "06:00", "~3–5 min", "Crossfeed round 2"),
-        ("idle-think research", "06:20", "~3–5 min", "Research round 3"),
-        ("ha-journal", "06:40", "~2–3 min", "HA journal round 2"),
-        ("idle-think crawl", "07:00", "~3–5 min", "Crawl round 2"),
-        ("idle-think research", "07:20", "~3–5 min", "Research round 4"),
-        ("leak-monitor", "07:40", "~5–10 min", "Morning CTI scan"),
-    ]
-    cron_jobs_day = [
-        ("ha-journal", "09:00", "~2–3 min", "HA journal — morning"),
-        ("idle-think research", "10:00", "~3–5 min", "Research round 5"),
-        ("leak-monitor", "11:00", "~5–10 min", "Midday CTI scan"),
-        ("ha-journal", "12:00", "~2–3 min", "HA journal — noon"),
-        ("idle-think trends", "13:00", "~3–5 min", "Trends round 3"),
-        ("idle-think crossfeed", "14:00", "~3–5 min", "Crossfeed round 3"),
-        ("ha-journal", "15:00", "~2–3 min", "HA journal — afternoon"),
-        ("idle-think crawl", "16:00", "~3–5 min", "Crawl round 3"),
-        ("idle-think career", "17:00", "~3–5 min", "Career round 2"),
-        ("ha-journal", "18:00", "~2–3 min", "HA journal — evening"),
-        ("idle-think signal 📱", "19:00", "~3–5 min", "Daily Signal digest → sent to phone"),
-        ("idle-think research", "20:00", "~3–5 min", "Research round 6"),
-        ("ha-journal", "21:00", "~2–3 min", "HA journal — night"),
-        ("idle-think research", "22:00", "~3–5 min", "Research round 7"),
-    ]
-    cap_html = '<div class="section"><div class="section-title">🔧 OPENCLAW CRON — 38 SCHEDULED JOBS</div><div class="section-body">'
+    # ─── Capacity planning — dynamically read from openclaw cron jobs.json ───
+    cron_jobs_path = os.path.expanduser("~/.openclaw/cron/jobs.json")
+    cron_jobs_night = []  # (sort_key, name, schedule_str, timeout_str, last_status, last_dur_s)
+    cron_jobs_day = []
+    cron_total = 0
+    cron_enabled = 0
+    try:
+        with open(cron_jobs_path) as _cjf:
+            _cron_data = json.load(_cjf)
+        for _cj in _cron_data.get("jobs", []):
+            cron_total += 1
+            if not _cj.get("enabled", True):
+                continue
+            cron_enabled += 1
+            _name = _cj.get("name", "?")
+            _expr = _cj.get("schedule", {}).get("expr", "* * * * *")
+            _timeout = _cj.get("payload", {}).get("timeoutSeconds", 0)
+            _state = _cj.get("state", {})
+            _last_status = _state.get("lastStatus", "—")
+            _last_dur = _state.get("lastDurationMs", 0) / 1000
+
+            # Parse cron expression for display
+            _parts = _expr.split()
+            _min_s, _hour_s = _parts[0], _parts[1]
+            if _hour_s == "*":
+                _sched_str = f"*:{int(_min_s):02d}"
+                _sort_h = 99
+            else:
+                _h = int(_hour_s)
+                _sched_str = f"{_h:02d}:{int(_min_s):02d}"
+                _sort_h = _h
+
+            _timeout_min = _timeout // 60
+            _timeout_str = f"≤{_timeout_min} min"
+
+            _row = (_sort_h, int(_min_s), _name, _sched_str, _timeout_str, _last_status, _last_dur)
+            if _sort_h >= 23 or _sort_h < 8:
+                _sk = _sort_h if _sort_h >= 23 else _sort_h + 24
+                cron_jobs_night.append((_sk, int(_min_s), _name, _sched_str, _timeout_str, _last_status, _last_dur))
+            elif _sort_h == 99:
+                cron_jobs_day.append(_row)
+            else:
+                cron_jobs_day.append(_row)
+        cron_jobs_night.sort()
+        cron_jobs_day.sort()
+    except Exception:
+        pass  # no cron data → empty tables
+
+    _n_night = len(cron_jobs_night)
+    _n_day = len(cron_jobs_day)
+
+    cap_html = f'<div class="section"><div class="section-title">🔧 OPENCLAW CRON — {cron_enabled} SCHEDULED JOBS</div><div class="section-body">'
     cap_html += '<div style="margin-bottom:12px;padding:8px;background:var(--bg2);border-left:3px solid var(--purple);border-radius:4px;font-size:0.85rem">'
     cap_html += '🤖 <span style="color:var(--purple);font-weight:bold">All GPU tasks run through Clawd</span> '
     cap_html += '<span style="color:var(--fg-dim)">via </span>'
     cap_html += '<span style="color:var(--cyan)">openclaw cron</span> '
     cap_html += '<span style="color:var(--fg-dim)">→ agent turns → shell tools. Gateway runs 24/7. Signal preempts background work.</span>'
     cap_html += '</div>'
+
+    def _status_color(st):
+        return {"ok": "var(--green)", "error": "var(--red)", "running": "var(--amber)"}.get(st, "var(--fg-dim)")
+
+    def _render_cron_table(jobs, bg_style=""):
+        t = '<table class="host-table"><thead><tr>'
+        t += '<th>Job</th><th>Time</th><th>Timeout</th><th>Last</th><th>Duration</th>'
+        t += '</tr></thead><tbody>'
+        for _, _, name, sched, timeout_s, status, dur in jobs:
+            dur_str = f"{dur:.0f}s" if dur > 0 else "—"
+            st_icon = {"ok": "✓", "error": "✗", "running": "⟳"}.get(status, "—")
+            st_color = _status_color(status)
+            row_bg = f' style="background:var(--bg3)"' if bg_style else ""
+            t += f'<tr{row_bg}><td style="color:var(--cyan)">{e(name)}</td>'
+            t += f'<td>{e(sched)}</td><td>{e(timeout_s)}</td>'
+            t += f'<td style="color:{st_color}">{st_icon} {e(status)}</td>'
+            t += f'<td style="color:var(--fg-dim)">{dur_str}</td></tr>'
+        t += '</tbody></table>'
+        return t
+
     # Night table
-    cap_html += '<div style="margin-bottom:6px;color:var(--purple);font-weight:bold;font-size:0.85rem">🌙 Night batch (23:00–07:59) — 24 jobs, back-to-back every ~20 min</div>'
-    cap_html += '<table class="host-table"><thead><tr>'
-    cap_html += '<th>Job</th><th>Time</th><th>Est. Duration</th><th>Purpose</th>'
-    cap_html += '</tr></thead><tbody>'
-    for name, sched, dur, purpose in cron_jobs_night:
-        cap_html += f'<tr style="background:var(--bg3)"><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
-    cap_html += '</tbody></table>'
+    cap_html += f'<div style="margin-bottom:6px;color:var(--purple);font-weight:bold;font-size:0.85rem">🌙 Night batch (23:00–07:59) — {_n_night} jobs</div>'
+    cap_html += _render_cron_table(cron_jobs_night, bg_style="night")
     # Day table
-    cap_html += '<div style="margin:12px 0 6px;color:var(--amber);font-weight:bold;font-size:0.85rem">☀️ Daytime (08:00–22:59) — 14 jobs, hourly cadence</div>'
-    cap_html += '<table class="host-table"><thead><tr>'
-    cap_html += '<th>Job</th><th>Time</th><th>Est. Duration</th><th>Purpose</th>'
-    cap_html += '</tr></thead><tbody>'
-    for name, sched, dur, purpose in cron_jobs_day:
-        cap_html += f'<tr><td style="color:var(--cyan)">{e(name)}</td><td>{e(sched)}</td><td>{e(dur)}</td><td style="color:var(--fg-dim)">{e(purpose)}</td></tr>'
-    cap_html += '</tbody></table>'
-    # Estimated total
+    cap_html += f'<div style="margin:12px 0 6px;color:var(--amber);font-weight:bold;font-size:0.85rem">☀️ Daytime (08:00–22:59) — {_n_day} jobs</div>'
+    cap_html += _render_cron_table(cron_jobs_day)
+
+    # Summary stats
+    _total_timeout_night = sum(j[4].replace("≤", "").replace(" min", "") for j in cron_jobs_night if True) if False else 0
+    _night_max_min = sum(int(j[4].replace("≤", "").replace(" min", "")) for j in cron_jobs_night)
+    _day_max_min = sum(int(j[4].replace("≤", "").replace(" min", "")) for j in cron_jobs_day)
+    _total_max_min = _night_max_min + _day_max_min
     cap_html += f'''<div style="margin-top:12px;font-size:0.85rem">
   <span style="color:var(--fg-dim)">Daily jobs:</span>
-  <span style="color:var(--amber)">38</span>
-  <span style="color:var(--fg-dim)">(24 night + 14 day) — est. GPU time:</span>
-  <span style="color:var(--amber)">~150–250 min</span>
-  <span style="color:var(--fg-dim)">({round(200/1440*100)}% of 24h)</span>
+  <span style="color:var(--amber)">{cron_enabled}</span>
+  <span style="color:var(--fg-dim)">({_n_night} night + {_n_day} day) — max timeout budget:</span>
+  <span style="color:var(--amber)">{_total_max_min} min</span>
+  <span style="color:var(--fg-dim)">({round(_total_max_min/1440*100)}% of 24h)</span>
   <br>
-  <span style="color:var(--fg-dim)">Night window utilization:</span>
-  <span style="color:var(--purple)">~120–180 min</span>
-  <span style="color:var(--fg-dim)">of 540 min available (</span><span style="color:var(--green)">~22–33%</span><span style="color:var(--fg-dim)">)</span>
+  <span style="color:var(--fg-dim)">Night timeout budget:</span>
+  <span style="color:var(--purple)">{_night_max_min} min</span>
+  <span style="color:var(--fg-dim)">of 540 min window</span>
   <br>
   <span style="color:var(--fg-dim)">Orchestration:</span>
   <span style="color:var(--cyan)">openclaw cron → Clawd → shell tools → scripts → Ollama</span>

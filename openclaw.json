@@ -89,7 +89,7 @@
         ]
       },
       "thinkingDefault": "high",
-      "timeoutSeconds": 600
+      "timeoutSeconds": 1800
     },
     "list": [
       {
@@ -109,7 +109,9 @@
       "canvas",
       "nodes",
       "cron",
-      "gateway"
+      "gateway",
+      "group:memory",
+      "image"
     ],
     "exec": {
       "pathPrepend": [
