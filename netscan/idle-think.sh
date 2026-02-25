@@ -151,7 +151,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=3000, la
             {"role": "user", "content": "/nothink\n" + user_prompt}
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens}
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576}
     })
 
     try:
@@ -694,6 +694,65 @@ Keep under 2500 chars. Be direct and actionable, not generic."""
                          {"digests": len(digests), "repos": len(issues)})
 
 
+def fetch_hn_top(src, max_items=10):
+    """Fetch top HN stories via Firebase API and return formatted text."""
+    max_items = src.get("max_items", max_items)
+    try:
+        req = urllib.request.Request(src["url"])
+        resp = urllib.request.urlopen(req, timeout=15)
+        story_ids = json.loads(resp.read())[:max_items]
+        lines = []
+        for sid in story_ids:
+            try:
+                item_url = f"https://hacker-news.firebaseio.com/v0/item/{sid}.json"
+                iresp = urllib.request.urlopen(item_url, timeout=10)
+                item = json.loads(iresp.read())
+                title = item.get("title", "")
+                url = item.get("url", f"https://news.ycombinator.com/item?id={sid}")
+                score = item.get("score", 0)
+                comments = item.get("descendants", 0)
+                lines.append(f"[{score}pts/{comments}c] {title}\n  {url}")
+            except Exception:
+                pass
+        return "\n".join(lines)
+    except Exception as ex:
+        print(f"    HN API failed: {ex}")
+        return ""
+
+
+def fetch_url(url, use_tor=False, timeout=20):
+    """Fetch a URL, optionally routing through Tor SOCKS5 proxy."""
+    import re
+    if use_tor:
+        import socks
+        import socket
+        orig_socket = socket.socket
+        try:
+            socks.set_default_proxy(socks.SOCKS5, "127.0.0.1", 9050)
+            socket.socket = socks.socksocket
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:128.0) Gecko/20100101 Firefox/128.0"
+            })
+            resp = urllib.request.urlopen(req, timeout=timeout)
+            raw = resp.read().decode("utf-8", errors="replace")
+        finally:
+            socket.socket = orig_socket
+    else:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; bc250-bot/1.0)"
+        })
+        resp = urllib.request.urlopen(req, timeout=timeout)
+        raw = resp.read().decode("utf-8", errors="replace")
+
+    # Strip HTML/XML to plain text
+    text = re.sub(r'<script[^>]*>.*?</script>', '', raw, flags=re.DOTALL)
+    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<!\[CDATA\[.*?\]\]>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+
 def task_crawl():
     """Fetch and analyze crawl target URLs for career-relevant content."""
     print("\n[TASK] Web Crawl & Analyze")
@@ -714,39 +773,56 @@ def task_crawl():
         print("  No valid crawl sources found")
         return
 
-    # Pick 2-3 sources to crawl (rotate based on day)
-    day_offset = datetime.now().timetuple().tm_yday % len(all_sources)
+    # Pick 4-5 sources to crawl (rotate based on day + hour for multiple runs/day)
+    now = datetime.now()
+    rotation_key = now.timetuple().tm_yday * 24 + now.hour
+    day_offset = rotation_key % len(all_sources)
     selected = []
-    for i in range(min(3, len(all_sources))):
+    for i in range(min(5, len(all_sources))):
         idx = (day_offset + i) % len(all_sources)
         selected.append(all_sources[idx])
+
+    # Check if Tor is available for .onion sources
+    tor_available = False
+    has_onion = any(s.get("tor") for s in selected)
+    if has_onion:
+        try:
+            import socks
+            tor_available = True
+            print("  Tor SOCKS5 proxy available for .onion sources")
+        except ImportError:
+            print("  ⚠ PySocks not installed — skipping .onion sources (pip install pysocks)")
 
     # Fetch pages
     crawl_results = []
     for src in selected:
         url = src.get("url", "")
         label = src.get("label", url)
-        print(f"  Crawling: {label} ({url})")
+        use_tor = src.get("tor", False)
+
+        # Skip .onion sources if Tor/PySocks not available
+        if use_tor and not tor_available:
+            print(f"  Skipping {label} (no Tor/PySocks)")
+            continue
+
+        print(f"  Crawling: {label} ({url}){' [TOR]' if use_tor else ''}")
         try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "Mozilla/5.0 (compatible; bc250-bot/1.0)"
-            })
-            resp = urllib.request.urlopen(req, timeout=20)
-            raw = resp.read().decode("utf-8", errors="replace")
-            # Strip HTML tags for rough text extraction
-            import re
-            text = re.sub(r'<script[^>]*>.*?</script>', '', raw, flags=re.DOTALL)
-            text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-            text = re.sub(r'<[^>]+>', ' ', text)
-            text = re.sub(r'\s+', ' ', text).strip()
-            # Keep first 3000 chars
-            crawl_results.append({
-                "label": label,
-                "url": url,
-                "what": src.get("what", ""),
-                "text": text[:3000]
-            })
-            print(f"    Got {len(text)} chars")
+            # HN API gets special handling
+            if src.get("api") == "hn_top":
+                text = fetch_hn_top(src)
+            else:
+                text = fetch_url(url, use_tor=use_tor, timeout=30 if use_tor else 20)
+
+            if text:
+                crawl_results.append({
+                    "label": label,
+                    "url": url if not use_tor else f"{label} (onion)",
+                    "what": src.get("what", ""),
+                    "text": text[:4000]
+                })
+                print(f"    Got {len(text)} chars")
+            else:
+                print(f"    Empty response")
         except Exception as ex:
             print(f"    Failed: {ex}")
 
@@ -758,7 +834,7 @@ def task_crawl():
     for cr in crawl_results:
         crawl_text += f"\n=== {cr['label']} ({cr['what']}) ===\n"
         crawl_text += f"URL: {cr['url']}\n"
-        crawl_text += cr["text"][:2000] + "\n"
+        crawl_text += cr["text"][:3000] + "\n"
 
     career = career_context_block()
     watch_topics = PROFILE_PRIVATE.get("watch_topics", {})
@@ -779,25 +855,29 @@ Industry keywords: {', '.join(industry_kw[:8])}"""
 
 Produce a CRAWL DIGEST:
 
-🌐 CRAWL DIGEST — {datetime.now().strftime('%d %b %Y')}
+🌐 CRAWL DIGEST — {datetime.now().strftime('%d %b %Y %H:%M')}
 
 For each source, extract:
 - KEY FINDINGS relevant to the developer's domain
 - NEWS items (product launches, announcements, regulation changes)
 - TECHNICAL items (new drivers, patches, tools, standards)
+- SECURITY items (CVEs, breaches, threats relevant to embedded/automotive)
 
 Then a combined:
 🎯 MOST RELEVANT ITEMS (top 3-5 across all sources)
 Each with why it matters and suggested follow-up.
 
-Skip irrelevant content. If a page has nothing useful, say so briefly.
-Keep under 2500 chars. Focus on actionable intelligence."""
+🔒 SECURITY ALERTS (if any CVEs or breaches affect embedded Linux, automotive, or home infra)
 
-    result = call_ollama(system, prompt, temperature=0.3, max_tokens=2500, label="crawl")
+Skip irrelevant content. If a page has nothing useful, say so briefly.
+Keep under 3000 chars. Focus on actionable intelligence."""
+
+    result = call_ollama(system, prompt, temperature=0.3, max_tokens=3000, label="crawl")
     if result:
-        return save_note("crawl", f"Crawl Digest — {datetime.now().strftime('%d %b %Y')}", result,
+        return save_note("crawl", f"Crawl Digest — {datetime.now().strftime('%d %b %Y %H:%M')}", result,
                          {"sources": [s["label"] for s in selected],
-                          "fetched": len(crawl_results)})
+                          "fetched": len(crawl_results),
+                          "tor_used": any(s.get("tor") for s in selected if s in crawl_results)})
 
 
 def task_learn():
