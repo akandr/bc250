@@ -48,7 +48,7 @@ SIGNAL_TO = "+<OWNER_PHONE>"
 
 DATA_DIR = Path("/opt/netscan/data/correlate")
 THINK_DIR = Path("/opt/netscan/data/think")
-HISTORY_HOURS = 48        # 48h gives more data for slow-updating sensors
+HISTORY_HOURS = 24        # look back to cover since-last-analysis window
 MIN_SAMPLES = 4           # minimum data points for per-sensor stats
 MIN_CORR_SAMPLES = 8      # minimum aligned points for correlations
 CORR_THRESHOLD = 0.60     # minimum |r| to report a correlation
@@ -438,9 +438,228 @@ def hourly_pattern(series):
     return pattern
 
 
+# ── Room occupancy estimation ──────────────────────────────────────────────
+
+def compute_room_usage(switch_ts, switch_entities, hours=24):
+    """Estimate room occupancy from light/switch activity.
+
+    Returns per-room summary:
+      - total_lit_minutes: how long any light was on
+      - first_activity: earliest switch-on timestamp
+      - last_activity: latest switch-on timestamp
+      - peak_hour: hour of day with most activity
+      - activity_periods: list of (start, end) on-periods
+    """
+    room_data = defaultdict(lambda: {
+        "lit_minutes": 0.0,
+        "first_on": None,
+        "last_off": None,
+        "on_events": [],      # timestamps when turned on
+        "hourly_on_min": defaultdict(float),  # hour → minutes lit
+        "switches_active": set(),
+    })
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=hours)
+
+    for eid, ts_series in switch_ts.items():
+        info = switch_entities.get(eid)
+        if not info:
+            continue
+        room = info["room"]
+        fname = info["fname"]
+
+        # Skip non-room entities (gates, garage doors, fans, etc.)
+        skip_patterns = ["brama", "garaz", "gate", "wentylator", "fan",
+                         "pompa", "auto", "pralka", "suszarka", "drzewo",
+                         "termometr", "gniazdko"]
+        if any(p in eid.lower() or p in fname.lower() for p in skip_patterns):
+            continue
+
+        prev_ts = None
+        prev_on = False
+
+        for ts_str, is_on in ts_series:
+            try:
+                ts = datetime.fromisoformat(ts_str)
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+            except Exception:
+                continue
+
+            if ts < cutoff:
+                prev_ts = ts
+                prev_on = is_on
+                continue
+
+            # Track on-duration
+            if prev_ts and prev_on:
+                start = max(prev_ts, cutoff)
+                delta_min = (ts - start).total_seconds() / 60
+                if delta_min > 0:
+                    room_data[room]["lit_minutes"] += delta_min
+                    # Distribute across hours
+                    t = start
+                    while t < ts:
+                        hour_end = t.replace(minute=0, second=0) + timedelta(hours=1)
+                        chunk_end = min(hour_end, ts)
+                        chunk_min = (chunk_end - t).total_seconds() / 60
+                        room_data[room]["hourly_on_min"][t.hour] += chunk_min
+                        t = chunk_end
+
+            if is_on:
+                room_data[room]["on_events"].append(ts)
+                room_data[room]["switches_active"].add(fname)
+                if room_data[room]["first_on"] is None or ts < room_data[room]["first_on"]:
+                    room_data[room]["first_on"] = ts
+            else:
+                if room_data[room]["last_off"] is None or ts > room_data[room]["last_off"]:
+                    room_data[room]["last_off"] = ts
+
+            prev_ts = ts
+            prev_on = is_on
+
+        # Account for still-on at end of window
+        if prev_on and prev_ts:
+            start = max(prev_ts, cutoff)
+            delta_min = (now - start).total_seconds() / 60
+            if delta_min > 0:
+                room_data[room]["lit_minutes"] += delta_min
+
+    # Build summary
+    result = {}
+    for room, data in room_data.items():
+        if data["lit_minutes"] < 1 and not data["on_events"]:
+            continue
+
+        # Find peak hour
+        hourly = dict(data["hourly_on_min"])
+        peak_hour = max(hourly, key=hourly.get) if hourly else None
+
+        result[room] = {
+            "lit_hours": round(data["lit_minutes"] / 60, 1),
+            "lit_minutes": round(data["lit_minutes"], 0),
+            "first_activity": data["first_on"].strftime("%H:%M") if data["first_on"] else None,
+            "last_activity": data["last_off"].strftime("%H:%M") if data["last_off"] else None,
+            "switch_on_count": len(data["on_events"]),
+            "peak_hour": peak_hour,
+            "switches_used": sorted(data["switches_active"]),
+            "hourly_breakdown": {str(h): round(m, 0) for h, m in sorted(hourly.items())},
+        }
+
+    return result
+
+
+def build_room_timeline(room_usage, switch_ts, switch_entities, hours=24):
+    """Build a chronological room activity timeline.
+
+    Returns list of {time, room, event, switch} ordered by time.
+    """
+    events = []
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=hours)
+
+    skip_patterns = ["brama", "garaz", "gate", "wentylator", "fan",
+                     "pompa", "auto", "pralka", "suszarka", "drzewo",
+                     "termometr", "gniazdko"]
+
+    for eid, ts_series in switch_ts.items():
+        info = switch_entities.get(eid)
+        if not info:
+            continue
+        fname = info["fname"]
+        room = info["room"]
+
+        if any(p in eid.lower() or p in fname.lower() for p in skip_patterns):
+            continue
+
+        for ts_str, is_on in ts_series:
+            try:
+                ts = datetime.fromisoformat(ts_str)
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+            except Exception:
+                continue
+            if ts < cutoff:
+                continue
+
+            events.append({
+                "time": ts.strftime("%H:%M"),
+                "timestamp": ts,
+                "room": room,
+                "event": "ON" if is_on else "OFF",
+                "switch": fname,
+            })
+
+    events.sort(key=lambda e: e["timestamp"])
+
+    # Convert timestamp to string for serialization
+    for e in events:
+        e["timestamp"] = e["timestamp"].isoformat(timespec="seconds")
+
+    return events
+
+
+def load_previous_analysis():
+    """Load the most recent correlate output for delta comparison.
+
+    Returns the parsed JSON or None.
+    """
+    try:
+        latest = DATA_DIR / "latest-correlate.json"
+        if latest.exists():
+            target = latest.resolve()
+            with open(target) as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return None
+
+
+def compute_env_deltas(current_stats, previous_report):
+    """Compute environmental changes since previous analysis.
+
+    Returns dict of {room: {metric: {prev, now, delta, trend}}}.
+    """
+    if not previous_report:
+        return {}
+
+    prev_stats = previous_report.get("sensor_stats", {})
+    prev_time = previous_report.get("generated", "?")
+    deltas = {}
+
+    for eid, curr in current_stats.items():
+        if eid not in prev_stats:
+            continue
+        prev = prev_stats[eid]
+        room = curr["room"]
+        group = curr["group"]
+
+        d_current = curr["current"]
+        d_prev = prev.get("current", prev.get("mean"))
+        if d_prev is None:
+            continue
+
+        delta = d_current - d_prev
+        if abs(delta) < 0.01:
+            continue
+
+        if room not in deltas:
+            deltas[room] = {"since": prev_time}
+        deltas[room][group] = {
+            "previous": round(d_prev, 1),
+            "current": round(d_current, 1),
+            "delta": round(delta, 1),
+            "trend": "↗" if delta > 0.3 else ("↘" if delta < -0.3 else "→"),
+            "unit": curr["unit"],
+        }
+
+    return deltas
+
+
 # ── Ollama LLM ─────────────────────────────────────────────────────────────
 
-def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=1500):
+def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
     """Call Ollama for LLM synthesis."""
     try:
         with urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=10) as r:
@@ -659,11 +878,18 @@ def signal_send(msg):
 def main():
     t_start = time.time()
     now = datetime.now()
-    dt_label = now.strftime("%d %b %Y")
-    dt_file = now.strftime("%Y%m%d")
+    dt_label = now.strftime("%d %b %Y, %H:%M")
+    dt_file = now.strftime("%Y%m%d-%H%M")
 
     print(f"[{now:%Y-%m-%d %H:%M:%S}] ha-correlate starting")
     print(f"  Analyzing last {HISTORY_HOURS}h of HA sensor data")
+
+    # Load previous analysis for delta comparison
+    prev_analysis = load_previous_analysis()
+    if prev_analysis:
+        log(f"Previous analysis: {prev_analysis.get('generated', '?')}")
+    else:
+        log("No previous analysis found — first run")
 
     if not HASS_TOKEN:
         print("ERROR: HASS_TOKEN not set", file=sys.stderr)
@@ -845,7 +1071,27 @@ def main():
 
     log(f"Analyzed {len(duty_cycles)} switch duty cycles")
 
-    # ── Step 5.5: Garage car tracker ──────────────────────────────────────
+    # ── Step 5.5: Room occupancy estimation ────────────────────────────────
+    log("Estimating room usage from light activity...")
+    room_usage = compute_room_usage(switch_ts, switch_entities, HISTORY_HOURS)
+    room_timeline = build_room_timeline(room_usage, switch_ts, switch_entities, HISTORY_HOURS)
+
+    if room_usage:
+        log(f"Room activity detected in {len(room_usage)} rooms:")
+        for room, usage in sorted(room_usage.items(), key=lambda x: x[1]["lit_hours"], reverse=True):
+            log(f"  {room}: {usage['lit_hours']}h lit, {usage['switch_on_count']} switch events")
+    else:
+        log("No room activity detected")
+
+    # ── Step 5.6: Environmental deltas ────────────────────────────────────
+    log("Computing environmental changes since last analysis...")
+    env_deltas = compute_env_deltas(sensor_stats, prev_analysis)
+    if env_deltas:
+        log(f"Environmental changes in {len(env_deltas)} rooms")
+    else:
+        log("No significant environmental changes (or first run)")
+
+    # ── Step 5.7: Garage car tracker ──────────────────────────────────────
     log("Detecting garage car events...")
     garage_events = detect_garage_events(all_history)
     if garage_events:
@@ -980,6 +1226,10 @@ def main():
         "correlations": correlations[:20],  # top 20
         "anomalies": all_anomalies[:30],    # max 30
         "garage_events": garage_events,
+        "room_usage": room_usage,
+        "room_timeline": room_timeline[:100],  # last 100 events
+        "env_deltas": env_deltas,
+        "prev_analysis_time": prev_analysis.get("generated") if prev_analysis else None,
     }
 
     # ── Step 8: LLM synthesis ─────────────────────────────────────────────
@@ -1052,6 +1302,43 @@ def main():
                 f"total {dc['total_on_min']:.0f}min on{known}"
             )
 
+    # Room usage
+    if room_usage:
+        summary_parts.append(f"\n🏠 ROOM OCCUPANCY (last {HISTORY_HOURS}h, estimated from lights):")
+        for room, usage in sorted(room_usage.items(), key=lambda x: x[1]["lit_hours"], reverse=True):
+            first = usage.get("first_activity", "?")
+            last = usage.get("last_activity", "?")
+            peak = f", peak at {usage['peak_hour']}:00" if usage.get("peak_hour") is not None else ""
+            summary_parts.append(
+                f"  {room}: {usage['lit_hours']}h lit ({usage['lit_minutes']:.0f}min), "
+                f"{usage['switch_on_count']} on-events, "
+                f"first {first}, last {last}{peak}"
+            )
+            if usage.get("switches_used"):
+                summary_parts.append(f"    switches: {', '.join(usage['switches_used'])}")
+
+    # Room timeline (activity flow)
+    if room_timeline:
+        summary_parts.append(f"\n📋 ACTIVITY TIMELINE (last {min(len(room_timeline), 30)} events):")
+        for ev in room_timeline[-30:]:
+            icon = "🟢" if ev["event"] == "ON" else "⚫"
+            summary_parts.append(f"  {icon} {ev['time']} {ev['room']}: {ev['switch']} {ev['event']}")
+
+    # Environmental deltas since last analysis
+    if env_deltas:
+        prev_time = list(env_deltas.values())[0].get("since", "?")
+        summary_parts.append(f"\n📈 ENVIRONMENTAL CHANGES (since {prev_time}):")
+        for room, metrics in sorted(env_deltas.items()):
+            changes = []
+            for metric, d in metrics.items():
+                if metric == "since":
+                    continue
+                changes.append(
+                    f"{metric}: {d['previous']}→{d['current']}{d['unit']} ({d['trend']}{d['delta']:+.1f})"
+                )
+            if changes:
+                summary_parts.append(f"  {room}: {'; '.join(changes)}")
+
     # Correlations
     if correlations:
         summary_parts.append(f"\nCORRELATIONS (|r| ≥ {CORR_THRESHOLD}):")
@@ -1073,26 +1360,59 @@ def main():
 
     data_summary = "\n".join(summary_parts)
 
-    system_prompt = """\
+    system_prompt = f"""\
 You are ClawdBot, an AI home analyst for a family house in Poland.
-Analyze the sensor data below and write a concise "Home Insights" report.
+Analyze the sensor data below and write a detailed "Home Insights" report.
+This analysis covers the last {HISTORY_HOURS}h.
 
 IMPORTANT: Write ONLY in English. No Chinese, no other languages.
 Do NOT include any prefix like "sample output" — just start writing the report directly.
 
-Rules:
-- Focus on actionable findings: what's unusual, what patterns emerge, what could be improved
-- Explain correlations in plain language (e.g., "bedroom CO₂ rises after 22:00 as occupants sleep")
-- Note if duty cycles seem abnormal or wasteful
-- Compare temperatures across rooms — any that stand out?
-- Air quality: flag any concerning levels with context
-- Note interesting temporal patterns (day vs. night differences)
+Your report MUST include these sections:
+
+## 🏠 Room Activity & Occupancy
+- Which rooms were used, for how long (from light activity)
+- Activity flow: what sequence of rooms were used throughout the day
+- Which rooms were unused — unusual? (e.g., bedroom not used during night = no one home?)
+- Estimate household routine from the light patterns
+
+## 📈 Environmental Changes
+- Temperature, humidity, CO₂ deltas since last analysis
+- What changed and why (e.g., "kitchen temp dropped 2°C — window opened?")
+- Track trends over time — is the house warming/cooling overall?
+
+## 💨 Air Quality Assessment
+- CO₂ levels per room with context (>1000=concerning, >1500=bad)
+- VOC and PM2.5 with health context
+- Correlate air quality with room usage (occupied rooms should have higher CO₂)
+
+## 🔗 Correlations & Patterns
+- Explain significant sensor correlations in plain language
+- Note lag effects (e.g., "CO₂ peaks 2h after lights come on")
+- Identify automation patterns vs. human behavior
+
+## 🚗 Garage & Vehicle Activity
+- Car leaving/returning events with timing
+- Temperature signature analysis
+
+## ⚡ Energy & Efficiency
+- Which switches have unusual duty cycles
+- Lights left on in unoccupied rooms = energy waste
+- Known automation devices (listed below) should NOT be flagged
+
+Formatting rules:
 - Use emoji for quick scanning: 🌡️ temp, 💨 air, 💡 lights, ⚡ energy, 📊 pattern, ⚠️ warning, ✅ ok
-- Known devices that are automation-controlled should not be flagged as anomalies
-- Garage temperature spikes correlating with door events are CAR RETURNS (warm engine), not anomalies
 - Translate Polish sensor names in parentheses
-- End with 2-3 actionable recommendations
-- Keep under 500 words
+- End with 3-5 actionable recommendations
+- Be specific: "open bedroom window at 22:00" not "improve ventilation"
+- Write 400-600 words
+
+Known devices (do NOT flag as anomalies):
+- Garaż termometr (garage heater): auto on when humidity high — dehumidification
+- Kuchnia ledy góra: always on — physical wall buttons
+- Łazienka piwnica-Wentylator: periodic on/off — gas heater safety ventilation
+- Łazienka piętro-Wentylator: always on — humidity-triggered
+- drzewo (outdoor tree lights): decorative, expected on/off at dusk/dawn
 """
 
     llm_analysis = call_ollama(system_prompt, data_summary)
@@ -1135,6 +1455,9 @@ Rules:
                 "switches": len(switch_ts),
                 "correlations": len(correlations),
                 "anomalies": len(all_anomalies),
+                "rooms_active": len(room_usage),
+                "env_deltas": len(env_deltas),
+                "prev_analysis": prev_analysis.get("generated") if prev_analysis else None,
             },
         }
         note_fname = f"note-home-insights-{dt_file}.json"
@@ -1182,6 +1505,12 @@ Rules:
             emoji = "🚗" if ge["type"] == "car_returned" else "🚙💨"
             alert_parts.append(f"{emoji} {ge['time_local']} {ge['type'].replace('_', ' ')}: {ge['detail']}")
 
+    # Room activity
+    if room_usage:
+        active_rooms = sorted(room_usage.items(), key=lambda x: x[1]["lit_hours"], reverse=True)
+        room_str = ", ".join(f"{r}: {u['lit_hours']}h" for r, u in active_rooms[:4])
+        alert_parts.append(f"🏠 Rooms: {room_str}")
+
     if correlations:
         alert_parts.append(f"🔗 {len(correlations)} correlations found")
         top = correlations[0]
@@ -1203,7 +1532,7 @@ Rules:
     signal_send("\n".join(alert_parts))
 
     print(f"  Done. {len(correlations)} correlations, {len(all_anomalies)} anomalies, "
-          f"{len(duty_cycles)} duty cycles analyzed.")
+          f"{len(duty_cycles)} duty cycles, {len(room_usage)} active rooms analyzed.")
 
 
 def interpret_correlation(group_a, group_b, r, lag):

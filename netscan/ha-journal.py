@@ -25,7 +25,9 @@ import subprocess
 import sys
 import time
 import urllib.request
-from datetime import datetime
+import urllib.error
+from datetime import datetime, timedelta, timezone
+from collections import defaultdict
 
 # ─── Config ───
 
@@ -54,6 +56,182 @@ if os.path.exists(ENV_FILE):
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 os.environ.setdefault(k.strip(), v.strip())
+
+HASS_URL = os.environ.get("HASS_URL", "http://homeassistant:8123")
+HASS_TOKEN = os.environ.get("HASS_TOKEN", "")
+
+# Room pattern → room name
+ROOM_PATTERNS = {
+    "salon": "Salon", "sypialnia": "Sypialnia", "kuchni|kuchen": "Kuchnia",
+    "jadalni": "Jadalnia", "łazienk|lazienk": "Łazienka", "piętro|pietro": "Piętro",
+    "parter": "Parter", "piwnic": "Piwnica", "garaż|garaz": "Garaż",
+    "komputerow": "Biuro", "chłopaki|chlopaki|dziecięc": "Chłopcy",
+    "wiatrołap|wiatolap": "Wiatrołap", "spiżarni|spizarni": "Spiżarnia",
+    "warsztat": "Warsztat", "przedpokoj|przedpokój": "Przedpokój",
+    "ogród|ogrod": "Ogród",
+}
+
+# Switches to skip for room occupancy (not human-activated)
+SKIP_SWITCHES = ["brama", "garaz", "gate", "wentylator", "fan",
+                 "pompa", "auto", "pralka", "suszarka", "drzewo",
+                 "termometr", "gniazdko"]
+
+
+def guess_room(entity_id, friendly_name=""):
+    text = f"{entity_id} {friendly_name}".lower()
+    for pattern, room in ROOM_PATTERNS.items():
+        if re.search(pattern, text, re.IGNORECASE):
+            return room
+    return "Other"
+
+
+def ha_api_get(path):
+    """GET from HA REST API."""
+    url = f"{HASS_URL}{path}"
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"Bearer {HASS_TOKEN}",
+        "Content-Type": "application/json",
+    })
+    try:
+        resp = urllib.request.urlopen(req, timeout=20)
+        return json.loads(resp.read())
+    except Exception as ex:
+        print(f"  HA API error: {ex}")
+        return None
+
+
+def get_switch_activity(hours=6):
+    """Get recent switch activity and compute room usage summary.
+
+    Returns (room_summary_text, timeline_text) for the LLM prompt.
+    """
+    if not HASS_TOKEN:
+        return "", ""
+
+    # Get all current states to discover switches
+    states = ha_api_get("/api/states")
+    if not states:
+        return "", ""
+
+    switch_eids = []
+    switch_info = {}  # eid → {fname, room}
+    for e in states:
+        eid = e["entity_id"]
+        s = e["state"]
+        if not eid.startswith(("switch.", "light.")):
+            continue
+        if s not in ("on", "off"):
+            continue
+        fname = e.get("attributes", {}).get("friendly_name", "")
+        if any(p in eid.lower() or p in fname.lower() for p in SKIP_SWITCHES):
+            continue
+        switch_eids.append(eid)
+        switch_info[eid] = {"fname": fname, "room": guess_room(eid, fname)}
+
+    if not switch_eids:
+        return "", ""
+
+    # Fetch history in batches
+    start = datetime.now(timezone.utc) - timedelta(hours=hours)
+    start_str = start.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    all_history = {}
+    BATCH = 30
+    for i in range(0, len(switch_eids), BATCH):
+        batch = switch_eids[i:i + BATCH]
+        ids_str = ",".join(batch)
+        data = ha_api_get(
+            f"/api/history/period/{start_str}"
+            f"?filter_entity_id={ids_str}&minimal_response&no_attributes"
+        )
+        if data:
+            for entity_hist in data:
+                if entity_hist:
+                    eid = entity_hist[0].get("entity_id", "")
+                    all_history[eid] = entity_hist
+        time.sleep(0.3)
+
+    # Compute room usage
+    room_lit_min = defaultdict(float)   # room → total minutes lit
+    room_events = defaultdict(list)     # room → [(time_str, switch, ON/OFF)]
+    now = datetime.now(timezone.utc)
+
+    for eid, hist in all_history.items():
+        info = switch_info.get(eid)
+        if not info:
+            continue
+        room = info["room"]
+        fname = info["fname"]
+        prev_ts = None
+        prev_on = False
+
+        for p in hist:
+            s = p.get("state", "").lower()
+            ts_str = p.get("last_changed", "")
+            if s not in ("on", "off"):
+                continue
+            is_on = s == "on"
+            try:
+                ts = datetime.fromisoformat(ts_str.replace("+00:00", "").replace("Z", ""))
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+            except Exception:
+                continue
+
+            if ts < start:
+                prev_ts = ts
+                prev_on = is_on
+                continue
+
+            # Accumulate on-duration
+            if prev_ts and prev_on:
+                delta = max(0, (ts - max(prev_ts, start)).total_seconds() / 60)
+                room_lit_min[room] += delta
+
+            if is_on:
+                room_events[room].append((ts.strftime("%H:%M"), fname, "ON"))
+            else:
+                room_events[room].append((ts.strftime("%H:%M"), fname, "OFF"))
+
+            prev_ts = ts
+            prev_on = is_on
+
+        # Still on at end
+        if prev_on and prev_ts:
+            delta = max(0, (now - max(prev_ts, start)).total_seconds() / 60)
+            room_lit_min[room] += delta
+
+    # Build room summary
+    room_lines = []
+    for room in sorted(room_lit_min, key=room_lit_min.get, reverse=True):
+        mins = room_lit_min[room]
+        hrs = mins / 60
+        events = room_events.get(room, [])
+        n_on = sum(1 for _, _, e in events if e == "ON")
+        if mins < 1 and n_on == 0:
+            continue
+        room_lines.append(f"  {room}: {hrs:.1f}h lit ({mins:.0f}min), {n_on} switch-on events")
+        # Show which switches
+        switches_used = sorted(set(s for _, s, _ in events))
+        if switches_used:
+            room_lines.append(f"    switches: {', '.join(switches_used)}")
+
+    room_summary = "\n".join(room_lines) if room_lines else "No room activity detected"
+
+    # Build timeline (last 20 events)
+    all_events = []
+    for room, evts in room_events.items():
+        for t, sw, ev in evts:
+            all_events.append((t, room, sw, ev))
+    all_events.sort(key=lambda x: x[0])
+
+    timeline_lines = []
+    for t, room, sw, ev in all_events[-20:]:
+        icon = "🟢" if ev == "ON" else "⚫"
+        timeline_lines.append(f"  {icon} {t} {room}: {sw} {ev}")
+
+    timeline = "\n".join(timeline_lines) if timeline_lines else "No switch events"
+
+    return room_summary, timeline
 
 
 # ─── Helpers ───
@@ -179,29 +357,61 @@ def load_previous_home_note():
     return None
 
 
+def load_latest_insights():
+    """Load latest home-insights (from ha-correlate) for cross-reference."""
+    index_path = os.path.join(THINK_DIR, "notes-index.json")
+    if not os.path.exists(index_path):
+        return None
+    try:
+        with open(index_path) as f:
+            index = json.load(f)
+        for entry in index:
+            if entry.get("type") == "home-insights":
+                path = os.path.join(THINK_DIR, entry["file"])
+                if os.path.exists(path):
+                    with open(path) as f:
+                        note = json.load(f)
+                    return {
+                        "generated": entry.get("generated", "?"),
+                        "content": note.get("content", "")[:600],
+                    }
+    except Exception:
+        pass
+    return None
+
+
 # ─── Main ───
 
 SYSTEM_PROMPT = """\
 You are ClawdBot, an AI home observer for a family house in Poland.
-Your job: analyze Home Assistant sensor data, spot patterns, and write
-a concise journal entry about the state of the home.
+Your job: analyze Home Assistant sensor data AND room activity patterns
+to write an insightful journal entry about the state of the home.
+
+Your analysis MUST cover:
+1. **Room Activity**: Which rooms are/were used, for how long. What does the switch
+   timeline tell about household routine? Who's home, who's out?
+2. **Climate**: Temperature across rooms, outdoor conditions, heating effectiveness
+3. **Air Quality**: CO₂, PM2.5, VOC — flag anything above thresholds
+4. **Environmental Change**: What changed since previous observation?
+5. **Correlations**: Connect the dots — e.g. "kitchen lights on for 2h + CO₂ rising = cooking"
 
 Rules:
-- Be factual and concise. No filler, no greetings.
-- Use emoji for quick scanning: 🌡️ temp, 💨 air quality, 💡 lights, 🪟 covers, ⚠️ warnings, ✅ normal
-- Flag anything unusual: high CO₂, open windows when cold, lights left on, temperature anomalies
-- Compare with previous observation if provided — note what changed
+- Be analytical and specific. No filler, no greetings.
+- Use emoji for quick scanning: 🌡️ temp, 💨 air, 💡 lights, 🔴 warning, ✅ normal
+- Flag anything unusual: high CO₂, open windows when cold, lights left on, temp anomalies
+- Estimate room occupancy from light activity (lights on = room in use)
+- Compare with previous observation — note what changed and WHY
 - Include time context (night vs. day, season-appropriate behavior)
 - Air quality thresholds: CO₂ >1000=concerning >1500=bad, PM2.5 >25=moderate >50=poor, VOC >0.5=elevated
 - Write in English, translate Polish sensor names
-- End with a one-line overall assessment
-- Keep it under 400 words
+- End with 2-3 specific, actionable recommendations
+- Keep it under 500 words
 
 Device context (do NOT flag these as anomalies):
-- Garaż termometr (garage heater): turns on automatically when garage humidity exceeds threshold — normal dehumidification behavior
-- Kuchnia ledy góra (kitchen upper LED strips): always on — controlled by physical wall buttons, not HA automation
-- Łazienka piwnica-Wentylator (basement bathroom fan): automated periodic on/off to ventilate room with natural gas water heater — safety ventilation, always expected
-- Łazienka piętro-Wentylator (upstairs bathroom fan): always on — humidity-triggered, runs continuously as designed
+- Garaż termometr (garage heater): turns on automatically for dehumidification
+- Kuchnia ledy góra (kitchen upper LEDs): always on — physical wall buttons
+- Łazienka piwnica-Wentylator: automated safety ventilation for gas heater
+- Łazienka piętro-Wentylator: always on — humidity-triggered
 """
 
 
@@ -248,6 +458,10 @@ def main():
     anomalies_data = run_ha("anomalies") if not quick else ""
     lights_data = run_ha("lights")
 
+    # Get switch activity and room usage (last 6h window)
+    print("  Fetching switch activity...")
+    room_activity, switch_timeline = get_switch_activity(hours=6)
+
     if not climate_data or climate_data.startswith("[error"):
         print(f"  Failed to get HA data: {climate_data}")
         return
@@ -260,9 +474,15 @@ def main():
         "=== CLIMATE & AIR QUALITY ===",
         climate_data,
         "",
-        "=== LIGHTS ===",
+        "=== LIGHTS (current) ===",
         lights_data,
     ]
+
+    if room_activity:
+        parts += ["", "=== ROOM USAGE (last 6h, from switch activity) ===", room_activity]
+
+    if switch_timeline:
+        parts += ["", "=== SWITCH TIMELINE (recent events) ===", switch_timeline]
 
     if rooms_data and not rooms_data.startswith("[error"):
         parts += ["", "=== ROOMS OVERVIEW ===", rooms_data]
@@ -276,7 +496,16 @@ def main():
         parts += [
             "",
             f"=== PREVIOUS OBSERVATION ({prev['generated']}) ===",
-            prev["content"][:800],  # truncate to avoid huge prompt
+            prev["content"][:800],
+        ]
+
+    # Add latest correlate insights if available
+    insights = load_latest_insights()
+    if insights:
+        parts += [
+            "",
+            f"=== LATEST DEEP ANALYSIS ({insights['generated']}) ===",
+            insights["content"],
         ]
 
     user_prompt = "\n".join(parts)
@@ -302,6 +531,8 @@ def main():
         "mode": "quick" if quick else "full",
         "sensors_collected": sum(1 for x in [climate_data, rooms_data, anomalies_data, lights_data] if x),
         "previous_available": prev is not None,
+        "room_activity": bool(room_activity),
+        "insights_available": insights is not None,
     }
     save_note(title, analysis, context)
     print("  Done.")
