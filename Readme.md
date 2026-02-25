@@ -837,10 +837,7 @@ systemctl --user daemon-reload
         "apiKey": "ollama-local",
         "api": "ollama",
         "models": [
-          { "id": "huihui_ai/qwen3-abliterated:14b", "name": "Qwen 3 14B Abliterated (Thinking)", "contextWindow": 16384, "maxTokens": 8192, "reasoning": true },
-          { "id": "qwen3:14b",                       "name": "Qwen 3 14B",                        "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "qwen3-14b-abl-nothink:latest",    "name": "Qwen 3 14B Abliterated NoThink",    "contextWindow": 16384, "maxTokens": 4096 },
-          { "id": "mistral-nemo:12b",                 "name": "Mistral Nemo 12B",                  "contextWindow": 16384, "maxTokens": 4096 }
+          { "id": "huihui_ai/qwen3-abliterated:14b", "name": "Qwen 3 14B Abliterated", "contextWindow": 24576, "maxTokens": 12288, "reasoning": true }
         ]
       }
     }
@@ -848,25 +845,22 @@ systemctl --user daemon-reload
   "agents": {
     "defaults": {
       "model": {
-        "primary": "ollama/huihui_ai/qwen3-abliterated:14b",
-        "fallbacks": ["ollama/qwen3:14b", "ollama/qwen3-14b-abl-nothink:latest", "ollama/mistral-nemo:12b"]
+        "primary": "ollama/huihui_ai/qwen3-abliterated:14b"
       },
       "thinkingDefault": "high",
-      "timeoutSeconds": 600
+      "timeoutSeconds": 1800
     }
   }
 }
 ```
 
-**Thinking model:** The primary model `huihui_ai/qwen3-abliterated:14b` runs with `reasoning: true`, which enables OpenClaw 2026.2.17's native thinking support. The model produces internal reasoning (in the `thinking` field) before generating structured tool calls. `thinkingDefault: "high"` tells the model to think deeply. `timeoutSeconds: 600` allows up to 10 minutes for complex reasoning chains.
+**Thinking model:** The primary model `huihui_ai/qwen3-abliterated:14b` runs with `reasoning: true`, which enables OpenClaw 2026.2.17's native thinking support. The model produces internal reasoning (in the `thinking` field) before generating structured tool calls. `thinkingDefault: "high"` tells the model to think deeply. `timeoutSeconds: 1800` allows up to 30 minutes for complex multi-step agent turns (cron jobs that run scripts, parse output, and write results).
 
-**Fallback chain:** `huihui_ai/qwen3-abliterated:14b` (14B thinking, primary) → `qwen3:14b` (14B standard) → `qwen3-14b-abl-nothink` (14B no-think) → `mistral-nemo:12b` (12B). All models are local — no cloud fallback.
-
-**Why `huihui_ai/qwen3-abliterated:14b` as primary:** After upgrading OpenClaw to 2026.2.17 (native thinking support), the abliterated Qwen3 14B with reasoning enabled produces the best results. It thinks through problems deeply before acting, handles complex tool-calling chains reliably (~27 tok/s), and the abliterated variant avoids unnecessary refusals with zero quality loss. The proxy workaround is no longer needed.
+**Single model, no fallbacks:** Only `huihui_ai/qwen3-abliterated:14b` is configured. With `OLLAMA_MAX_LOADED_MODELS=1` and all tasks serialized through openclaw cron, there's no need for fallback models. The abliterated variant avoids unnecessary refusals with zero quality loss. ~27 tok/s, 100% GPU.
 
 **No proxy needed:** OpenClaw 2026.2.17 natively supports the `reasoning` flag and passes the correct `think` parameter to Ollama. The `ollama-proxy` (port 11435) has been **disabled** and is no longer required. Direct connection to Ollama on port 11434.
 
-> **⚠️ Context window is set to 16384.** OpenClaw requires ≥16000 tokens context. At 16k, the KV cache is ~2.5 GB, leaving room for model weights (~8.4 GB for 14B Q4). Using 32768 wastes ~2.5 GB on larger KV cache — avoid on 16 GB systems. Set globally via `OLLAMA_CONTEXT_LENGTH=16384` in the Ollama systemd override. 128k OOM-kills on 16 GB systems.
+> **⚠️ Context window is set to 24576.** OpenClaw requires ≥16000 tokens context. At 24k, the KV cache is ~3.8 GB, leaving room for model weights (~8.4 GB for 14B Q4). Going beyond 32k wastes VRAM on larger KV cache — avoid on 16 GB systems. Set via `contextWindow` in `openclaw.json` and `OLLAMA_CONTEXT_LENGTH=24576` in the Ollama systemd override. 128k OOM-kills on 16 GB systems.
 
 ### 10.4 Agent Identity & Personality
 
@@ -1120,6 +1114,8 @@ Signal (phone) ──→ openclaw gateway ──→ agent turn ──→        
 
 The system runs **autonomously via openclaw cron** — 38 scheduled jobs/day, all routed through Clawd as agent turns. The gateway runs **24/7** (no more stop/start schedule). During quiet hours (23:00–08:00), 24 jobs run back-to-back every ~20 min for maximum GPU utilization. During daytime, 14 jobs run hourly. Signal messages queue and process after the current agent turn completes — natural preemption without flock locks.
 
+**Cron message format:** All jobs use the `[cron]` directive prefix (`[cron] Shell-execute this command, wait for completion, print output. No follow-up.`) to prevent the agent from running startup rituals or asking interactive questions. Only **9 jobs** announce results to Signal (leak-monitor ×3, career-scan, salary-tracker, company-intel, patent-watch, event-scout, lore-digest) with `bestEffort` delivery. The remaining **29 jobs** (think-*, ha-journal, ha-correlate) run silently.
+
 Non-GPU tasks (network scan, presence, syslog, watchdog) remain in **system crontab**.
 | Script | Purpose | GPU? |
 |--------|---------|------|
@@ -1154,7 +1150,9 @@ Non-GPU tasks (network scan, presence, syslog, watchdog) remain in **system cron
 
 #### openclaw cron — 38 GPU jobs/day (via Clawd agent turns)
 
-All GPU tasks are now orchestrated by `openclaw cron`. Each job fires as an agent turn — Clawd receives the message, uses shell tools to run the script, and processes the result. The gateway serializes turns, so jobs can't overlap. Signal messages queue naturally.
+All GPU tasks are now orchestrated by `openclaw cron`. Each job fires as an agent turn — Clawd receives the `[cron]`-prefixed message, shell-executes the command, and reports the result. The gateway serializes turns, so jobs can't overlap. Signal messages queue naturally.
+
+**Timeout tiers:** ha-journal 300s, most scripts 600s, idle-think/ha-correlate 900s, lore-digest 1200s, career-scan 3600s. **Delivery:** 9 announce jobs send results to Signal (best-effort — delivery failures don't mark the job as error). 29 silent jobs write to files only.
 
 **Night Batch (23:00–07:59) — 24 jobs, back-to-back every ~20 min:**
 
@@ -1710,7 +1708,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 ### What works
 - **Clawd bot on Signal** — responds to messages with **deep thinking** (reasoning:true), **reliably calls tools** (exec, read, write, etc.), runs shell commands, reads/writes files, does sysadmin tasks
 - **Thinking model** — `huihui_ai/qwen3-abliterated:14b` with `reasoning: true` and `thinkingDefault: "high"`. Thinks deeply before acting, produces excellent tool calls. ~27 tok/s, 100% GPU.
-- **openclaw cron orchestration** — 38 GPU tasks/day run as Clawd agent turns. Gateway runs 24/7. Signal messages queue naturally (no flock locks). Night batch (23:00–08:00): 24 back-to-back jobs every ~20 min. Daytime: 14 hourly jobs. See §11.3.
+- **openclaw cron orchestration** — 38 GPU tasks/day run as Clawd agent turns with `[cron]` directive prefix (prevents chatty responses). Gateway runs 24/7. 9 jobs announce to Signal (best-effort), 29 run silently. Night batch (23:00–08:00): 24 back-to-back jobs every ~20 min. Daytime: 14 hourly jobs. See §11.3.
 - **Tool calling** — Thinking model correctly uses structured tool calls through OpenClaw → Ollama (direct, no proxy). 13 tools exposed (read, edit, write, exec, process, message, sessions_*, memory_*).
 - **Web search** — `ddgr` (DuckDuckGo CLI) called via `exec` tool. Agent searches web and summarizes results. BTC price queries work end-to-end.
 - **Image generation (FLUX.1-schnell)** — Async two-script architecture: wrapper returns instantly, background worker stops Ollama → runs SD → sends image → restarts Ollama. 512×512 in ~48s, image delivered via Signal. **No OOM kills.**
@@ -1730,7 +1728,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 **OpenClaw 2026.2.17** added native thinking model support via the `reasoning: true` model flag and `thinkingDefault` agent setting. This eliminated the need for the `ollama-proxy` workaround.
 
-The thinking model (`huihui_ai/qwen3-abliterated:14b`) produces internal reasoning in the `thinking` field, then generates structured tool calls or text responses. With `thinkingDefault: "high"`, the model takes 5-30 seconds to think through complex problems before responding. `timeoutSeconds: 600` allows up to 10 minutes for complex multi-step reasoning chains.
+The thinking model (`huihui_ai/qwen3-abliterated:14b`) produces internal reasoning in the `thinking` field, then generates structured tool calls or text responses. With `thinkingDefault: "high"`, the model takes 5-30 seconds to think through complex problems before responding. `timeoutSeconds: 1800` (30 min) allows enough time for complex multi-step agent turns — cron jobs that run scripts, parse output, and write results.
 
 ### Historical: qwen3 thinking mode + system prompt size (Feb 2026)
 
@@ -1798,6 +1796,7 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 - **Cron stdout buffering** — Python scripts run by cron have fully buffered stdout (no TTY). Crashes lose all output. Fix: `sys.stdout.reconfigure(line_buffering=True)` at script start. See §12.7.
 - **Chinese thinking token leakage** — The abliterated Qwen3 model occasionally outputs Chinese reasoning fragments (e.g., `句话`). Cosmetic issue — doesn't affect functionality.
 - **Signal preemption latency** — During openclaw cron jobs, Signal messages queue until the current agent turn completes. Most turns are 2–5 min; career-scan can block for 15–60 min (runs at 00:20 when AK is sleeping).
+- **Cron message tuning (Feb 2026)** — First overnight run revealed Clawd treating cron messages as interactive conversations (asking "Would you like to Poll/Log/Kill?") and running full startup rituals per job. Fixed with `[cron]` directive prefix, selective announce (9/38 jobs), best-effort delivery, and bumped timeouts (600→900s for think tasks).
 - **sd-cli hangs on GFX1013** — Vulkan cleanup bug requires background kill workaround.
 - **14B memory pressure** — with 11 GB GPU + ~2 GB OS, only ~2 GB free RAM when 14B is loaded. Stable but tight.
 - **FLUX generation time** — ~48s per image (including model load). Fast enough for chat but not interactive.
@@ -1813,6 +1812,7 @@ OpenClaw's `tools.allow` acts as a **restrictive filter** (whitelist), not an ad
 - [ ] Weekly career summary — synthesize a week's worth of scans into a condensed Signal report
 - [ ] Consider reducing OpenClaw system prompt overhead (~9.6K framework chars)
 - [x] ~~Migrate GPU tasks to openclaw cron~~ — **Done!** 38 jobs/day (24 night + 14 day). Gateway 24/7. System crontab cleaned to non-GPU only. See §11.3.
+- [x] ~~Tune cron messages~~ — **Done!** `[cron]` directive prefix, selective announce (9/38), best-effort delivery, tiered timeouts (300/600/900/1200/3600s).
 - [x] ~~GPU monitoring 3-state~~ — **Done!** (commit 0c90858). Uses pp_dpm_sclk clock frequency: generating (2000 MHz) / loaded (1000 MHz) / idle. Heatmap, daily bars, per-script breakdown on dashboard.
 - [x] ~~Leak monitor CTI~~ — **Done!** (commit 4be65ff). 8 sources, Poland-focused breach hunting, LLM analysis. 3×/day via openclaw cron.
 - [x] ~~Install system diagnostic tools~~ — **Done!** `htop`, `sysstat`, `strace`, `nmap`, `iftop`, `nethogs`, `iperf3`, `socat`, `ncdu`, `nload`, `radeontop`, `python3-psutil`, `powertop`, `stress-ng`, `perf`. All documented in TOOLS.md.
