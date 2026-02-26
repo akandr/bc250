@@ -284,7 +284,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2048,
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-            "num_ctx": 24576,
+            "num_ctx": 16384,
         },
         "keep_alive": "5m",
     })
