@@ -32,6 +32,7 @@ Location on bc250: /opt/netscan/career-scan.py
 import json
 import os
 import re
+import ssl
 import sys
 import time
 import urllib.request
@@ -73,9 +74,9 @@ os.makedirs(THINK_DIR, exist_ok=True)
 COMPANIES = {
     "nvidia": {
         "name": "NVIDIA",
-        "career_urls": [
-            "https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite?locationCountry=ccd3a10a0e81473fa33cc8e77a452b8c&workerSubType=0c40f6bd1d7f10adf6dae161b1844a15&jobFamilyGroup=0c40f6bd1d7f10af2bf81a8e2a0935f3",
-        ],
+        "career_urls": [],
+        "workday_api": "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite",
+        "workday_searches": ["linux kernel driver Poland", "embedded software Poland remote", "camera driver"],
         "keywords": ["kernel", "driver", "linux", "camera", "tegra", "embedded", "V4L2", "BSP"],
         "industry": "silicon",
     },
@@ -96,19 +97,13 @@ COMPANIES = {
         "keywords": ["kernel", "driver", "linux", "gpu", "rdna", "rocm", "embedded", "firmware"],
         "industry": "silicon",
     },
-    "intel": {
-        "name": "Intel",
-        "career_urls": [
-            "https://jobs.intel.com/en/search-jobs?k=linux+kernel+driver&l=Poland&orgIds=599",
-        ],
-        "keywords": ["kernel", "driver", "linux", "camera", "ipu", "embedded", "firmware", "BSP"],
-        "industry": "silicon",
-    },
+    # Intel removed — jobs.intel.com returns 403 for all scraped URLs.
+    # Intel jobs surface via LinkedIn and nofluffjobs board scans.
     "samsung": {
         "name": "Samsung",
-        "career_urls": [
-            "https://sec.wd3.myworkdayjobs.com/Samsung_Careers?locationCountry=ccd3a10a0e81473fa33cc8e77a452b8c",
-        ],
+        "career_urls": [],
+        "workday_api": "https://sec.wd3.myworkdayjobs.com/wday/cxs/sec/Samsung_Careers",
+        "workday_searches": ["linux kernel driver", "embedded software Poland", "camera firmware"],
         "keywords": ["kernel", "driver", "linux", "camera", "embedded", "exynos", "firmware"],
         "industry": "silicon",
     },
@@ -125,7 +120,6 @@ COMPANIES = {
         "name": "TCL Research Europe",
         "career_urls": [
             "https://tcl-research.pl/career/",
-            "https://www.tcl.com/global/en/careers.html",
         ],
         "keywords": ["linux", "driver", "camera", "video", "AI", "embedded", "computer vision"],
         "industry": "consumer_electronics",
@@ -160,14 +154,8 @@ COMPANIES = {
 # ─── Job boards & aggregators ───
 
 JOB_BOARDS = {
-    "justjoin": {
-        "name": "justjoin.it",
-        "urls": [
-            "https://justjoin.it/offers?keyword=linux+kernel&remote=true",
-            "https://justjoin.it/offers?keyword=embedded+linux&remote=true",
-            "https://justjoin.it/offers?keyword=driver+developer&remote=true",
-        ],
-    },
+    # justjoin.it removed — /offers URLs return 404, public API deprecated.
+    # Jobs still surface through nofluffjobs and LinkedIn scans.
     "nofluff": {
         "name": "nofluffjobs.com",
         "urls": [
@@ -214,6 +202,62 @@ INTEL_SOURCES = {
 
 # ─── Helpers ───
 
+# SSL context that accepts self-signed / mismatched certs (some career sites)
+_SSL_CTX = ssl.create_default_context()
+_SSL_CTX.check_hostname = False
+_SSL_CTX.verify_mode = ssl.CERT_NONE
+
+
+def fetch_workday(api_base, search_terms, limit=20):
+    """Fetch job listings from Workday CXS API and return as text.
+
+    Workday career sites (NVIDIA, Samsung) are JavaScript SPAs that return
+    nothing useful via HTML scraping.  Their public CXS API accepts POST
+    requests and returns structured JSON with real job listings.
+    """
+    url = api_base + "/jobs"
+    seen = set()
+    combined = []
+
+    for query in search_terms:
+        body = json.dumps({
+            "appliedFacets": {},
+            "limit": limit,
+            "offset": 0,
+            "searchText": query,
+        }).encode()
+        try:
+            req = urllib.request.Request(url, data=body, headers={
+                "User-Agent": UA,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            })
+            resp = urllib.request.urlopen(req, timeout=30, context=_SSL_CTX)
+            data = json.loads(resp.read().decode("utf-8", errors="replace"))
+            for j in data.get("jobPostings", []):
+                title = j.get("title", "")
+                loc = j.get("locationsText", "")
+                key = (title, loc)
+                if key not in seen:
+                    seen.add(key)
+                    combined.append({
+                        "title": title,
+                        "loc": loc,
+                        "posted": j.get("postedOn", ""),
+                        "url": j.get("externalPath", ""),
+                    })
+        except Exception:
+            pass  # silently skip failed search terms
+
+    if not combined:
+        return "[fetch_error: Workday API returned 0 results]"
+
+    lines = [f"Job Listings ({len(combined)} results):"]
+    for j in combined:
+        lines.append(f"- {j['title']} | Location: {j['loc']} | Posted: {j['posted']}")
+    return "\n".join(lines)
+
+
 def fetch_page(url, timeout=25):
     """Fetch a URL and return stripped text content."""
     try:
@@ -222,7 +266,7 @@ def fetch_page(url, timeout=25):
             "Accept": "text/html,application/xhtml+xml,*/*",
             "Accept-Language": "en-US,en;q=0.9,pl;q=0.8",
         })
-        resp = urllib.request.urlopen(req, timeout=timeout)
+        resp = urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX)
         raw = resp.read().decode("utf-8", errors="replace")
         # Strip scripts, styles, HTML tags
         text = re.sub(r'<script[^>]*>.*?</script>', '', raw, flags=re.DOTALL)
@@ -232,6 +276,26 @@ def fetch_page(url, timeout=25):
         return text
     except Exception as ex:
         return f"[fetch_error: {ex}]"
+
+
+def extract_json(text):
+    """Extract JSON from LLM response, stripping think tags and code fences."""
+    if not text:
+        return None
+    text = text.strip()
+    # Strip <think>...</think> tags (qwen3 may emit even with /nothink)
+    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    # Strip markdown code fences
+    if text.startswith("```"):
+        text = re.sub(r'^```\w*\n?', '', text)
+        text = re.sub(r'\n?```$', '', text)
+    text = text.strip()
+    # Try to find JSON array or object if there's leading text
+    if text and text[0] not in '[{':
+        m = re.search(r'[\[{]', text)
+        if m:
+            text = text[m.start():]
+    return text if text else None
 
 
 def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=3000):
@@ -504,13 +568,55 @@ def scan_career_pages():
         name = company["name"]
         jobs_for_company = []
 
+        # Workday CXS API — replaces HTML scraping for JS-rendered sites
+        if "workday_api" in company:
+            print(f"  [{name}] Querying Workday CXS API...")
+            text = fetch_workday(
+                company["workday_api"],
+                company.get("workday_searches", ["software engineer"]),
+            )
+            if text.startswith("[fetch_error"):
+                print(f"    ✗ {text}")
+                page_results[cid] = {"status": "error", "error": text}
+            else:
+                chars = len(text)
+                print(f"    Got {chars} chars via Workday API")
+                prompt = f"Company: {name}\nCareer page content ({chars} chars):\n\n{text}"
+                result = call_ollama(SYSTEM_PROMPT_JOBS, prompt)
+                if result:
+                    try:
+                        cleaned = extract_json(result)
+                        if cleaned:
+                            jobs = json.loads(cleaned)
+                        else:
+                            jobs = []
+                        if isinstance(jobs, list):
+                            for j in jobs:
+                                j["source_company"] = cid
+                                j["company"] = j.get("company", name)
+                            jobs_for_company.extend(jobs)
+                            print(f"    ✓ Found {len(jobs)} potential matches")
+                    except (json.JSONDecodeError, ValueError) as e:
+                        print(f"    ✗ JSON parse error: {e}")
+                page_results[cid] = {
+                    "status": "ok",
+                    "chars": chars,
+                    "hash": content_hash(text),
+                    "jobs_found": len(jobs_for_company),
+                    "source": "workday_api",
+                }
+            all_jobs.extend(jobs_for_company)
+            continue
+
         for url in company["career_urls"]:
             print(f"  [{name}] Fetching: {url[:80]}...")
             text = fetch_page(url)
 
             if text.startswith("[fetch_error"):
                 print(f"    ✗ {text}")
-                page_results[cid] = {"status": "error", "error": text}
+                # Only record error if we haven't already succeeded on another URL
+                if cid not in page_results or page_results[cid].get("status") != "ok":
+                    page_results[cid] = {"status": "error", "error": text}
                 continue
 
             text_lower = text.lower()
@@ -520,8 +626,9 @@ def scan_career_pages():
             # Quick keyword pre-filter — is this page even relevant?
             kw_hits = sum(1 for kw in company["keywords"] if kw.lower() in text_lower)
             if kw_hits == 0 and chars < 500:
-                print(f"    ✗ No keyword hits, skipping LLM analysis")
-                page_results[cid] = {"status": "no_keywords", "chars": chars}
+                print(f"    ✗ No keyword hits and only {chars} chars, skipping LLM")
+                if cid not in page_results or page_results[cid].get("status") != "ok":
+                    page_results[cid] = {"status": "no_keywords", "chars": chars}
                 continue
 
             # Trim for LLM context
@@ -532,11 +639,11 @@ def scan_career_pages():
             if result:
                 try:
                     # Extract JSON from response
-                    result = result.strip()
-                    if result.startswith("```"):
-                        result = re.sub(r'^```\w*\n?', '', result)
-                        result = re.sub(r'\n?```$', '', result)
-                    jobs = json.loads(result)
+                    cleaned = extract_json(result)
+                    if cleaned:
+                        jobs = json.loads(cleaned)
+                    else:
+                        jobs = []
                     if isinstance(jobs, list):
                         for j in jobs:
                             j["source_company"] = cid
@@ -585,11 +692,11 @@ def scan_job_boards():
         result = call_ollama(SYSTEM_PROMPT_JOBS, prompt)
         if result:
             try:
-                result = result.strip()
-                if result.startswith("```"):
-                    result = re.sub(r'^```\w*\n?', '', result)
-                    result = re.sub(r'\n?```$', '', result)
-                jobs = json.loads(result)
+                cleaned = extract_json(result)
+                if cleaned:
+                    jobs = json.loads(cleaned)
+                else:
+                    jobs = []
                 if isinstance(jobs, list):
                     for j in jobs:
                         j["source_board"] = bid
@@ -634,11 +741,9 @@ def scan_intel_sources():
     intel_data = None
     if result:
         try:
-            result = result.strip()
-            if result.startswith("```"):
-                result = re.sub(r'^```\w*\n?', '', result)
-                result = re.sub(r'\n?```$', '', result)
-            intel_data = json.loads(result)
+            cleaned = extract_json(result)
+            if cleaned:
+                intel_data = json.loads(cleaned)
         except (json.JSONDecodeError, ValueError):
             print(f"    ✗ Intel JSON parse error")
 
