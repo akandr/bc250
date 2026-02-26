@@ -114,7 +114,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=3000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 16384},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={

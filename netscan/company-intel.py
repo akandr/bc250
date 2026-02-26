@@ -186,7 +186,7 @@ COMPANIES = {
 def log(msg):
     print(f"  {msg}", flush=True)
 
-def fetch_url(url, timeout=25):
+def fetch_url(url, timeout=10):
     """Fetch URL, return text or None."""
     try:
         req = urllib.request.Request(url, headers={
@@ -238,7 +238,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 16384},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -1312,6 +1312,16 @@ Provide:
         old.unlink(missing_ok=True)
 
     log(f"Saved: {out_path}")
+
+    # Regenerate dashboard HTML
+    try:
+        import subprocess as _sp
+        _sp.run(["python3", "/opt/netscan/generate-html.py"],
+               capture_output=True, timeout=60)
+        log("Dashboard HTML regenerated")
+    except Exception:
+        pass
+
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] company-intel done ({duration}s)", flush=True)
 
 

@@ -679,7 +679,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 16384},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -1533,6 +1533,15 @@ Known devices (do NOT flag as anomalies):
 
     print(f"  Done. {len(correlations)} correlations, {len(all_anomalies)} anomalies, "
           f"{len(duty_cycles)} duty cycles, {len(room_usage)} active rooms analyzed.")
+
+    # Regenerate dashboard HTML
+    try:
+        import subprocess as _sp
+        _sp.run(["python3", "/opt/netscan/generate-html.py"],
+               capture_output=True, timeout=60)
+        print("  Dashboard HTML regenerated")
+    except Exception:
+        pass
 
 
 def interpret_correlation(group_a, group_b, r, lag):

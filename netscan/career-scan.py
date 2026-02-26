@@ -319,7 +319,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=3000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 16384},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
     })
 
     try:
@@ -958,6 +958,14 @@ def main():
         print(f"  Sent {alerts} Signal alert(s)")
 
     print(f"\n  Done in {scan_duration:.0f}s.")
+
+    # Regenerate dashboard HTML
+    try:
+        subprocess.run(["python3", "/opt/netscan/generate-html.py"],
+                       capture_output=True, timeout=60)
+        print("  Dashboard HTML regenerated")
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
