@@ -717,9 +717,11 @@ def run_job(job):
             break
 
     # Pre-flight: ensure ollama is healthy before we commit to a job
-    # Scrape-only jobs (-scrape suffix) don't use LLM — skip pre-flight
+    # Non-LLM jobs (scrape + infra) don't use Ollama — skip pre-flight
     is_scrape = name.endswith('-scrape')
-    if not is_scrape and not is_ollama_healthy():
+    is_infra_nollm = name.startswith('netscan-')  # scan.sh, enumerate.sh — pure nmap
+    gpu_free = is_scrape or is_infra_nollm
+    if not gpu_free and not is_ollama_healthy():
         log(f"  Pre-flight: Ollama unhealthy before {name}, waiting...")
         if not wait_for_ollama(max_wait_s=300):
             log(f"  SKIP: {name} — Ollama not available after 5min wait")
@@ -730,16 +732,20 @@ def run_job(job):
 
     direct_cmd = extract_direct_command(job)
     if direct_cmd:
-        return run_direct(job, direct_cmd, timeout_s)
+        return run_direct(job, direct_cmd, timeout_s, gpu_free=gpu_free)
     return run_via_openclaw(job, timeout_s)
 
 
-def run_direct(job, cmd_str, timeout_s):
+def run_direct(job, cmd_str, timeout_s, gpu_free=False):
     """Run a script directly (bypassing openclaw agent).
 
     Uses Popen + poll loop to ping systemd watchdog every 30s during execution,
     preventing watchdog kills on long-running jobs (e.g. career-scan ~2h).
     Background threads drain stdout/stderr to prevent pipe buffer deadlocks.
+
+    When gpu_free=True (scrape/infra jobs that don't use Ollama), Signal chat
+    is processed during the poll loop — the GPU is idle so we can answer
+    messages while the CPU/network job runs in parallel.
     """
     name = job['name']
     cmd = shlex.split(cmd_str)
@@ -766,7 +772,10 @@ def run_direct(job, cmd_str, timeout_s):
         t_out.start()
         t_err.start()
 
-        # Poll loop: ping watchdog every 30s while subprocess runs
+        # Poll loop: ping watchdog every 30s while subprocess runs.
+        # When gpu_free, also process Signal chat — GPU is idle during
+        # scrape/infra jobs so we can answer messages in parallel.
+        poll_interval = 10 if gpu_free else 30
         while proc.poll() is None:
             elapsed = time.time() - start
             if elapsed > deadline:
@@ -775,8 +784,10 @@ def run_direct(job, cmd_str, timeout_s):
                 log(f"  TIMEOUT: {name} — killed after {elapsed:.0f}s")
                 return False, elapsed
             sd_watchdog_ping()
+            if gpu_free:
+                process_signal_chat()
             try:
-                proc.wait(timeout=30)
+                proc.wait(timeout=poll_interval)
             except subprocess.TimeoutExpired:
                 pass  # Loop again — ping watchdog
 
