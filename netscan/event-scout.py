@@ -31,6 +31,7 @@ Output: /opt/netscan/data/events/
 Cron: 30 3 * * * flock -w 1200 /tmp/ollama-gpu.lock python3 /opt/netscan/event-scout.py
 """
 
+import argparse
 import json
 import os
 import re
@@ -860,6 +861,61 @@ def search_konfeo():
     return events
 
 
+def search_evenea():
+    """Search Evenea.pl (Polish event/ticketing platform)."""
+    events = []
+    search_terms = ["embedded", "linux", "iot", "programowanie", "it", "technologie"]
+
+    for term in search_terms:
+        url = f"https://app.evenea.pl/szukaj/?q={term}"
+        html = fetch_url(url, timeout=20)
+        if not html:
+            continue
+
+        # Evenea lists events in card/block elements
+        blocks = re.findall(
+            r'<(?:div|article|li|a)[^>]*class="[^"]*(?:event|card|listing)[^"]*"[^>]*>(.*?)</(?:div|article|li|a)>',
+            html, re.DOTALL
+        )
+
+        for block in blocks[:15]:
+            name_m = re.search(r'<(?:h2|h3|h4|a|span|strong)[^>]*>(.*?)</(?:h2|h3|h4|a|span|strong)>', block, re.DOTALL)
+            name = strip_html(name_m.group(1)).strip() if name_m else ""
+
+            date_m = re.search(r'(\d{1,2}[./-]\d{1,2}[./-]\d{2,4})', block)
+            date_str = date_m.group(1) if date_m else ""
+
+            link_m = re.search(r'href="(https?://[^"]*evenea[^"]*\.pl[^"]*|/[^"]+)"', block)
+            link = link_m.group(1) if link_m else ""
+            if link and link.startswith("/"):
+                link = f"https://app.evenea.pl{link}"
+
+            loc_m = re.search(r'(?:Łódź|Warszawa|Warsaw|Kraków|Wrocław|Poznań|Gdańsk|Poland|Online|online)', block)
+            city = loc_m.group(0) if loc_m else ""
+
+            if name and len(name) > 3:
+                events.append({
+                    "name": name, "date": date_str, "url": link,
+                    "source": "evenea", "location": "Poland", "city": city,
+                    "description": strip_html(block)[:300],
+                })
+
+        time.sleep(2)
+
+    # Deduplicate by name similarity
+    seen = set()
+    unique = []
+    for ev in events:
+        key = ev["name"].lower().strip()[:60]
+        if key not in seen:
+            seen.add(key)
+            unique.append(ev)
+    events = unique
+
+    log(f"Evenea.pl: {len(events)} events")
+    return events
+
+
 # ── Source: Community RSS/Atom feeds ───────────────────────────────────────
 
 def parse_rss_events(xml_text, source_name, city="", country=""):
@@ -1314,20 +1370,19 @@ def event_id(event):
     return re.sub(r'[^a-z0-9]+', '-', name)[:60] + (f"_{date}" if date else "")
 
 
-# ── Main ───────────────────────────────────────────────────────────────────
+# ── Raw data file for scrape/analyze split ─────────────────────────────────
+RAW_EVENTS_FILE = EVENT_DIR / "raw-events.json"
 
-def main():
-    sys.stdout.reconfigure(line_buffering=True)
-    sys.stderr.reconfigure(line_buffering=True)
 
+# ── Scrape phase ───────────────────────────────────────────────────────────
+
+def run_scrape():
+    """Phase 1+2: Collect events from all sources, score and dedup. Save raw JSON."""
     dt = datetime.now()
     today = dt.strftime("%Y-%m-%d")
-    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] event-scout starting", flush=True)
-
     EVENT_DIR.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
 
-    db = load_db()
     all_events = []
 
     # ── Phase 1: Collect from all sources ──
@@ -1347,6 +1402,10 @@ def main():
 
     # Konfeo.com
     all_events.extend(search_konfeo())
+    time.sleep(2)
+
+    # Evenea.pl — Polish event/ticketing platform
+    all_events.extend(search_evenea())
     time.sleep(2)
 
     # Meetup.com — search by location × topic
@@ -1425,20 +1484,27 @@ def main():
 
     log(f"After scoring/dedup: {len(deduped)} relevant events")
 
-    # ── Phase 3: LLM analysis ──
-    log("Phase 3: LLM event analysis...")
-    analysis_raw = llm_analyze_events(deduped[:25])
+    # ── Save raw intermediate data ──
+    scrape_duration = int(time.time() - t0)
+    sources_meta = list(set(e.get("source", "unknown") for e in all_events))
+    raw_data = {
+        "scrape_timestamp": dt.isoformat(timespec="seconds"),
+        "scrape_duration_seconds": scrape_duration,
+        "scrape_version": 1,
+        "data": {
+            "events": deduped,
+            "sources_meta": sources_meta,
+            "total_found": len(all_events),
+        },
+        "scrape_errors": [],
+    }
+    tmp = RAW_EVENTS_FILE.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+    tmp.rename(RAW_EVENTS_FILE)
 
-    analysis = {}
-    if analysis_raw:
-        try:
-            json_m = re.search(r'\{.*\}', analysis_raw, re.DOTALL)
-            if json_m:
-                analysis = json.loads(json_m.group())
-        except json.JSONDecodeError:
-            analysis = {"raw_analysis": analysis_raw[:2000]}
-
-    # ── Update DB ──
+    # ── Update DB (scrape phase owns the DB) ──
+    db = load_db()
     for e in deduped:
         eid = event_id(e)
         if eid not in db.get("events", {}):
@@ -1452,21 +1518,78 @@ def main():
                 "location_tier": e.get("location_tier", ""),
             }
         else:
-            # Update score if higher
             existing = db["events"][eid]
             if e.get("combined_score", 0) > existing.get("combined_score", 0):
                 existing["combined_score"] = e["combined_score"]
             existing["last_seen"] = today
+    save_db(db)
+
+    log(f"Scrape done: {len(deduped)} events saved to {RAW_EVENTS_FILE}")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] event-scout scrape done ({scrape_duration}s)", flush=True)
+
+
+# ── Analyze phase ──────────────────────────────────────────────────────────
+
+def run_analyze():
+    """Phase 3: Load raw data, run LLM analysis, save final output."""
+    dt = datetime.now()
+    EVENT_DIR.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+
+    # Load raw data
+    if not RAW_EVENTS_FILE.exists():
+        print(f"ERROR: Raw data file not found: {RAW_EVENTS_FILE}", file=sys.stderr)
+        print("Run with --scrape-only first to collect event data.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(RAW_EVENTS_FILE) as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"ERROR: Failed to read raw data: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    scrape_ts = raw.get("scrape_timestamp", "")
+    deduped = raw.get("data", {}).get("events", [])
+    sources_meta = raw.get("data", {}).get("sources_meta", [])
+    total_found = raw.get("data", {}).get("total_found", len(deduped))
+
+    # Check staleness
+    if scrape_ts:
+        try:
+            scrape_dt = datetime.fromisoformat(scrape_ts)
+            age_hours = (dt - scrape_dt).total_seconds() / 3600
+            if age_hours > 48:
+                log(f"WARNING: Raw data is {age_hours:.0f}h old (scraped {scrape_ts})")
+        except ValueError:
+            pass
+
+    log(f"Loaded {len(deduped)} events from raw data (scraped {scrape_ts})")
+
+    # ── Phase 3: LLM analysis ──
+    log("Phase 3: LLM event analysis...")
+    analysis_raw = llm_analyze_events(deduped[:25])
+
+    analysis = {}
+    if analysis_raw:
+        try:
+            json_m = re.search(r'\{.*\}', analysis_raw, re.DOTALL)
+            if json_m:
+                analysis = json.loads(json_m.group())
+        except json.JSONDecodeError:
+            analysis = {"raw_analysis": analysis_raw[:2000]}
 
     # ── Save output ──
     duration = int(time.time() - t0)
     output = {
         "meta": {
-            "timestamp": dt.isoformat(timespec="seconds"),
+            "scrape_timestamp": scrape_ts,
+            "analyze_timestamp": dt.isoformat(timespec="seconds"),
+            "timestamp": dt.isoformat(timespec="seconds"),  # backward compat
             "duration_seconds": duration,
-            "total_found": len(all_events),
+            "total_found": total_found,
             "relevant": len(deduped),
-            "sources": list(set(e.get("source", "unknown") for e in all_events)),
+            "sources": sources_meta,
         },
         "events": deduped[:50],  # top 50 by score
         "analysis": analysis,
@@ -1480,8 +1603,6 @@ def main():
     latest = EVENT_DIR / "latest-events.json"
     latest.unlink(missing_ok=True)
     latest.symlink_to(fname)
-
-    save_db(db)
 
     # Cleanup: keep last 60 reports
     reports = sorted(EVENT_DIR.glob("events-2*.json"))
@@ -1499,7 +1620,33 @@ def main():
     except Exception:
         pass
 
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] event-scout done ({duration}s)", flush=True)
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] event-scout analyze done ({duration}s)", flush=True)
+
+
+# ── Main ───────────────────────────────────────────────────────────────────
+
+def main():
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+
+    parser = argparse.ArgumentParser(description="Event scout — discover tech events")
+    parser.add_argument('--scrape-only', action='store_true',
+                        help='Only scrape events, save raw data (no LLM)')
+    parser.add_argument('--analyze-only', action='store_true',
+                        help='Only run LLM analysis on previously scraped raw data')
+    args = parser.parse_args()
+
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] event-scout starting"
+          f"{' (scrape-only)' if args.scrape_only else ' (analyze-only)' if args.analyze_only else ''}", flush=True)
+
+    if args.scrape_only:
+        run_scrape()
+    elif args.analyze_only:
+        run_analyze()
+    else:
+        # Legacy: full run (backward compatible)
+        run_scrape()
+        run_analyze()
 
 
 if __name__ == "__main__":

@@ -136,5 +136,56 @@
       "cec": -1, "dvb": -2, "rc": -2, "ir": -2, "radio": -2
     },
     "min_score": 3
+  },
+
+  "v4l2loopback": {
+    "name": "v4l2loopback",
+    "emoji": "🔁",
+    "type": "github",
+    "owner": "umlaeute",
+    "repo": "v4l2loopback",
+    "web_url": "https://github.com/umlaeute/v4l2loopback",
+    "track": ["issues", "pull_requests"],
+    "data_dir": "repos/v4l2loopback",
+    "nav_label": "V4L2LOOP",
+    "page_slug": "issues",
+    "relevance": {
+      "v4l2": 5, "loopback": 5, "virtual": 4,
+      "format": 3, "fourcc": 3, "pixel": 3,
+      "camera": 4, "device": 3,
+      "gstreamer": 4, "ffmpeg": 4, "obs": 3,
+      "kernel": 3, "module": 3, "compat": 3,
+      "dmabuf": 3, "mmap": 2,
+      "v4l2-ctl": 4, "v4l2-compliance": 4,
+      "docs": -1, "typo": -2
+    },
+    "min_score": 2
+  },
+
+  "pipewire": {
+    "name": "PipeWire",
+    "emoji": "🔀",
+    "type": "gitlab",
+    "api_base": "https://gitlab.freedesktop.org/api/v4",
+    "project_path": "pipewire/pipewire",
+    "web_url": "https://gitlab.freedesktop.org/pipewire/pipewire",
+    "track": ["issues", "merge_requests"],
+    "labels_filter": [],
+    "data_dir": "repos/pipewire",
+    "nav_label": "PIPEWIRE",
+    "page_slug": "issues",
+    "relevance": {
+      "camera": 5, "v4l2": 5, "libcamera": 5,
+      "video": 4, "spa": 3, "spa-v4l2": 5,
+      "portal": 4, "pipewire-v4l2": 5,
+      "filter": 3, "stream": 3,
+      "dmabuf": 4, "dma-buf": 4,
+      "vulkan": 3, "drm": 3,
+      "format": 2, "negotiate": 2,
+      "gstreamer": 3,
+      "audio": -2, "pulse": -2, "jack": -2, "bluetooth": -3,
+      "docs": -1, "ci": -1, "typo": -2
+    },
+    "min_score": 3
   }
 }

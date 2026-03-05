@@ -32,6 +32,7 @@ Output: /opt/netscan/data/intel/
 Cron: 30 2 * * * flock -w 1200 /tmp/ollama-gpu.lock python3 /opt/netscan/company-intel.py
 """
 
+import argparse
 import json
 import os
 import re
@@ -49,6 +50,7 @@ OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
 OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
 
 INTEL_DIR = Path("/opt/netscan/data/intel")
+RAW_INTEL_FILE = INTEL_DIR / "raw-intel.json"
 CAREER_DIR = Path("/opt/netscan/data/career")
 INTEL_DB = INTEL_DIR / "company-intel-deep.json"
 PROFILE_FILE = Path("/opt/netscan/profile-private.json")
@@ -177,6 +179,259 @@ COMPANIES = {
             "https://hexagon.com/company/careers/job-listings?locations=Poland",
         ],
         "careers_location_filter": ["łódź", "lódz", "lodz", "poland", "polska", "remote"],
+    },
+    "cerence": {
+        "name": "Cerence AI",
+        "gowork_id": None,
+        "news_url": "https://www.cerence.com/news",
+        "search_terms": ["Cerence AI Poland", "Cerence AI automotive", "Cerence AI hiring layoffs"],
+        "industry": "automotive",
+        "careers_urls": [
+            "https://cerence.wd5.myworkdayjobs.com/Cerence",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    # ── Group A: open-source / embedded / automotive companies ──
+    "aptiv": {
+        "name": "Aptiv",
+        "gowork_id": None,
+        "news_url": "https://www.aptiv.com/en/newsroom",
+        "search_terms": ["Aptiv Poland", "Aptiv ADAS", "Aptiv autonomous"],
+        "industry": "automotive",
+        "careers_urls": [
+            "https://www.aptiv.com/en/jobs/search?query=embedded+linux",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "continental": {
+        "name": "Continental",
+        "gowork_id": None,
+        "news_url": "https://www.continental.com/en/press/",
+        "search_terms": ["Continental Poland ADAS", "Continental automotive embedded"],
+        "industry": "automotive",
+        "careers_urls": [
+            "https://jobs.continental.com/en/search-results/?keywords=embedded+linux",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "tesla": {
+        "name": "Tesla",
+        "gowork_id": None,
+        "news_url": None,
+        "search_terms": ["Tesla autopilot camera", "Tesla embedded Europe"],
+        "industry": "automotive",
+    },
+    "waymo": {
+        "name": "Waymo",
+        "gowork_id": None,
+        "news_url": "https://blog.waymo.com/",
+        "search_terms": ["Waymo autonomous driving", "Waymo hiring"],
+        "industry": "automotive",
+    },
+    "hailo": {
+        "name": "Hailo",
+        "gowork_id": None,
+        "news_url": "https://hailo.ai/company-overview/newsroom/",
+        "search_terms": ["Hailo AI edge chip", "Hailo NPU embedded"],
+        "industry": "silicon",
+    },
+    "bootlin": {
+        "name": "Bootlin",
+        "gowork_id": None,
+        "news_url": "https://bootlin.com/blog/",
+        "search_terms": ["Bootlin embedded Linux kernel", "Bootlin hiring"],
+        "industry": "open_source",
+    },
+    "collabora": {
+        "name": "Collabora",
+        "gowork_id": None,
+        "news_url": "https://www.collabora.com/news-and-blog/",
+        "search_terms": ["Collabora Linux kernel multimedia", "Collabora hiring"],
+        "industry": "open_source",
+    },
+    "pengutronix": {
+        "name": "Pengutronix",
+        "gowork_id": None,
+        "news_url": None,
+        "search_terms": ["Pengutronix embedded Linux", "Pengutronix hiring"],
+        "industry": "open_source",
+    },
+    "igalia": {
+        "name": "Igalia",
+        "gowork_id": None,
+        "news_url": "https://www.igalia.com/24-7",
+        "search_terms": ["Igalia Linux kernel open source", "Igalia hiring"],
+        "industry": "open_source",
+    },
+    "toradex": {
+        "name": "Toradex",
+        "gowork_id": None,
+        "news_url": "https://www.toradex.com/news",
+        "search_terms": ["Toradex embedded Linux Arm", "Toradex Torizon"],
+        "industry": "silicon",
+    },
+    "linaro": {
+        "name": "Linaro",
+        "gowork_id": None,
+        "news_url": "https://www.linaro.org/news/",
+        "search_terms": ["Linaro Arm kernel", "Linaro embedded multimedia"],
+        "industry": "open_source",
+    },
+    "canonical": {
+        "name": "Canonical",
+        "gowork_id": None,
+        "news_url": "https://canonical.com/blog",
+        "search_terms": ["Canonical Ubuntu kernel", "Canonical embedded IoT"],
+        "industry": "open_source",
+    },
+    "redhat": {
+        "name": "Red Hat",
+        "gowork_id": None,
+        "news_url": "https://www.redhat.com/en/about/newsroom",
+        "search_terms": ["Red Hat kernel Poland", "Red Hat RHEL embedded"],
+        "industry": "open_source",
+        "careers_urls": [
+            "https://redhat.wd5.myworkdayjobs.com/jobs",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "suse": {
+        "name": "SUSE",
+        "gowork_id": None,
+        "news_url": "https://www.suse.com/news/",
+        "search_terms": ["SUSE kernel Poland", "SUSE embedded"],
+        "industry": "open_source",
+        "careers_urls": [
+            "https://suse.wd3.myworkdayjobs.com/Jobsatsuse",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "sifive": {
+        "name": "SiFive",
+        "gowork_id": None,
+        "news_url": "https://www.sifive.com/press",
+        "search_terms": ["SiFive RISC-V", "SiFive Linux kernel"],
+        "industry": "silicon",
+        "careers_urls": [
+            "https://sifive.wd1.myworkdayjobs.com/sifivecareers",
+        ],
+        "careers_location_filter": ["remote"],
+    },
+    "tenstorrent": {
+        "name": "Tenstorrent",
+        "gowork_id": None,
+        "news_url": None,
+        "search_terms": ["Tenstorrent RISC-V AI", "Tenstorrent Warsaw Poland"],
+        "industry": "silicon",
+    },
+    "cerebras": {
+        "name": "Cerebras",
+        "gowork_id": None,
+        "news_url": "https://www.cerebras.ai/blog",
+        "search_terms": ["Cerebras AI wafer-scale", "Cerebras IPO hiring"],
+        "industry": "silicon",
+    },
+    # ── Group B: new semiconductor / automotive companies ──
+    "mobileye": {
+        "name": "Mobileye (Intel)",
+        "gowork_id": None,
+        "news_url": "https://www.mobileye.com/news/",
+        "search_terms": ["Mobileye EyeQ ADAS camera", "Mobileye autonomous driving"],
+        "industry": "automotive",
+        "careers_urls": [
+            "https://careers.mobileye.com/jobs",
+        ],
+        "careers_location_filter": ["remote"],
+    },
+    "valeo": {
+        "name": "Valeo",
+        "gowork_id": None,
+        "news_url": "https://www.valeo.com/en/press-releases/",
+        "search_terms": ["Valeo ADAS camera Poland", "Valeo automotive embedded"],
+        "industry": "automotive",
+        "careers_urls": [
+            "https://valeo.wd3.myworkdayjobs.com/valeo_jobs",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "bosch": {
+        "name": "Bosch",
+        "gowork_id": None,
+        "news_url": "https://www.bosch.com/stories/",
+        "search_terms": ["Bosch ADAS Poland", "Bosch automotive embedded"],
+        "industry": "automotive",
+        "careers_urls": [
+            "https://jobs.bosch.com/en/",
+        ],
+        "careers_location_filter": ["poland", "polska", "łódź", "lodz", "remote"],
+    },
+    "zf": {
+        "name": "ZF Friedrichshafen",
+        "gowork_id": None,
+        "news_url": "https://press.zf.com/",
+        "search_terms": ["ZF ADAS camera", "ZF automotive embedded Poland"],
+        "industry": "automotive",
+    },
+    "nxp": {
+        "name": "NXP Semiconductors",
+        "gowork_id": None,
+        "news_url": "https://media.nxp.com/",
+        "search_terms": ["NXP i.MX Poland", "NXP automotive embedded"],
+        "industry": "silicon",
+        "careers_urls": [
+            "https://nxp.wd3.myworkdayjobs.com/careers",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "renesas": {
+        "name": "Renesas",
+        "gowork_id": None,
+        "news_url": "https://www.renesas.com/en/about/newsroom",
+        "search_terms": ["Renesas R-Car automotive", "Renesas embedded Linux Europe"],
+        "industry": "silicon",
+        "careers_urls": [
+            "https://jobs.renesas.com/",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "mediatek": {
+        "name": "MediaTek",
+        "gowork_id": None,
+        "news_url": "https://corp.mediatek.com/news-events/press-releases",
+        "search_terms": ["MediaTek camera ISP SoC", "MediaTek Linux Europe"],
+        "industry": "silicon",
+    },
+    "ambarella": {
+        "name": "Ambarella",
+        "gowork_id": None,
+        "news_url": "https://www.ambarella.com/news/",
+        "search_terms": ["Ambarella camera SoC vision", "Ambarella ADAS hiring"],
+        "industry": "silicon",
+    },
+    "onsemi": {
+        "name": "onsemi",
+        "gowork_id": None,
+        "news_url": "https://www.onsemi.com/company/news-media",
+        "search_terms": ["onsemi image sensor ADAS", "onsemi Hyperlux camera"],
+        "industry": "silicon",
+    },
+    "infineon": {
+        "name": "Infineon",
+        "gowork_id": None,
+        "news_url": "https://www.infineon.com/cms/en/about-infineon/press/",
+        "search_terms": ["Infineon automotive embedded", "Infineon Poland"],
+        "industry": "silicon",
+        "careers_urls": [
+            "https://jobs.infineon.com/careers",
+        ],
+        "careers_location_filter": ["poland", "polska", "remote"],
+    },
+    "stmicro": {
+        "name": "STMicroelectronics",
+        "gowork_id": None,
+        "news_url": "https://newsroom.st.com/",
+        "search_terms": ["STMicroelectronics automotive embedded", "STMicro BSP Poland"],
+        "industry": "silicon",
     },
 }
 
@@ -1002,9 +1257,9 @@ def search_hn_who_is_hiring(max_results=15):
 
 # ── Per-Company Analysis ───────────────────────────────────────────────────
 
-def analyze_company(key, company, db_entry):
-    """Gather intel and run LLM analysis for one company."""
-    log(f"Analyzing: {company['name']}")
+def scrape_company(key, company, db_entry):
+    """Gather intel from all sources for one company (no LLM)."""
+    log(f"Scraping: {company['name']}")
     intel = {"key": key, "name": company["name"], "industry": company["industry"]}
 
     # 1. GoWork reviews
@@ -1015,7 +1270,7 @@ def analyze_company(key, company, db_entry):
 
     # 2. News search
     all_news = []
-    for term in company["search_terms"][:2]:  # limit to 2 searches
+    for term in company["search_terms"][:2]:
         news = search_ddg_news(term)
         all_news.extend(news)
         time.sleep(2)
@@ -1039,6 +1294,7 @@ def analyze_company(key, company, db_entry):
         if html:
             company_news_text = strip_html(html)[:3000]
         time.sleep(1)
+    intel["company_news_text"] = company_news_text
 
     # 5a. 4programmers.net forum threads (Polish dev community)
     fourp_results = search_4programmers(company["name"])
@@ -1051,7 +1307,6 @@ def analyze_company(key, company, db_entry):
     log(f"  Reddit: {len(reddit_results)} threads")
 
     # 5c. SemiWiki forum (semiconductor industry intel)
-    # Only search SemiWiki for silicon/semiconductor companies
     semiwiki_results = []
     if company.get("industry") in ("silicon", "automotive", "defence"):
         semiwiki_results = search_semiwiki(company["name"])
@@ -1064,16 +1319,33 @@ def analyze_company(key, company, db_entry):
     log(f"  Hacker News: {len(hn_results)} threads")
 
     # 6. Previous intel from DB
-    prev_rating = None
-    prev_sentiment = None
+    intel["prev_rating"] = None
+    intel["prev_sentiment"] = None
     if db_entry:
         prev_snapshots = db_entry.get("snapshots", [])
         if prev_snapshots:
             last = prev_snapshots[-1]
-            prev_rating = last.get("gowork_rating")
-            prev_sentiment = last.get("sentiment")
+            intel["prev_rating"] = last.get("gowork_rating")
+            intel["prev_sentiment"] = last.get("sentiment")
 
-    # 7. LLM analysis
+    return intel
+
+
+def llm_analyze_company(intel, company):
+    """Run LLM analysis on scraped company intel. Returns updated intel dict."""
+    log(f"  LLM analysis: {company['name']}")
+
+    reviews = intel.get("gowork_reviews", [])
+    all_news = intel.get("news", [])
+    layoffs = intel.get("layoffs_mentions", [])
+    careers_jobs = intel.get("careers_openings", [])
+    company_news_text = intel.get("company_news_text", "")
+    fourp_results = intel.get("4programmers", [])
+    reddit_results = intel.get("reddit", [])
+    semiwiki_results = intel.get("semiwiki", [])
+    hn_results = intel.get("hackernews", [])
+    prev_sentiment = intel.get("prev_sentiment")
+    prev_rating = intel.get("prev_rating")
     system = """You are a corporate intelligence analyst specializing in tech companies
 in Poland, with focus on embedded systems and automotive sectors.
 Analyze the provided data and produce a structured intelligence brief.
@@ -1167,6 +1439,12 @@ They track these companies for career opportunities and industry intelligence.""
     return intel
 
 
+def analyze_company(key, company, db_entry):
+    """Legacy wrapper: scrape + LLM analyze for one company."""
+    intel = scrape_company(key, company, db_entry)
+    return llm_analyze_company(intel, company)
+
+
 # ── DB Management ──────────────────────────────────────────────────────────
 
 def load_db():
@@ -1190,13 +1468,14 @@ def save_db(db):
 
 # ── Main ───────────────────────────────────────────────────────────────────
 
-def main():
+def run_scrape():
+    """Scrape all company sources. Save raw JSON (no LLM)."""
     sys.stdout.reconfigure(line_buffering=True)
     sys.stderr.reconfigure(line_buffering=True)
 
     dt = datetime.now()
     today = dt.strftime("%Y-%m-%d")
-    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] company-intel starting", flush=True)
+    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] company-intel scrape starting", flush=True)
 
     INTEL_DIR.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -1208,8 +1487,96 @@ def main():
         db_entry = db.get("companies", {}).get(key)
 
         try:
-            intel = analyze_company(key, company, db_entry)
+            intel = scrape_company(key, company, db_entry)
             day_results.append(intel)
+        except Exception as e:
+            log(f"  ERROR scraping {key}: {e}")
+            day_results.append({"key": key, "name": company["name"], "error": str(e)})
+
+        time.sleep(3)
+
+    # HN "Who is Hiring" scan (once per run, no LLM needed)
+    log("Scanning HN 'Who is Hiring' thread...")
+    hn_hiring_jobs, hn_hiring_url = search_hn_who_is_hiring()
+    log(f"  HN Who is Hiring: {len(hn_hiring_jobs)} matching remote/EU jobs")
+
+    # Save raw intermediate data
+    scrape_duration = int(time.time() - t0)
+    raw_data = {
+        "scrape_timestamp": dt.isoformat(timespec="seconds"),
+        "scrape_duration_seconds": scrape_duration,
+        "scrape_version": 1,
+        "data": {
+            "day_results": day_results,
+            "hn_hiring_jobs": hn_hiring_jobs,
+            "hn_hiring_url": hn_hiring_url,
+        },
+        "scrape_errors": [r["error"] for r in day_results if "error" in r],
+    }
+    tmp = RAW_INTEL_FILE.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+    tmp.rename(RAW_INTEL_FILE)
+
+    log(f"Scrape done: {len(day_results)} companies ({scrape_duration}s)")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] company-intel scrape done ({scrape_duration}s)", flush=True)
+
+
+def run_analyze():
+    """Load raw data, run per-company LLM + cross-company summary. Save final output."""
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+
+    dt = datetime.now()
+    today = dt.strftime("%Y-%m-%d")
+    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] company-intel analyze starting", flush=True)
+
+    INTEL_DIR.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+
+    if not RAW_INTEL_FILE.exists():
+        print(f"ERROR: Raw data file not found: {RAW_INTEL_FILE}", file=sys.stderr)
+        print("Run with --scrape-only first.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(RAW_INTEL_FILE) as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"ERROR: Failed to read raw data: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    scrape_ts = raw.get("scrape_timestamp", "")
+    d = raw.get("data", {})
+    day_results = d.get("day_results", [])
+    hn_hiring_jobs = d.get("hn_hiring_jobs", [])
+    hn_hiring_url = d.get("hn_hiring_url", "")
+
+    # Check staleness
+    if scrape_ts:
+        try:
+            scrape_dt = datetime.fromisoformat(scrape_ts)
+            age_hours = (dt - scrape_dt).total_seconds() / 3600
+            if age_hours > 48:
+                log(f"WARNING: Raw data is {age_hours:.0f}h old (scraped {scrape_ts})")
+        except ValueError:
+            pass
+
+    log(f"Loaded raw data: {len(day_results)} companies (scraped {scrape_ts})")
+
+    db = load_db()
+
+    # Per-company LLM analysis
+    for intel in day_results:
+        if "error" in intel:
+            continue  # skip companies that failed during scrape
+        key = intel.get("key", "")
+        company = COMPANIES.get(key)
+        if not company:
+            continue
+
+        try:
+            llm_analyze_company(intel, company)
 
             # Update DB
             if key not in db.get("companies", {}):
@@ -1217,7 +1584,7 @@ def main():
 
             db["companies"][key]["snapshots"].append({
                 "date": today,
-                "gowork_rating": None,  # will be populated if available
+                "gowork_rating": None,
                 "gowork_review_count": intel.get("gowork_review_count", 0),
                 "sentiment": intel.get("analysis", {}).get("sentiment"),
                 "sentiment_score": intel.get("analysis", {}).get("sentiment_score"),
@@ -1235,16 +1602,10 @@ def main():
 
         except Exception as e:
             log(f"  ERROR analyzing {key}: {e}")
-            day_results.append({"key": key, "name": company["name"], "error": str(e)})
 
-        time.sleep(3)  # breathing room between companies
+        time.sleep(3)
 
-    # ── HN "Who is Hiring" scan (once per run) ──
-    log("Scanning HN 'Who is Hiring' thread...")
-    hn_hiring_jobs, hn_hiring_url = search_hn_who_is_hiring()
-    log(f"  HN Who is Hiring: {len(hn_hiring_jobs)} matching remote/EU jobs")
-
-    # ── LLM cross-company summary ──
+    # Cross-company LLM summary
     log("Cross-company summary...")
     summary_items = []
     for r in day_results:
@@ -1277,11 +1638,13 @@ Provide:
 
     cross_summary = call_ollama(summary_system, summary_prompt, temperature=0.3, max_tokens=1500)
 
-    # ── Save output ──
+    # Save output with dual timestamps
     duration = int(time.time() - t0)
     output = {
         "meta": {
-            "timestamp": dt.isoformat(timespec="seconds"),
+            "scrape_timestamp": scrape_ts,
+            "analyze_timestamp": dt.isoformat(timespec="seconds"),
+            "timestamp": dt.isoformat(timespec="seconds"),  # backward compat
             "duration_seconds": duration,
             "companies_analyzed": len(day_results),
             "companies_with_errors": sum(1 for r in day_results if "error" in r),
@@ -1322,7 +1685,25 @@ Provide:
     except Exception:
         pass
 
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] company-intel done ({duration}s)", flush=True)
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] company-intel analyze done ({duration}s)", flush=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Company intelligence scanner")
+    parser.add_argument('--scrape-only', action='store_true',
+                        help='Only scrape company sources, save raw data (no LLM)')
+    parser.add_argument('--analyze-only', action='store_true',
+                        help='Only run LLM analysis on previously scraped raw data')
+    args = parser.parse_args()
+
+    if args.scrape_only:
+        run_scrape()
+    elif args.analyze_only:
+        run_analyze()
+    else:
+        # Legacy: full run (backward compatible)
+        run_scrape()
+        run_analyze()
 
 
 if __name__ == "__main__":

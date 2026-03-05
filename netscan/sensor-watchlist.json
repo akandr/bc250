@@ -1,0 +1,321 @@
+{
+  "__comment": "CSI camera sensor watchlist — auto-extended by discovery runs",
+  "__platforms": "jetson_orin_nano, rpi2, rpi4, rpi5",
+  "__updated": "2025-01-26",
+
+  "sensors": {
+    "imx219": {
+      "vendor": "Sony", "model": "IMX219", "resolution": "8MP",
+      "interface": "2-lane CSI-2",
+      "products": ["RPi Camera v2", "Arducam IMX219"],
+      "datasheet": "restricted",
+      "purchase": "easy",
+      "notes": "Most common RPi camera sensor. Mainline driver.",
+      "platforms": ["rpi2", "rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 5
+    },
+    "ov5647": {
+      "vendor": "OmniVision", "model": "OV5647", "resolution": "5MP",
+      "interface": "2-lane CSI-2",
+      "products": ["RPi Camera v1"],
+      "datasheet": "restricted",
+      "purchase": "easy",
+      "notes": "Original RPi camera. Legacy but still used.",
+      "platforms": ["rpi2", "rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 3
+    },
+    "imx477": {
+      "vendor": "Sony", "model": "IMX477", "resolution": "12.3MP",
+      "interface": "2-lane CSI-2",
+      "products": ["RPi HQ Camera", "Arducam IMX477"],
+      "datasheet": "restricted",
+      "purchase": "easy",
+      "notes": "High quality camera with C/CS mount. Popular for custom optics.",
+      "platforms": ["rpi2", "rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 5
+    },
+    "imx708": {
+      "vendor": "Sony", "model": "IMX708", "resolution": "12MP",
+      "interface": "2-lane CSI-2",
+      "products": ["RPi Camera Module 3", "RPi Camera Module 3 Wide"],
+      "datasheet": "restricted",
+      "purchase": "easy",
+      "notes": "RPi Camera v3. Autofocus. Driver in RPi fork, NOT yet mainline.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 5
+    },
+    "imx296": {
+      "vendor": "Sony", "model": "IMX296", "resolution": "1.6MP",
+      "interface": "2-lane CSI-2",
+      "products": ["RPi Global Shutter Camera"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Global shutter. Interesting for machine vision.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 5
+    },
+    "imx290": {
+      "vendor": "Sony", "model": "IMX290", "resolution": "2MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Arducam IMX290", "Waveshare IMX290"],
+      "datasheet": "available",
+      "purchase": "easy",
+      "notes": "Starvis. Excellent low-light. Mainline driver.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "imx327": {
+      "vendor": "Sony", "model": "IMX327", "resolution": "2MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Various Chinese modules"],
+      "datasheet": "available",
+      "purchase": "moderate",
+      "notes": "Starvis variant, similar to IMX290. Often shared driver.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 3
+    },
+    "imx462": {
+      "vendor": "Sony", "model": "IMX462", "resolution": "2MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Arducam IMX462"],
+      "datasheet": "restricted",
+      "purchase": "easy",
+      "notes": "Starvis 2nd gen. Arducam driver exists. Not mainline.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "imx585": {
+      "vendor": "Sony", "model": "IMX585", "resolution": "8MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Arducam IMX585"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Starvis 2. High res + good low-light. Needs driver work.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 5
+    },
+    "imx678": {
+      "vendor": "Sony", "model": "IMX678", "resolution": "8MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Arducam IMX678"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Starvis 2 variant. Emerging sensor for security/astro.",
+      "platforms": ["rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "imx662": {
+      "vendor": "Sony", "model": "IMX662", "resolution": "2MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Arducam IMX662"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Starvis 2 replacement for IMX290/327. Driver interest growing.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "imx283": {
+      "vendor": "Sony", "model": "IMX283", "resolution": "20MP",
+      "interface": "4-lane CSI-2",
+      "products": ["Arducam IMX283"],
+      "datasheet": "restricted",
+      "purchase": "expensive",
+      "notes": "Large format APS-C size. Astrophotography. Driver submitted to mainline.",
+      "platforms": ["rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "ov9281": {
+      "vendor": "OmniVision", "model": "OV9281", "resolution": "1MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Arducam OV9281", "Waveshare OV9281"],
+      "datasheet": "available",
+      "purchase": "easy",
+      "notes": "Global shutter. Popular for machine vision / stereo.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "ov2311": {
+      "vendor": "OmniVision", "model": "OV2311", "resolution": "2MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Arducam OV2311"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Global shutter, higher res than OV9281. Limited driver support.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "ov64a40": {
+      "vendor": "OmniVision", "model": "OV64A40", "resolution": "64MP",
+      "interface": "4-lane CSI-2",
+      "products": ["Arducam Hawk-Eye 64MP"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Very high resolution. Arducam has driver. Not mainline.",
+      "platforms": ["rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "ar0234": {
+      "vendor": "onsemi", "model": "AR0234", "resolution": "2.3MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["e-con Systems", "FRAMOS"],
+      "datasheet": "available",
+      "purchase": "moderate",
+      "notes": "Global shutter. Popular industrial sensor. Some mainline work.",
+      "platforms": ["jetson_orin_nano", "rpi5"],
+      "interest": 4
+    },
+    "ar0144": {
+      "vendor": "onsemi", "model": "AR0144", "resolution": "1MP",
+      "interface": "2-lane CSI-2",
+      "products": ["FRAMOS", "Leopard Imaging"],
+      "datasheet": "available",
+      "purchase": "moderate",
+      "notes": "Global shutter. Compact automotive sensor.",
+      "platforms": ["jetson_orin_nano"],
+      "interest": 3
+    },
+    "ar0521": {
+      "vendor": "onsemi", "model": "AR0521", "resolution": "5MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["FRAMOS", "Leopard Imaging"],
+      "datasheet": "available",
+      "purchase": "moderate",
+      "notes": "Color/mono variants. Industrial applications.",
+      "platforms": ["jetson_orin_nano", "rpi5"],
+      "interest": 3
+    },
+    "imx412": {
+      "vendor": "Sony", "model": "IMX412", "resolution": "12.3MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["ArduCam", "e-con Systems"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Similar to IMX477 but different register set. Used in industrial.",
+      "platforms": ["jetson_orin_nano", "rpi5"],
+      "interest": 3
+    },
+    "imx258": {
+      "vendor": "Sony", "model": "IMX258", "resolution": "13MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Various phone camera modules"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Common phone sensor. Mainline driver exists but thin.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 3
+    },
+    "imx378": {
+      "vendor": "Sony", "model": "IMX378", "resolution": "12.3MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["DFRobot"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Similar to IMX477. Uses same register set in some implementations.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 2
+    },
+    "ov5693": {
+      "vendor": "OmniVision", "model": "OV5693", "resolution": "5MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Various modules"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Autofocus. Common in tablets/laptops. Mainline driver.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 2
+    },
+    "ov13855": {
+      "vendor": "OmniVision", "model": "OV13855", "resolution": "13MP",
+      "interface": "4-lane CSI-2",
+      "products": ["Limited modules"],
+      "datasheet": "restricted",
+      "purchase": "hard",
+      "notes": "Phone sensor. Limited standalone module availability.",
+      "platforms": ["jetson_orin_nano"],
+      "interest": 2
+    },
+    "imx519": {
+      "vendor": "Sony", "model": "IMX519", "resolution": "16MP",
+      "interface": "2-lane CSI-2",
+      "products": ["Arducam IMX519"],
+      "datasheet": "restricted",
+      "purchase": "easy",
+      "notes": "Autofocus. Arducam's own product. Custom driver.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 4
+    },
+    "gc2145": {
+      "vendor": "GalaxyCore", "model": "GC2145", "resolution": "2MP",
+      "interface": "1-lane/2-lane CSI-2",
+      "products": ["Olimex", "Pine64"],
+      "datasheet": "available",
+      "purchase": "easy",
+      "notes": "Low cost, open datasheet. Good for learning driver dev.",
+      "platforms": ["rpi2", "rpi4", "rpi5"],
+      "interest": 4
+    },
+    "ov7251": {
+      "vendor": "OmniVision", "model": "OV7251", "resolution": "0.3MP (VGA)",
+      "interface": "1-lane/2-lane CSI-2",
+      "products": ["Various tracking modules"],
+      "datasheet": "restricted",
+      "purchase": "moderate",
+      "notes": "Global shutter VGA. Used for visual tracking/SLAM.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 3
+    },
+    "imx715": {
+      "vendor": "Sony", "model": "IMX715", "resolution": "12MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Emerging - limited availability"],
+      "datasheet": "restricted",
+      "purchase": "hard",
+      "notes": "Next-gen. Information just starting to appear.",
+      "platforms": ["rpi5", "jetson_orin_nano"],
+      "interest": 3
+    },
+    "imx335": {
+      "vendor": "Sony", "model": "IMX335", "resolution": "5MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Various IP camera modules"],
+      "datasheet": "available",
+      "purchase": "easy",
+      "notes": "Starvis. Very common in IP cameras. Driver interest for SBC.",
+      "platforms": ["rpi4", "rpi5", "jetson_orin_nano"],
+      "interest": 3
+    },
+    "imx415": {
+      "vendor": "Sony", "model": "IMX415", "resolution": "8MP",
+      "interface": "2-lane/4-lane CSI-2",
+      "products": ["Rock Pi camera", "Various modules"],
+      "datasheet": "available",
+      "purchase": "moderate",
+      "notes": "Starvis. Rockchip platforms have driver. Mainline in progress.",
+      "platforms": ["rpi5", "jetson_orin_nano"],
+      "interest": 3
+    }
+  },
+
+  "candidates": [],
+
+  "discovery_patterns": [
+    "IMX[0-9]{3,4}",
+    "OV[0-9]{4,5}",
+    "AR[0-9]{3,4}",
+    "GC[0-9]{4}",
+    "OS[0-9]{2}[A-Z][0-9]{2}",
+    "SC[0-9]{4}",
+    "S5K[A-Z0-9]+",
+    "HI[0-9]{3,4}"
+  ],
+
+  "vendor_urls": {
+    "arducam": "https://www.arducam.com/camera-for-raspberry-pi/",
+    "waveshare": "https://www.waveshare.com/",
+    "e-con": "https://www.e-consystems.com/",
+    "framos": "https://www.framos.com/en/sensor-modules/",
+    "leopard": "https://www.leopardimaging.com/",
+    "allied_vision": "https://www.alliedvision.com/en/products/alvium-csi-camera/",
+    "arducam_store": "https://www.arducam.com/shop/"
+  }
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=Queue Runner — Nightly batch timer (23:00 daily)
+
+[Timer]
+OnCalendar=*-*-* 23:00:00
+Persistent=true
+RandomizedDelaySec=0
+
+[Install]
+WantedBy=timers.target

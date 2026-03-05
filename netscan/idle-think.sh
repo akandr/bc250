@@ -38,10 +38,12 @@ REPO_FEEDS="${SCRIPT_DIR}/repo-feeds.json"
 mkdir -p "$THINK_DIR"
 
 TASK=""
+FOCUS=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --task) TASK="$2"; shift 2 ;;
-        *)      echo "Usage: $0 [--task weekly|trends|crossfeed|research|career|crawl|learn|signal]"; exit 1 ;;
+        --focus) FOCUS="$2"; shift 2 ;;
+        *)      echo "Usage: $0 [--task weekly|trends|crossfeed|research|career|crawl|learn|signal] [--focus TOPIC]"; exit 1 ;;
     esac
 done
 
@@ -67,7 +69,7 @@ OLLAMA_PS=$(curl -s http://localhost:11434/api/ps 2>/dev/null || echo '{"models"
 RUNNING=$(echo "$OLLAMA_PS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('models',[])))" 2>/dev/null || echo "0")
 # Having a model loaded is fine — it means Ollama is ready. We only skip if digest/watch are running.
 
-python3 - "$TASK" "$THINK_DIR" "$DATA_DIR" "$PROFILE_JSON" "$DIGEST_FEEDS" "$REPO_FEEDS" "$PROFILE_PRIVATE" "$WATCHLIST_JSON" << 'PYEOF'
+python3 - "$TASK" "$THINK_DIR" "$DATA_DIR" "$PROFILE_JSON" "$DIGEST_FEEDS" "$REPO_FEEDS" "$PROFILE_PRIVATE" "$WATCHLIST_JSON" "$FOCUS" << 'PYEOF'
 import sys, os, json, glob, time, hashlib
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -80,6 +82,7 @@ DIGEST_FEEDS_PATH = sys.argv[5]
 REPO_FEEDS_PATH = sys.argv[6]
 PROFILE_PRIVATE_PATH = sys.argv[7] if len(sys.argv) > 7 else ""
 WATCHLIST_PATH = sys.argv[8] if len(sys.argv) > 8 else ""
+FOCUS_ARG = sys.argv[9] if len(sys.argv) > 9 else ""
 
 # ─── Load configs ───
 
@@ -123,6 +126,52 @@ OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model for richer analys
 
 QUIET_START = 0
 QUIET_END   = 6
+
+# ── Focused research topics ──
+# When --focus is given for research task, force a specific deep-dive topic
+# instead of auto-picking from trending keywords.
+RESEARCH_FOCUS_TOPICS = {
+    "camera": {
+        "label": "Camera & ISP Systems",
+        "topic": "embedded Linux camera and ISP",
+        "context": "V4L2, libcamera, ISP pipeline, MIPI CSI-2, camera sensors (IMX, OV), media controller, videobuf2, debayer, 3A algorithms (AWB/AEC/AF), raw capture, camera tuning",
+    },
+    "gpu": {
+        "label": "GPU & Display",
+        "topic": "GPU drivers and DRM/KMS display",
+        "context": "DRM, KMS, amdgpu, RDNA, Cyan Skillfish, GEM/TTM, dma-buf, render nodes, Vulkan, Mesa, GPU compute (ROCm/OpenCL), display pipeline, HDMI/DP output, panfrost, lima",
+    },
+    "automotive": {
+        "label": "Automotive & ADAS",
+        "topic": "automotive Linux and ADAS",
+        "context": "ADAS, driver monitoring systems, surround view, automotive Ethernet, AUTOSAR Adaptive, AGL (Automotive Grade Linux), functional safety, ISO 26262, OTA updates, automotive SoCs (Snapdragon Ride, Tegra, R-Car)",
+    },
+    "kernel": {
+        "label": "Core Kernel Subsystems",
+        "topic": "Linux kernel core subsystems",
+        "context": "memory management, scheduler, device model, platform drivers, interrupt handling, DMA, IOMMU/SMMU, power management (runtime PM, suspend), clock framework, GPIO/pinctrl, device tree, regulator framework",
+    },
+    "riscv": {
+        "label": "RISC-V Ecosystem",
+        "topic": "RISC-V Linux ecosystem",
+        "context": "RISC-V ISA extensions, SBI, StarFive JH7110, T-Head TH1520, Sophgo, Milk-V, SiFive, RISC-V vector extensions, hardware support status, camera/GPU on RISC-V, boot flow (OpenSBI, U-Boot)",
+    },
+    "multimedia": {
+        "label": "Multimedia Pipeline & Codecs",
+        "topic": "Linux multimedia pipeline and hardware codecs",
+        "context": "GStreamer, FFmpeg, PipeWire, PulseAudio, ALSA, V4L2 M2M, stateless/stateful codec API, VA-API, VDPAU, h264/h265/AV1 hardware decode, media controller, VPU drivers, video transcoding, latency optimization",
+    },
+    "security": {
+        "label": "Kernel Security & Hardening",
+        "topic": "Linux kernel security and embedded hardening",
+        "context": "Secure boot, dm-verity, TEE (OP-TEE/TrustZone), kernel hardening (KASLR, CFI, stack protector), LSM (SELinux/AppArmor), Yocto hardening, CVE triage embedded, supply chain security, SBOM, firmware signing",
+    },
+    "power": {
+        "label": "Power Management & Thermal",
+        "topic": "Linux power management and thermal",
+        "context": "runtime PM, CPUidle, CPUfreq, thermal framework, cooling devices, DVFS, suspend/resume (S2R/S2idle), wakeup sources, power domains, regulator framework, energy-aware scheduling, battery/fuel gauge, power profiling",
+    },
+}
 
 def is_quiet_hours():
     return QUIET_START <= datetime.now().hour < QUIET_END
@@ -264,7 +313,7 @@ def save_note(task_type, title, content, context=None):
         "file": fname, "type": task_type, "title": title,
         "generated": note["generated"], "chars": len(content),
     })
-    index = index[:50]  # keep last 50 notes
+    index = index[:200]  # keep generous buffer — shared with academic-watch.py
     with open(index_path, "w") as f:
         json.dump(index, f, indent=2)
 
@@ -520,57 +569,86 @@ Keep under 2000 chars. Focus on actionable connections."""
 
 
 def task_research():
-    """Pick an interesting topic from recent activity and do a mini research dive."""
-    print("\n[TASK] Research Dive")
+    """Pick an interesting topic from recent activity and do a mini research dive.
+    
+    If FOCUS_ARG is set AND matches a RESEARCH_FOCUS_TOPICS key, force that topic
+    instead of auto-picking from trending keywords.
+    """
+    focus = FOCUS_ARG if FOCUS_ARG in RESEARCH_FOCUS_TOPICS else None
+    focus_info = RESEARCH_FOCUS_TOPICS.get(focus) if focus else None
+
+    if focus_info:
+        print(f"\n[TASK] Focused Research Dive: {focus_info['label']}")
+    else:
+        print("\n[TASK] Research Dive")
+
     digests = load_recent_digests(7)
 
-    if not digests:
+    if not digests and not focus:
         print("  No digest data for research")
         return
 
-    # Find the most-discussed topics
-    topic_scores = {}
-    for d in digests:
-        for t in d.get("top_threads", []):
-            for kw in t.get("keywords", []):
-                topic_scores[kw] = topic_scores.get(kw, 0) + t["score"]
+    if focus_info:
+        # Forced topic from focus argument
+        topic = focus_info["topic"]
+        extra_context = focus_info["context"]
+        # Still gather related threads from digests
+        context_text = ""
+        for d in digests:
+            for t in d.get("top_threads", []):
+                thread_text = " ".join(t.get("keywords", []) + [t.get("subject", "")]).lower()
+                # Match any word from the focus context
+                focus_words = [w.lower() for w in extra_context.replace(",", " ").split() if len(w) > 3]
+                if any(fw in thread_text for fw in focus_words[:10]):
+                    context_text += f"• [{d['feed_name']}] {t['subject']} (score {t['score']})\n"
+    else:
+        extra_context = ""
+        # Auto-pick: find the most-discussed topics
+        topic_scores = {}
+        for d in digests:
+            for t in d.get("top_threads", []):
+                for kw in t.get("keywords", []):
+                    topic_scores[kw] = topic_scores.get(kw, 0) + t["score"]
 
-    # Pick top topic that hasn't been researched recently
-    existing_notes = glob.glob(os.path.join(THINK_DIR, "note-research-*.json"))
-    recent_topics = set()
-    for nf in existing_notes[-5:]:
-        try:
-            with open(nf) as f:
-                n = json.load(f)
-                recent_topics.add(n.get("context", {}).get("topic", ""))
-        except:
-            pass
+        # Pick top topic that hasn't been researched recently
+        existing_notes = glob.glob(os.path.join(THINK_DIR, "note-research-*.json"))
+        recent_topics = set()
+        for nf in existing_notes[-5:]:
+            try:
+                with open(nf) as f:
+                    n = json.load(f)
+                    recent_topics.add(n.get("context", {}).get("topic", ""))
+            except:
+                pass
 
-    top_topics = sorted(topic_scores.items(), key=lambda x: -x[1])
-    topic = None
-    for kw, score in top_topics:
-        if kw not in recent_topics and len(kw) > 2:
-            topic = kw
-            break
+        top_topics = sorted(topic_scores.items(), key=lambda x: -x[1])
+        topic = None
+        for kw, score in top_topics:
+            if kw not in recent_topics and len(kw) > 2:
+                topic = kw
+                break
 
-    if not topic:
-        topic = top_topics[0][0] if top_topics else "embedded Linux camera"
+        if not topic:
+            topic = top_topics[0][0] if top_topics else "embedded Linux camera"
 
-    # Gather context about this topic from digests
-    context_text = ""
-    for d in digests:
-        for t in d.get("top_threads", []):
-            if topic.lower() in " ".join(t.get("keywords", [])).lower():
-                context_text += f"• [{d['feed_name']}] {t['subject']} (score {t['score']})\n"
+        # Gather context about this topic from digests
+        context_text = ""
+        for d in digests:
+            for t in d.get("top_threads", []):
+                if topic.lower() in " ".join(t.get("keywords", [])).lower():
+                    context_text += f"• [{d['feed_name']}] {t['subject']} (score {t['score']})\n"
 
     user_interests = "\n".join(f"- {i}" for i in PROFILE.get("interests", []))
     hardware = "\n".join(f"- {h}" for h in PROFILE.get("hardware", []))
     career = career_context_block()
 
+    focus_label = focus_info["label"] if focus_info else ""
+    focus_section = f"\nFocus area: {focus_label}\nKey technologies: {extra_context}\n" if extra_context else ""
+
     system = f"""You are a technical research assistant specializing in Linux kernel and multimedia.
 Write a focused research note that helps a developer understand a topic in depth.
 Connect findings to the developer's professional context where relevant.
-
+{focus_section}
 Developer's context:
 {user_interests}
 
@@ -579,10 +657,14 @@ Hardware:
 
 {career}"""
 
+    activity_text = context_text if context_text else f"(General interest in {topic})"
+    if extra_context and not context_text:
+        activity_text = f"Focus keywords: {extra_context}"
+
     prompt = f"""Research topic: **{topic}**
 
 Recent activity related to this topic:
-{context_text if context_text else f"(General interest in {topic})"}
+{activity_text}
 
 Write a RESEARCH NOTE:
 
@@ -595,11 +677,13 @@ Write a RESEARCH NOTE:
 5. PRACTICAL: What a developer should know to work with this
 
 Keep under 2500 chars. Be specific with function names, driver names, kernel configs.
-Focus on practical knowledge, not Wikipedia-style overview."""
+Focus on practical knowledge, not Wikipedia-style overview.
+{"Concentrate specifically on " + focus_label + " aspects." if focus_label else ""}"""
 
     result = call_ollama(system, prompt, temperature=0.5, max_tokens=2500, label="research")
     if result:
-        return save_note("research", f"Research: {topic}", result, {"topic": topic})
+        focus_tag = f"-{focus}" if focus else ""
+        return save_note("research", f"Research: {topic}", result, {"topic": topic, "focus": focus or "auto"})
 
 
 def task_career():
@@ -720,6 +804,57 @@ def fetch_hn_top(src, max_items=10):
         return ""
 
 
+def fetch_discourse(src, max_topics=20):
+    """Fetch topics from a Discourse forum JSON API and return formatted text."""
+    import re as _re
+    url = src["url"]
+    filter_kw = [k.lower() for k in src.get("filter_keywords", [])]
+    base_url = _re.match(r'(https?://[^/]+)', url).group(1) if url else ""
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; bc250-bot/1.0)",
+            "Accept": "application/json"
+        })
+        resp = urllib.request.urlopen(req, timeout=20)
+        data = json.loads(resp.read())
+        topics = data.get("topic_list", {}).get("topics", [])[:max_topics]
+
+        lines = []
+        for t in topics:
+            title = t.get("title", "")
+            tid = t.get("id", 0)
+            posts = t.get("posts_count", 0)
+            views = t.get("views", 0)
+            slug = t.get("slug", "")
+            topic_url = f"{base_url}/t/{slug}/{tid}" if slug else f"{base_url}/t/{tid}"
+
+            # Filter by keywords if configured
+            if filter_kw:
+                title_lower = title.lower()
+                if not any(kw in title_lower for kw in filter_kw):
+                    continue
+
+            lines.append(f"[{views} views/{posts} posts] {title}\n  {topic_url}")
+
+        if not lines:
+            # If keyword filter eliminated everything, show top 5 unfiltered
+            for t in topics[:5]:
+                title = t.get("title", "")
+                tid = t.get("id", 0)
+                posts = t.get("posts_count", 0)
+                views = t.get("views", 0)
+                slug = t.get("slug", "")
+                topic_url = f"{base_url}/t/{slug}/{tid}" if slug else f"{base_url}/t/{tid}"
+                lines.append(f"[{views} views/{posts} posts] {title}\n  {topic_url}")
+            if lines:
+                lines.insert(0, "(no keyword matches — showing top topics)")
+
+        return "\n".join(lines)
+    except Exception as ex:
+        print(f"    Discourse API failed: {ex}")
+        return ""
+
+
 def fetch_url(url, use_tor=False, timeout=20):
     """Fetch a URL, optionally routing through Tor SOCKS5 proxy."""
     import re
@@ -810,6 +945,8 @@ def task_crawl():
             # HN API gets special handling
             if src.get("api") == "hn_top":
                 text = fetch_hn_top(src)
+            elif src.get("api") == "discourse":
+                text = fetch_discourse(src)
             else:
                 text = fetch_url(url, use_tor=use_tor, timeout=30 if use_tor else 20)
 

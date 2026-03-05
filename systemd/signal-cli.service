@@ -1,0 +1,23 @@
+[Unit]
+Description=Signal CLI JSON-RPC Daemon
+Documentation=https://github.com/AsamK/signal-cli
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=akandr
+Group=akandr
+WorkingDirectory=/home/akandr
+
+# --output=json: received messages printed as JSON lines to stdout (captured by journal)
+# --http: JSON-RPC endpoint for sending (used by all netscan scripts)
+# No --no-receive-stdout: we WANT received messages in journal for the chat feature
+ExecStart=/usr/local/bin/signal-cli --output=json -a +<BOT_PHONE> daemon --http 127.0.0.1:8080
+
+Restart=always
+RestartSec=15
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,7 +1,9 @@
 #!/bin/bash
 # gpu-monitor.sh — Sample Ollama GPU utilization every minute
-# Logs to a TSV file with 7 columns:
-#   timestamp  status  model  script  vram_mb  gpu_mhz  temp_c
+# Logs to a TSV file with 8 columns:
+#   timestamp  status  model  script  vram_mb  gpu_mhz  temp_c  throttle
+#
+# throttle: integer bitmask from gpu_metrics (0=none, see THROTTLE_BITS in gpu-monitor.py)
 #
 # Status values (3-state):
 #   generating — model loaded AND GPU clock boosted (actually computing)
@@ -28,6 +30,19 @@ GPU_MHZ=$(grep '\*' /sys/class/drm/card1/device/pp_dpm_sclk 2>/dev/null \
 # Temperature: millidegrees → degrees
 TEMP_MC=$(cat /sys/class/drm/card1/device/hwmon/hwmon2/temp1_input 2>/dev/null || echo "0")
 TEMP_C=$(( TEMP_MC / 1000 ))
+
+# Throttle status from gpu_metrics binary (v2.2, offset 108, uint32 LE)
+THROTTLE="0"
+if [ -r /sys/class/drm/card1/device/gpu_metrics ]; then
+    THROTTLE=$(python3 -c "
+import struct
+d = open('/sys/class/drm/card1/device/gpu_metrics','rb').read()
+if len(d) >= 112 and d[2] == 2:
+    print(struct.unpack_from('<I', d, 108)[0])
+else:
+    print(0)
+" 2>/dev/null || echo "0")
+fi
 
 # ─── Fetch Ollama process list ───
 PS_JSON=$(curl -s --max-time 5 http://localhost:11434/api/ps 2>/dev/null || echo '{"models":[]}')
@@ -79,9 +94,9 @@ except:
         STATUS="loaded"
     fi
 
-    echo -e "${TS}\t${STATUS}\t${MODEL}\t${SCRIPT}\t${VRAM_MB}\t${GPU_MHZ}\t${TEMP_C}" >> "$LOG_FILE"
+    echo -e "${TS}\t${STATUS}\t${MODEL}\t${SCRIPT}\t${VRAM_MB}\t${GPU_MHZ}\t${TEMP_C}\t${THROTTLE}" >> "$LOG_FILE"
 else
-    echo -e "${TS}\tidle\t\t\t0\t${GPU_MHZ}\t${TEMP_C}" >> "$LOG_FILE"
+    echo -e "${TS}\tidle\t\t\t0\t${GPU_MHZ}\t${TEMP_C}\t${THROTTLE}" >> "$LOG_FILE"
 fi
 
 # ─── Rotate: keep last 14 days ───

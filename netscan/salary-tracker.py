@@ -9,8 +9,9 @@ Sources:
   - Existing career-scan JSON (extract salary fields already parsed)
   - NoFluffJobs salary API (live, structured)
   - JustJoinIT salary data (live, structured)
-  - levels.fyi Poland data (live)
   - Bulldogjob (live, structured)
+  - levels.fyi Poland data (live, TC → monthly PLN)
+  - Glassdoor Poland salary explore (JSON-LD + GraphQL API)
 
 Output: /opt/netscan/data/salary/
   - salary-YYYYMMDD.json      (daily snapshot)
@@ -20,6 +21,7 @@ Output: /opt/netscan/data/salary/
 Cron: 0 2 * * * flock -w 1200 /tmp/ollama-gpu.lock python3 /opt/netscan/salary-tracker.py
 """
 
+import argparse
 import json
 import os
 import re
@@ -357,6 +359,292 @@ def collect_from_bulldogjob():
     return entries
 
 
+# ── Source: levels.fyi ─────────────────────────────────────────────────────
+
+def collect_from_levelsfyi():
+    """Fetch salary data from levels.fyi Poland salaries.
+
+    levels.fyi exposes a public search endpoint that returns structured
+    compensation data.  We search for embedded/firmware/driver roles
+    in Poland and convert TC to monthly PLN (B2B equivalent).
+    """
+    entries = []
+    # levels.fyi search API — returns JSON with salary datapoints
+    search_terms = [
+        "embedded engineer Poland",
+        "firmware engineer Poland",
+        "linux driver Poland",
+        "camera engineer Poland",
+        "BSP engineer Poland",
+    ]
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+        "Accept": "application/json",
+    }
+
+    for term in search_terms:
+        try:
+            # levels.fyi public salary search
+            url = f"https://www.levels.fyi/js/salaryData.json"
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                all_data = json.loads(resp.read())
+        except Exception as e:
+            log(f"levels.fyi: bulk data fetch failed: {e}")
+            # Fallback: try the search API
+            try:
+                search_url = (
+                    f"https://www.levels.fyi/api/v1/salaries?"
+                    f"countryId=178&title=Software+Engineer&limit=100"
+                )
+                req = urllib.request.Request(search_url, headers=headers)
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    api_data = json.loads(resp.read())
+                all_data = api_data.get("results", api_data) if isinstance(api_data, dict) else api_data
+            except Exception as e2:
+                log(f"levels.fyi: API also failed: {e2}")
+                all_data = []
+            break  # Only need one fetch for all terms
+
+        break  # Bulk data fetched once
+
+    if not isinstance(all_data, list):
+        all_data = all_data.get("results", []) if isinstance(all_data, dict) else []
+
+    # Filter for Poland + relevant roles
+    role_kw = re.compile(
+        r'embedded|firmware|driver|bsp|linux|kernel|camera|sensor|fpga|hw.?sw|'
+        r'system.?software|platform|low.?level', re.I
+    )
+
+    for entry in all_data:
+        location = entry.get("location", entry.get("cityName", ""))
+        company = entry.get("company", entry.get("companyName", ""))
+        title = entry.get("title", entry.get("level", ""))
+        country = entry.get("country", "")
+
+        # Filter: Poland only
+        if not (country.lower() == "poland" or "poland" in location.lower()
+                or "warszaw" in location.lower() or "kraków" in location.lower()
+                or "wrocław" in location.lower() or "gdańsk" in location.lower()
+                or "łódź" in location.lower() or "poznań" in location.lower()):
+            continue
+
+        # Role filter
+        combined = f"{title} {entry.get('tag', '')} {entry.get('specialization', '')}"
+        if not role_kw.search(combined):
+            continue
+
+        # Extract total compensation (yearly USD) → monthly PLN
+        tc = entry.get("totalyearlycompensation", entry.get("totalComp", 0))
+        base = entry.get("basesalary", entry.get("baseSalary", 0))
+        try:
+            tc = int(tc) if tc else 0
+            base = int(base) if base else 0
+        except (ValueError, TypeError):
+            continue
+
+        if tc <= 0 and base <= 0:
+            continue
+
+        # Convert: yearly USD → monthly PLN (approximate rate)
+        usd_pln = 4.05  # approximate exchange rate
+        yearly_pln = (tc or base) * usd_pln
+        monthly_pln = int(yearly_pln / 12)
+
+        if monthly_pln < 8000 or monthly_pln > 100000:
+            continue  # Outlier filter
+
+        entries.append({
+            "source": "levels.fyi",
+            "scan_date": datetime.now().strftime("%Y-%m-%d"),
+            "title": title,
+            "company": company,
+            "location": location,
+            "salary_from": monthly_pln,
+            "salary_to": monthly_pln,
+            "salary_type": "b2b",  # TC equivalent
+            "salary_b2b_net_pln": f"{monthly_pln}-{monthly_pln}",
+            "salary_currency": "PLN",
+            "salary_note": f"TC {tc or base} USD/yr → {monthly_pln} PLN/mo",
+            "url": "https://www.levels.fyi/t/software-engineer/locations/poland",
+        })
+
+    # Deduplicate by company+title
+    seen = set()
+    deduped = []
+    for e in entries:
+        key = (e["company"].lower(), e["title"].lower())
+        if key not in seen:
+            seen.add(key)
+            deduped.append(e)
+
+    log(f"levels.fyi: {len(deduped)} relevant salary records (Poland, embedded/driver)")
+    return deduped
+
+
+# ── Source: Glassdoor ──────────────────────────────────────────────────────
+
+def collect_from_glassdoor():
+    """Scrape Glassdoor salary explore pages for embedded/driver roles in Poland.
+
+    Glassdoor doesn't have a public API, but their salary explore pages
+    contain structured JSON-LD data we can extract.  We search for specific
+    job titles and extract the salary ranges.
+    """
+    entries = []
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9,pl;q=0.8",
+    }
+
+    search_urls = [
+        # Glassdoor salary explore — Poland, embedded roles
+        "https://www.glassdoor.com/Salaries/poland-embedded-software-engineer-salary-SRCH_IL.0,6_IN193_KO7,33.htm",
+        "https://www.glassdoor.com/Salaries/poland-firmware-engineer-salary-SRCH_IL.0,6_IN193_KO7,24.htm",
+        "https://www.glassdoor.com/Salaries/poland-linux-engineer-salary-SRCH_IL.0,6_IN193_KO7,21.htm",
+        "https://www.glassdoor.com/Salaries/poland-bsp-engineer-salary-SRCH_IL.0,6_IN193_KO7,19.htm",
+    ]
+
+    for url in search_urls:
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                html = resp.read().decode("utf-8", errors="replace")
+        except Exception as e:
+            log(f"Glassdoor: failed to fetch {url.split('/')[-1][:40]}: {e}")
+            continue
+
+        # Extract JSON-LD structured data (salary schema)
+        for m in re.finditer(
+            r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>',
+            html, re.S
+        ):
+            try:
+                ld = json.loads(m.group(1))
+            except (json.JSONDecodeError, ValueError):
+                continue
+
+            # Handle both single objects and arrays
+            items = ld if isinstance(ld, list) else [ld]
+            for item in items:
+                if item.get("@type") not in ("OccupationAggregation",
+                                              "Occupation",
+                                              "OccupationAggregationByEmployer"):
+                    continue
+
+                sal = item.get("estimatedSalary", item.get("baseSalary", {}))
+                if isinstance(sal, list):
+                    sal = sal[0] if sal else {}
+
+                val = sal.get("value", sal)
+                if isinstance(val, dict):
+                    low = val.get("minValue", val.get("value", 0))
+                    high = val.get("maxValue", low)
+                    currency = val.get("currency", sal.get("currency", "PLN"))
+                    unit = val.get("unitText", sal.get("unitText", "MONTH"))
+                else:
+                    continue
+
+                try:
+                    low = int(float(low))
+                    high = int(float(high))
+                except (ValueError, TypeError):
+                    continue
+
+                # Convert yearly to monthly if needed
+                if unit and "YEAR" in str(unit).upper():
+                    low = low // 12
+                    high = high // 12
+
+                # Convert USD to PLN if needed
+                if currency == "USD":
+                    low = int(low * 4.05)
+                    high = int(high * 4.05)
+                    currency = "PLN"
+                elif currency == "EUR":
+                    low = int(low * 4.30)
+                    high = int(high * 4.30)
+                    currency = "PLN"
+
+                if currency != "PLN" or low < 5000:
+                    continue
+
+                title = item.get("name", item.get("occupationName", ""))
+                company = item.get("hiringOrganization", {})
+                if isinstance(company, dict):
+                    company = company.get("name", "")
+
+                entries.append({
+                    "source": "glassdoor",
+                    "scan_date": datetime.now().strftime("%Y-%m-%d"),
+                    "title": title or url.split("_KO")[1].split(".")[0].replace("-", " ") if "_KO" in url else "engineer",
+                    "company": company,
+                    "location": "Poland",
+                    "salary_from": low,
+                    "salary_to": high,
+                    "salary_type": "gross",  # Glassdoor reports gross
+                    "salary_b2b_net_pln": f"{int(low*0.77)}-{int(high*0.77)}",
+                    "salary_currency": "PLN",
+                    "url": url,
+                })
+
+        time.sleep(3)  # Be polite
+
+    # Also try Glassdoor salary API-like endpoint
+    try:
+        api_url = "https://www.glassdoor.com/graph"
+        payload = json.dumps([{
+            "operationName": "SalarySearchResultsQuery",
+            "variables": {
+                "keyword": "embedded engineer",
+                "locationId": 193, "locationType": "COUNTRY",
+                "numResults": 20,
+            },
+        }]).encode()
+        req = urllib.request.Request(
+            api_url, data=payload, headers={
+                **headers,
+                "Content-Type": "application/json",
+            }
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            api_data = json.loads(resp.read())
+        if isinstance(api_data, list) and api_data:
+            results = api_data[0].get("data", {}).get("salarySearchResults", {}).get("results", [])
+            for r in results:
+                pay = r.get("payPercentile", r.get("medianPay", {}))
+                if isinstance(pay, dict):
+                    median = pay.get("p50", pay.get("median", 0))
+                    low = pay.get("p25", pay.get("p10", median))
+                    high = pay.get("p75", pay.get("p90", median))
+                    try:
+                        median, low, high = int(median), int(low), int(high)
+                    except (ValueError, TypeError):
+                        continue
+                    if median > 0:
+                        entries.append({
+                            "source": "glassdoor",
+                            "scan_date": datetime.now().strftime("%Y-%m-%d"),
+                            "title": r.get("jobTitle", "engineer"),
+                            "company": r.get("employer", {}).get("name", ""),
+                            "location": "Poland",
+                            "salary_from": low,
+                            "salary_to": high,
+                            "salary_type": "gross",
+                            "salary_b2b_net_pln": f"{int(low*0.77)}-{int(high*0.77)}",
+                            "salary_currency": "PLN",
+                            "url": "https://www.glassdoor.com/Salaries/poland-embedded-engineer-salary.htm",
+                        })
+    except Exception as e:
+        log(f"Glassdoor API: {e}")
+
+    log(f"Glassdoor: {len(entries)} salary records (Poland, embedded/driver)")
+    return entries
+
+
 # ── Analysis ───────────────────────────────────────────────────────────────
 
 def parse_salary_range(s):
@@ -493,21 +781,22 @@ def save_history(history):
         json.dump(history, f, indent=2, ensure_ascii=False)
 
 
-# ── Main ───────────────────────────────────────────────────────────────────
+# ── Raw data file for scrape/analyze split ─────────────────────────────────
+RAW_SALARY_FILE = SALARY_DIR / "raw-salary.json"
 
-def main():
-    sys.stdout.reconfigure(line_buffering=True)
-    sys.stderr.reconfigure(line_buffering=True)
 
+# ── Scrape phase ───────────────────────────────────────────────────────────
+
+def run_scrape():
+    """Collect salary data from all sources, compute statistics. Save raw JSON."""
     dt = datetime.now()
     today = dt.strftime("%Y-%m-%d")
-    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] salary-tracker starting", flush=True)
-
     SALARY_DIR.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
 
     # ── Collect from all sources ──
     all_entries = []
+    scrape_errors = []
 
     log("Phase 1: Collecting salary data...")
     all_entries.extend(collect_from_career_scans())
@@ -516,13 +805,86 @@ def main():
     all_entries.extend(collect_from_justjoinit())
     time.sleep(2)
     all_entries.extend(collect_from_bulldogjob())
+    time.sleep(2)
+    all_entries.extend(collect_from_levelsfyi())
+    time.sleep(2)
+    all_entries.extend(collect_from_glassdoor())
 
     log(f"Total: {len(all_entries)} salary records collected")
 
-    # ── Compute statistics ──
+    # ── Compute statistics (pure math, no LLM) ──
     log("Phase 2: Computing statistics...")
     stats = compute_statistics(all_entries)
     log(f"Stats: {stats.get('sample_size', 0)} valid B2B salary ranges")
+
+    # ── Update history (scrape phase owns this) ──
+    history = load_history()
+    history["daily_snapshots"].append({
+        "date": today,
+        "stats": stats,
+        "record_count": len(all_entries),
+    })
+    save_history(history)
+
+    # ── Save raw intermediate data ──
+    scrape_duration = int(time.time() - t0)
+    raw_data = {
+        "scrape_timestamp": dt.isoformat(timespec="seconds"),
+        "scrape_duration_seconds": scrape_duration,
+        "scrape_version": 1,
+        "data": {
+            "entries": all_entries,
+            "stats": stats,
+            "sources": list(set(e.get("source", "unknown") for e in all_entries)),
+        },
+        "scrape_errors": scrape_errors,
+    }
+    tmp = RAW_SALARY_FILE.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+    tmp.rename(RAW_SALARY_FILE)
+
+    log(f"Scrape done: {len(all_entries)} records saved to {RAW_SALARY_FILE}")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] salary-tracker scrape done ({scrape_duration}s)", flush=True)
+
+
+# ── Analyze phase ──────────────────────────────────────────────────────────
+
+def run_analyze():
+    """Load raw data, run LLM trend analysis, save final output."""
+    dt = datetime.now()
+    SALARY_DIR.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+
+    # Load raw data
+    if not RAW_SALARY_FILE.exists():
+        print(f"ERROR: Raw data file not found: {RAW_SALARY_FILE}", file=sys.stderr)
+        print("Run with --scrape-only first to collect salary data.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(RAW_SALARY_FILE) as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"ERROR: Failed to read raw data: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    scrape_ts = raw.get("scrape_timestamp", "")
+    all_entries = raw.get("data", {}).get("entries", [])
+    stats = raw.get("data", {}).get("stats", {})
+    sources = raw.get("data", {}).get("sources", [])
+
+    # Check staleness
+    if scrape_ts:
+        try:
+            scrape_dt = datetime.fromisoformat(scrape_ts)
+            age_hours = (dt - scrape_dt).total_seconds() / 3600
+            if age_hours > 48:
+                log(f"WARNING: Raw data is {age_hours:.0f}h old (scraped {scrape_ts})")
+        except ValueError:
+            pass
+
+    log(f"Loaded {len(all_entries)} salary records from raw data (scraped {scrape_ts})")
 
     # ── LLM trend analysis ──
     log("Phase 3: LLM trend analysis...")
@@ -533,10 +895,12 @@ def main():
     duration = int(time.time() - t0)
     snapshot = {
         "meta": {
-            "timestamp": dt.isoformat(timespec="seconds"),
+            "scrape_timestamp": scrape_ts,
+            "analyze_timestamp": dt.isoformat(timespec="seconds"),
+            "timestamp": dt.isoformat(timespec="seconds"),  # backward compat
             "duration_seconds": duration,
             "total_records": len(all_entries),
-            "sources": list(set(e.get("source", "unknown") for e in all_entries)),
+            "sources": sources,
         },
         "stats": stats,
         "analysis": analysis,
@@ -554,21 +918,39 @@ def main():
     latest.unlink(missing_ok=True)
     latest.symlink_to(fname)
 
-    # Update history
-    history["daily_snapshots"].append({
-        "date": today,
-        "stats": stats,
-        "record_count": len(all_entries),
-    })
-    save_history(history)
-
     # Cleanup: keep last 60 daily snapshots
     snapshots = sorted(SALARY_DIR.glob("salary-2*.json"))
     for old in snapshots[:-60]:
         old.unlink(missing_ok=True)
 
     log(f"Saved: {out_path}")
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] salary-tracker done ({duration}s)", flush=True)
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] salary-tracker analyze done ({duration}s)", flush=True)
+
+
+# ── Main ───────────────────────────────────────────────────────────────────
+
+def main():
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+
+    parser = argparse.ArgumentParser(description="Salary tracker — salary & rate intelligence")
+    parser.add_argument('--scrape-only', action='store_true',
+                        help='Only collect salary data, save raw (no LLM)')
+    parser.add_argument('--analyze-only', action='store_true',
+                        help='Only run LLM analysis on previously scraped raw data')
+    args = parser.parse_args()
+
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] salary-tracker starting"
+          f"{' (scrape-only)' if args.scrape_only else ' (analyze-only)' if args.analyze_only else ''}", flush=True)
+
+    if args.scrape_only:
+        run_scrape()
+    elif args.analyze_only:
+        run_analyze()
+    else:
+        # Legacy: full run (backward compatible)
+        run_scrape()
+        run_analyze()
 
 
 if __name__ == "__main__":

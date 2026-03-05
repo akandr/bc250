@@ -1,0 +1,37 @@
+[Unit]
+Description=Queue Runner v7 — Continuous Loop + Signal Chat
+Documentation=https://github.com/akandr/bc250
+After=network-online.target ollama.service signal-cli.service
+Wants=network-online.target ollama.service signal-cli.service
+# Start after network is truly up and ollama is available
+# Rate-limit restarts: max 5 in 10 minutes, then back off
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=notify
+# Watchdog: process pings every 30s; 4h ceiling catches genuine hangs
+# without killing long jobs like career-scan (2h timeout)
+WatchdogSec=14400
+User=akandr
+Group=akandr
+WorkingDirectory=/opt/netscan
+ExecStartPre=/usr/bin/bash -c 'for i in $(seq 1 30); do curl -sf http://localhost:11434/api/tags >/dev/null 2>&1 && exit 0; sleep 2; done; echo "Ollama not ready after 60s, starting anyway"; exit 0'
+ExecStart=/usr/bin/python3 /opt/netscan/queue-runner.py
+Restart=always
+RestartSec=30
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=queue-runner
+
+# Graceful shutdown: SIGTERM → runner finishes current job → exits
+TimeoutStopSec=3600
+KillSignal=SIGTERM
+
+# Environment
+Environment=HOME=/home/akandr
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=multi-user.target
