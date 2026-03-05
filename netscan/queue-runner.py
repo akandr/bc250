@@ -776,6 +776,8 @@ def run_direct(job, cmd_str, timeout_s, gpu_free=False):
         # When gpu_free, also process Signal chat — GPU is idle during
         # scrape/infra jobs so we can answer messages in parallel.
         poll_interval = 10 if gpu_free else 30
+        chat_served = 0
+        chat_time = 0.0
         while proc.poll() is None:
             elapsed = time.time() - start
             if elapsed > deadline:
@@ -785,11 +787,22 @@ def run_direct(job, cmd_str, timeout_s, gpu_free=False):
                 return False, elapsed
             sd_watchdog_ping()
             if gpu_free:
-                process_signal_chat()
+                try:
+                    t0 = time.time()
+                    n = process_signal_chat(tag='parallel')
+                    if n:
+                        chat_served += n
+                        chat_time += time.time() - t0
+                    sd_watchdog_ping()  # ping again after potentially long chat
+                except Exception as e:
+                    log(f"  ⚠ Chat error during {name} (job continues): {e}")
             try:
                 proc.wait(timeout=poll_interval)
             except subprocess.TimeoutExpired:
                 pass  # Loop again — ping watchdog
+
+        if chat_served:
+            log(f"  📱 Served {chat_served} message(s) during {name} ({chat_time:.0f}s chat, GPU free)")
 
         t_out.join(timeout=5)
         t_err.join(timeout=5)
@@ -1129,12 +1142,15 @@ def clean_llm_reply(text):
     return text.strip()
 
 
-def chat_with_llm(user_text):
+def chat_with_llm(user_text, allow_sd=True):
     """Process a user message with LLM, optionally executing shell commands.
 
     Supports simple tool use: if the LLM outputs a line starting with EXEC:,
     the command is executed (with timeout) and the output fed back for a
     final response. Maximum SIGNAL_CHAT_MAX_EXEC commands per message.
+
+    When allow_sd=False (parallel chat during GPU-free jobs), image generation
+    requests are deferred — the user is told to try again between jobs.
 
     Returns the reply string to send via Signal.
     """
@@ -1341,6 +1357,10 @@ def chat_with_llm(user_text):
 
             # Intercept image generation — handle synchronously
             if cmd.startswith(SD_SCRIPT_PREFIX):
+                if not allow_sd:
+                    return ("🦞 Can't generate images right now — GPU is busy "
+                            "with a background job. Ask me again in a few minutes "
+                            "when I'm between jobs.")
                 sd_prompt = re.sub(
                     r'^/opt/stable-diffusion\.cpp/generate-and-send\.sh\s*',
                     '', cmd).strip()
@@ -1381,13 +1401,16 @@ def chat_with_llm(user_text):
     return reply
 
 
-def process_signal_chat():
+def process_signal_chat(tag=None):
     """Check for and process pending Signal messages from the owner.
 
-    Called between jobs in the main loop. Each message gets an LLM response
-    with optional shell tool use. This ensures the owner gets interactive
-    access to the system without any GPU concurrency issues — the previous
-    job has finished and the next one hasn't started yet.
+    Called between jobs in the main loop, or during GPU-free jobs (scrape/infra)
+    when tag='parallel'. Each message gets an LLM response with optional shell
+    tool use.
+
+    When tag='parallel', image generation is blocked (would stop Ollama and
+    interfere with the next LLM job) — the user gets a "try again between jobs"
+    message instead.
 
     Returns the number of messages processed.
     """
@@ -1396,13 +1419,14 @@ def process_signal_chat():
         return 0
 
     count = len(messages)
-    log(f"  📱 {count} Signal message(s) from owner")
-    sd_status(f'Signal chat: {count} message(s)')
+    where = f' [{tag}]' if tag else ''
+    log(f"  📱 {count} Signal message(s) from owner{where}")
+    sd_status(f'Signal chat: {count} message(s){where}')
 
     for i, msg in enumerate(messages):
         text = msg['text']
         log(f"    [{i+1}/{count}] {text[:80]}{'...' if len(text) > 80 else ''}")
-        reply = chat_with_llm(text)
+        reply = chat_with_llm(text, allow_sd=(tag != 'parallel'))
         signal_reply(reply)
         log(f"    Replied: {reply[:80]}{'...' if len(reply) > 80 else ''}")
         sd_watchdog_ping()
