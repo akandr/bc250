@@ -32,6 +32,8 @@ KillSignal=SIGTERM
 # Environment
 Environment=HOME=/home/akandr
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
+# Signal phone numbers loaded from file NOT in git
+EnvironmentFile=/etc/sysconfig/queue-runner
 
 [Install]
 WantedBy=multi-user.target

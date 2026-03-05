@@ -99,8 +99,8 @@ SD_NOTIFY = 'NOTIFY_SOCKET' in os.environ  # systemd watchdog support
 # Interactive chat: between jobs, check for messages from the owner on Signal.
 # Process each with LLM (with optional shell tool use) and reply.
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
-SIGNAL_ACCOUNT = "+<BOT_PHONE>"
-SIGNAL_OWNER = "+<OWNER_PHONE>"       # Only process messages from this number
+SIGNAL_ACCOUNT = os.environ.get('SIGNAL_ACCOUNT', '+<BOT_PHONE>')
+SIGNAL_OWNER = os.environ.get('SIGNAL_OWNER', '+<OWNER_PHONE>')
 SIGNAL_CHAT_MODEL = "huihui_ai/qwen3-abliterated:14b"
 SIGNAL_CHAT_CTX = 16384             # Context window for chat responses (matches OLLAMA_CONTEXT_LENGTH)
 SIGNAL_CHAT_MAX_EXEC = 3            # Max shell commands per message (search+fetch+verify)
