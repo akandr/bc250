@@ -6,7 +6,7 @@ v3: security page, per-host detail pages, mDNS names, port change display,
 Reads scan JSON from /opt/netscan/data/, outputs static HTML to /opt/netscan/web/
 Location on bc250: /opt/netscan/generate-html.py
 """
-import json, os, glob, re
+import json, os, glob, re, base64, urllib.parse
 from datetime import datetime, timedelta
 from html import escape
 
@@ -885,10 +885,15 @@ def page_wrap(title, body, active_page="index"):
         label = fcfg.get("nav_label", fid.upper())
         nav_items.append((f"/{slug}.html", label, slug))
     # Issues and Notes pages (only if configs exist)
-    if REPO_FEEDS:
-        nav_items.append(("/issues.html", "ISSUES", "issues"))
+    nav_items.append(("/issues.html", "ISSUES", "issues"))
+    nav_items.append(("/home.html", "HOME", "home"))
     nav_items.append(("/notes.html", "NOTES", "notes"))
+    nav_items.append(("/academic.html", "ACADEMIC", "academic"))
+    nav_items.append(("/radio.html", "RADIO", "radio"))
+    nav_items.append(("/events.html", "EVENTS", "events"))
     nav_items.append(("/career.html", "CAREERS", "career"))
+    nav_items.append(("/car.html", "CAR", "car"))
+    nav_items.append(("/advisor.html", "ADVISOR", "advisor"))
     nav_items.append(("/load.html", "LOAD", "load"))
     nav_items.append(("/leaks.html", "LEAKS", "leaks"))
     nav_items += [
@@ -1028,6 +1033,453 @@ def short_date(d):
         return datetime.strptime(str(d), "%Y%m%d").strftime("%d %b")
     except:
         return str(d)
+
+def format_dual_timestamps(meta):
+    """Format scrape+analyze timestamps for dashboard display.
+    Falls back to single timestamp if dual timestamps not available."""
+    scrape_ts = meta.get("scrape_timestamp", "")[:16] if meta.get("scrape_timestamp") else ""
+    analyze_ts = meta.get("analyze_timestamp", meta.get("timestamp", ""))[:16] if meta.get("analyze_timestamp") or meta.get("timestamp") else ""
+    if scrape_ts and analyze_ts and scrape_ts != analyze_ts:
+        return f'🔍 {e(scrape_ts.replace("T"," "))} · 🧠 {e(analyze_ts.replace("T"," "))}'
+    ts = analyze_ts or scrape_ts
+    return f'{e(ts.replace("T"," "))}' if ts else "?"
+
+def timestamp_health_color(meta):
+    """Return CSS color based on data freshness.
+    Green: scraped AND analyzed within 36h
+    Yellow: scraped within 36h, analysis older
+    Red: scraping older than 48h"""
+    now = datetime.now()
+    scrape_ts = meta.get("scrape_timestamp", "") or meta.get("timestamp", "")
+    analyze_ts = meta.get("analyze_timestamp", "") or meta.get("timestamp", "")
+    try:
+        scrape_dt = datetime.fromisoformat(scrape_ts[:19]) if scrape_ts else None
+    except (ValueError, TypeError):
+        scrape_dt = None
+    try:
+        analyze_dt = datetime.fromisoformat(analyze_ts[:19]) if analyze_ts else None
+    except (ValueError, TypeError):
+        analyze_dt = None
+    if not scrape_dt:
+        return "var(--fg-dim)"  # unknown
+    scrape_age_h = (now - scrape_dt).total_seconds() / 3600
+    if scrape_age_h > 48:
+        return "#f44"  # red
+    if analyze_dt:
+        analyze_age_h = (now - analyze_dt).total_seconds() / 3600
+        if analyze_age_h > 36:
+            return "#fa0"  # yellow
+    if scrape_age_h <= 36:
+        return "#4f4"  # green
+    return "#fa0"  # yellow
+
+
+# ─── Page: Home (home.html) ──────────────────────────────────────────────
+
+def gen_home():
+    """Generate the Home Assistant + Neighborhood dashboard page."""
+    import glob as _glob
+
+    # ── Load HA correlate data ────────────────────────────────────────────
+    correlate_path = os.path.join(DATA_DIR, "correlate", "latest-correlate.json")
+    correlate = load_json(correlate_path) or {}
+
+    # ── Load HA journal notes (type=home) ─────────────────────────────────
+    think_dir = os.path.join(DATA_DIR, "think")
+    home_notes = []
+    if os.path.isdir(think_dir):
+        for fp in sorted(_glob.glob(os.path.join(think_dir, "note-home-*.json")))[-5:]:
+            if "insights" in os.path.basename(fp):
+                continue  # skip insight notes — loaded separately below
+            try:
+                with open(fp) as f:
+                    note = json.load(f)
+                if isinstance(note, dict) and note.get("content"):
+                    home_notes.append(note)
+            except:
+                pass
+
+    # ── Load HA correlate insights notes ──────────────────────────────────
+    insight_notes = []
+    if os.path.isdir(think_dir):
+        for fp in sorted(_glob.glob(os.path.join(think_dir, "note-home-insights-*.json")))[-3:]:
+            try:
+                with open(fp) as f:
+                    note = json.load(f)
+                if isinstance(note, dict) and note.get("content", note.get("text", "")):
+                    insight_notes.append(note)
+            except:
+                pass
+
+    # ── Load car tracker data ─────────────────────────────────────────────
+    car_path = os.path.join(DATA_DIR, "car-tracker", "latest-car-tracker.json")
+    car_data = load_json(car_path) or {}
+
+    # ── Load city-watch data ──────────────────────────────────────────────
+    city_path = os.path.join(DATA_DIR, "city", "latest-city.json")
+    city_data = load_json(city_path) or {}
+
+    # ── Load city-watch think notes ───────────────────────────────────────
+    city_notes = []
+    if os.path.isdir(think_dir):
+        for fp in sorted(_glob.glob(os.path.join(think_dir, "note-city-watch-*.json")))[-3:]:
+            try:
+                with open(fp) as f:
+                    note = json.load(f)
+                if isinstance(note, dict) and note.get("content"):
+                    city_notes.append(note)
+            except:
+                pass
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 1: Climate Overview (from correlate sensor_stats)
+    # ════════════════════════════════════════════════════════════════════════
+    sensor_stats = correlate.get("sensor_stats", {})
+    sparse_sensors = correlate.get("sparse_sensors", {})
+    all_sensors = {**sensor_stats, **sparse_sensors}
+
+    temps = {eid: s for eid, s in all_sensors.items() if s.get("group") == "temperature"}
+    humidity = {eid: s for eid, s in all_sensors.items() if s.get("group") == "humidity"}
+    co2_sensors = {eid: s for eid, s in all_sensors.items() if s.get("group") == "co2"}
+    voc_sensors = {eid: s for eid, s in all_sensors.items() if s.get("group") == "voc"}
+    pm25_sensors = {eid: s for eid, s in all_sensors.items() if s.get("group") == "pm25"}
+
+    corr_ts = correlate.get("generated", "")[:16]
+
+    # Temperature cards
+    temp_cards = ""
+    for eid, s in sorted(temps.items(), key=lambda x: x[1].get("room", "")):
+        room = e(s.get("room", "?"))
+        curr = s.get("current", 0)
+        mean = s.get("mean", 0)
+        trend = s.get("trend", 0)
+        trend_arrow = "↗" if trend > 0.5 else ("↘" if trend < -0.5 else "→")
+        # Color: cold < 18, ok 18-24, warm > 24
+        tc = "var(--cyan)" if curr < 18 else ("var(--green)" if curr <= 24 else "var(--red)")
+        temp_cards += f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;min-width:120px;text-align:center">
+          <div style="color:var(--fg-dim);font-size:0.8rem">{room}</div>
+          <div style="color:{tc};font-size:1.6rem;font-weight:bold">{curr:.1f}°C</div>
+          <div style="color:var(--fg-dim);font-size:0.75rem">{trend_arrow} {trend:+.1f}°C · avg {mean:.1f}°C</div>
+        </div>"""
+
+    # Air quality cards
+    aq_cards = ""
+    for eid, s in sorted(list(co2_sensors.items()) + list(voc_sensors.items()) + list(pm25_sensors.items()),
+                          key=lambda x: x[1].get("room", "")):
+        room = e(s.get("room", "?"))
+        group = s.get("group", "?")
+        curr = s.get("current", 0)
+        unit = s.get("unit", "")
+        # Concern thresholds
+        if group == "co2":
+            color = "var(--green)" if curr < 800 else ("var(--amber)" if curr < 1200 else "var(--red)")
+            icon = "💨"
+            label = "CO₂"
+        elif group == "voc":
+            try:
+                val = float(curr)
+            except (ValueError, TypeError):
+                val = 0
+            color = "var(--green)" if val < 0.3 else ("var(--amber)" if val < 0.5 else "var(--red)")
+            icon = "🧪"
+            label = "VOC"
+        elif group == "pm25":
+            try:
+                val = float(curr)
+            except (ValueError, TypeError):
+                val = 0
+            color = "var(--green)" if val < 15 else ("var(--amber)" if val < 25 else "var(--red)")
+            icon = "🌫️"
+            label = "PM2.5"
+        else:
+            color = "var(--fg-dim)"
+            icon = "📊"
+            label = group.upper()
+
+        aq_cards += f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;min-width:120px;text-align:center">
+          <div style="color:var(--fg-dim);font-size:0.8rem">{icon} {room}</div>
+          <div style="color:{color};font-size:1.4rem;font-weight:bold">{curr} {e(unit)}</div>
+          <div style="color:var(--fg-dim);font-size:0.75rem">{label}</div>
+        </div>"""
+
+    climate_section = f"""
+<div class="section">
+  <div class="section-title">🌡️ CLIMATE & AIR QUALITY <span style="color:var(--fg-dim);font-size:0.8rem">// {e(corr_ts)}</span></div>
+  <div class="section-body">
+    <div style="margin-bottom:12px;color:var(--fg-dim);font-size:0.85rem">Temperatures (24h)</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">{temp_cards}</div>
+    <div style="margin-bottom:12px;color:var(--fg-dim);font-size:0.85rem">Air Quality</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">{aq_cards}</div>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 2: Room Usage (from correlate room_usage)
+    # ════════════════════════════════════════════════════════════════════════
+    room_usage = correlate.get("room_usage", {})
+    usage_rows = ""
+    for room, u in sorted(room_usage.items(), key=lambda x: -x[1].get("lit_hours", 0)):
+        lit = u.get("lit_hours", 0)
+        switches = u.get("switch_on_count", 0)
+        peak = u.get("peak_hour", "")
+        first_act = u.get("first_activity", "")
+        last_act = u.get("last_activity", "")
+        bar_pct = min(100, lit / 16 * 100) if lit else 0
+        bar_color = "var(--cyan)" if lit < 4 else ("var(--amber)" if lit < 8 else "var(--green)")
+        usage_rows += f"""<tr>
+          <td style="color:var(--cyan)">{e(room)}</td>
+          <td style="text-align:right">{lit:.1f}h</td>
+          <td><div style="background:var(--bg2);border-radius:3px;height:12px;width:100px">
+            <div style="background:{bar_color};border-radius:3px;height:12px;width:{bar_pct:.0f}px"></div>
+          </div></td>
+          <td style="text-align:center;color:var(--fg-dim)">{switches}</td>
+          <td style="color:var(--fg-dim)">{first_act}–{last_act}</td>
+          <td style="color:var(--fg-dim)">{peak}:00</td>
+        </tr>"""
+
+    usage_section = ""
+    if usage_rows:
+        usage_section = f"""
+<div class="section">
+  <div class="section-title">🏠 ROOM USAGE (24h)</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Room</th><th>Lit</th><th></th><th>Switches</th><th>Active</th><th>Peak</th></tr></thead>
+      <tbody>{usage_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 3: Garage & Vehicle (from correlate garage_events)
+    # ════════════════════════════════════════════════════════════════════════
+    garage_events = correlate.get("garage_events", [])
+    garage_html = ""
+    if garage_events:
+        ge_cards = ""
+        for ge in garage_events:
+            emoji = "🚗" if ge.get("type") == "car_returned" else "🚙💨"
+            ge_type = ge.get("type", "?").replace("_", " ").title()
+            ge_cards += f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:6px">
+              <span style="font-size:1.2rem">{emoji}</span>
+              <span style="color:var(--cyan);font-weight:bold">{e(ge.get('time_local', '?'))}</span>
+              <span style="color:var(--amber);margin-left:8px">{e(ge_type)}</span>
+              <span style="color:var(--fg-dim);margin-left:8px;font-size:0.85rem">{e(ge.get('detail', ''))}</span>
+            </div>"""
+        garage_html = f"""
+<div class="section">
+  <div class="section-title">🚗 GARAGE & VEHICLE</div>
+  <div class="section-body">{ge_cards}</div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 3b: Car Tracker (compact summary → links to /car.html)
+    # ════════════════════════════════════════════════════════════════════════
+    car_html = ""
+    car_status = car_data.get("current_status", {})
+    car_trips = car_data.get("trips", [])
+    car_mileage = car_data.get("mileage", {})
+    car_meta = car_data.get("meta", {})
+    car_generated = car_data.get("generated", "")[:16]
+
+    if car_status or car_trips:
+        # Compact status line
+        status_line = ""
+        if car_status:
+            is_moving = car_status.get("is_moving", False)
+            status_emoji = "🏃" if is_moving else "🅿️"
+            status_text = f"{car_status.get('speed_kmh', 0)} km/h" if is_moving else "Parked"
+            status_color = "var(--amber)" if is_moving else "var(--green)"
+            parked_info = ""
+            if car_status.get("parked_duration_h"):
+                parked_info = f' · {car_status["parked_duration_h"]:.1f}h'
+            location = e(car_status.get("location", "?"))
+            odo = car_status.get("total_mileage_km", 0)
+            status_line = f"""<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+              <span style="font-size:1.6rem">{status_emoji}</span>
+              <span style="color:{status_color};font-weight:bold">{status_text}{parked_info}</span>
+              <span style="color:var(--cyan)">{location}</span>
+              <span style="color:var(--fg-dim);font-size:0.8rem">ODO: {odo:,.0f} km</span>
+            </div>"""
+
+        # Quick stats
+        avg_km = car_mileage.get("avg_km", 0) if car_mileage else 0
+        zero_days = car_mileage.get("zero_days", 0) if car_mileage else 0
+        stats_line = f"""<div style="display:flex;gap:24px;font-size:0.9rem;margin-bottom:8px">
+          <span><span style="color:var(--green);font-weight:bold">{len(car_trips)}</span> <span style="color:var(--fg-dim)">trips ({car_meta.get('track_days', 0)}d)</span></span>
+          <span><span style="color:var(--cyan);font-weight:bold">{avg_km:.1f}</span> <span style="color:var(--fg-dim)">km/day avg</span></span>
+          <span><span style="color:var(--fg-dim)">{zero_days} idle days</span></span>
+        </div>"""
+
+        # Last 3 trips inline
+        last_trips = ""
+        for t in car_trips[-3:][::-1]:
+            from_loc = e(t.get("start_location", "?"))[:15]
+            to_loc = e(t.get("end_location", "?"))[:15]
+            dist = t.get("distance_km", 0)
+            ts = t.get("start_ts", "?")[5:]
+            last_trips += f'<div style="font-size:0.82rem;color:var(--fg-dim)">{ts} <span style="color:var(--cyan)">{from_loc}</span> → <span style="color:var(--cyan)">{to_loc}</span> {dist:.1f} km</div>'
+
+        track_pts = car_meta.get("track_points", 0)
+        car_html = f"""
+<div class="section">
+  <div class="section-title">🚗 CAR TRACKER — <a href="/car.html" style="color:var(--amber)">full dashboard →</a> <span style="color:var(--fg-dim);font-size:0.8rem">// {e(car_generated)} · {track_pts} pts</span></div>
+  <div class="section-body">
+    {status_line}
+    {stats_line}
+    {last_trips}
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 4: AI Analysis (latest LLM insights from correlate + journal)
+    # ════════════════════════════════════════════════════════════════════════
+    llm_analysis = correlate.get("llm_analysis", "")
+    analysis_html = ""
+    if llm_analysis:
+        # Convert markdown to basic HTML
+        import re as _re
+        formatted = e(llm_analysis)
+        formatted = _re.sub(r'^## (.+)$', r'<h3 style="color:var(--amber);margin:16px 0 8px">\1</h3>', formatted, flags=_re.MULTILINE)
+        formatted = _re.sub(r'^- (.+)$', r'<div style="padding-left:16px;margin:2px 0">• \1</div>', formatted, flags=_re.MULTILINE)
+        formatted = _re.sub(r'\*\*([^*]+)\*\*', r'<strong style="color:var(--cyan)">\1</strong>', formatted)
+        formatted = formatted.replace("\n\n", "<br><br>").replace("\n", "<br>")
+        analysis_html = f"""
+<div class="section">
+  <div class="section-title">🤖 AI HOME ANALYSIS</div>
+  <div class="section-body" style="font-size:0.88rem;line-height:1.5">{formatted}</div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 5: Latest Home Journal Notes
+    # ════════════════════════════════════════════════════════════════════════
+    journal_html = ""
+    latest_notes = (home_notes + insight_notes)
+    latest_notes.sort(key=lambda n: n.get("generated", ""), reverse=True)
+    if latest_notes:
+        import re as _re
+        note_cards = ""
+        for note in latest_notes[:3]:
+            title = e(note.get("title", "Home Journal"))
+            ts = e(note.get("generated", "")[:16])
+            content = note.get("content", note.get("text", ""))
+            # Simple markdown rendering
+            formatted = e(content[:1500])
+            formatted = _re.sub(r'^#### (.+)$', r'<div style="color:var(--amber);font-weight:bold;margin:12px 0 4px">\1</div>', formatted, flags=_re.MULTILINE)
+            formatted = _re.sub(r'^### (.+)$', r'<div style="color:var(--amber);font-weight:bold;font-size:1.05rem;margin:12px 0 4px">\1</div>', formatted, flags=_re.MULTILINE)
+            formatted = _re.sub(r'^- (.+)$', r'<div style="padding-left:16px;margin:2px 0">• \1</div>', formatted, flags=_re.MULTILINE)
+            formatted = _re.sub(r'\*\*([^*]+)\*\*', r'<strong style="color:var(--cyan)">\1</strong>', formatted)
+            formatted = formatted.replace("\n\n", "<br><br>").replace("\n", "<br>")
+
+            note_cards += f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="color:var(--amber);font-weight:bold">{title}</span>
+                <span style="color:var(--fg-dim);font-size:0.8rem">{ts}</span>
+              </div>
+              <div style="font-size:0.85rem;line-height:1.5;max-height:400px;overflow-y:auto">{formatted}</div>
+            </div>"""
+
+        journal_html = f"""
+<div class="section">
+  <div class="section-title">📝 HOME JOURNAL (latest observations)</div>
+  <div class="section-body">{note_cards}</div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 6: Neighborhood Watch (SkyscraperCity city-watch data)
+    # ════════════════════════════════════════════════════════════════════════
+    city_html = ""
+    city_threads = city_data.get("threads", [])
+    city_meta = city_data.get("meta", {})
+    city_analysis = city_data.get("llm_analysis", "")
+
+    if city_threads or city_analysis:
+        # City analysis briefing
+        city_briefing = ""
+        if city_analysis:
+            import re as _re
+            formatted = e(city_analysis)
+            formatted = _re.sub(r'^## (.+)$', r'<h3 style="color:var(--amber);margin:16px 0 8px">\1</h3>', formatted, flags=_re.MULTILINE)
+            formatted = _re.sub(r'^- (.+)$', r'<div style="padding-left:16px;margin:2px 0">• \1</div>', formatted, flags=_re.MULTILINE)
+            formatted = _re.sub(r'\*\*([^*]+)\*\*', r'<strong style="color:var(--cyan)">\1</strong>', formatted)
+            formatted = formatted.replace("\n\n", "<br><br>").replace("\n", "<br>")
+            city_briefing = f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:16px;font-size:0.88rem;line-height:1.5">{formatted}</div>"""
+        elif city_notes:
+            # Use latest city-watch think note as backup
+            latest_cn = city_notes[-1]
+            formatted = e(latest_cn.get("content", "")[:1500])
+            formatted = formatted.replace("\n\n", "<br><br>").replace("\n", "<br>")
+            city_briefing = f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:16px;font-size:0.88rem;line-height:1.5">{formatted}</div>"""
+
+        # Thread listing
+        thread_rows = ""
+        for t in city_threads[:20]:
+            title = e(t.get("title", "?"))[:65]
+            url = t.get("url", "")
+            score = t.get("total_score", 0)
+            kw = e(", ".join(t.get("matched_keywords", [])[:4]))
+            posts = t.get("recent_posts", 0)
+            sc = "var(--green)" if score >= 5 else ("var(--amber)" if score >= 2 else "var(--fg-dim)")
+            watch = " 👁️" if t.get("always_watch") else ""
+            title_link = f'<a href="{e(url)}" target="_blank" style="color:var(--cyan);text-decoration:none">{title}</a>' if url else title
+
+            thread_rows += f"""<tr>
+              <td style="color:{sc};font-weight:bold;text-align:center">{score:.0f}</td>
+              <td>{title_link}{watch}</td>
+              <td style="color:var(--purple);font-size:0.8rem">{kw}</td>
+              <td style="color:var(--fg-dim);text-align:center">{posts}</td>
+            </tr>"""
+
+        city_ts = format_dual_timestamps(city_meta)
+        city_relevant = city_meta.get("relevant", 0)
+        city_total = city_meta.get("total_threads_scanned", 0)
+
+        city_html = f"""
+<div class="section">
+  <div class="section-title">🏗️ NEIGHBORHOOD WATCH — Do Folwarku, Widzew <span style="color:var(--fg-dim);font-size:0.8rem">// {city_ts} · {city_relevant}/{city_total} threads</span></div>
+  <div class="section-body">
+    {city_briefing}
+    <table class="host-table">
+      <thead><tr><th>Score</th><th>Thread</th><th>Keywords</th><th>Posts</th></tr></thead>
+      <tbody>{thread_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Assemble page
+    # ════════════════════════════════════════════════════════════════════════
+    body = climate_section
+    if usage_section:
+        body += usage_section
+    if garage_html:
+        body += garage_html
+    if car_html:
+        body += car_html
+    if analysis_html:
+        body += analysis_html
+    if journal_html:
+        body += journal_html
+    if city_html:
+        body += city_html
+
+    # Empty state
+    if not sensor_stats and not city_threads:
+        body = """
+<div class="section">
+  <div class="section-title">🏠 HOME</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🏠</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No home data yet</div>
+    <div style="margin-top:12px;font-size:0.9rem">
+      ha-correlate.py runs 4× daily analyzing Home Assistant sensors.<br>
+      ha-journal.py creates journal entries with climate, rooms, and recommendations.<br>
+      city-watch.py monitors SkyscraperCity for neighborhood updates.
+    </div>
+  </div>
+</div>"""
+
+    return page_wrap("HOME", body, "home")
 
 
 # ─── Page: Dashboard (index.html) ───
@@ -1378,7 +1830,37 @@ def gen_dashboard(all_scans):
   </div>
 </div>"""
 
-    body = stats + types_section + presence_html + diff_html + port_change_html + security_html + vuln_summary_html + wd_html + health_html + top_html
+    # ── Executive Summary (LLM-generated daily briefing) ──
+    summary_html = ""
+    summary_data = load_json(f"{DATA_DIR}/summary/latest-summary.json")
+    if summary_data and summary_data.get("summary"):
+        sum_text = summary_data["summary"]
+        sum_date = e(summary_data.get("date", ""))
+        sum_gen = summary_data.get("generated", "")[:16]
+        src_count = summary_data.get("source_count", 0)
+        # Convert newlines to HTML, preserve emoji headers
+        sum_lines = []
+        for line in sum_text.split("\n"):
+            stripped = line.strip()
+            if not stripped:
+                sum_lines.append("<br>")
+            elif stripped.startswith(("🔑", "📊", "🔬", "🏠", "📡", "⚡")):
+                sum_lines.append(f'<div style="color:var(--cyan);font-weight:bold;margin-top:10px">{e(stripped)}</div>')
+            elif stripped.lower().startswith("bottom line:"):
+                sum_lines.append(f'<div style="color:var(--amber);font-weight:bold;margin-top:10px;border-top:1px solid var(--border);padding-top:8px">{e(stripped)}</div>')
+            elif stripped.startswith(("- ", "• ", "* ")):
+                sum_lines.append(f'<div style="margin:2px 0 2px 16px;color:var(--fg)">{e(stripped)}</div>')
+            else:
+                sum_lines.append(f'<div style="color:var(--fg)">{e(stripped)}</div>')
+        summary_html = f"""
+<div class="section" style="border-color:var(--cyan)">
+  <div class="section-title">📋 DAILY BRIEFING — {sum_date} <span style="color:var(--fg-dim);font-size:0.75rem">generated {e(sum_gen)} from {src_count} sources</span></div>
+  <div class="section-body" style="font-size:0.88rem;line-height:1.5">
+    {"".join(sum_lines)}
+  </div>
+</div>"""
+
+    body = summary_html + stats + types_section + presence_html + diff_html + port_change_html + security_html + vuln_summary_html + wd_html + health_html + top_html
     return page_wrap("DASHBOARD", body, "index")
 
 
@@ -1533,13 +2015,12 @@ def gen_leaks():
         cat_counts[c] = cat_counts.get(c, 0) + 1
 
     # ── Recent findings (last 7 days) ──
-    from datetime import timedelta as _td
-    cutoff_7d = (datetime.now() - _td(days=7)).isoformat()
+    cutoff_7d = (datetime.now() - timedelta(days=7)).isoformat()
     recent = [f for f in findings if f.get("first_seen", "") > cutoff_7d]
     recent.sort(key=lambda x: x.get("first_seen", ""), reverse=True)
 
     # ── 24h findings ──
-    cutoff_24h = (datetime.now() - _td(hours=24)).isoformat()
+    cutoff_24h = (datetime.now() - timedelta(hours=24)).isoformat()
     last_24h = [f for f in findings if f.get("first_seen", "") > cutoff_24h]
 
     # ── Stat boxes ──
@@ -1618,12 +2099,11 @@ def gen_leaks():
     analysis_html = ""
     if last_analysis:
         analysis_date = stats.get("last_analysis_date", "")[:16]
-        safe_analysis = last_analysis.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         analysis_html = f"""
     <div class="section">
       <div class="section-title">▸ 🤖 LLM THREAT ANALYSIS ({analysis_date})</div>
       <div class="section-body">
-        <div class="log-view" style="max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:0.82em;line-height:1.5">{safe_analysis}</div>
+        <div class="log-view" style="max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:0.82em;line-height:1.5">{e(last_analysis)}</div>
       </div>
     </div>"""
 
@@ -1636,13 +2116,13 @@ def gen_leaks():
         sev_color = "var(--red)" if f["severity"] == "critical" else "var(--amber)"
         sev_label = f["severity"].upper()[:4]
         url = f.get("url", "")
-        title_safe = f.get("title", "?")[:120].replace("&", "&amp;").replace("<", "&lt;")
+        title_safe = e(f.get("title", "?")[:120])
         if url:
-            title_safe = f'<a href="{url}" target="_blank" rel="noopener" style="color:var(--cyan)">{title_safe}</a>'
+            title_safe = f'<a href="{e(url)}" target="_blank" rel="noopener" style="color:var(--cyan)">{title_safe}</a>'
         ch_rows += f"""<tr>
           <td style="color:var(--fg-dim);white-space:nowrap">{ts}</td>
           <td style="color:{sev_color};font-weight:bold">{sev_label}</td>
-          <td>{f.get('source','?')}</td>
+          <td>{e(f.get('source','?'))}</td>
           <td>{title_safe}</td>
         </tr>"""
 
@@ -1667,11 +2147,11 @@ def gen_leaks():
                    "medium": ("var(--fg)", "MED"), "low": ("var(--fg-dim)", "LOW"),
                    "info": ("var(--fg-dim)", "INFO")}
         sev_color, sev_label = sev_map.get(f.get("severity", "info"), ("var(--fg-dim)", "?"))
-        title_safe = f.get("title", "?")[:140].replace("&", "&amp;").replace("<", "&lt;")
+        title_safe = e(f.get("title", "?")[:140])
         url = f.get("url", "")
         if url:
-            title_safe = f'<a href="{url}" target="_blank" rel="noopener" style="color:var(--cyan)">{title_safe}</a>'
-        summary = f.get("summary", "")[:200].replace("&", "&amp;").replace("<", "&lt;")
+            title_safe = f'<a href="{e(url)}" target="_blank" rel="noopener" style="color:var(--cyan)">{title_safe}</a>'
+        summary = e(f.get("summary", "")[:200])
         recent_rows += f"""<tr>
           <td style="color:var(--fg-dim);white-space:nowrap">{ts}</td>
           <td style="color:{sev_color}">{sev_label}</td>
@@ -2075,9 +2555,8 @@ def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None, watchdog_d
                 expired_cls = ""
                 if not_after:
                     try:
-                        from datetime import datetime as _dt
-                        exp_date = _dt.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
-                        if exp_date < _dt.now():
+                        exp_date = datetime.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
+                        if exp_date < datetime.now():
                             expired_cls = " expired"
                     except:
                         pass
@@ -2284,8 +2763,6 @@ def gen_host_detail(ip, h, all_scans, enum_data=None, vuln_data=None, watchdog_d
     </div>
   </div>
 </div>"""
-
-    body = header + f'<div class="detail-grid"><div>{info_html}</div><div>{security_sec}</div></div>' + mdns_html + ports_html + history_html
 
     # Wrap in info section
     body = header + f"""
@@ -2717,101 +3194,93 @@ def gen_feed_page(feed_id, feed_cfg):
 # ─── Page: Issues (issues.html) — GitHub/GitLab repo issue tracker ───
 
 def gen_issues():
-    """Generate the repository issues monitoring page."""
-    if not REPO_FEEDS:
-        body = """
-<div class="section">
-  <div class="section-title">🐛 REPOSITORY ISSUE TRACKER</div>
-  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
-    No repository feeds configured (repo-feeds.json)
-  </div>
-</div>"""
-        return page_wrap("ISSUES", body, "issues")
+    """Generate the repository issues + CSI sensor monitoring page."""
+    repo_section = ""
+    csi_section = ""
 
-    all_cards = ""
-    total_interesting = 0
-    total_repos_checked = 0
+    # ── Repo feeds section ──
+    if REPO_FEEDS:
+        all_cards = ""
+        total_interesting = 0
+        total_repos_checked = 0
 
-    for rid, rcfg in REPO_FEEDS.items():
-        repo_dir = os.path.join(DATA_DIR, rcfg.get("data_dir", f"repos/{rid}"))
-        latest_path = os.path.join(repo_dir, "latest.json")
-        repo_name = rcfg.get("name", rid)
-        repo_emoji = rcfg.get("emoji", "📦")
-        web_url = rcfg.get("web_url", "")
+        for rid, rcfg in REPO_FEEDS.items():
+            repo_dir = os.path.join(DATA_DIR, rcfg.get("data_dir", f"repos/{rid}"))
+            latest_path = os.path.join(repo_dir, "latest.json")
+            repo_name = rcfg.get("name", rid)
+            repo_emoji = rcfg.get("emoji", "\U0001f4e6")
+            web_url = rcfg.get("web_url", "")
 
-        data = load_json(latest_path) if os.path.exists(latest_path) else None
+            data = load_json(latest_path) if os.path.exists(latest_path) else None
 
-        if not data:
-            all_cards += f"""
+            if not data:
+                all_cards += f"""
 <div class="section">
   <div class="section-title">{repo_emoji} {e(repo_name.upper())}</div>
   <div class="section-body" style="color:var(--fg-dim);padding:16px">
-    ⏳ Not checked yet — waiting for first repo-watch run
+    \u23f3 Not checked yet \u2014 waiting for first repo-watch run
   </div>
 </div>"""
-            continue
+                continue
 
-        total_repos_checked += 1
-        interesting = data.get("interesting", [])
-        total_interesting += len(interesting)
-        checked = data.get("checked", "?")
-        total_items = data.get("total_items", 0)
-        other_count = data.get("other_count", 0)
+            total_repos_checked += 1
+            interesting = data.get("interesting", [])
+            total_interesting += len(interesting)
+            checked = data.get("checked", "?")
+            total_items = data.get("total_items", 0)
+            other_count = data.get("other_count", 0)
 
-        # Build issue/MR cards
-        item_rows = ""
-        for item in interesting[:20]:
-            iid = item.get("id", "?")
-            itype = item.get("type", "issue")
-            title = e(item.get("title", "?"))
-            score = item.get("score", 0)
-            author = e(item.get("author", "?"))
-            url = item.get("url", "")
-            labels = item.get("labels", [])
-            comments = item.get("comments", 0)
-            reactions = item.get("reactions", 0)
-            keywords = item.get("keywords", [])
-            is_new = item.get("is_new", False)
-            body_preview = e(item.get("body_preview", "")[:200])
+            item_rows = ""
+            for item in interesting[:20]:
+                iid = item.get("id", "?")
+                itype = item.get("type", "issue")
+                title = e(item.get("title", "?"))
+                score = item.get("score", 0)
+                author = e(item.get("author", "?"))
+                url = item.get("url", "")
+                labels = item.get("labels", [])
+                comments = item.get("comments", 0)
+                reactions = item.get("reactions", 0)
+                keywords = item.get("keywords", [])
+                is_new = item.get("is_new", False)
+                body_preview = e(item.get("body_preview", "")[:200])
 
-            type_icon = "🔀" if "merge" in itype or "pull" in itype else ("📩" if "patch" in itype else ("📦" if "series" in itype else "🐛"))
-            new_badge = ' <span style="background:var(--green);color:#000;padding:1px 6px;font-size:0.75rem;font-weight:bold">NEW</span>' if is_new else ""
-            score_cls = "green" if score >= 8 else ("amber" if score >= 4 else "fg-dim")
-            kw_chips = " ".join(f'<span class="port-chip">{e(k)}</span>' for k in keywords[:5])
-            label_chips = " ".join(f'<span style="background:var(--bg3);color:var(--magenta);padding:1px 4px;font-size:0.75rem;border:1px solid var(--border)">{e(l)}</span>' for l in labels[:4])
+                type_icon = "\U0001f500" if "merge" in itype or "pull" in itype else ("\U0001f4e9" if "patch" in itype else ("\U0001f4e6" if "series" in itype else "\U0001f41b"))
+                new_badge = ' <span style="background:var(--green);color:#000;padding:1px 6px;font-size:0.75rem;font-weight:bold">NEW</span>' if is_new else ""
+                score_cls = "green" if score >= 8 else ("amber" if score >= 4 else "fg-dim")
+                kw_chips = " ".join(f'<span class="port-chip">{e(k)}</span>' for k in keywords[:5])
+                label_chips = " ".join(f'<span style="background:var(--bg3);color:var(--magenta);padding:1px 4px;font-size:0.75rem;border:1px solid var(--border)">{e(l)}</span>' for l in labels[:4])
+                link_html = f'<a href="{e(url)}" style="color:var(--cyan)">#{iid}</a>' if url else f"#{iid}"
 
-            link_html = f'<a href="{e(url)}" style="color:var(--cyan)">#{iid}</a>' if url else f"#{iid}"
-
-            item_rows += f"""<div style="border:1px solid var(--border);background:var(--bg2);padding:10px;margin-bottom:8px">
+                item_rows += f"""<div style="border:1px solid var(--border);background:var(--bg2);padding:10px;margin-bottom:8px">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px">
     <div>
       {type_icon} <span style="color:var(--{score_cls});font-weight:bold">[{score:.0f}]</span>
       {link_html} {title}{new_badge}
     </div>
-    <span style="color:var(--fg-dim);font-size:0.8rem;white-space:nowrap">💬{comments} 👍{reactions}</span>
+    <span style="color:var(--fg-dim);font-size:0.8rem;white-space:nowrap">\U0001f4ac{comments} \U0001f44d{reactions}</span>
   </div>
-  <div style="margin-top:4px;font-size:0.8rem;color:var(--fg-dim)">👤 {author}</div>
+  <div style="margin-top:4px;font-size:0.8rem;color:var(--fg-dim)">\U0001f464 {author}</div>
   <div style="margin-top:4px">{kw_chips} {label_chips}</div>
   {"<div style='margin-top:6px;font-size:0.82rem;color:var(--fg-dim);border-left:2px solid var(--border);padding-left:8px'>" + body_preview + "</div>" if body_preview else ""}
 </div>"""
 
-        web_link = f' &nbsp;│&nbsp; <a href="{e(web_url)}">{e(web_url.replace("https://", ""))}</a>' if web_url else ""
+            web_link = f' &nbsp;\u2502&nbsp; <a href="{e(web_url)}">{e(web_url.replace("https://", ""))}</a>' if web_url else ""
 
-        all_cards += f"""
+            all_cards += f"""
 <div class="section">
-  <div class="section-title">{repo_emoji} {e(repo_name.upper())} — {len(interesting)} interesting of {total_items} checked</div>
+  <div class="section-title">{repo_emoji} {e(repo_name.upper())} \u2014 {len(interesting)} interesting of {total_items} checked</div>
   <div class="section-body">
     <div style="margin-bottom:10px;font-size:0.82rem;color:var(--fg-dim)">
-      Last check: {e(checked)} &nbsp;│&nbsp; Other: {other_count} low-relevance items{web_link}
+      Last check: {e(checked)} &nbsp;\u2502&nbsp; Other: {other_count} low-relevance items{web_link}
     </div>
     {item_rows if item_rows else '<div style="color:var(--fg-dim);padding:12px">No interesting items found</div>'}
   </div>
 </div>"""
 
-    # Summary header
-    summary_html = f"""
+        repo_section = f"""
 <div class="section">
-  <div class="section-title">🐛 REPOSITORY ISSUE TRACKER</div>
+  <div class="section-title">\U0001f41b REPOSITORY ISSUE TRACKER</div>
   <div class="section-body">
     <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.9rem">
       <div><span style="color:var(--green);font-size:1.5rem;font-weight:bold">{total_interesting}</span><br><span style="color:var(--fg-dim)">interesting items</span></div>
@@ -2819,17 +3288,432 @@ def gen_issues():
       <div><span style="color:var(--amber);font-size:1.5rem;font-weight:bold">{total_repos_checked}</span><br><span style="color:var(--fg-dim)">checked today</span></div>
     </div>
     <div style="margin-top:12px;font-size:0.82rem;color:var(--fg-dim)">
-      Monitoring: {', '.join(rcfg.get('name', rid) for rid, rcfg in REPO_FEEDS.items())} &nbsp;│&nbsp;
+      Monitoring: {', '.join(rcfg.get('name', rid) for rid, rcfg in REPO_FEEDS.items())} &nbsp;\u2502&nbsp;
       Scored by keyword relevance + user interest profile
+    </div>
+  </div>
+</div>""" + all_cards
+
+    # ── CSI Camera Sensor section ──
+    csi_path = os.path.join(DATA_DIR, "csi-sensors", "latest-csi.json")
+    csi_data = load_json(csi_path) if os.path.exists(csi_path) else None
+
+    if csi_data and csi_data.get("sensors"):
+        stats = csi_data.get("stats", {})
+        checked = csi_data.get("checked", "?")
+        sensors = csi_data.get("sensors", {})
+        candidates = csi_data.get("candidates", [])
+        llm = csi_data.get("llm_analysis", "")
+
+        # Stats header
+        csi_section += f"""
+<div class="section">
+  <div class="section-title">\U0001f4f7 CSI CAMERA SENSOR TRACKER</div>
+  <div class="section-body">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--cyan);font-size:1.5rem;font-weight:bold">{stats.get('total_sensors', 0)}</span><br><span style="color:var(--fg-dim)">sensors tracked</span></div>
+      <div><span style="color:var(--green);font-size:1.5rem;font-weight:bold">{stats.get('with_mainline_driver', 0)}</span><br><span style="color:var(--fg-dim)">mainline drivers</span></div>
+      <div><span style="color:var(--red);font-size:1.5rem;font-weight:bold">{stats.get('needs_driver', 0)}</span><br><span style="color:var(--fg-dim)">need driver</span></div>
+      <div><span style="color:var(--amber);font-size:1.5rem;font-weight:bold">{stats.get('active_issues', 0)}</span><br><span style="color:var(--fg-dim)">active issues</span></div>
+      <div><span style="color:var(--magenta);font-size:1.5rem;font-weight:bold">{stats.get('new_candidates', 0)}</span><br><span style="color:var(--fg-dim)">newly discovered</span></div>
+    </div>
+    <div style="margin-top:12px;font-size:0.82rem;color:var(--fg-dim)">
+      Last scan: {e(str(checked))} &nbsp;\u2502&nbsp;
+      Platforms: Jetson Orin Nano, RPi 2, RPi 4, RPi 5 &nbsp;\u2502&nbsp;
+      Self-expanding watchlist with auto-discovery
     </div>
   </div>
 </div>"""
 
-    body = summary_html + all_cards
+        # Driver Status Grid — grouped by status
+        needs_driver = []
+        in_progress = []
+        has_driver = []
+        for sid, s in sorted(sensors.items(), key=lambda x: -x[1].get("interest", 0)):
+            ds = s.get("driver_status", "unknown")
+            if ds == "mainline":
+                has_driver.append((sid, s))
+            elif ds == "in-progress":
+                in_progress.append((sid, s))
+            else:
+                needs_driver.append((sid, s))
+
+        def _sensor_row(sid, s, highlight=False):
+            model = e(s.get("model", sid.upper()))
+            vendor = e(s.get("vendor", "?"))
+            res = e(s.get("resolution", "?"))
+            intf = e(s.get("interface", "CSI-2"))
+            ds = s.get("driver_status", "unknown")
+            ds_icon = "\u2705" if ds == "mainline" else ("\U0001f527" if ds == "in-progress" else "\u274c")
+            ds_color = "var(--green)" if ds == "mainline" else ("var(--amber)" if ds == "in-progress" else "var(--red)")
+            plats = s.get("platforms", [])
+            plat_chips = " ".join(f'<span class="port-chip">{p}</span>' for p in plats)
+            datasheet = s.get("datasheet", "?")
+            ds_badge_color = "var(--green)" if datasheet == "available" else ("var(--amber)" if datasheet == "restricted" else "var(--fg-dim)")
+            purchase = s.get("purchase", "?")
+            buy_color = "var(--green)" if purchase == "easy" else ("var(--amber)" if purchase == "moderate" else "var(--red)")
+            n_issues = s.get("issue_count", 0)
+            note = e(s.get("notes", ""))
+            interest = s.get("interest", 3)
+            interest_bar = "\u2588" * interest + "\u2591" * (5 - interest)
+            driver_path = s.get("driver_path", "")
+            drv_info = f' <span style="color:var(--fg-dim);font-size:0.75rem">{e(driver_path)}</span>' if driver_path else ""
+            bg = "var(--bg3)" if highlight else "var(--bg2)"
+
+            row = f"""<div style="border:1px solid var(--border);background:{bg};padding:8px;margin-bottom:4px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+    <div>
+      <span style="color:var(--cyan);font-weight:bold">{model}</span>
+      <span style="color:var(--fg-dim);font-size:0.82rem">({vendor}, {res}, {intf})</span>
+      <span style="color:{ds_color}">{ds_icon} {ds}</span>{drv_info}
+    </div>
+    <div style="font-size:0.8rem">
+      <span style="color:{ds_badge_color}" title="Datasheet">\U0001f4c4{datasheet}</span>
+      &nbsp;<span style="color:{buy_color}" title="Purchase">\U0001f6d2{purchase}</span>
+      &nbsp;<span style="color:var(--fg-dim)" title="Interest">{interest_bar}</span>"""
+            if n_issues:
+                row += f'\n      &nbsp;<span style="color:var(--amber)" title="Issues">\u26a0\ufe0f{n_issues}</span>'
+            row += f"""
+    </div>
+  </div>
+  <div style="margin-top:2px;font-size:0.8rem">{plat_chips}</div>"""
+            if note:
+                row += f'\n  <div style="margin-top:2px;font-size:0.78rem;color:var(--fg-dim)">{note}</div>'
+            row += "\n</div>"
+            return row
+
+        if needs_driver:
+            grid = "".join(_sensor_row(sid, s, True) for sid, s in needs_driver)
+            csi_section += f"""
+<div class="section">
+  <div class="section-title">\u274c SENSORS NEEDING DRIVER ({len(needs_driver)})</div>
+  <div class="section-body">{grid}</div>
+</div>"""
+
+        if in_progress:
+            grid = "".join(_sensor_row(sid, s, True) for sid, s in in_progress)
+            csi_section += f"""
+<div class="section">
+  <div class="section-title">\U0001f527 DRIVER IN PROGRESS ({len(in_progress)})</div>
+  <div class="section-body">{grid}</div>
+</div>"""
+
+        # Active issues for sensors
+        all_issues = []
+        for sid, s in sensors.items():
+            for iss in s.get("issues", []):
+                iss["_sensor"] = s.get("model", sid.upper())
+                all_issues.append(iss)
+        all_issues.sort(key=lambda x: x.get("date", ""), reverse=True)
+
+        if all_issues:
+            issue_rows = ""
+            for iss in all_issues[:25]:
+                sensor = e(iss.get("_sensor", "?"))
+                title = e(iss.get("title", "?"))[:120]
+                date = e(iss.get("date", "?"))
+                src = e(iss.get("source", "?"))
+                url = iss.get("url", "")
+                author = e(iss.get("author", iss.get("submitter", "?")))
+                state = e(iss.get("state", "?"))
+                state_color = "var(--green)" if state in ("accepted", "merged") else ("var(--amber)" if state in ("new", "open", "opened") else "var(--fg-dim)")
+                link = f'<a href="{e(url)}" style="color:var(--cyan)">{title}</a>' if url else title
+                issue_rows += f"""<div style="border:1px solid var(--border);background:var(--bg2);padding:8px;margin-bottom:4px">
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px">
+    <div><span style="color:var(--magenta);font-weight:bold">[{sensor}]</span> {link}</div>
+    <span style="color:var(--fg-dim);font-size:0.8rem;white-space:nowrap">{date}</span>
+  </div>
+  <div style="font-size:0.78rem;color:var(--fg-dim);margin-top:2px">
+    <span style="color:{state_color}">{state}</span> &nbsp;\u2502&nbsp; {src} &nbsp;\u2502&nbsp; {author}
+  </div>
+</div>"""
+
+            csi_section += f"""
+<div class="section">
+  <div class="section-title">\U0001f4e1 RECENT SENSOR PATCHES & ISSUES ({len(all_issues)})</div>
+  <div class="section-body">{issue_rows}</div>
+</div>"""
+
+        # LLM analysis
+        if llm:
+            llm_html = e(llm).replace("\n", "<br>")
+            csi_section += f"""
+<div class="section">
+  <div class="section-title">\U0001f9e0 AI SENSOR ANALYSIS</div>
+  <div class="section-body">
+    <div style="font-family:monospace;white-space:pre-wrap;line-height:1.6;font-size:0.88rem;color:var(--fg)">{llm_html}</div>
+  </div>
+</div>"""
+
+        # Sensors with mainline drivers (collapsed)
+        if has_driver:
+            grid = "".join(_sensor_row(sid, s) for sid, s in has_driver)
+            csi_section += f"""
+<div class="section">
+  <div class="section-title">\u2705 MAINLINE DRIVER ({len(has_driver)})</div>
+  <div class="section-body">{grid}</div>
+</div>"""
+
+        # New candidates discovered
+        if candidates:
+            cand_items = "".join(
+                f'<span class="port-chip" style="margin:2px">{e(c.get("model", "?"))} <span style="color:var(--fg-dim);font-size:0.7rem">({e(c.get("discovered", "?"))})</span></span>'
+                for c in candidates
+            )
+            total_cand = csi_data.get("all_candidates_count", len(candidates))
+            csi_section += f"""
+<div class="section">
+  <div class="section-title">\U0001f50d AUTO-DISCOVERED CANDIDATES</div>
+  <div class="section-body">
+    <div style="margin-bottom:8px;font-size:0.82rem;color:var(--fg-dim)">
+      Sensor models found by crawling that aren't in watchlist yet ({total_cand} total)
+    </div>
+    <div>{cand_items}</div>
+  </div>
+</div>"""
+
+    body = repo_section + csi_section
+    if not body.strip():
+        body = """
+<div class="section">
+  <div class="section-title">\U0001f41b ISSUES & SENSOR TRACKER</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    No data yet \u2014 waiting for first repo-watch and csi-sensor-watch runs
+  </div>
+</div>"""
     return page_wrap("ISSUES", body, "issues")
 
 
-# ─── Page: Notes (notes.html) — LLM thinking/research notes ───
+# ─── Page: Academic Literature (academic.html) ───
+
+def gen_academic():
+    """Generate the academic literature page — publications, dissertations, patents.
+    Only shows results the LLM scored as interesting (relevance >= 8)."""
+    academic_dir = os.path.join(DATA_DIR, "academic")
+
+    TOPICS = [
+        ("kernel-drivers", "Linux Kernel Drivers", "🐧"),
+        ("camera-drivers", "Camera Driver Architecture", "📷"),
+        ("embedded-inference", "Hardware for Embedded Inference", "🧠"),
+        ("adas-cameras", "In-Cabin ADAS Cameras", "🚗"),
+    ]
+    CONTENT_TYPES = [
+        ("publication", "📄", "var(--cyan)"),
+        ("dissertation", "🎓", "var(--magenta)"),
+        ("patent", "📜", "var(--amber)"),
+    ]
+    MIN_SCORE = 8  # Only show results scored >= this
+
+    # Collect all data
+    all_data = {}  # {(topic_id, content_type): {meta, results}}
+    total_interesting = 0
+    total_scanned = 0
+    topics_with_data = 0
+
+    for topic_id, topic_label, topic_icon in TOPICS:
+        for ctype, cicon, ccolor in CONTENT_TYPES:
+            latest = os.path.join(academic_dir, f"latest-{topic_id}-{ctype}.json")
+            if not os.path.exists(latest):
+                continue
+            data = load_json(latest)
+            if not data:
+                continue
+            results = data.get("top_results", [])
+            interesting = [r for r in results if r.get("score", 0) >= MIN_SCORE]
+            meta = data.get("meta", {})
+            total_scanned += meta.get("total_found", len(results))
+            total_interesting += len(interesting)
+            if interesting:
+                topics_with_data += 1
+            all_data[(topic_id, ctype)] = {
+                "meta": meta,
+                "results": interesting,
+                "all_count": len(results),
+            }
+
+    # Empty state
+    if not all_data:
+        body = """
+<div class="section">
+  <div class="section-title">🎓 ACADEMIC LITERATURE</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🎓</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No academic data yet</div>
+    <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+      ClawdBot monitors scientific publications, MSc/PhD dissertations, and patents<br>
+      across 4 topic areas. Results will appear here after the first academic-watch runs.<br>
+      Only items scored as interesting (relevance ≥ {min_score}) are shown.
+    </div>
+  </div>
+</div>""".replace("{min_score}", str(MIN_SCORE))
+        return page_wrap("ACADEMIC", body, "academic")
+
+    # Summary header
+    last_updated = ""
+    last_meta = {}
+    for key, val in all_data.items():
+        ts = val["meta"].get("timestamp", "")
+        if ts > last_updated:
+            last_updated = ts
+            last_meta = val["meta"]
+    last_dt = format_dual_timestamps(last_meta) if last_meta else "?"
+
+    summary = f"""
+<div class="section">
+  <div class="section-title">🎓 ACADEMIC LITERATURE — curated by ClawdBot</div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--green);font-size:1.5rem;font-weight:bold">{total_interesting}</span><br><span style="color:var(--fg-dim)">interesting finds</span></div>
+      <div><span style="color:var(--fg-dim);font-size:1.5rem;font-weight:bold">{total_scanned}</span><br><span style="color:var(--fg-dim)">total scanned</span></div>
+      <div><span style="color:var(--cyan);font-size:1.5rem;font-weight:bold">{topics_with_data}</span><br><span style="color:var(--fg-dim)">active feeds</span></div>
+    </div>
+    <div style="margin-top:8px;font-size:0.82rem;color:var(--fg-dim)">
+      Showing results with relevance score ≥ {MIN_SCORE} &nbsp;│&nbsp; Last scan: {last_dt}
+      &nbsp;│&nbsp; Sources: arXiv, Semantic Scholar, Google Scholar, Google Patents
+    </div>
+  </div>
+</div>"""
+
+    # Build sections per topic
+    topic_sections = ""
+    for topic_id, topic_label, topic_icon in TOPICS:
+        # Collect all content types for this topic
+        topic_results = []
+        topic_meta_parts = []
+        for ctype, cicon, ccolor in CONTENT_TYPES:
+            key = (topic_id, ctype)
+            if key not in all_data:
+                continue
+            entry = all_data[key]
+            for r in entry["results"]:
+                r["_ctype"] = ctype
+                r["_cicon"] = cicon
+                r["_ccolor"] = ccolor
+            topic_results.extend(entry["results"])
+            meta = entry["meta"]
+            topic_meta_parts.append(f'{cicon} {ctype}: {len(entry["results"])}/{entry["all_count"]}')
+
+        if not topic_results:
+            continue
+
+        # Sort by score descending
+        topic_results.sort(key=lambda x: x.get("score", 0), reverse=True)
+
+        meta_str = " &nbsp;│&nbsp; ".join(topic_meta_parts)
+
+        cards = ""
+        for r in topic_results:
+            title = e(r.get("title", "Untitled"))
+            abstract = e(r.get("abstract", "")[:300])
+            url = r.get("url", "")
+            source = r.get("source", "?")
+            score = r.get("score", 0)
+            year = r.get("year") or ""
+            citations = r.get("citations", "")
+            authors = r.get("authors", [])
+            cicon = r.get("_cicon", "📝")
+            ccolor = r.get("_ccolor", "var(--fg)")
+            ctype = r.get("_ctype", "?")
+            patent_id = r.get("patent_id", "")
+            assignee = r.get("assignee", "")
+            doi = r.get("doi", "")
+
+            # Author line
+            author_str = ""
+            if authors:
+                author_str = e(", ".join(authors[:4]))
+                if len(authors) > 4:
+                    author_str += f" +{len(authors)-4} more"
+
+            # Meta line pieces
+            meta_pieces = []
+            if year:
+                meta_pieces.append(f"<span style='color:var(--green)'>{e(str(year))}</span>")
+            if citations:
+                meta_pieces.append(f"<span style='color:var(--amber)'>{citations} cit.</span>")
+            if assignee:
+                meta_pieces.append(f"<span style='color:var(--cyan)'>{e(assignee)}</span>")
+            if patent_id:
+                meta_pieces.append(f"<span style='color:var(--fg-dim)'>{e(patent_id)}</span>")
+            meta_pieces.append(f"<span style='color:var(--fg-dim)'>via {e(source)}</span>")
+            meta_pieces.append(f"<span style='color:{'var(--green)' if score >= 12 else 'var(--amber)' if score >= 8 else 'var(--fg-dim)'}'>score:{score}</span>")
+
+            meta_line = " &nbsp;│&nbsp; ".join(meta_pieces)
+
+            # URL link
+            link_html = ""
+            if url:
+                link_html = f' <a href="{e(url)}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;font-size:0.8rem">↗ open</a>'
+
+            cards += f"""
+<div style="margin:10px 0;padding:10px 14px;border-left:3px solid {ccolor};background:rgba(255,255,255,0.02)">
+  <div style="font-size:0.9rem;font-weight:bold;color:var(--fg)">
+    {cicon} {title}{link_html}
+  </div>
+  <div style="font-size:0.8rem;color:var(--fg-dim);margin:3px 0">{meta_line}</div>"""
+
+            if author_str:
+                cards += f'  <div style="font-size:0.8rem;color:var(--fg-dim);margin:2px 0">👤 {author_str}</div>\n'
+
+            if abstract:
+                cards += f'  <div style="font-size:0.82rem;color:var(--fg);margin-top:6px;line-height:1.5;opacity:0.85">{abstract}</div>\n'
+
+            cards += '</div>\n'
+
+        topic_sections += f"""
+<div class="section">
+  <div class="section-title">{topic_icon} {e(topic_label)}</div>
+  <div class="section-body">
+    <div style="font-size:0.82rem;color:var(--fg-dim);margin-bottom:8px">
+      {meta_str} &nbsp;│&nbsp; interesting / total scanned
+    </div>
+    {cards}
+  </div>
+</div>"""
+
+    # LLM analysis section (from think notes)
+    think_dir = os.path.join(DATA_DIR, "think")
+    analysis_html = ""
+    if os.path.isdir(think_dir):
+        analysis_types = {"publication", "dissertation", "patent"}
+        analysis_notes = []
+        for fp in sorted(glob.glob(os.path.join(think_dir, "note-publication-*.json")) +
+                         glob.glob(os.path.join(think_dir, "note-dissertation-*.json")) +
+                         glob.glob(os.path.join(think_dir, "note-patent-*.json")), reverse=True)[:6]:
+            note = load_json(fp)
+            if note:
+                analysis_notes.append(note)
+
+        if analysis_notes:
+            note_cards = ""
+            for note in analysis_notes:
+                ntype = note.get("type", "?")
+                ntitle = e(note.get("title", ""))
+                ncontent = note.get("content", "")
+                ngen = e(note.get("generated", "?"))
+                nchars = len(ncontent)
+                type_icon = {"publication": "📄", "dissertation": "🎓", "patent": "📜"}.get(ntype, "📝")
+                type_color = {"publication": "var(--cyan)", "dissertation": "var(--magenta)", "patent": "var(--amber)"}.get(ntype, "var(--fg)")
+                content_html = e(ncontent).replace("\\n", "<br>")
+
+                note_cards += f"""
+<details style="margin:6px 0">
+  <summary style="cursor:pointer;font-size:0.88rem;color:var(--fg)">
+    {type_icon} <span style="color:{type_color}">[{ntype.upper()}]</span> {ntitle}
+    <span style="float:right;font-size:0.78rem;color:var(--fg-dim)">{ngen} │ {nchars} chars</span>
+  </summary>
+  <div style="font-family:monospace;white-space:pre-wrap;line-height:1.5;font-size:0.82rem;color:var(--fg);padding:8px 12px;margin-top:4px;background:rgba(0,0,0,0.2);border-radius:4px">{content_html}</div>
+</details>"""
+
+            analysis_html = f"""
+<div class="section">
+  <div class="section-title">🔬 LLM ANALYSIS — recent academic assessments</div>
+  <div class="section-body">{note_cards}
+  </div>
+</div>"""
+
+    body = summary + topic_sections + analysis_html
+    return page_wrap("ACADEMIC", body, "academic")
 
 def gen_notes():
     """Generate the thinking notes / research insights page."""
@@ -2865,6 +3749,9 @@ def gen_notes():
         "career": "🎯", "crawl": "🌐",
         "learn": "🧠", "signal": "📡",
         "home": "🏠", "career-scan": "💼",
+        "city-watch": "🏙️", "market": "📊",
+        "publication": "📄", "dissertation": "🎓",
+        "patent": "📜",
     }
     type_colors = {
         "weekly": "var(--green)", "trends": "var(--amber)",
@@ -2872,9 +3759,12 @@ def gen_notes():
         "career": "var(--amber)", "crawl": "var(--blue)",
         "learn": "var(--green)", "signal": "var(--red)",
         "home": "var(--cyan)", "career-scan": "var(--purple)",
+        "city-watch": "var(--blue)", "market": "var(--amber)",
+        "publication": "var(--cyan)", "dissertation": "var(--magenta)",
+        "patent": "var(--amber)",
     }
 
-    for entry in index[:20]:
+    for entry in index[:30]:
         note_path = os.path.join(think_dir, entry.get("file", ""))
         note = load_json(note_path) if os.path.exists(note_path) else None
         if not note:
@@ -2931,6 +3821,1069 @@ def gen_notes():
     return page_wrap("NOTES", body, "notes")
 
 
+# ─── Page: Events & Meetups (events.html) ───
+
+def gen_events():
+    """Generate the events / meetups / conferences page."""
+    events_path = os.path.join(DATA_DIR, "events", "latest-events.json")
+
+    if not os.path.exists(events_path):
+        body = """
+<div class="section">
+  <div class="section-title">🎤 EVENTS & MEETUPS</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🎤</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No event data yet</div>
+    <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+      event-scout.py scans Meetup, Crossweb, Konfeo, Eventbrite, and conference sites.<br>
+      Focus: embedded Linux, kernel, camera/imaging, automotive ADAS, edge AI.<br>
+      Geographic priority: Łódź → Warsaw → Poland → Europe.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("EVENTS", body, "events")
+
+    data = load_json(events_path) or {}
+    meta = data.get("meta", {})
+    events = data.get("events", [])
+
+    scan_ts = format_dual_timestamps(meta)
+    duration = meta.get("duration_seconds", 0)
+    total_found = meta.get("total_found", 0)
+    relevant = meta.get("relevant", len(events))
+    sources_list = meta.get("sources", [])
+
+    # Location tier styling
+    tier_colors = {
+        "Łódź": "var(--green)", "Warsaw": "var(--cyan)",
+        "Poland": "var(--blue)", "Europe": "var(--purple)",
+        "unknown": "var(--fg-dim)",
+    }
+    tier_emoji = {
+        "Łódź": "🏠", "Warsaw": "🚆", "Poland": "🇵🇱",
+        "Europe": "🌍", "unknown": "📍",
+    }
+
+    # Overview
+    local_count = sum(1 for ev in events if ev.get("location_tier") in ("Łódź", "Warsaw"))
+    local_color = "var(--green)" if local_count >= 3 else "var(--amber)" if local_count >= 1 else "var(--fg-dim)"
+    overview = f"""
+<div class="section">
+  <div class="section-title">🎤 EVENTS & MEETUPS &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(scan_ts)} ({duration}s)</span></div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--cyan);font-size:1.8rem;font-weight:bold">{relevant}</span><br><span style="color:var(--fg-dim)">relevant events</span></div>
+      <div><span style="color:{local_color};font-size:1.8rem;font-weight:bold">{local_count}</span><br><span style="color:var(--fg-dim)">local (Łódź/Warsaw)</span></div>
+      <div><span style="color:var(--purple);font-size:1.8rem;font-weight:bold">{total_found}</span><br><span style="color:var(--fg-dim)">total scanned</span></div>
+      <div><span style="color:var(--blue);font-size:1.8rem;font-weight:bold">{len(sources_list)}</span><br><span style="color:var(--fg-dim)">sources</span></div>
+    </div>
+    <div style="margin-top:12px;font-size:0.82rem;color:var(--fg-dim)">
+      Sources: {e(", ".join(s.split(":")[0] if ":" in s else s for s in sources_list[:6]))} &nbsp;│&nbsp;
+      Updated daily at 02:30
+    </div>
+  </div>
+</div>"""
+
+    # Upcoming events sorted by score (high-priority first)
+    events_sorted = sorted(events, key=lambda x: -x.get("combined_score", 0))
+
+    # Top picks: events with score >= 2 and a real location
+    top_picks = [ev for ev in events_sorted if ev.get("combined_score", 0) >= 2
+                 and ev.get("location_tier") != "unknown"]
+    top_html = ""
+    if top_picks:
+        cards = ""
+        for ev in top_picks[:10]:
+            name = e(ev.get("name", "?"))[:80]
+            date_str = e(ev.get("date", ""))[:30] or "TBA"
+            tier = ev.get("location_tier", "unknown")
+            loc = e(ev.get("location", ev.get("city", "?")))
+            score = ev.get("combined_score", 0)
+            url = ev.get("url", "")
+            source = e(ev.get("source", "?").split(":")[0] if ":" in ev.get("source", "") else ev.get("source", "?"))
+            desc = e(ev.get("description", ""))[:150]
+            keywords = ev.get("matched_keywords", [])
+            kw_str = e(", ".join(keywords[:4]))
+
+            tc = tier_colors.get(tier, "var(--fg-dim)")
+            te = tier_emoji.get(tier, "📍")
+            sc = "var(--green)" if score >= 5 else "var(--amber)" if score >= 2 else "var(--fg-dim)"
+
+            # Clean up DuckDuckGo redirect URLs
+            if url.startswith("//duckduckgo.com/l/"):
+                parsed = urllib.parse.parse_qs(urllib.parse.urlparse("https:" + url).query)
+                url = parsed.get("uddg", [url])[0]
+
+            title_link = f'<a href="{e(url)}" target="_blank" style="color:var(--cyan);font-weight:bold;text-decoration:none">{name} ↗</a>' if url else f'<span style="color:var(--cyan);font-weight:bold">{name}</span>'
+
+            desc_div = f'<div style="margin-top:4px;color:var(--fg-dim);font-size:0.82rem;max-height:40px;overflow:hidden">{desc}</div>' if desc else ""
+            kw_div = f'<div style="margin-top:3px;font-size:0.78rem;color:var(--purple)">🏷️ {kw_str}</div>' if kw_str else ""
+
+            cards += f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <span style="color:{sc};font-weight:bold;font-size:1.2rem">{score:.0f}</span>
+          <span style="margin-left:8px">{title_link}</span>
+          <div style="margin-top:4px;font-size:0.82rem">
+            <span style="color:{tc}">{te} {loc}</span>
+            <span style="color:var(--fg-dim);margin-left:12px">📅 {date_str}</span>
+            <span style="color:var(--fg-dim);margin-left:12px;font-size:0.78rem">[{source}]</span>
+          </div>
+          {kw_div}
+          {desc_div}
+        </div>
+      </div>
+    </div>"""
+
+        top_html = f"""
+<div class="section">
+  <div class="section-title">▸ ⭐ TOP PICKS — conferences & local meetups</div>
+  <div class="section-body">{cards}</div>
+</div>"""
+
+    # All events table
+    event_rows = ""
+    for ev in events_sorted:
+        name = e(ev.get("name", "?"))[:65]
+        date_str = e(ev.get("date", ""))[:25] or "TBA"
+        tier = ev.get("location_tier", "unknown")
+        loc = e(ev.get("location", ev.get("city", "?"))[:25])
+        score = ev.get("combined_score", 0)
+        url = ev.get("url", "")
+        source = ev.get("source", "?")
+        if ":" in source:
+            source = source.split(":")[0]
+
+        # Clean DuckDuckGo URLs
+        if url.startswith("//duckduckgo.com/l/"):
+            parsed = urllib.parse.parse_qs(urllib.parse.urlparse("https:" + url).query)
+            url = parsed.get("uddg", [url])[0]
+
+        tc = tier_colors.get(tier, "var(--fg-dim)")
+        te = tier_emoji.get(tier, "📍")
+        sc = "var(--green)" if score >= 5 else "var(--amber)" if score >= 2 else "var(--fg-dim)"
+        title_html = f'<a href="{e(url)}" target="_blank" style="color:var(--cyan);text-decoration:none">{name}</a>' if url else name
+
+        event_rows += f"""<tr>
+          <td style="color:{sc};font-weight:bold;text-align:center">{score:.0f}</td>
+          <td style="color:{tc}">{te}</td>
+          <td>{title_html}</td>
+          <td style="color:var(--fg-dim)">{loc}</td>
+          <td style="color:var(--fg-dim)">{e(date_str)}</td>
+          <td style="color:var(--fg-dim);font-size:0.8rem">{e(source)}</td>
+        </tr>"""
+
+    all_events_html = f"""
+<div class="section">
+  <div class="section-title">▸ 📋 ALL DISCOVERED EVENTS ({len(events)})</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Score</th><th></th><th>Event</th><th>Location</th><th>Date</th><th>Source</th></tr></thead>
+      <tbody>{event_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    body = overview + top_html + all_events_html
+    return page_wrap("EVENTS", body, "events")
+
+
+# ─── Page: Radio Scanner (radio.html) ───
+
+def gen_radio():
+    """Generate the radio scanner / radioscanner.pl page."""
+    radio_dir = os.path.join(DATA_DIR, "radio")
+    scan_path = os.path.join(radio_dir, "radio-latest.json")
+
+    if not os.path.exists(scan_path):
+        body = """
+<div class="section">
+  <div class="section-title">📻 RADIO SCANNER</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">📻</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No radio scan data yet</div>
+    <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+      radio-scan.py scrapes radioscanner.pl for radio activity updates.<br>
+      Monitoring: Łódź local, satellite comms, shortwave DX, ham radio.<br>
+      Scheduled every 6 hours. First scan results will appear here.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("RADIO", body, "radio")
+
+    scan = load_json(scan_path) or {}
+    meta = scan.get("meta", {})
+    threads = scan.get("threads", [])
+    highlights = scan.get("highlights", [])
+    section_stats = scan.get("section_stats", {})
+
+    scan_ts = format_dual_timestamps(meta)
+    duration = meta.get("duration_seconds", 0)
+
+    # Category emoji map
+    cat_emoji = {
+        "monitoring": "📡", "frequencies": "📻", "satellite": "🛰️",
+        "shortwave": "🌊", "ham": "📟", "broadcast": "📺",
+        "comms": "🔊", "airband": "✈️",
+    }
+
+    # ─ Overview section ─
+    n_highlights = len(highlights)
+    hot_color = "var(--red)" if n_highlights >= 5 else "var(--amber)" if n_highlights >= 2 else "var(--green)"
+    overview = f"""
+<div class="section">
+  <div class="section-title">📻 RADIO SCANNER &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(scan_ts)} ({duration}s)</span></div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:{hot_color};font-size:1.8rem;font-weight:bold">{n_highlights}</span><br><span style="color:var(--fg-dim)">highlights</span></div>
+      <div><span style="color:var(--cyan);font-size:1.8rem;font-weight:bold">{len(threads)}</span><br><span style="color:var(--fg-dim)">threads found</span></div>
+      <div><span style="color:var(--purple);font-size:1.8rem;font-weight:bold">{meta.get('sections_scanned', 0)}</span><br><span style="color:var(--fg-dim)">sections</span></div>
+      <div><span style="color:var(--blue);font-size:1.8rem;font-weight:bold">{meta.get('previews_fetched', 0)}</span><br><span style="color:var(--fg-dim)">previews</span></div>
+    </div>
+    <div style="margin-top:12px;font-size:0.82rem;color:var(--fg-dim)">
+      Source: <a href="https://radioscanner.pl" target="_blank" style="color:var(--cyan)">radioscanner.pl</a> &nbsp;│&nbsp;
+      Window: last {meta.get('thread_age_cutoff_days', 7)} days &nbsp;│&nbsp;
+      Next scan: every 6h
+    </div>
+  </div>
+</div>"""
+
+    # ─ AI Briefing section ─
+    briefing = scan.get("briefing", "")
+    briefing_ts = meta.get("analyze_timestamp", meta.get("briefing_generated", ""))[:16]
+    briefing_html = ""
+    if briefing:
+        # Render plain text briefing with line breaks preserved
+        briefing_lines = ""
+        for line in briefing.strip().split("\n"):
+            line_esc = e(line)
+            # Highlight section headers (lines that are ALL CAPS or start with common header patterns)
+            if line.strip() and (line.strip().isupper() or line.strip().endswith(":")):
+                briefing_lines += f'<div style="color:var(--amber);font-weight:bold;margin-top:10px">{line_esc}</div>\n'
+            elif line.strip().startswith("- ") or line.strip().startswith("• "):
+                briefing_lines += f'<div style="padding-left:16px;color:var(--fg)">{line_esc}</div>\n'
+            else:
+                briefing_lines += f'<div style="color:var(--fg-dim)">{line_esc}</div>\n'
+
+        briefing_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🤖 AI BRIEFING &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// clawdbot analysis {e(briefing_ts)}</span></div>
+  <div class="section-body" style="font-size:0.88rem;line-height:1.6">
+    {briefing_lines}
+  </div>
+</div>"""
+
+    # ─ Section breakdown ─
+    sec_rows = ""
+    for name, st in sorted(section_stats.items(), key=lambda x: -x[1].get("recent", 0)):
+        em = st.get("emoji", "📻")
+        total = st.get("total", 0)
+        recent = st.get("recent", 0)
+        cat = st.get("category", "?")
+        bar_len = min(recent * 2, 30)
+        bar = "█" * bar_len + "░" * max(0, 10 - bar_len)
+        sec_rows += f"""<tr>
+          <td>{em}</td>
+          <td style="color:var(--cyan)">{e(name)}</td>
+          <td style="color:var(--fg-dim)">{cat}</td>
+          <td>{total}</td>
+          <td style="color:var(--green);font-weight:bold">{recent}</td>
+          <td style="font-family:monospace;color:var(--green);font-size:0.75rem">{bar}</td>
+        </tr>"""
+
+    sections_html = f"""
+<div class="section">
+  <div class="section-title">▸ 📡 FORUM SECTIONS</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th></th><th>Section</th><th>Category</th><th>Total</th><th>Recent</th><th>Activity</th></tr></thead>
+      <tbody>{sec_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ─ Highlights section (score >= 25) ─
+    highlights_html = ""
+    if highlights:
+        cards = ""
+        for h in highlights[:15]:
+            score = h.get("score", 0)
+            title = e(h.get("title", "?"))
+            section = e(h.get("section", "?"))
+            sec_emoji = h.get("section_emoji", "📻")
+            url = h.get("url", "")
+            reasons = ", ".join(h.get("reasons", [])[:5])
+            preview = e(h.get("preview", "")[:200])
+            date_str = h.get("date", "")[:10] if h.get("date") else "?"
+
+            score_color = "var(--green)" if score >= 50 else "var(--amber)" if score >= 30 else "var(--fg-dim)"
+            title_link = f'<a href="{e(url)}" target="_blank" style="color:var(--cyan);font-weight:bold;text-decoration:none">{title} ↗</a>' if url else f'<span style="color:var(--cyan);font-weight:bold">{title}</span>'
+
+            preview_div = f'<div style="margin-top:6px;color:var(--fg-dim);font-size:0.82rem;max-height:60px;overflow:hidden">{preview}</div>' if preview else ""
+
+            cards += f"""
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <span style="color:{score_color};font-weight:bold;font-size:1.2rem">{score}</span>
+          <span style="margin-left:8px">{title_link}</span>
+          <div style="margin-top:4px;font-size:0.82rem">
+            <span style="color:var(--fg-dim)">{sec_emoji} {section}</span>
+            <span style="color:var(--fg-dim);margin-left:12px">📅 {date_str}</span>
+          </div>
+          <div style="margin-top:4px;font-size:0.78rem;color:var(--purple)">🏷️ {e(reasons)}</div>
+          {preview_div}
+        </div>
+      </div>
+    </div>"""
+
+        highlights_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🎯 HIGHLIGHTS — scored ≥25</div>
+  <div class="section-body">{cards}</div>
+</div>"""
+
+    # ─ All threads table ─
+    thread_rows = ""
+    for t in threads[:50]:
+        score = t.get("score", 0)
+        title = e(t.get("title", "?"))[:80]
+        section = e(t.get("section", "?"))
+        sec_emoji = t.get("section_emoji", "📻")
+        url = t.get("url", "")
+        age = t.get("age_days")
+        cat = t.get("category", "?")
+
+        score_color = "var(--green)" if score >= 50 else "var(--amber)" if score >= 25 else "var(--fg-dim)"
+        age_str = f"{age:.0f}d" if age is not None else "?"
+        age_color = "var(--green)" if age is not None and age <= 1 else "var(--amber)" if age is not None and age <= 3 else "var(--fg-dim)"
+        title_html = f'<a href="{e(url)}" target="_blank" style="color:var(--cyan);text-decoration:none">{title}</a>' if url else title
+
+        thread_rows += f"""<tr>
+          <td style="color:{score_color};font-weight:bold;text-align:center">{score}</td>
+          <td>{sec_emoji}</td>
+          <td>{title_html}</td>
+          <td style="color:var(--fg-dim)">{section}</td>
+          <td style="color:{age_color};text-align:center">{age_str}</td>
+        </tr>"""
+
+    threads_html = f"""
+<div class="section">
+  <div class="section-title">▸ 📋 ALL RECENT THREADS</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Score</th><th></th><th>Thread</th><th>Section</th><th>Age</th></tr></thead>
+      <tbody>{thread_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    body = overview + briefing_html + sections_html + highlights_html + threads_html
+    return page_wrap("RADIO", body, "radio")
+
+
+# ─── Page: Car Tracker (car.html) ───
+
+def gen_car_tracker():
+    """Generate detailed car tracker dashboard with log, statistics, and AI summary."""
+    import re as _re
+    import glob as _glob
+
+    car_dir = os.path.join(DATA_DIR, "car-tracker")
+    latest_path = os.path.join(car_dir, "latest-car-tracker.json")
+
+    if not os.path.exists(latest_path):
+        body = """
+<div class="section">
+  <div class="section-title">🚗 CAR TRACKER</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🚗</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No car tracker data yet</div>
+    <div style="margin-top:12px;color:var(--fg-dim);font-size:0.9rem">
+      car-tracker.py fetches GPS data from SinoTrack and analyzes movement patterns.<br>
+      First scan results will appear here.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("CAR TRACKER", body, "car")
+
+    data = load_json(latest_path) or {}
+    status = data.get("current_status", {})
+    trips = data.get("trips", [])
+    stops = data.get("stops", [])
+    mileage = data.get("mileage", {})
+    clusters = data.get("location_clusters", [])
+    daily = data.get("daily_summary", {})
+    llm_text = data.get("llm_analysis", "")
+    alarms = data.get("alarms", [])
+    meta = data.get("meta", {})
+    generated = data.get("generated", "")[:16]
+
+    # ── Load historical files for log section ──
+    historical = []
+    if os.path.isdir(car_dir):
+        for fp in sorted(_glob.glob(os.path.join(car_dir, "car-tracker-*.json")))[-30:]:
+            try:
+                with open(fp) as f:
+                    h = json.load(f)
+                historical.append({
+                    "file": os.path.basename(fp),
+                    "generated": h.get("generated", "")[:16],
+                    "trips": len(h.get("trips", [])),
+                    "stops": len(h.get("stops", [])),
+                    "track_points": h.get("meta", {}).get("track_points", 0),
+                    "elapsed_s": h.get("meta", {}).get("elapsed_s", 0),
+                })
+            except:
+                pass
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 1: Current Status
+    # ════════════════════════════════════════════════════════════════════════
+    status_html = ""
+    if status:
+        is_moving = status.get("is_moving", False)
+        status_emoji = "🏃" if is_moving else "🅿️"
+        status_text = f"{status.get('speed_kmh', 0)} km/h {status.get('direction_compass', '')}" if is_moving else "Parked"
+        status_color = "var(--amber)" if is_moving else "var(--green)"
+        parked_info = ""
+        if status.get("parked_duration_h"):
+            parked_info = f' · parked {status["parked_duration_h"]:.1f}h'
+        if status.get("parked_since"):
+            parked_info += f' (since {status["parked_since"][-8:]})'
+        odo = status.get("total_mileage_km", 0)
+        location = e(status.get("location", "?"))
+        age_min = status.get("data_age_min", -1)
+        age_text = f"{age_min:.0f}m ago" if age_min >= 0 else "?"
+        last_update = e(status.get("last_update", "?"))
+        lat = status.get("lat", 0)
+        lon = status.get("lon", 0)
+
+        status_html = f"""
+<div class="section">
+  <div class="section-title">📍 CURRENT STATUS <span style="color:var(--fg-dim);font-size:0.8rem">// updated {age_text}</span></div>
+  <div class="section-body">
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <div style="font-size:2.6rem">{status_emoji}</div>
+      <div>
+        <div style="font-size:1.5rem;font-weight:bold;color:{status_color}">{status_text}{parked_info}</div>
+        <div style="color:var(--cyan);font-size:1.1rem">{location}</div>
+        <div style="color:var(--fg-dim);font-size:0.85rem">
+          {lat:.5f}, {lon:.5f} · Odometer: {odo:,.0f} km · Last update: {last_update}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 2: Statistics Overview
+    # ════════════════════════════════════════════════════════════════════════
+    total_trip_km = sum(t.get("distance_km", 0) for t in trips)
+    total_trip_min = sum(t.get("duration_min", 0) for t in trips)
+    max_speed_all = max((t.get("max_speed_kmh", 0) for t in trips), default=0)
+    avg_trip_km = total_trip_km / len(trips) if trips else 0
+    longest_trip = max(trips, key=lambda t: t.get("distance_km", 0)) if trips else None
+    fastest_trip = max(trips, key=lambda t: t.get("max_speed_kmh", 0)) if trips else None
+
+    avg_daily = mileage.get("avg_km", 0) if mileage else 0
+    total_mileage_km = mileage.get("total_km", 0) if mileage else 0
+    zero_days = mileage.get("zero_days", 0) if mileage else 0
+    days_tracked = mileage.get("days_tracked", 0) if mileage else 0
+
+    stats_html = f"""
+<div class="section">
+  <div class="section-title">📊 STATISTICS <span style="color:var(--fg-dim);font-size:0.8rem">// {meta.get('track_days', 0)}-day track · {days_tracked}-day mileage</span></div>
+  <div class="section-body">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;min-width:120px;text-align:center">
+        <div style="color:var(--green);font-size:2rem;font-weight:bold">{len(trips)}</div>
+        <div style="color:var(--fg-dim);font-size:0.8rem">trips detected</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;min-width:120px;text-align:center">
+        <div style="color:var(--cyan);font-size:2rem;font-weight:bold">{total_trip_km:.1f}</div>
+        <div style="color:var(--fg-dim);font-size:0.8rem">km driven ({meta.get('track_days', 0)}d)</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;min-width:120px;text-align:center">
+        <div style="color:var(--amber);font-size:2rem;font-weight:bold">{avg_daily:.1f}</div>
+        <div style="color:var(--fg-dim);font-size:0.8rem">km/day avg ({days_tracked}d)</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;min-width:120px;text-align:center">
+        <div style="color:{'var(--red)' if max_speed_all > 120 else 'var(--fg)'};font-size:2rem;font-weight:bold">{max_speed_all}</div>
+        <div style="color:var(--fg-dim);font-size:0.8rem">max km/h</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;min-width:120px;text-align:center">
+        <div style="color:var(--fg);font-size:2rem;font-weight:bold">{avg_trip_km:.1f}</div>
+        <div style="color:var(--fg-dim);font-size:0.8rem">avg km/trip</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;min-width:120px;text-align:center">
+        <div style="color:var(--fg-dim);font-size:2rem;font-weight:bold">{zero_days}</div>
+        <div style="color:var(--fg-dim);font-size:0.8rem">idle days</div>
+      </div>
+    </div>"""
+
+    # Notable trips
+    notable = ""
+    if longest_trip:
+        notable += f'<div style="font-size:0.85rem;color:var(--fg-dim);margin-bottom:4px">🏆 Longest: <span style="color:var(--cyan)">{longest_trip["distance_km"]} km</span> — {e(longest_trip["start_location"])} → {e(longest_trip["end_location"])} ({longest_trip["start_ts"][5:]})</div>'
+    if fastest_trip and fastest_trip != longest_trip:
+        spd_c = "var(--red)" if fastest_trip["max_speed_kmh"] > 120 else "var(--amber)"
+        notable += f'<div style="font-size:0.85rem;color:var(--fg-dim)">⚡ Fastest: <span style="color:{spd_c}">{fastest_trip["max_speed_kmh"]} km/h</span> — {e(fastest_trip["start_location"])} → {e(fastest_trip["end_location"])} ({fastest_trip["start_ts"][5:]})</div>'
+
+    if notable:
+        stats_html += f'<div style="margin-top:8px">{notable}</div>'
+
+    stats_html += """
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 3: Daily Mileage Chart
+    # ════════════════════════════════════════════════════════════════════════
+    mileage_html = ""
+    daily_entries = mileage.get("daily", []) if mileage else []
+    if daily_entries:
+        max_km = max(d.get("km", 0) for d in daily_entries) or 1
+        bars = ""
+        for d in daily_entries[-14:]:
+            km = d.get("km", 0)
+            day_label = d.get("date", "?")[-5:]
+            pct = min(100, km / max_km * 100)
+            bar_color = "var(--green)" if km > 5 else ("var(--amber)" if km > 0.5 else "var(--fg-dim)")
+            bars += f"""<div style="text-align:center;min-width:38px">
+              <div style="height:80px;display:flex;align-items:flex-end;justify-content:center">
+                <div style="width:24px;background:{bar_color};border-radius:3px 3px 0 0;height:{max(2, pct * 0.8):.0f}px"></div>
+              </div>
+              <div style="font-size:0.7rem;color:var(--fg-dim);margin-top:2px">{day_label}</div>
+              <div style="font-size:0.7rem;color:var(--cyan)">{km:.1f}</div>
+            </div>"""
+        mileage_html = f"""
+<div class="section">
+  <div class="section-title">📈 DAILY MILEAGE <span style="color:var(--fg-dim);font-size:0.8rem">// {days_tracked} days · total {total_mileage_km:.0f} km</span></div>
+  <div class="section-body">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">{bars}</div>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 4: AI Analysis (full LLM output)
+    # ════════════════════════════════════════════════════════════════════════
+    ai_html = ""
+    if llm_text:
+        formatted = e(llm_text)
+        formatted = _re.sub(r'^## (.+)$', r'<h3 style="color:var(--amber);margin:16px 0 8px">\1</h3>', formatted, flags=_re.MULTILINE)
+        formatted = _re.sub(r'^### (.+)$', r'<div style="color:var(--amber);font-weight:bold;margin:12px 0 4px">\1</div>', formatted, flags=_re.MULTILINE)
+        formatted = _re.sub(r'^- (.+)$', r'<div style="padding-left:16px;margin:2px 0">• \1</div>', formatted, flags=_re.MULTILINE)
+        formatted = _re.sub(r'\*\*([^*]+)\*\*', r'<strong style="color:var(--cyan)">\1</strong>', formatted)
+        formatted = formatted.replace("\n\n", "<br><br>").replace("\n", "<br>")
+        ai_html = f"""
+<div class="section">
+  <div class="section-title">🤖 AI MOVEMENT ANALYSIS</div>
+  <div class="section-body">
+    <div style="font-size:0.88rem;line-height:1.6">{formatted}</div>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 5: Trip Log (full table of all trips)
+    # ════════════════════════════════════════════════════════════════════════
+    trips_html = ""
+    if trips:
+        trip_rows = ""
+        for t in reversed(trips):
+            from_loc = e(t.get("start_location", "?"))[:25]
+            to_loc = e(t.get("end_location", "?"))[:25]
+            dist = t.get("distance_km", 0)
+            dur = t.get("duration_min", 0)
+            max_spd = t.get("max_speed_kmh", 0)
+            avg_spd = t.get("avg_speed_kmh", 0)
+            ts_start = t.get("start_ts", "?")
+            ts_end = t.get("end_ts", "?")[-5:]  # just HH:MM
+            pts = t.get("points", 0)
+            spd_color = "var(--red)" if max_spd > 120 else ("var(--amber)" if max_spd > 90 else "var(--fg-dim)")
+            dist_color = "var(--green)" if dist > 10 else ("var(--cyan)" if dist > 3 else "var(--fg-dim)")
+            trip_rows += f"""<tr>
+              <td style="color:var(--fg-dim);white-space:nowrap">{ts_start}</td>
+              <td style="color:var(--fg-dim);white-space:nowrap">{ts_end}</td>
+              <td style="color:var(--cyan)">{from_loc}</td>
+              <td style="color:var(--fg-dim)">→</td>
+              <td style="color:var(--cyan)">{to_loc}</td>
+              <td style="text-align:right;color:{dist_color}">{dist:.1f}</td>
+              <td style="text-align:right;color:var(--fg-dim)">{dur:.0f}m</td>
+              <td style="text-align:right;color:{spd_color}">{max_spd}</td>
+              <td style="text-align:right;color:var(--fg-dim)">{avg_spd:.0f}</td>
+              <td style="text-align:right;color:var(--fg-dim)">{pts}</td>
+            </tr>"""
+        trips_html = f"""
+<div class="section">
+  <div class="section-title">🗺️ TRIP LOG <span style="color:var(--fg-dim);font-size:0.8rem">// {len(trips)} trips · {total_trip_km:.1f} km total · {total_trip_min:.0f} min driving</span></div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr>
+        <th>Start</th><th>End</th><th>From</th><th></th><th>To</th>
+        <th style="text-align:right">km</th><th style="text-align:right">Dur</th>
+        <th style="text-align:right">Max</th><th style="text-align:right">Avg</th>
+        <th style="text-align:right">Pts</th>
+      </tr></thead>
+      <tbody>{trip_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 6: Frequent Locations
+    # ════════════════════════════════════════════════════════════════════════
+    locations_html = ""
+    if clusters:
+        loc_rows = ""
+        for c in clusters:
+            loc = e(c.get("location", "?"))
+            visits = c.get("visits", 0)
+            hours = c.get("total_hours", 0)
+            lat = c.get("lat", 0)
+            lon = c.get("lon", 0)
+            # Bar proportional to hours
+            max_h = max(cl.get("total_hours", 0) for cl in clusters) or 1
+            bar_pct = min(100, hours / max_h * 100)
+            loc_rows += f"""<tr>
+              <td style="color:var(--cyan);font-weight:bold">{loc}</td>
+              <td style="text-align:right">{visits}</td>
+              <td style="text-align:right;color:var(--fg-dim)">{hours:.1f}h</td>
+              <td style="width:40%">
+                <div style="background:var(--bg2);border-radius:3px;height:14px;overflow:hidden">
+                  <div style="background:var(--cyan);height:100%;width:{bar_pct:.0f}%;border-radius:3px"></div>
+                </div>
+              </td>
+              <td style="color:var(--fg-dim);font-size:0.75rem">{lat:.4f},{lon:.4f}</td>
+            </tr>"""
+        locations_html = f"""
+<div class="section">
+  <div class="section-title">📌 FREQUENT LOCATIONS <span style="color:var(--fg-dim);font-size:0.8rem">// {len(clusters)} distinct</span></div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Location</th><th style="text-align:right">Visits</th><th style="text-align:right">Time</th><th>Distribution</th><th>Coordinates</th></tr></thead>
+      <tbody>{loc_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 7: Stop Log (significant parking/stops)
+    # ════════════════════════════════════════════════════════════════════════
+    stops_html = ""
+    if stops:
+        stop_rows = ""
+        for s in sorted(stops, key=lambda x: x.get("start_time", 0), reverse=True)[:50]:
+            loc = e(s.get("location", "?"))[:25]
+            dur = s.get("duration_min", 0)
+            start_ts = s.get("start_ts", "?")
+            end_ts = s.get("end_ts", "?")[-5:] if s.get("end_ts") else "?"
+            dur_color = "var(--green)" if dur > 120 else ("var(--fg)" if dur > 30 else "var(--fg-dim)")
+            stop_rows += f"""<tr>
+              <td style="color:var(--fg-dim);white-space:nowrap">{start_ts}</td>
+              <td style="color:var(--fg-dim)">{end_ts}</td>
+              <td style="color:var(--cyan)">{loc}</td>
+              <td style="text-align:right;color:{dur_color}">{dur:.0f}m</td>
+            </tr>"""
+        stops_html = f"""
+<div class="section">
+  <div class="section-title">🅿️ STOP LOG <span style="color:var(--fg-dim);font-size:0.8rem">// {len(stops)} significant stops (≥10 min)</span></div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Start</th><th>End</th><th>Location</th><th style="text-align:right">Duration</th></tr></thead>
+      <tbody>{stop_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 8: Daily Breakdown
+    # ════════════════════════════════════════════════════════════════════════
+    daily_html = ""
+    if daily:
+        day_rows = ""
+        for day_key in sorted(daily.keys(), reverse=True):
+            d = daily[day_key]
+            tc = d.get("trip_count", 0)
+            km = d.get("total_km", 0)
+            drv_min = d.get("total_driving_min", 0)
+            park_min = d.get("total_parked_min", 0)
+            max_spd = d.get("max_speed_kmh", 0)
+            spd_color = "var(--red)" if max_spd > 120 else ("var(--amber)" if max_spd > 90 else "var(--fg-dim)")
+            day_rows += f"""<tr>
+              <td style="color:var(--cyan);font-weight:bold">{day_key}</td>
+              <td style="text-align:right">{tc}</td>
+              <td style="text-align:right;color:var(--green)">{km:.1f}</td>
+              <td style="text-align:right;color:var(--fg-dim)">{drv_min:.0f}m</td>
+              <td style="text-align:right;color:var(--fg-dim)">{park_min:.0f}m</td>
+              <td style="text-align:right;color:{spd_color}">{max_spd}</td>
+            </tr>"""
+        daily_html = f"""
+<div class="section">
+  <div class="section-title">📅 DAILY BREAKDOWN</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Date</th><th style="text-align:right">Trips</th><th style="text-align:right">km</th><th style="text-align:right">Driving</th><th style="text-align:right">Parked</th><th style="text-align:right">Max km/h</th></tr></thead>
+      <tbody>{day_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 9: Run History / Log
+    # ════════════════════════════════════════════════════════════════════════
+    log_html = ""
+    if historical:
+        log_rows = ""
+        for h in reversed(historical):
+            log_rows += f"""<tr>
+              <td style="color:var(--fg-dim)">{h['generated']}</td>
+              <td style="color:var(--green)">{h['trips']}</td>
+              <td style="color:var(--fg-dim)">{h['stops']}</td>
+              <td style="color:var(--fg-dim)">{h['track_points']}</td>
+              <td style="color:var(--fg-dim)">{h['elapsed_s']:.0f}s</td>
+              <td style="color:var(--fg-dim);font-size:0.75rem">{h['file']}</td>
+            </tr>"""
+        log_html = f"""
+<div class="section">
+  <div class="section-title">📋 RUN LOG <span style="color:var(--fg-dim);font-size:0.8rem">// {len(historical)} scans</span></div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Timestamp</th><th>Trips</th><th>Stops</th><th>Track pts</th><th>Runtime</th><th>File</th></tr></thead>
+      <tbody>{log_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Section 10: Meta / Technical
+    # ════════════════════════════════════════════════════════════════════════
+    meta_html = f"""
+<div class="section">
+  <div class="section-title" style="color:var(--fg-dim)">⚙️ TECHNICAL</div>
+  <div class="section-body" style="font-size:0.82rem;color:var(--fg-dim)">
+    IMEI: {e(data.get('imei', '?'))} · Track points: {meta.get('track_points', 0)} ·
+    Track window: {meta.get('track_days', 0)} days · Stops detected: {meta.get('stop_count', 0)} ·
+    Runtime: {meta.get('elapsed_s', 0):.0f}s · Generated: {e(generated)}
+  </div>
+</div>"""
+
+    body = status_html + stats_html + mileage_html + ai_html + trips_html + locations_html + stops_html + daily_html + log_html + meta_html
+    return page_wrap("CAR TRACKER", body, "car")
+
+
+# ─── Page: Life Advisor (advisor.html) ───
+
+def gen_advisor():
+    """Generate the ClawdBot life advisor / cross-domain intelligence page."""
+    think_dir = os.path.join(DATA_DIR, "think")
+
+    # Load cross-domain synthesis
+    cross_path = os.path.join(think_dir, "latest-life-cross.json")
+    cross = load_json(cross_path) if os.path.exists(cross_path) else None
+
+    # Load life advisor
+    advisor_path = os.path.join(think_dir, "latest-life-advisor.json")
+    advisor = load_json(advisor_path) if os.path.exists(advisor_path) else None
+
+    # Load system-think data
+    gpu_think = os.path.exists(os.path.join(think_dir, "latest-system-gpu.json"))
+    netsec_think = os.path.exists(os.path.join(think_dir, "latest-system-netsec.json"))
+    health_think = os.path.exists(os.path.join(think_dir, "latest-system-health.json"))
+
+    if not cross and not advisor and not gpu_think and not netsec_think and not health_think:
+        body = """
+<div class="section">
+  <div class="section-title">🧭 LIFE ADVISOR</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🧭</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No advisor data yet</div>
+    <div style="margin-top:12px;font-size:0.9rem">
+      life-think.py runs during nightly batch:<br>
+      <b>Cross synthesis</b> — combines career + company intelligence<br>
+      <b>Life advisor</b> — reads ALL data sources, generates actionable advice<br>
+      Data will appear after the first nightly batch completes.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("ADVISOR", body, "advisor")
+
+    body = ""
+
+    # ── Cross-domain synthesis section ──
+    if cross:
+        cross_date = e(cross.get("generated", "?")[:16])
+        cross_analysis = cross.get("analysis", "")
+        cross_sources = cross.get("sources", {})
+        hot_jobs = cross_sources.get("hot_jobs", 0)
+        career_cos = len(cross_sources.get("career_companies", []))
+        company_cos = len(cross_sources.get("company_companies", []))
+        cross_meta = cross.get("meta", {})
+        dur = cross_meta.get("duration_s", 0)
+
+        # Format analysis: convert markdown-ish sections to HTML
+        formatted = _format_think_text(cross_analysis)
+
+        body += f"""
+<div class="section">
+  <div class="section-title">🔀 CROSS-DOMAIN INTELLIGENCE <span style="color:var(--fg-dim);font-size:0.8rem">// {cross_date} · {career_cos} career + {company_cos} company analyses · {hot_jobs} hot jobs · {dur:.0f}s GPU</span></div>
+  <div class="section-body">
+    <div style="white-space:pre-wrap;line-height:1.6;font-size:0.92rem">{formatted}</div>
+  </div>
+</div>"""
+
+    # ── Life advisor section ──
+    if advisor:
+        adv_date = e(advisor.get("generated", "?")[:16])
+        adv_analysis = advisor.get("analysis", "")
+        adv_sources = advisor.get("sources_used", {})
+        adv_meta = advisor.get("meta", {})
+        dur = adv_meta.get("duration_s", 0)
+        web_count = adv_sources.get("web_searches", 0)
+        notes_count = adv_sources.get("think_notes", 0)
+        followup_count = adv_meta.get("followup_count", 0)
+
+        # Count active data sources
+        active_sources = sum(1 for v in adv_sources.values() if v and v not in (0, False))
+
+        formatted = _format_think_text(adv_analysis)
+
+        # Web research section
+        web_html = ""
+        web_research = advisor.get("web_research", {})
+        if web_research:
+            web_rows = ""
+            for query, results in web_research.items():
+                for r in results[:2]:
+                    title = e(r.get("title", "?")[:60])
+                    url = e(r.get("url", "#"))
+                    snippet = e(r.get("snippet", "")[:100])
+                    web_rows += f"""<tr>
+                      <td style="color:var(--cyan);font-size:0.85rem">{e(query[:40])}</td>
+                      <td><a href="{url}" target="_blank" style="color:var(--green);text-decoration:none">{title}</a></td>
+                      <td style="color:var(--fg-dim);font-size:0.8rem">{snippet}</td>
+                    </tr>"""
+            if web_rows:
+                web_html = f"""
+<div style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px">
+  <div style="color:var(--amber);font-weight:bold;margin-bottom:8px">🌐 WEB RESEARCH ({len(web_research)} queries)</div>
+  <table class="host-table">
+    <thead><tr><th>Query</th><th>Result</th><th>Snippet</th></tr></thead>
+    <tbody>{web_rows}</tbody>
+  </table>
+</div>"""
+
+        # Followup research
+        followup_html = ""
+        followups = advisor.get("followup_research", [])
+        if followups:
+            fu_items = ""
+            for fu in followups[:5]:
+                ft = fu.get("type", "?")
+                if ft == "url_fetch":
+                    fu_items += f'<div style="margin:4px 0;font-size:0.85rem">📄 <a href="{e(fu.get("url","#"))}" target="_blank" style="color:var(--cyan)">{e(fu.get("url","")[:60])}</a> — {e(fu.get("excerpt","")[:100])}</div>'
+                elif ft == "search":
+                    fu_items += f'<div style="margin:4px 0;font-size:0.85rem">🔍 {e(fu.get("query",""))}: {len(fu.get("results",[]))} results</div>'
+            if fu_items:
+                followup_html = f"""
+<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+  <div style="color:var(--purple);font-weight:bold;margin-bottom:8px">🔭 FOLLOW-UP RESEARCH ({len(followups)} items)</div>
+  {fu_items}
+</div>"""
+
+        # System health
+        sys_html = ""
+        sys_health = advisor.get("system_health", {})
+        if sys_health:
+            disk = e(sys_health.get("disk", ""))
+            uptime = e(sys_health.get("uptime", ""))
+            cron_jobs = e(str(sys_health.get("cron_jobs", "")))
+            sys_html = f"""
+<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+  <div style="color:var(--fg-dim);font-weight:bold;margin-bottom:8px">🖥️ SYSTEM HEALTH</div>
+  <div style="font-size:0.85rem;color:var(--fg-dim)">
+    <div>⏱️ {uptime}</div>
+    <div>💾 {disk}</div>
+    <div>📋 {cron_jobs} active cron jobs</div>
+  </div>
+</div>"""
+
+        body += f"""
+<div class="section">
+  <div class="section-title">🧭 LIFE ADVISOR <span style="color:var(--fg-dim);font-size:0.8rem">// {adv_date} · {active_sources} data sources · {web_count} web searches · {followup_count} follow-ups · {dur:.0f}s GPU</span></div>
+  <div class="section-body">
+    <div style="white-space:pre-wrap;line-height:1.6;font-size:0.92rem">{formatted}</div>
+    {web_html}
+    {followup_html}
+    {sys_html}
+  </div>
+</div>"""
+
+    # ── GPU Intelligence section ──
+    gpu_data = load_json(os.path.join(think_dir, "latest-system-gpu.json")) if os.path.exists(os.path.join(think_dir, "latest-system-gpu.json")) else None
+    if gpu_data:
+        gpu_date = e(gpu_data.get("generated", "?")[:16])
+        gpu_analysis = gpu_data.get("analysis", "")
+        gpu_meta = gpu_data.get("meta", {})
+        gpu_days = gpu_meta.get("days_analyzed", 0)
+        gpu_dur = gpu_meta.get("duration_s", 0)
+
+        # Quick stats from day summaries
+        day_sums = gpu_data.get("day_summaries", [])
+        gpu_stats = ""
+        if day_sums:
+            latest = day_sums[-1] if day_sums else {}
+            gpu_stats = (f" · {latest.get('temp_avg', 0):.0f}°C avg · "
+                         f"{latest.get('throttle_pct', 0):.0f}% throttled · "
+                         f"{sum(d.get('cost_pln', 0) for d in day_sums):.1f} PLN/week")
+
+        utilization = gpu_data.get("utilization", {})
+        util_html = ""
+        if utilization:
+            gen_pct = utilization.get("generating_pct", 0)
+            loaded_pct = utilization.get("loaded_pct", 0)
+            idle_pct = utilization.get("idle_pct", 0)
+            bar_gen = f'<div style="display:inline-block;height:12px;width:{gen_pct}%;background:var(--green);border-radius:2px" title="Generating {gen_pct}%"></div>'
+            bar_load = f'<div style="display:inline-block;height:12px;width:{loaded_pct}%;background:var(--amber);border-radius:2px" title="Loaded {loaded_pct}%"></div>'
+            bar_idle = f'<div style="display:inline-block;height:12px;width:{idle_pct}%;background:var(--fg-dim);border-radius:2px;opacity:0.3" title="Idle {idle_pct}%"></div>'
+            util_html = f"""
+<div style="margin-bottom:12px">
+  <div style="font-size:0.85rem;color:var(--fg-dim);margin-bottom:4px">GPU Utilization (7-day)</div>
+  <div style="background:var(--bg2);border-radius:4px;overflow:hidden;display:flex">{bar_gen}{bar_load}{bar_idle}</div>
+  <div style="font-size:0.8rem;margin-top:4px;color:var(--fg-dim)">
+    <span style="color:var(--green)">■</span> Generating {gen_pct}%
+    <span style="color:var(--amber);margin-left:12px">■</span> Loaded {loaded_pct}%
+    <span style="margin-left:12px">■</span> Idle {idle_pct}%
+  </div>
+</div>"""
+
+        formatted_gpu = _format_think_text(gpu_analysis)
+        body += f"""
+<div class="section">
+  <div class="section-title">🔥 GPU INTELLIGENCE <span style="color:var(--fg-dim);font-size:0.8rem">// {gpu_date} · {gpu_days} days analyzed{gpu_stats} · {gpu_dur:.0f}s GPU</span></div>
+  <div class="section-body">
+    {util_html}
+    <div style="white-space:pre-wrap;line-height:1.6;font-size:0.92rem">{formatted_gpu}</div>
+  </div>
+</div>"""
+
+    # ── Network Security section ──
+    netsec_data = load_json(os.path.join(think_dir, "latest-system-netsec.json")) if os.path.exists(os.path.join(think_dir, "latest-system-netsec.json")) else None
+    if netsec_data:
+        netsec_date = e(netsec_data.get("generated", "?")[:16])
+        netsec_analysis = netsec_data.get("analysis", "")
+        netsec_meta = netsec_data.get("meta", {})
+        netsec_dur = netsec_meta.get("duration_s", 0)
+
+        scan_sum = netsec_data.get("scan_summary", {})
+        host_count = scan_sum.get("host_count", 0)
+        avg_score = scan_sum.get("avg_security_score", 0)
+        low_hosts = scan_sum.get("low_score_hosts", 0)
+
+        vuln_sum = netsec_data.get("vuln_summary", {})
+        vuln_total = vuln_sum.get("total_findings", 0) if vuln_sum else 0
+        vuln_crit = vuln_sum.get("critical", 0) if vuln_sum else 0
+        vuln_high = vuln_sum.get("high", 0) if vuln_sum else 0
+
+        score_color = "var(--green)" if avg_score >= 80 else ("var(--amber)" if avg_score >= 60 else "var(--red)")
+
+        formatted_netsec = _format_think_text(netsec_analysis)
+        body += f"""
+<div class="section">
+  <div class="section-title">🛡️ NETWORK SECURITY <span style="color:var(--fg-dim);font-size:0.8rem">// {netsec_date} · {host_count} hosts · score <span style="color:{score_color}">{avg_score:.0f}</span>/100 · {vuln_total} vulns ({vuln_crit} crit, {vuln_high} high) · {netsec_dur:.0f}s GPU</span></div>
+  <div class="section-body">
+    <div style="white-space:pre-wrap;line-height:1.6;font-size:0.92rem">{formatted_netsec}</div>
+  </div>
+</div>"""
+
+    # ── Health Watchdog section ──
+    health_data = load_json(os.path.join(think_dir, "latest-system-health.json")) if os.path.exists(os.path.join(think_dir, "latest-system-health.json")) else None
+    if health_data:
+        health_date = e(health_data.get("generated", "?")[:16])
+        health_analysis = health_data.get("analysis", "")
+        health_meta = health_data.get("meta", {})
+        health_dur = health_meta.get("duration_s", 0)
+
+        acounts = health_data.get("alert_counts", {})
+        hc = acounts.get("critical", 0)
+        hh = acounts.get("high", 0)
+        hm = acounts.get("medium", 0)
+        total_alerts = hc + hh + hm
+        signal_sent = health_data.get("signal_sent", False)
+
+        if hc:
+            verdict_color = "var(--red)"
+            verdict_icon = "🔴"
+        elif hh:
+            verdict_color = "var(--amber)"
+            verdict_icon = "🟠"
+        elif hm:
+            verdict_color = "#ffff00"
+            verdict_icon = "🟡"
+        else:
+            verdict_color = "var(--green)"
+            verdict_icon = "✅"
+
+        # Alert badges
+        alert_badges = ""
+        if total_alerts:
+            alert_badges = f'<span style="margin-left:8px">'
+            if hc: alert_badges += f'<span style="background:var(--red);color:#000;padding:1px 6px;border-radius:3px;font-size:0.75rem;margin-right:4px">{hc} CRIT</span>'
+            if hh: alert_badges += f'<span style="background:var(--amber);color:#000;padding:1px 6px;border-radius:3px;font-size:0.75rem;margin-right:4px">{hh} HIGH</span>'
+            if hm: alert_badges += f'<span style="background:#ffff00;color:#000;padding:1px 6px;border-radius:3px;font-size:0.75rem;margin-right:4px">{hm} MED</span>'
+            alert_badges += '</span>'
+
+        signal_badge = f' · <span style="color:var(--green)">📱 Signal sent</span>' if signal_sent else ""
+
+        # Show individual alerts
+        alerts_html = ""
+        raw_alerts = health_data.get("alerts", [])
+        if raw_alerts:
+            alert_items = ""
+            for a in raw_alerts[:10]:
+                sev = a.get("severity", "?")
+                cat = e(a.get("category", "?"))
+                detail = e(a.get("detail", "")[:200])
+                sev_color = "var(--red)" if sev == "CRITICAL" else ("var(--amber)" if sev == "HIGH" else "#ffff00")
+                alert_items += f"""<div style="margin:6px 0;padding:8px;background:var(--bg2);border-left:3px solid {sev_color};border-radius:0 4px 4px 0">
+                  <span style="color:{sev_color};font-weight:bold;font-size:0.85rem">[{sev}]</span> <span style="color:var(--cyan);font-size:0.85rem">{cat}</span>
+                  <div style="font-size:0.82rem;color:var(--fg-dim);margin-top:4px;white-space:pre-wrap">{detail}</div>
+                </div>"""
+            alerts_html = f"""
+<div style="margin-bottom:16px">
+  <div style="color:var(--amber);font-weight:bold;margin-bottom:8px">⚠️ ALERTS ({total_alerts})</div>
+  {alert_items}
+</div>"""
+
+        formatted_health = _format_think_text(health_analysis)
+        body += f"""
+<div class="section">
+  <div class="section-title">{verdict_icon} HEALTH WATCHDOG <span style="color:var(--fg-dim);font-size:0.8rem">// {health_date} · <span style="color:{verdict_color}">{total_alerts} alerts</span>{alert_badges}{signal_badge} · {health_dur:.0f}s GPU</span></div>
+  <div class="section-body">
+    {alerts_html}
+    <div style="white-space:pre-wrap;line-height:1.6;font-size:0.92rem">{formatted_health}</div>
+  </div>
+</div>"""
+
+    return page_wrap("ADVISOR", body, "advisor")
+
+
+def _format_think_text(text):
+    """Format LLM analysis text for HTML display — handles markdown-ish formatting."""
+    import re as _re
+    text = e(text)
+    # Bold: **text** → <b>text</b>
+    text = _re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
+    # Headers: ## text → colored header
+    text = _re.sub(r'^(#{1,3})\s+(.+)$', lambda m: f'<div style="color:var(--green);font-weight:bold;margin-top:16px;font-size:1.05rem">{"━" * len(m.group(1))} {m.group(2)}</div>', text, flags=_re.MULTILINE)
+    # Numbered lists: 1. text → styled
+    text = _re.sub(r'^(\d+)\.\s+', r'<span style="color:var(--amber);font-weight:bold">\1.</span> ', text, flags=_re.MULTILINE)
+    # Bullet points: - text → styled
+    text = _re.sub(r'^[-•]\s+', '<span style="color:var(--cyan)">▸</span> ', text, flags=_re.MULTILINE)
+    # Emojis in section headers — keep them
+    return text
+
+
 # ─── Page: Career Intelligence (career.html) ───
 
 def gen_careers():
@@ -2964,14 +4917,14 @@ def gen_careers():
     good_jobs = [j for j in jobs if 40 <= j.get("match_score", 0) < 70]
     remote_jobs = [j for j in jobs if j.get("remote_compatible", False)]
 
-    scan_ts = meta.get("timestamp", "?")
+    scan_ts = format_dual_timestamps(meta)
     duration = meta.get("duration_seconds", 0)
     mode_label = "FULL" if meta.get("mode") == "full" else "QUICK"
 
     # ─ Scan overview section ─
     overview = f"""
 <div class="section">
-  <div class="section-title">🎯 CAREER INTELLIGENCE &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(scan_ts)} ({mode_label}, {duration}s)</span></div>
+  <div class="section-title">🎯 CAREER INTELLIGENCE &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {scan_ts} ({mode_label}, {duration}s)</span></div>
   <div class="section-body">
     <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
       <div><span style="color:var(--green);font-size:1.8rem;font-weight:bold">{len(jobs)}</span><br><span style="color:var(--fg-dim)">matches found</span></div>
@@ -3151,6 +5104,129 @@ def gen_careers():
   </div>
 </div>"""
 
+    # ─ Deep company intel section (from company-intel.py) ─
+    deep_intel_path = os.path.join(DATA_DIR, "intel", "latest-intel.json")
+    deep_intel = load_json(deep_intel_path) if os.path.exists(deep_intel_path) else None
+    deep_intel_html = ""
+    if deep_intel and isinstance(deep_intel, dict):
+        companies_data = deep_intel.get("companies", [])
+        di_ts = format_dual_timestamps(deep_intel.get("meta", {}))
+        company_cards = ""
+        for comp in companies_data:
+            if comp.get("error"):
+                continue
+            cname = comp.get("name", "?")
+            analysis = comp.get("analysis", {})
+            sentiment = analysis.get("sentiment", "?")
+            score = analysis.get("sentiment_score", "?")
+            adas_rel = analysis.get("adas_relevance", "?")
+            recommendation = analysis.get("recommendation", "")
+            community = analysis.get("community_pulse", "")
+
+            sent_color = {
+                "positive": "var(--green)", "negative": "var(--red)",
+                "mixed": "var(--amber)", "neutral": "var(--fg-dim)",
+            }.get(sentiment, "var(--fg-dim)")
+
+            # Collect source links across all data types
+            source_links = ""
+            for item in comp.get("news", [])[:3]:
+                url = item.get("url", "")
+                title = item.get("title", "news")[:60]
+                if url:
+                    source_links += f' <a href="{e(url)}" target="_blank" style="color:var(--cyan);font-size:0.75rem;text-decoration:none" title="{e(title)}">📰</a>'
+            for item in comp.get("reddit", [])[:2]:
+                url = item.get("url", "")
+                sub = item.get("subreddit", "reddit")
+                if url:
+                    source_links += f' <a href="{e(url)}" target="_blank" style="color:var(--amber);font-size:0.75rem;text-decoration:none" title="{e(sub)}: {e(item.get("title","")[:60])}">💬</a>'
+            for item in comp.get("hackernews", [])[:2]:
+                url = item.get("url", "")
+                if url:
+                    source_links += f' <a href="{e(url)}" target="_blank" style="color:var(--green);font-size:0.75rem;text-decoration:none" title="HN: {e(item.get("title","")[:60])}">🟠</a>'
+            for item in comp.get("4programmers", [])[:2]:
+                url = item.get("url", "")
+                if url:
+                    source_links += f' <a href="{e(url)}" target="_blank" style="color:var(--purple);font-size:0.75rem;text-decoration:none" title="4p: {e(item.get("title","")[:60])}">🇵🇱</a>'
+            for item in comp.get("semiwiki", [])[:1]:
+                url = item.get("url", "")
+                if url:
+                    source_links += f' <a href="{e(url)}" target="_blank" style="color:var(--blue);font-size:0.75rem;text-decoration:none" title="SemiWiki: {e(item.get("title","")[:60])}">🔬</a>'
+
+            # Red flags and growth signals
+            flags = analysis.get("red_flags", [])
+            signals = analysis.get("growth_signals", [])
+            flag_html = f'<span style="color:var(--red);font-size:0.78rem"> ⚠ {e(", ".join(flags[:2]))}</span>' if flags else ""
+            signal_html = f'<span style="color:var(--green);font-size:0.78rem"> 📈 {e(", ".join(signals[:2]))}</span>' if signals else ""
+
+            # Careers found
+            careers = comp.get("careers_openings", [])
+            careers_html = ""
+            if careers:
+                career_items = ""
+                for cj in careers[:5]:
+                    cj_url = cj.get("url", "")
+                    cj_title = e(cj.get("title", "?")[:80])
+                    cj_loc = e(cj.get("location", ""))
+                    if cj_url:
+                        career_items += f'<div style="margin-left:12px;font-size:0.78rem"><a href="{e(cj_url)}" target="_blank" style="color:var(--cyan);text-decoration:none">↗ {cj_title}</a> <span style="color:var(--fg-dim)">{cj_loc}</span></div>'
+                    else:
+                        career_items += f'<div style="margin-left:12px;font-size:0.78rem;color:var(--fg-dim)">{cj_title} — {cj_loc}</div>'
+                careers_html = f'<div style="margin-top:4px">{career_items}</div>'
+
+            company_cards += f"""
+    <div style="border-left:3px solid {sent_color};padding:6px 12px;margin-bottom:10px;background:var(--bg3)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="color:var(--cyan);font-weight:bold">{e(cname)}</span>
+          <span style="color:{sent_color};margin-left:8px;font-size:0.82rem">{e(str(sentiment))} ({score})</span>
+          <span style="color:var(--purple);margin-left:8px;font-size:0.78rem">ADAS:{adas_rel}/10</span>
+          {source_links}
+        </div>
+        <div style="font-size:0.75rem;color:var(--fg-dim)">{len(careers)} openings</div>
+      </div>
+      <div style="font-size:0.8rem;margin-top:4px">
+        {flag_html}{signal_html}
+      </div>
+      <div style="font-size:0.8rem;color:var(--fg-dim);margin-top:2px">{e(recommendation)}</div>
+      <div style="font-size:0.78rem;color:var(--fg-dim);margin-top:2px;font-style:italic">{e(community)}</div>
+      {careers_html}
+    </div>"""
+
+        # HN Who is Hiring section
+        hn_hiring = deep_intel.get("hn_who_is_hiring", {})
+        hn_jobs = hn_hiring.get("matching_jobs", [])
+        hn_url = hn_hiring.get("thread_url", "")
+        hn_html = ""
+        if hn_jobs:
+            hn_items = ""
+            for hj in hn_jobs[:8]:
+                hj_url = hj.get("url", "")
+                hj_company = e(hj.get("company", "?")[:60])
+                hj_remote = "🌍" if hj.get("is_remote") else ""
+                hj_eu = "🇪🇺" if hj.get("is_europe") else ""
+                hj_rel = hj.get("relevance_score", 0)
+                hj_text = e(hj.get("text", "")[:120])
+                link_html = f'<a href="{e(hj_url)}" target="_blank" style="color:var(--cyan);text-decoration:none">{hj_company} ↗</a>' if hj_url else hj_company
+                hn_items += f'<div style="font-size:0.8rem;margin-bottom:4px">{link_html} {hj_remote}{hj_eu} <span style="color:var(--purple)">rel:{hj_rel}</span> <span style="color:var(--fg-dim)">— {hj_text}</span></div>'
+
+            thread_link = f'<a href="{e(hn_url)}" target="_blank" style="color:var(--amber);text-decoration:none;font-size:0.8rem">full thread ↗</a>' if hn_url else ""
+            hn_html = f"""
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+      <div style="color:var(--amber);font-weight:bold;margin-bottom:6px">🟠 HN "Who is Hiring" — {len(hn_jobs)} relevant matches {thread_link}</div>
+      {hn_items}
+    </div>"""
+
+        if company_cards:
+            deep_intel_html = f"""
+<div class="section">
+  <div class="section-title">🏢 DEEP COMPANY INTELLIGENCE <span style="color:var(--fg-dim);font-size:0.8rem">// {e(di_ts)}</span></div>
+  <div class="section-body">
+    {company_cards}
+    {hn_html}
+  </div>
+</div>"""
+
     # ─ Source status section ─
     source_rows = ""
     for label, results in [("Career Pages", sources.get("career_pages", {})),
@@ -3275,7 +5351,7 @@ def gen_careers():
   </div>
 </div>"""
 
-    body = overview + summary_html + hot_html + good_html + intel_html + health_html + source_html + history_html
+    body = overview + summary_html + hot_html + good_html + intel_html + deep_intel_html + health_html + source_html + history_html
     return page_wrap("CAREERS", body, "career")
 
 
@@ -3484,8 +5560,6 @@ def gen_power_cost_section():
             chart_file = f"gpu-{ds}-{suffix}.png"
             chart_path = os.path.join(GPU_DATA_DIR, chart_file)
             if os.path.exists(chart_path):
-                # Encode as base64 for inline embedding
-                import base64
                 with open(chart_path, "rb") as cf:
                     b64 = base64.b64encode(cf.read()).decode("ascii")
                 chart_html += f"""
@@ -3504,7 +5578,7 @@ def gen_power_cost_section():
 def load_gpu_samples(days=14):
     """Load GPU load TSV samples.
 
-    Returns list of (datetime, status, model, script, vram_mb, gpu_mhz, temp_c).
+    Returns list of (datetime, status, model, script, vram_mb, gpu_mhz, temp_c, throttle).
     Status: 'generating' (GPU active), 'loaded' (model in VRAM, idle), 'idle'.
     Legacy 'busy' rows are re-mapped using gpu_mhz if available.
     """
@@ -3533,13 +5607,14 @@ def load_gpu_samples(days=14):
             vram = int(parts[4]) if len(parts) > 4 and parts[4].isdigit() else 0
             gpu_mhz = int(parts[5]) if len(parts) > 5 and parts[5].isdigit() else 0
             temp_c = int(parts[6]) if len(parts) > 6 and parts[6].isdigit() else 0
+            throttle = int(parts[7]) if len(parts) > 7 and parts[7].isdigit() else 0
             # Re-map legacy "busy" using gpu_mhz if available
             if status == "busy":
                 if gpu_mhz > 1200:
                     status = "generating"
                 else:
                     status = "loaded"
-            samples.append((ts, status, model, script, vram, gpu_mhz, temp_c))
+            samples.append((ts, status, model, script, vram, gpu_mhz, temp_c, throttle))
     return samples
 
 
@@ -3654,6 +5729,87 @@ def gen_load():
         else:
             return "red"
 
+    # ─── Throttle analysis ───
+    THROTTLE_BITS = {
+        0: "SPL", 1: "FPPT", 2: "SPPT", 3: "SPPT_APU",
+        4: "THM_CORE", 5: "THM_GFX", 6: "THM_SOC",
+        7: "TDC_VDD", 8: "TDC_SOC", 9: "TDC_GFX",
+        10: "EDC_CPU", 11: "EDC_GFX", 12: "PROCHOT",
+    }
+    THERMAL_MASK = (1 << 4) | (1 << 5) | (1 << 6) | (1 << 12)
+    POWER_MASK = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3)
+
+    def decode_thr(val):
+        return [name for bit, name in THROTTLE_BITS.items() if val & (1 << bit)]
+
+    # Basic counts
+    today_throttle_min = sum(1 for s in today_samples if s[7] > 0)
+    week_throttle_min = sum(1 for s in week_samples if s[7] > 0)
+    today_thermal_min = sum(1 for s in today_samples if s[7] & THERMAL_MASK)
+    today_power_min = sum(1 for s in today_samples if s[7] & POWER_MASK)
+
+    # Throttle % of generating time (the key new metric)
+    today_gen_throttled = sum(1 for s in today_samples if is_active(s[1]) and s[7] > 0)
+    today_throttle_gen_pct = (today_gen_throttled / today_gen * 100) if today_gen > 0 else 0
+    week_gen_throttled = sum(1 for s in week_samples if is_active(s[1]) and s[7] > 0)
+    week_throttle_gen_pct = (week_gen_throttled / week_gen * 100) if week_gen > 0 else 0
+
+    # Per-reason breakdown (7 days)
+    reason_minutes = {}
+    for s in week_samples:
+        if s[7] > 0:
+            for bit, name in THROTTLE_BITS.items():
+                if s[7] & (1 << bit):
+                    reason_minutes[name] = reason_minutes.get(name, 0) + 1
+
+    # Daily throttle stats for trend chart
+    daily_throttle = {}
+    for s in samples:
+        day = s[0].strftime("%Y-%m-%d")
+        if day not in daily_throttle:
+            daily_throttle[day] = {"gen": 0, "gen_thr": 0, "total": 0,
+                                   "throttled": 0, "thermal": 0, "power": 0}
+        dt = daily_throttle[day]
+        dt["total"] += 1
+        if s[7] > 0:
+            dt["throttled"] += 1
+            if s[7] & THERMAL_MASK:
+                dt["thermal"] += 1
+            if s[7] & POWER_MASK:
+                dt["power"] += 1
+        if is_active(s[1]):
+            dt["gen"] += 1
+            if s[7] > 0:
+                dt["gen_thr"] += 1
+
+    # Throttle episodes (today)
+    today_episodes = []
+    _prev_thr = False
+    _ep_start = None
+    _ep_reasons = set()
+    for s in today_samples:
+        if s[7] > 0:
+            if not _prev_thr:
+                _ep_start = s[0]
+                _ep_reasons = set(decode_thr(s[7]))
+            else:
+                _ep_reasons.update(decode_thr(s[7]))
+            _prev_thr = True
+        else:
+            if _prev_thr and _ep_start:
+                today_episodes.append((_ep_start, s[0], _ep_reasons))
+            _prev_thr = False
+            _ep_start = None
+            _ep_reasons = set()
+    if _prev_thr and _ep_start and today_samples:
+        today_episodes.append((_ep_start, today_samples[-1][0], _ep_reasons))
+
+    throttle_color = "var(--red)" if today_throttle_min > 0 else "var(--green)"
+    if today_throttle_min > 0:
+        throttle_val = f"{today_throttle_gen_pct:.0f}%"
+    else:
+        throttle_val = "✓"
+
     # Stats boxes
     stats_html = f"""
 <div class="section">
@@ -3681,13 +5837,14 @@ def gen_load():
         <div class="stat-label">est. free slots</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val">{len(samples)}</div>
-        <div class="stat-label">total samples</div>
+        <div class="stat-val" style="color:{throttle_color}">{throttle_val}</div>
+        <div class="stat-label">gen throttled</div>
       </div>
     </div>
     <div style="margin-top:10px;font-size:0.82rem;color:var(--fg-dim)">
       1 sample = 1 minute &nbsp;│&nbsp; generating = GPU clock &gt;1.2 GHz (actual compute) &nbsp;│&nbsp;
       loaded = model in VRAM but GPU idle (keep-alive 30m)
+      {f'&nbsp;│&nbsp; <span style="color:var(--red)">⚠ {today_throttle_min}min throttled ({today_gen_throttled}m during gen, thermal: {today_thermal_min}m, power: {today_power_min}m)</span>' if today_throttle_min > 0 else ''}
     </div>
   </div>
 </div>"""
@@ -3777,7 +5934,7 @@ def gen_load():
             "report": "📊", "career-scan": "💼", "salary-tracker": "💰",
             "company-intel": "🏢", "patent-watch": "📜", "event-scout": "🎤",
             "ha-journal": "🏠", "leak-monitor": "🔒", "gateway": "🌐",
-            "unknown": "❓",
+            "academic-watch": "🎓", "unknown": "❓",
         }
         # Sort by minutes descending
         sorted_scripts = sorted(script_minutes.items(), key=lambda x: -x[1])
@@ -3849,12 +6006,12 @@ def gen_load():
     _n_night = len(cron_jobs_night)
     _n_day = len(cron_jobs_day)
 
-    cap_html = f'<div class="section"><div class="section-title">🔧 OPENCLAW CRON — {cron_enabled} SCHEDULED JOBS</div><div class="section-body">'
+    cap_html = f'<div class="section"><div class="section-title">🔧 QUEUE-RUNNER — {cron_enabled} SCHEDULED JOBS</div><div class="section-body">'
     cap_html += '<div style="margin-bottom:12px;padding:8px;background:var(--bg2);border-left:3px solid var(--purple);border-radius:4px;font-size:0.85rem">'
-    cap_html += '🤖 <span style="color:var(--purple);font-weight:bold">All GPU tasks run through Clawd</span> '
-    cap_html += '<span style="color:var(--fg-dim)">via </span>'
-    cap_html += '<span style="color:var(--cyan)">openclaw cron</span> '
-    cap_html += '<span style="color:var(--fg-dim)">→ agent turns → shell tools. Gateway runs 24/7. Signal preempts background work.</span>'
+    cap_html += '🤖 <span style="color:var(--purple);font-weight:bold">Sequential queue-runner</span> '
+    cap_html += '<span style="color:var(--fg-dim)">executes scripts directly via subprocess. '
+    cap_html += 'LLM-only tasks route through openclaw agent. '
+    cap_html += 'Signal preempts background work.</span>'
     cap_html += '</div>'
 
     def _status_color(st):
@@ -3884,7 +6041,6 @@ def gen_load():
     cap_html += _render_cron_table(cron_jobs_day)
 
     # Summary stats
-    _total_timeout_night = sum(j[4].replace("≤", "").replace(" min", "") for j in cron_jobs_night if True) if False else 0
     _night_max_min = sum(int(j[4].replace("≤", "").replace(" min", "")) for j in cron_jobs_night)
     _day_max_min = sum(int(j[4].replace("≤", "").replace(" min", "")) for j in cron_jobs_day)
     _total_max_min = _night_max_min + _day_max_min
@@ -3900,10 +6056,10 @@ def gen_load():
   <span style="color:var(--fg-dim)">of 540 min window</span>
   <br>
   <span style="color:var(--fg-dim)">Orchestration:</span>
-  <span style="color:var(--cyan)">openclaw cron → Clawd → shell tools → scripts → Ollama</span>
+  <span style="color:var(--cyan)">queue-runner → direct subprocess / openclaw agent → Ollama</span>
   <br>
   <span style="color:var(--fg-dim)">Preemption:</span>
-  <span style="color:var(--green)">Signal messages queue and process after current agent turn</span>
+  <span style="color:var(--green)">Signal messages queue and process after current job</span>
 </div>'''
     cap_html += '</div></div>'
 
@@ -3916,12 +6072,19 @@ def gen_load():
         ts, st, model, script, vram = s[0], s[1], s[2], s[3], s[4]
         gpu_mhz = s[5] if len(s) > 5 else 0
         temp_c = s[6] if len(s) > 6 else 0
+        throttle = s[7] if len(s) > 7 else 0
         ts_str = ts.strftime("%H:%M")
         hw_info = ""
         if gpu_mhz:
             hw_info = f" {gpu_mhz}MHz"
         if temp_c:
             hw_info += f" {temp_c}°C"
+        if throttle:
+            thr_reasons = decode_thr(throttle)
+            thr_short = ",".join(thr_reasons[:3])
+            if len(thr_reasons) > 3:
+                thr_short += f"+{len(thr_reasons)-3}"
+            hw_info += f' <span style="color:var(--red)" title="throttle=0x{throttle:x} [{", ".join(thr_reasons)}]">⚠{thr_short}</span>'
         if st == "generating":
             vram_str = f" [{vram}MB]" if vram else ""
             script_str = f" ← {script}" if script else ""
@@ -3934,9 +6097,186 @@ def gen_load():
             log_html += f'<span class="log-ts">{ts_str}</span> <span style="color:#224422">□ idle</span>{hw_info}\n'
     log_html += '</div></div></div>'
 
+    # ─── Throttle Analysis section ───
+    thr_html = ''
+    if week_throttle_min > 0:
+        _reason_colors = {
+            "SPL": "#f97316", "FPPT": "#fb923c", "SPPT": "#fdba74", "SPPT_APU": "#fed7aa",
+            "THM_CORE": "#ef4444", "THM_GFX": "#f87171", "THM_SOC": "#fca5a5",
+            "TDC_VDD": "#a78bfa", "TDC_SOC": "#c4b5fd", "TDC_GFX": "#ddd6fe",
+            "EDC_CPU": "#67e8f9", "EDC_GFX": "#a5f3fc", "PROCHOT": "#dc2626",
+        }
+        _reason_icons = {
+            "THM_CORE": "🌡️", "THM_GFX": "🌡️", "THM_SOC": "🌡️", "PROCHOT": "🌡️",
+            "SPL": "⚡", "FPPT": "⚡", "SPPT": "⚡", "SPPT_APU": "⚡",
+            "TDC_VDD": "🔌", "TDC_SOC": "🔌", "TDC_GFX": "🔌",
+            "EDC_CPU": "📊", "EDC_GFX": "📊",
+        }
+
+        thr_html = '<div class="section"><div class="section-title">🌡️ THROTTLE ANALYSIS — GPU Thermal &amp; Power Limits</div><div class="section-body">'
+
+        # ── Top stats grid ──
+        _tg_color = lambda p: "var(--green)" if p == 0 else ("var(--amber)" if p < 20 else "var(--red)")
+        thr_html += '<div class="stats-grid">'
+        thr_html += f'''<div class="stat-box">
+  <div class="stat-val" style="color:{_tg_color(today_throttle_gen_pct)}">{today_throttle_gen_pct:.0f}%</div>
+  <div class="stat-label">gen throttled today</div>
+</div>'''
+        thr_html += f'''<div class="stat-box">
+  <div class="stat-val" style="color:{_tg_color(week_throttle_gen_pct)}">{week_throttle_gen_pct:.0f}%</div>
+  <div class="stat-label">gen throttled 7d</div>
+</div>'''
+        thr_html += f'''<div class="stat-box">
+  <div class="stat-val" style="color:var(--red)">{today_throttle_min}</div>
+  <div class="stat-label">throttle min today</div>
+</div>'''
+        thr_html += f'''<div class="stat-box">
+  <div class="stat-val" style="color:var(--red)">{week_throttle_min}</div>
+  <div class="stat-label">throttle min 7d</div>
+</div>'''
+        thr_html += f'''<div class="stat-box">
+  <div class="stat-val" style="color:#ef4444">{today_thermal_min}m</div>
+  <div class="stat-label">thermal today</div>
+</div>'''
+        thr_html += f'''<div class="stat-box">
+  <div class="stat-val" style="color:#f97316">{today_power_min}m</div>
+  <div class="stat-label">power lim today</div>
+</div>'''
+        thr_html += '</div>'
+
+        thr_html += f'''<div style="margin-top:10px;font-size:0.82rem;color:var(--fg-dim)">
+  "gen throttled" = % of GPU generating time spent in a throttled state &nbsp;│&nbsp;
+  throttle bitmask read from <code>gpu_metrics</code> binary blob (offset 108, uint32 LE)
+</div>'''
+
+        # ── Per-reason breakdown (7 days) ──
+        if reason_minutes:
+            _max_rm = max(reason_minutes.values())
+            thr_html += '<div style="margin-top:16px"><div style="font-weight:bold;color:var(--fg-dim);margin-bottom:8px;font-size:0.85rem">📊 PER-REASON BREAKDOWN — last 7 days</div>'
+            for reason, mins in sorted(reason_minutes.items(), key=lambda x: -x[1]):
+                _bar_w = (mins / _max_rm * 100) if _max_rm > 0 else 0
+                _color = _reason_colors.get(reason, "var(--red)")
+                _icon = _reason_icons.get(reason, "⚠")
+                _pct_of_total = mins * 100 / week_total if week_total > 0 else 0
+                thr_html += f'''<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:0.82rem">
+  <span style="width:110px;color:var(--fg);flex-shrink:0">{_icon} {reason}</span>
+  <div style="flex:1;height:14px;background:var(--bg);border:1px solid var(--border)">
+    <div style="height:100%;width:{_bar_w}%;background:{_color};opacity:0.7"></div>
+  </div>
+  <span style="width:90px;text-align:right;color:var(--fg-dim);flex-shrink:0">{mins}m ({_pct_of_total:.1f}%)</span>
+</div>'''
+            thr_html += '<div style="margin-top:4px;font-size:0.78rem;color:var(--fg-dim)">🌡️ thermal &nbsp;│&nbsp; ⚡ power limit &nbsp;│&nbsp; 🔌 current draw (TDC) &nbsp;│&nbsp; 📊 electrical design (EDC)</div>'
+            thr_html += '</div>'
+
+        # ── Daily throttle trend (14 days) ──
+        thr_html += '<div style="margin-top:16px"><div style="font-weight:bold;color:var(--fg-dim);margin-bottom:8px;font-size:0.85rem">📈 DAILY THROTTLE TREND — last 14 days</div>'
+        for day in sorted(daily_stats.keys())[-14:]:
+            _dt = daily_throttle.get(day, {"gen": 0, "gen_thr": 0, "total": 0,
+                                           "throttled": 0, "thermal": 0, "power": 0})
+            _gen_thr_pct = (_dt["gen_thr"] / _dt["gen"] * 100) if _dt["gen"] > 0 else 0
+            _thr_pct = (_dt["throttled"] / _dt["total"] * 100) if _dt["total"] > 0 else 0
+            _therm_w = (_dt["thermal"] / _dt["total"] * 100) if _dt["total"] > 0 else 0
+            _pwr_w = (_dt["power"] / _dt["total"] * 100) if _dt["total"] > 0 else 0
+            _dlabel = datetime.strptime(day, "%Y-%m-%d").strftime("%a %d")
+            _is_today = day == today_str
+            if _dt["throttled"] > 0:
+                thr_html += f'''<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:0.82rem">
+  <span style="width:52px;text-align:right;color:{'var(--red)' if _is_today else 'var(--fg-dim)'};flex-shrink:0">{_dlabel}</span>
+  <div style="flex:1;height:16px;background:var(--bg);border:1px solid var(--border);display:flex">
+    <div style="height:100%;width:{_therm_w}%;background:#ef4444;opacity:0.7" title="thermal {_dt['thermal']}m"></div>
+    <div style="height:100%;width:{_pwr_w}%;background:#f97316;opacity:0.7" title="power {_dt['power']}m"></div>
+  </div>
+  <span style="width:160px;text-align:right;color:var(--fg-dim);flex-shrink:0">{_dt['throttled']}m ({_thr_pct:.0f}%) gen:{_gen_thr_pct:.0f}%{'  ◀' if _is_today else ''}</span>
+</div>'''
+            else:
+                thr_html += f'''<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:0.82rem">
+  <span style="width:52px;text-align:right;color:{'var(--green)' if _is_today else 'var(--fg-dim)'};flex-shrink:0">{_dlabel}</span>
+  <div style="flex:1;height:16px;background:var(--bg);border:1px solid var(--border)"></div>
+  <span style="width:160px;text-align:right;color:var(--green);flex-shrink:0">✓ clean{'  ◀' if _is_today else ''}</span>
+</div>'''
+        thr_html += '<div style="margin-top:6px;font-size:0.78rem;color:var(--fg-dim)"><span style="color:#ef4444">■</span> thermal &nbsp;│&nbsp; <span style="color:#f97316">■</span> power limit &nbsp;│&nbsp; gen% = % of generating time throttled</div>'
+        thr_html += '</div>'
+
+        # ── Throttle heatmap (7 days × 24 hours, showing throttle minutes per cell) ──
+        thr_heatmap = {}
+        for s in week_samples:
+            _d = s[0].strftime("%Y-%m-%d")
+            _h = s[0].hour
+            _k = (_d, _h)
+            if _k not in thr_heatmap:
+                thr_heatmap[_k] = [0, 0, 0]  # thermal, power, total_throttled
+            if s[7] > 0:
+                thr_heatmap[_k][2] += 1
+                if s[7] & THERMAL_MASK:
+                    thr_heatmap[_k][0] += 1
+                if s[7] & POWER_MASK:
+                    thr_heatmap[_k][1] += 1
+
+        _has_hm_data = any(v[2] > 0 for v in thr_heatmap.values())
+        if _has_hm_data:
+            thr_html += '<div style="margin-top:16px"><div style="font-weight:bold;color:var(--fg-dim);margin-bottom:8px;font-size:0.85rem">🗓 THROTTLE HEATMAP — last 7 days</div>'
+            thr_html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:0.75rem;width:100%">'
+            thr_html += '<tr><td style="padding:2px 6px;color:var(--fg-dim)">Hour</td>'
+            for dl in [(datetime.strptime(d, "%Y-%m-%d")).strftime("%a %d") for d in heatmap_days]:
+                thr_html += f'<td style="padding:2px 4px;color:var(--fg-dim);text-align:center;min-width:60px">{dl}</td>'
+            thr_html += '</tr>'
+            for h in range(24):
+                thr_html += f'<tr><td style="padding:2px 6px;color:var(--fg-dim);text-align:right">{h:02d}:00</td>'
+                for d in heatmap_days:
+                    _k = (d, h)
+                    _therm, _pwr, _tot = thr_heatmap[_k] if _k in thr_heatmap else (0, 0, 0)
+                    if _tot == 0:
+                        _bg = "var(--bg)"
+                        _lbl = "·"
+                        _fg = "#224422"
+                    elif _therm > 0 and _pwr > 0:
+                        _bg = "#3a1a1a"
+                        _lbl = f"{_tot}m"
+                        _fg = "#ef4444"
+                    elif _therm > 0:
+                        _bg = "#2a1a1a"
+                        _lbl = f"{_tot}m"
+                        _fg = "#f87171"
+                    elif _pwr > 0:
+                        _bg = "#2a1a0a"
+                        _lbl = f"{_tot}m"
+                        _fg = "#f97316"
+                    else:
+                        _bg = "#1a1a1a"
+                        _lbl = f"{_tot}m"
+                        _fg = "var(--amber)"
+                    thr_html += f'<td style="padding:2px 4px;text-align:center;background:{_bg};color:{_fg};border:1px solid var(--border)">{_lbl}</td>'
+                thr_html += '</tr>'
+            thr_html += '</table></div>'
+            thr_html += '<div style="margin-top:6px;font-size:0.78rem;color:var(--fg-dim)">· no throttle &nbsp;│&nbsp; <span style="color:#f87171">Nm</span> thermal &nbsp;│&nbsp; <span style="color:#f97316">Nm</span> power &nbsp;│&nbsp; <span style="color:#ef4444">Nm</span> both</div>'
+            thr_html += '</div>'
+
+        # ── Throttle episodes table (today) ──
+        if today_episodes:
+            thr_html += '<div style="margin-top:16px"><div style="font-weight:bold;color:var(--fg-dim);margin-bottom:8px;font-size:0.85rem">⚡ THROTTLE EPISODES TODAY — ' + str(len(today_episodes)) + ' episodes</div>'
+            thr_html += '<table class="host-table"><thead><tr><th>Start</th><th>End</th><th>Duration</th><th>Type</th><th>Reasons</th></tr></thead><tbody>'
+            for _ep_s, _ep_e, _ep_r in today_episodes:
+                _dur = (_ep_e - _ep_s).total_seconds() / 60
+                _has_th = any(r in ("THM_CORE", "THM_GFX", "THM_SOC", "PROCHOT") for r in _ep_r)
+                _has_pw = any(r in ("SPL", "FPPT", "SPPT", "SPPT_APU") for r in _ep_r)
+                if _has_th and _has_pw:
+                    _etype = '<span style="color:#ef4444">🌡️⚡ both</span>'
+                elif _has_th:
+                    _etype = '<span style="color:#ef4444">🌡️ thermal</span>'
+                elif _has_pw:
+                    _etype = '<span style="color:#f97316">⚡ power</span>'
+                else:
+                    _etype = '<span style="color:var(--amber)">⚠ other</span>'
+                _dur_s = f"{_dur:.0f}m" if _dur >= 1 else "&lt;1m"
+                _reasons_s = ", ".join(sorted(_ep_r))
+                thr_html += f'<tr><td>{_ep_s.strftime("%H:%M")}</td><td>{_ep_e.strftime("%H:%M")}</td><td style="color:var(--red)">{_dur_s}</td><td>{_etype}</td><td style="font-size:0.8rem;color:var(--fg-dim)">{_reasons_s}</td></tr>'
+            thr_html += '</tbody></table></div>'
+
+        thr_html += '</div></div>'
+
     power_html = gen_power_cost_section()
 
-    body = stats_html + heatmap_html + bar_html + power_html + script_html + cap_html + log_html
+    body = stats_html + heatmap_html + bar_html + thr_html + power_html + script_html + cap_html + log_html
     return page_wrap("LOAD", body, "load")
 
 
@@ -4095,8 +6435,14 @@ def main():
         "security.html": lambda: gen_security(scan),
         "history.html": lambda: gen_history(all_scans),
         "log.html": gen_log,
+        "home.html": gen_home,
         "notes.html": gen_notes,
+        "academic.html": gen_academic,
+        "radio.html": gen_radio,
+        "events.html": gen_events,
         "career.html": gen_careers,
+        "car.html": gen_car_tracker,
+        "advisor.html": gen_advisor,
         "load.html": gen_load,
         "leaks.html": gen_leaks,
     }
@@ -4105,8 +6451,7 @@ def main():
         slug = fcfg.get("page_slug", fid)
         pages[f"{slug}.html"] = (lambda _fid=fid, _fcfg=fcfg: gen_feed_page(_fid, _fcfg))
     # Issues page (only if repo feeds configured)
-    if REPO_FEEDS:
-        pages["issues.html"] = gen_issues
+    pages["issues.html"] = gen_issues
     for fname, gen_fn in pages.items():
         html = gen_fn()
         path = os.path.join(WEB_DIR, fname)

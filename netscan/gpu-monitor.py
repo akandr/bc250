@@ -28,6 +28,7 @@ Cron:
 
 import csv
 import os
+import struct
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -40,7 +41,33 @@ DRM_DEV = "/sys/class/drm/card1/device"
 CSV_FIELDS = [
     "timestamp", "power_w", "temp_c", "freq_mhz",
     "vddgfx_mv", "vddnb_mv", "vram_mb", "gtt_mb",
+    "throttle_status",
 ]
+
+# ── Thermal Throttle Bitmask (VanGogh/Rembrandt APU gpu_metrics v2.2) ────
+# Source: drivers/gpu/drm/amd/pm/swsmu/inc/amdgpu_smu.h
+THROTTLE_BITS = {
+    0:  "SPL",        # Sustained Power Limit
+    1:  "FPPT",       # Fast PPT (boost)
+    2:  "SPPT",       # Slow PPT
+    3:  "SPPT_APU",   # Slow PPT APU-specific
+    4:  "THM_CORE",   # Thermal — CPU core
+    5:  "THM_GFX",    # Thermal — GPU
+    6:  "THM_SOC",    # Thermal — SoC
+    7:  "TDC_VDD",    # Thermal Design Current — VDD
+    8:  "TDC_SOC",    # TDC — SoC
+    9:  "TDC_GFX",    # TDC — GFX
+    10: "EDC_CPU",    # Electrical Design Current — CPU
+    11: "EDC_GFX",    # EDC — GFX
+    12: "PROCHOT",    # Processor Hot (external signal)
+}
+
+# Which bits indicate *thermal* throttling specifically
+THERMAL_THROTTLE_MASK = (1 << 4) | (1 << 5) | (1 << 6) | (1 << 12)  # THM_CORE|THM_GFX|THM_SOC|PROCHOT
+# All power-related throttle bits
+POWER_THROTTLE_MASK = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3)     # SPL|FPPT|SPPT|SPPT_APU
+
+GPU_METRICS_PATH = "/sys/class/drm/card1/device/gpu_metrics"
 
 # Chart color scheme — vibrant dark theme
 COLORS = {
@@ -117,6 +144,31 @@ def read_sysfs(path):
         return None
 
 
+def read_throttle_status():
+    """Read throttle_status from gpu_metrics v2.2 binary blob.
+
+    Returns integer bitmask (0 = no throttling), or None on failure.
+    VanGogh APU gpu_metrics v2.2 layout:
+      offset 108: uint32_t throttle_status
+    """
+    try:
+        data = Path(GPU_METRICS_PATH).read_bytes()
+        # Verify v2.x header
+        if len(data) >= 112 and data[2] == 2:
+            return struct.unpack_from("<I", data, 108)[0]
+    except Exception:
+        pass
+    return None
+
+
+def decode_throttle(status):
+    """Decode throttle bitmask into list of active throttle reasons."""
+    if not status:
+        return []
+    return [name for bit, name in sorted(THROTTLE_BITS.items())
+            if status & (1 << bit)]
+
+
 def csv_path(date_str=None):
     """Return CSV path for a given date (default: today)."""
     if not date_str:
@@ -139,6 +191,7 @@ def collect():
     vddnb = read_sysfs(f"{HWMON}/in1_input")
     vram_b = read_sysfs(f"{DRM_DEV}/mem_info_vram_used")
     gtt_b = read_sysfs(f"{DRM_DEV}/mem_info_gtt_used")
+    throttle = read_throttle_status()
 
     row = {
         "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
@@ -149,7 +202,15 @@ def collect():
         "vddnb_mv": vddnb if vddnb is not None else "",
         "vram_mb": round(vram_b / (1024**2)) if vram_b is not None else "",
         "gtt_mb": round(gtt_b / (1024**2)) if gtt_b is not None else "",
+        "throttle_status": f"0x{throttle:04x}" if throttle is not None else "",
     }
+
+    # Log throttle events to stderr for syslog visibility
+    if throttle:
+        reasons = decode_throttle(throttle)
+        print(f"THROTTLE: 0x{throttle:04x} [{', '.join(reasons)}] "
+              f"temp={row['temp_c']}°C power={row['power_w']}W",
+              file=sys.stderr)
 
     fpath = csv_path()
     write_header = not fpath.exists()
@@ -175,6 +236,15 @@ def load_csv(date_str=None):
         reader = csv.DictReader(f)
         for r in reader:
             try:
+                # Parse throttle_status (hex string → int), backward-compatible
+                ts_raw = r.get("throttle_status", "")
+                if ts_raw and ts_raw.startswith("0x"):
+                    throttle_val = int(ts_raw, 16)
+                elif ts_raw:
+                    throttle_val = int(ts_raw)
+                else:
+                    throttle_val = 0
+
                 parsed = {
                     "time": datetime.strptime(r["timestamp"], "%Y-%m-%d %H:%M:%S"),
                     "power_w": float(r["power_w"]) if r["power_w"] else None,
@@ -184,11 +254,66 @@ def load_csv(date_str=None):
                     "vddnb_mv": float(r["vddnb_mv"]) if r["vddnb_mv"] else None,
                     "vram_mb": float(r["vram_mb"]) if r["vram_mb"] else None,
                     "gtt_mb": float(r["gtt_mb"]) if r["gtt_mb"] else None,
+                    "throttle": throttle_val,
                 }
                 rows.append(parsed)
             except (ValueError, KeyError):
                 continue
     return rows
+
+
+def calc_throttle_stats(rows):
+    """Calculate throttle duration and breakdown from rows.
+
+    Each row = 1 minute sample. Returns dict with:
+      total_minutes, thermal_minutes, power_minutes,
+      by_reason (dict of reason -> minutes), episodes (list of start/end/reasons)
+    """
+    total = 0
+    thermal = 0
+    power = 0
+    by_reason = {}
+    episodes = []  # list of (start_time, end_time, reasons_set)
+    current_episode_start = None
+    current_reasons = set()
+    prev_throttled = False
+
+    for r in rows:
+        ts = r.get("throttle", 0)
+        if ts:
+            total += 1
+            reasons = decode_throttle(ts)
+            for reason in reasons:
+                by_reason[reason] = by_reason.get(reason, 0) + 1
+            if ts & THERMAL_THROTTLE_MASK:
+                thermal += 1
+            if ts & POWER_THROTTLE_MASK:
+                power += 1
+            if not prev_throttled:
+                current_episode_start = r["time"]
+                current_reasons = set(reasons)
+            else:
+                current_reasons.update(reasons)
+            prev_throttled = True
+        else:
+            if prev_throttled and current_episode_start:
+                episodes.append((current_episode_start, r["time"], current_reasons))
+            prev_throttled = False
+            current_episode_start = None
+            current_reasons = set()
+
+    # Close any trailing episode
+    if prev_throttled and current_episode_start and rows:
+        episodes.append((current_episode_start, rows[-1]["time"], current_reasons))
+
+    return {
+        "total_minutes": total,
+        "thermal_minutes": thermal,
+        "power_minutes": power,
+        "by_reason": by_reason,
+        "episodes": episodes,
+        "samples": len(rows),
+    }
 
 
 def setup_style():
@@ -353,8 +478,22 @@ def chart_temp(rows, date_str, out_dir):
     ax1.set_title("GPU Temperature Over Time", color=COLORS["title"])
     ax1.legend(loc="upper right", fontsize=9)
 
-    # Stats box
+    # Throttle event overlay — red shaded regions on temp chart
+    throttle_stats = calc_throttle_stats(rows)
+    for ep_start, ep_end, ep_reasons in throttle_stats["episodes"]:
+        ax1.axvspan(ep_start, ep_end, alpha=0.25, color="#ef4444",
+                    zorder=0)
+
+    # Stats box with throttle info
     stats = f"Min: {min_temp:.1f}°C\nAvg: {avg_temp:.1f}°C\nMax: {max_temp:.1f}°C"
+    if throttle_stats["total_minutes"] > 0:
+        stats += (f"\n\u2500\u2500 Throttle \u2500\u2500"
+                  f"\n\u26a0 {throttle_stats['total_minutes']}min total"
+                  f"\n  thermal: {throttle_stats['thermal_minutes']}min"
+                  f"\n  power: {throttle_stats['power_minutes']}min"
+                  f"\n  episodes: {len(throttle_stats['episodes'])}")
+    else:
+        stats += "\n\u2714 No throttling"
     ax1.text(0.02, 0.97, stats, transform=ax1.transAxes, fontsize=10,
              verticalalignment="top", color=COLORS["text"],
              bbox=dict(boxstyle="round,pad=0.4", facecolor=COLORS["bg"],
@@ -390,18 +529,23 @@ def chart_temp(rows, date_str, out_dir):
 
 
 def chart_dashboard(rows, date_str, out_dir):
-    """Generate combined 4-panel dashboard: power, temp, frequency, memory."""
+    """Generate combined dashboard: power, temp, frequency, memory + throttle."""
     plt, mdates = setup_style()
     import numpy as np
 
-    fig, axes = plt.subplots(2, 2, figsize=(18, 10))
+    # Use 3 rows: top 2x2 grid + bottom throttle timeline
+    fig = plt.figure(figsize=(18, 14))
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.5], hspace=0.35)
+    axes = [[fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])],
+            [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]]
+    ax_throttle = fig.add_subplot(gs[2, :])
     fig.suptitle(f"BC-250 GPU Dashboard  \u2014  {date_str}",
                  fontsize=18, fontweight="bold", color=COLORS["title"], y=0.98)
 
     times = [r["time"] for r in rows]
 
     # ── Panel 1: Power ──
-    ax = axes[0, 0]
+    ax = axes[0][0]
     power = [r["power_w"] for r in rows]
     valid_p = [(t, p) for t, p in zip(times, power) if p is not None]
     if valid_p:
@@ -419,7 +563,7 @@ def chart_dashboard(rows, date_str, out_dir):
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
 
     # ── Panel 2: Temperature ──
-    ax = axes[0, 1]
+    ax = axes[0][1]
     temp = [r["temp_c"] for r in rows]
     valid_t = [(t, v) for t, v in zip(times, temp) if v is not None]
     if valid_t:
@@ -431,14 +575,24 @@ def chart_dashboard(rows, date_str, out_dir):
         ax.fill_between(t_t, v_t, alpha=0.12, color=COLORS["temp"])
         avg = sum(v_t) / len(v_t)
         ax.axhline(y=avg, color="#a78bfa", linewidth=1, linestyle=":", alpha=0.6)
-        ax.set_title(f"TEMP  (avg: {avg:.1f}\u00b0C, max: {max(v_t):.1f}\u00b0C)",
-                     color=COLORS["temp"])
+        # Mark throttle events with red spans on temperature panel
+        ts_stats = calc_throttle_stats(rows)
+        for ep_start, ep_end, _ in ts_stats["episodes"]:
+            ax.axvspan(ep_start, ep_end, alpha=0.2, color="#ef4444", zorder=0)
+        if ts_stats["total_minutes"] > 0:
+            ax.set_title(
+                f"TEMP  (avg: {avg:.1f}\u00b0C, max: {max(v_t):.1f}\u00b0C, "
+                f"\u26a0 throttled {ts_stats['total_minutes']}min)",
+                color="#ef4444")
+        else:
+            ax.set_title(f"TEMP  (avg: {avg:.1f}\u00b0C, max: {max(v_t):.1f}\u00b0C)",
+                         color=COLORS["temp"])
     ax.set_ylabel("°C")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
 
     # ── Panel 3: GPU Clock Frequency ──
-    ax = axes[1, 0]
+    ax = axes[1][0]
     freq = [r["freq_mhz"] for r in rows]
     valid_f = [(t, v) for t, v in zip(times, freq) if v is not None]
     if valid_f:
@@ -468,7 +622,7 @@ def chart_dashboard(rows, date_str, out_dir):
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
 
     # ── Panel 4: Memory Usage ──
-    ax = axes[1, 1]
+    ax = axes[1][1]
     vram = [r["vram_mb"] for r in rows]
     gtt = [r["gtt_mb"] for r in rows]
     valid_v = [(t, v) for t, v in zip(times, vram) if v is not None]
@@ -492,7 +646,62 @@ def chart_dashboard(rows, date_str, out_dir):
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    # ── Panel 5: Throttle Timeline (bottom, full width) ──
+    ax = ax_throttle
+    throttle_vals = [r.get("throttle", 0) for r in rows]
+    has_throttle_data = any(v != 0 for v in throttle_vals)
+
+    if has_throttle_data:
+        # Plot thermal vs power throttle as stacked colored regions
+        thermal_t = []
+        thermal_v = []
+        power_t = []
+        power_v = []
+        for r in rows:
+            ts = r.get("throttle", 0)
+            t = r["time"]
+            thermal_t.append(t)
+            thermal_v.append(1 if ts & THERMAL_THROTTLE_MASK else 0)
+            power_t.append(t)
+            power_v.append(1 if ts & POWER_THROTTLE_MASK else 0)
+
+        ax.fill_between(thermal_t, thermal_v, step="post",
+                        alpha=0.6, color="#ef4444", label="Thermal")
+        ax.fill_between(power_t, [v * 0.5 for v in power_v], step="post",
+                        alpha=0.6, color="#f97316", label="Power limit")
+
+        throttle_stats = calc_throttle_stats(rows)
+        total_min = throttle_stats["total_minutes"]
+        pct = total_min * 100 / len(rows) if rows else 0
+
+        # Episode markers
+        for ep_start, ep_end, ep_reasons in throttle_stats["episodes"]:
+            duration = (ep_end - ep_start).total_seconds() / 60
+            if duration >= 3:  # label episodes >= 3 min
+                mid = ep_start + (ep_end - ep_start) / 2
+                ax.annotate(f"{duration:.0f}m", xy=(mid, 0.85),
+                            fontsize=8, color="#ffffff", ha="center",
+                            fontweight="bold")
+
+        ax.set_title(
+            f"THROTTLE  ({total_min}min = {pct:.1f}% of day, "
+            f"{len(throttle_stats['episodes'])} episodes)",
+            color="#ef4444")
+        ax.legend(loc="upper right", fontsize=9)
+    else:
+        ax.text(0.5, 0.5, "\u2714  No throttling detected",
+                transform=ax.transAxes, ha="center", va="center",
+                fontsize=14, color="#22c55e", fontweight="bold")
+        ax.set_title("THROTTLE  (none)", color="#22c55e")
+
+    ax.set_yticks([0, 1])
+    ax.set_yticklabels(["Normal", "Throttled"])
+    ax.set_ylim(-0.1, 1.3)
+    ax.set_xlabel("Time")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     out = out_dir / f"gpu-{date_str}-dashboard.png"
     fig.savefig(out, dpi=150, bbox_inches="tight",
                 facecolor=COLORS["bg"], edgecolor="none")
@@ -526,6 +735,21 @@ def generate_charts(date_str=None):
     d = chart_dashboard(rows, date_str, out_dir)
     if d:
         print(f"  📊 Dashboard:   {d}")
+
+    # Print throttle summary
+    ts = calc_throttle_stats(rows)
+    if ts["total_minutes"] > 0:
+        pct = ts["total_minutes"] * 100 / ts["samples"]
+        print(f"  ⚠️  Throttled:   {ts['total_minutes']}min ({pct:.1f}%) "
+              f"in {len(ts['episodes'])} episodes")
+        if ts["thermal_minutes"]:
+            print(f"       thermal: {ts['thermal_minutes']}min")
+        if ts["power_minutes"]:
+            print(f"       power:   {ts['power_minutes']}min")
+        for reason, mins in sorted(ts["by_reason"].items(), key=lambda x: -x[1]):
+            print(f"       {reason}: {mins}min")
+    else:
+        print(f"  ✅ No throttling detected")
 
     # Cleanup: keep last 30 days of charts + CSVs
     for pattern in ["gpu-*-power.png", "gpu-*-temp.png", "gpu-*-dashboard.png", "gpu-*.csv"]:
@@ -617,6 +841,22 @@ def cost_report(date_str=None, days=None):
         print(f"  Monthly est:   {proj_kwh*30:.1f} kWh  =  {proj_pln*30:.1f} PLN/mo")
         print(f"  Yearly est:    {proj_kwh*365:.0f} kWh  =  {proj_pln*365:.0f} PLN/yr")
         print(f"  G11 tariff:    {G11_PLN_PER_KWH:.2f} PLN/kWh (PGE Łódź 2026)")
+
+        # Throttle summary
+        ts = calc_throttle_stats(rows)
+        print(f"  {'─'*44}")
+        if ts["total_minutes"] > 0:
+            pct = ts["total_minutes"] * 100 / ts["samples"]
+            print(f"  Throttled:     {ts['total_minutes']}min ({pct:.1f}%), "
+                  f"{len(ts['episodes'])} episodes")
+            if ts["thermal_minutes"]:
+                print(f"    thermal:     {ts['thermal_minutes']}min")
+            if ts["power_minutes"]:
+                print(f"    power limit: {ts['power_minutes']}min")
+            for reason, mins in sorted(ts["by_reason"].items(), key=lambda x: -x[1]):
+                print(f"    {reason:12s}  {mins}min")
+        else:
+            print(f"  Throttled:     none ✓")
         print()
 
 

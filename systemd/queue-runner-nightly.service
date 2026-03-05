@@ -1,0 +1,19 @@
+[Unit]
+Description=Queue Runner — Nightly Sequential Batch (all jobs)
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=akandr
+ExecStart=/usr/bin/python3 /opt/netscan/queue-runner.py --nightly
+# Nightly batch can take 15-20 hours for 300+ jobs
+TimeoutStopSec=3600
+KillSignal=SIGTERM
+Restart=no
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=queue-runner-nightly
+
+[Install]
+WantedBy=multi-user.target

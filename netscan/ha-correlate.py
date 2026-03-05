@@ -20,6 +20,7 @@ Cron: 30 7 * * * flock -w 1200 /tmp/ollama-gpu.lock python3 /opt/netscan/ha-corr
 Location on bc250: /opt/netscan/ha-correlate.py
 """
 
+import argparse
 import json
 import math
 import os
@@ -47,6 +48,7 @@ SIGNAL_FROM = "+<BOT_PHONE>"
 SIGNAL_TO = "+<OWNER_PHONE>"
 
 DATA_DIR = Path("/opt/netscan/data/correlate")
+RAW_CORRELATE_FILE = DATA_DIR / "raw-correlate.json"
 THINK_DIR = Path("/opt/netscan/data/think")
 HISTORY_HOURS = 24        # look back to cover since-last-analysis window
 MIN_SAMPLES = 4           # minimum data points for per-sensor stats
@@ -69,8 +71,9 @@ if os.path.exists(ENV_FILE):
 # ── Garage car tracker ──────────────────────────────────────────────────────
 # Detects car leaving/returning by correlating gate+door events with temp signature:
 #   Gate opens → garage door opens → temp dips (cold air) → door closes
-#   → If temp then climbs rapidly (+1°C in <30min): car RETURNED (warm engine)
-#   → If temp stays flat or keeps dropping: car LEFT
+#   → If temp then climbs rapidly (+0.8°C in <30min): car RETURNED (warm engine)
+#   → If temp drops suddenly (≥1°C cold air ingress): car LEFT
+#   → Small temp change (<1°C drop, <0.8°C rise): just a door button press
 GARAGE_TEMP_SENSOR = "sensor.1000becdc2_t"    # Garaż termometr
 GARAGE_HUMIDITY    = "sensor.1000becdc2_h"    # Garaż humidity
 GARAGE_DOOR_SWITCH = "switch.10014d3a8b_2"    # Bramy garazowe-Garaz
@@ -79,6 +82,7 @@ GATE_SWITCH        = "switch.1000aa2079"       # Brama (driveway gate)
 
 # Detection thresholds
 GARAGE_TEMP_RISE_THRESHOLD = 0.8    # °C rise within window → car returned
+GARAGE_TEMP_DROP_THRESHOLD = 1.0    # °C drop required to confirm garage opened (cold air)
 GARAGE_TEMP_WINDOW_MIN = 30         # minutes after door event to look for temp change
 GARAGE_EVENT_MERGE_SEC = 300        # merge gate+door events within 5min as one event
 
@@ -824,19 +828,35 @@ def detect_garage_events(all_history):
                     f"({temp_before:.1f}→{temp_peak:.1f}°C) "
                     f"within {GARAGE_TEMP_WINDOW_MIN}min — warm engine parked"
                 )
-            else:
+            elif delta <= -GARAGE_TEMP_DROP_THRESHOLD:
+                # Significant temp drop = cold air ingress = garage door opened
                 event["type"] = "car_left"
+                event["detail"] = (
+                    f"Temp dropped {delta:+.1f}°C "
+                    f"({temp_before:.1f}→{temp_peak:.1f}°C) — "
+                    f"cold air ingress, car likely left"
+                )
+            else:
+                # Small fluctuation — door activated but no significant temp change
+                event["type"] = "door_event"
                 event["detail"] = (
                     f"Temp change {delta:+.1f}°C "
                     f"({temp_before:.1f}→{temp_peak:.1f}°C) — "
-                    f"no warm engine detected, car likely left"
+                    f"no significant temp change, door button press only"
                 )
         elif temp_end is not None:
             delta = temp_end - temp_before
             event["temp_end"] = round(temp_end, 1)
             event["delta"] = round(delta, 1)
-            event["type"] = "car_left" if delta < GARAGE_TEMP_RISE_THRESHOLD else "car_returned"
-            event["detail"] = f"Temp went {delta:+.1f}°C after door event"
+            if delta >= GARAGE_TEMP_RISE_THRESHOLD:
+                event["type"] = "car_returned"
+                event["detail"] = f"Temp rose {delta:+.1f}°C after door event — warm engine"
+            elif delta <= -GARAGE_TEMP_DROP_THRESHOLD:
+                event["type"] = "car_left"
+                event["detail"] = f"Temp dropped {delta:+.1f}°C after door event — cold air ingress"
+            else:
+                event["type"] = "door_event"
+                event["detail"] = f"Temp change {delta:+.1f}°C after door event — no significant change"
         else:
             event["type"] = "door_event"
             event["delta"] = 0.0
@@ -875,13 +895,14 @@ def signal_send(msg):
 
 # ── Main analysis ──────────────────────────────────────────────────────────
 
-def main():
+def run_scrape():
+    """Collect HA sensor data, compute statistics and correlations. Save raw JSON (no LLM)."""
     t_start = time.time()
     now = datetime.now()
     dt_label = now.strftime("%d %b %Y, %H:%M")
     dt_file = now.strftime("%Y%m%d-%H%M")
 
-    print(f"[{now:%Y-%m-%d %H:%M:%S}] ha-correlate starting")
+    print(f"[{now:%Y-%m-%d %H:%M:%S}] ha-correlate scrape starting")
     print(f"  Analyzing last {HISTORY_HOURS}h of HA sensor data")
 
     # Load previous analysis for delta comparison
@@ -1232,6 +1253,73 @@ def main():
         "prev_analysis_time": prev_analysis.get("generated") if prev_analysis else None,
     }
 
+    # Save raw intermediate data
+    scrape_duration = int(time.time() - t_start)
+    raw_data = {
+        "scrape_timestamp": now.isoformat(timespec="seconds"),
+        "scrape_duration_seconds": scrape_duration,
+        "scrape_version": 1,
+        "data": report,
+        "scrape_errors": [],
+    }
+    tmp = RAW_CORRELATE_FILE.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(raw_data, f, indent=2, default=str)
+    tmp.rename(RAW_CORRELATE_FILE)
+
+    log(f"Scrape done: {len(sensor_stats)} sensors, {len(correlations)} correlations, "
+        f"{len(all_anomalies)} anomalies ({scrape_duration}s)")
+
+
+def run_analyze():
+    """Load raw data, run LLM synthesis, save final output. Signal on concerns."""
+    t_start = time.time()
+    dt = datetime.now()
+    dt_label = dt.strftime("%d %b %Y, %H:%M")
+    dt_file = dt.strftime("%Y%m%d-%H%M")
+
+    print(f"[{dt:%Y-%m-%d %H:%M:%S}] ha-correlate analyze starting")
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    if not RAW_CORRELATE_FILE.exists():
+        log(f"ERROR: Raw data file not found: {RAW_CORRELATE_FILE}")
+        log("Run with --scrape-only first.")
+        sys.exit(1)
+
+    try:
+        with open(RAW_CORRELATE_FILE) as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        log(f"ERROR: Failed to read raw data: {e}")
+        sys.exit(1)
+
+    scrape_ts = raw.get("scrape_timestamp", "")
+    report = raw.get("data", {})
+
+    # Check staleness
+    if scrape_ts:
+        try:
+            scrape_dt = datetime.fromisoformat(scrape_ts)
+            age_hours = (dt - scrape_dt).total_seconds() / 3600
+            if age_hours > 48:
+                log(f"WARNING: Raw data is {age_hours:.0f}h old (scraped {scrape_ts})")
+        except ValueError:
+            pass
+
+    log(f"Loaded raw data: {report.get('sensor_count', 0)} sensors (scraped {scrape_ts})")
+
+    # Extract data from report
+    sensor_stats = report.get("sensor_stats", {})
+    sparse_sensors = report.get("sparse_sensors", {})
+    duty_cycles = report.get("duty_cycles", {})
+    correlations = report.get("correlations", [])
+    all_anomalies = report.get("anomalies", [])
+    garage_events = report.get("garage_events", [])
+    room_usage = report.get("room_usage", {})
+    room_timeline = report.get("room_timeline", [])
+    env_deltas = report.get("env_deltas", {})
+
     # ── Step 8: LLM synthesis ─────────────────────────────────────────────
     log("Synthesizing insights with LLM...")
 
@@ -1430,6 +1518,10 @@ Known devices (do NOT flag as anomalies):
 
     report["llm_analysis"] = llm_analysis
 
+    # Add dual timestamps to report
+    report["scrape_timestamp"] = scrape_ts
+    report["analyze_timestamp"] = dt.isoformat(timespec="seconds")
+
     # ── Step 9: Save output ───────────────────────────────────────────────
     output_path = DATA_DIR / f"correlate-{dt_file}.json"
     with open(output_path, "w") as f:
@@ -1451,13 +1543,13 @@ Known devices (do NOT flag as anomalies):
             "generated": datetime.now().isoformat(timespec="seconds"),
             "model": OLLAMA_MODEL,
             "context": {
-                "sensors": len(numeric_ts),
-                "switches": len(switch_ts),
+                "sensors": report.get("sensor_count", 0),
+                "switches": report.get("switch_count", 0),
                 "correlations": len(correlations),
                 "anomalies": len(all_anomalies),
                 "rooms_active": len(room_usage),
                 "env_deltas": len(env_deltas),
-                "prev_analysis": prev_analysis.get("generated") if prev_analysis else None,
+                "prev_analysis": report.get("prev_analysis_time"),
             },
         }
         note_fname = f"note-home-insights-{dt_file}.json"
@@ -1487,49 +1579,51 @@ Known devices (do NOT flag as anomalies):
         with open(index_path, "w") as f:
             json.dump(index, f, indent=2)
 
-    # ── Step 10: Send Signal alert ────────────────────────────────────────
+    # ── Step 10: Send Signal alert (only when important) ─────────────────
     elapsed = time.time() - t_start
     log(f"Total time: {elapsed:.0f}s")
 
-    # Build compact Signal alert
-    alert_parts = [f"📊 Home Insights — {dt_label}"]
+    # Determine if anything is genuinely concerning (worth a Signal ping)
+    concerns = []
 
-    # Top findings
-    if room_temps:
-        temps = [f"{r}: {t['current']:.0f}°C" for r, t in sorted(room_temps.items())]
-        alert_parts.append(f"🌡️ {', '.join(temps[:5])}")
+    # Check air quality — CO₂ > 1200 ppm, VOC > 0.5 mg/m³, PM2.5 > 25 µg/m³
+    for eid, s in sensor_stats.items():
+        if s["group"] == "co2" and s["current"] > 1200:
+            concerns.append(f"⚠️ HIGH CO₂: {s['room']} at {s['current']} ppm")
+        elif s["group"] == "voc" and s["current"] > 0.5:
+            concerns.append(f"⚠️ HIGH VOC: {s['room']} at {s['current']} {s['unit']}")
+        elif s["group"] == "pm25" and s["current"] > 25:
+            concerns.append(f"⚠️ HIGH PM2.5: {s['room']} at {s['current']} {s['unit']}")
+    for eid, s in sparse_sensors.items():
+        if s["group"] == "co2" and s["current"] > 1200:
+            concerns.append(f"⚠️ HIGH CO₂: {s['room']} at {s['current']} ppm")
+        elif s["group"] == "voc" and s["current"] > 0.5:
+            concerns.append(f"⚠️ HIGH VOC: {s['room']} at {s['current']} {s['unit']}")
 
-    # Garage events
-    if garage_events:
-        for ge in garage_events:
-            emoji = "🚗" if ge["type"] == "car_returned" else "🚙💨"
-            alert_parts.append(f"{emoji} {ge['time_local']} {ge['type'].replace('_', ' ')}: {ge['detail']}")
+    # Check for anomalies
+    if len(all_anomalies) >= 3:
+        concerns.append(f"⚠️ {len(all_anomalies)} anomalies detected")
 
-    # Room activity
-    if room_usage:
-        active_rooms = sorted(room_usage.items(), key=lambda x: x[1]["lit_hours"], reverse=True)
-        room_str = ", ".join(f"{r}: {u['lit_hours']}h" for r, u in active_rooms[:4])
-        alert_parts.append(f"🏠 Rooms: {room_str}")
+    # Check for unusual temperature (rooms < 15°C or > 28°C)
+    for room, t in room_temps.items():
+        if t["current"] < 15 and room not in ("Garaż", "Strych", "Piwnica"):
+            concerns.append(f"🥶 COLD: {room} at {t['current']:.0f}°C")
+        elif t["current"] > 28:
+            concerns.append(f"🔥 HOT: {room} at {t['current']:.0f}°C")
 
-    if correlations:
-        alert_parts.append(f"🔗 {len(correlations)} correlations found")
-        top = correlations[0]
-        alert_parts.append(f"   Top: {top['sensor_a']} ↔ {top['sensor_b']} (r={top['r']:+.2f})")
+    # Garage events are always interesting (car left/returned)
+    for ge in garage_events:
+        emoji = "🚗" if ge["type"] == "car_returned" else "🚙💨"
+        concerns.append(f"{emoji} {ge['time_local']} {ge['type'].replace('_', ' ')}: {ge['detail']}")
 
-    if all_anomalies:
-        alert_parts.append(f"⚠️ {len(all_anomalies)} anomalies detected")
-
-    interesting_switches = [dc for dc in duty_cycles.values()
-                           if dc["toggle_count"] >= 3 and not dc["known_behavior"]]
-    if interesting_switches:
-        alert_parts.append(
-            f"⚡ Active switches: " +
-            ", ".join(f"{s['fname']} ({s['on_pct']:.0f}%)" for s in interesting_switches[:3])
-        )
-
-    alert_parts.append(f"\n⏱ {elapsed:.0f}s, {len(numeric_ts)} sensors, {len(switch_ts)} switches")
-
-    signal_send("\n".join(alert_parts))
+    if concerns:
+        alert_parts = [f"🏠 Home Alert — {dt_label}"]
+        alert_parts.extend(concerns[:8])
+        alert_parts.append(f"\n⏱ {elapsed:.0f}s | Full report on dashboard HOME tab")
+        signal_send("\n".join(alert_parts))
+        log(f"Signal alert sent: {len(concerns)} concerns")
+    else:
+        log(f"No important concerns — skipping Signal alert (routine data saved to dashboard)")
 
     print(f"  Done. {len(correlations)} correlations, {len(all_anomalies)} anomalies, "
           f"{len(duty_cycles)} duty cycles, {len(room_usage)} active rooms analyzed.")
@@ -1542,6 +1636,25 @@ Known devices (do NOT flag as anomalies):
         print("  Dashboard HTML regenerated")
     except Exception:
         pass
+
+
+def main():
+    """Legacy wrapper / argparse entry point."""
+    parser = argparse.ArgumentParser(description="HA sensor time-series correlation analysis")
+    parser.add_argument('--scrape-only', action='store_true',
+                        help='Only collect HA data and compute stats, save raw (no LLM)')
+    parser.add_argument('--analyze-only', action='store_true',
+                        help='Only run LLM analysis on previously scraped raw data')
+    args = parser.parse_args()
+
+    if args.scrape_only:
+        run_scrape()
+    elif args.analyze_only:
+        run_analyze()
+    else:
+        # Legacy: full run (backward compatible)
+        run_scrape()
+        run_analyze()
 
 
 def interpret_correlation(group_a, group_b, r, lag):

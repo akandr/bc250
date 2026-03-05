@@ -19,3 +19,6 @@ netscan/watchlist.json
 # openclaw-gateway.service is tracked as reference (token redacted)
 user info/
 tmp/
+
+# Internal notes (Claude session context, not for repo)
+internal_notes_claude.txt

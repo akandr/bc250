@@ -1,0 +1,11 @@
+[Unit]
+Description=BC250 Service Health Check & Recovery
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/netscan/bc250-health-check.sh
+User=akandr
+Group=akandr
+Environment=HOME=/home/akandr
+Environment=PATH=/usr/local/bin:/usr/bin:/bin

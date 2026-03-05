@@ -34,22 +34,27 @@ usage() {
 # Parse arguments
 FEED_ID=""
 RUN_ALL=false
+RUN_MODE="full"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --feed) FEED_ID="$2"; shift 2 ;;
         --all)  RUN_ALL=true; shift ;;
+        --scrape-only)  RUN_MODE="scrape-only"; shift ;;
+        --analyze-only) RUN_MODE="analyze-only"; shift ;;
         *)      usage ;;
     esac
 done
 
 if [[ "$RUN_ALL" == "true" ]]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] lore-digest: running ALL feeds"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] lore-digest: running ALL feeds (mode=$RUN_MODE)"
     FEED_IDS=$(python3 -c "import json; print(' '.join(json.load(open('$FEEDS_JSON')).keys()))")
     for fid in $FEED_IDS; do
         echo ""
         echo "═══════════════════════════════════════════"
-        "$0" --feed "$fid"
+        MODE_ARGS=""
+        [[ "$RUN_MODE" != "full" ]] && MODE_ARGS="--$RUN_MODE"
+        "$0" --feed "$fid" $MODE_ARGS
         echo ""
         sleep 5
     done
@@ -61,9 +66,9 @@ if [[ -z "$FEED_ID" ]]; then
     usage
 fi
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] lore-digest starting: feed=$FEED_ID"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] lore-digest starting: feed=$FEED_ID mode=$RUN_MODE"
 
-python3 - "$FEED_ID" "$FEEDS_JSON" "$DATA_DIR" << 'PYEOF'
+python3 - "$FEED_ID" "$FEEDS_JSON" "$DATA_DIR" "$RUN_MODE" << 'PYEOF'
 import sys, os, json, re, time, html as html_mod, hashlib
 import xml.etree.ElementTree as ET
 import urllib.request, urllib.error
@@ -73,6 +78,7 @@ from collections import defaultdict
 FEED_ID = sys.argv[1]
 FEEDS_JSON = sys.argv[2]
 DATA_DIR = sys.argv[3]
+RUN_MODE = sys.argv[4] if len(sys.argv) > 4 else "full"  # "full", "scrape-only", "analyze-only"
 
 # ─── Load feed config ───
 
@@ -89,6 +95,9 @@ FEED_EMOJI = FEED["emoji"]
 LORE_LIST = FEED["lore_list"]
 FEED_DIR = os.path.join(DATA_DIR, FEED["data_dir"])
 os.makedirs(FEED_DIR, exist_ok=True)
+
+# Raw data file for scrape/analyze split
+RAW_THREADS_FILE = os.path.join(FEED_DIR, "raw-threads.json")
 
 # Load user profile for dashboard URL and signal preferences
 PROFILE_PATH = os.path.join(os.path.dirname(FEEDS_JSON), "profile.json")
@@ -110,7 +119,7 @@ USER_AGENT = f"netscan-bc250-digest/2.0 ({FEED_ID} daily digest bot)"
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
 OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # consolidated model for all batch scripts
-OLLAMA_TIMEOUT_PER_CALL = 600     # 10 min max per LLM call
+OLLAMA_TIMEOUT_PER_CALL = 900     # 15 min max per LLM call
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
 SIGNAL_FROM = "+<BOT_PHONE>"
@@ -284,7 +293,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2048,
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-            "num_ctx": 12288,
+            "num_ctx": 16384,
         },
         "keep_alive": "5m",
     })
@@ -337,7 +346,40 @@ def thread_hash(key):
 # PASS 1: Fetch, parse, group, score
 # ═══════════════════════════════════════════════════════════
 
-threads_data = load_intermediate("pass1-threads.json")
+# In analyze-only mode, skip Pass 1 entirely and load from raw file
+if RUN_MODE == "analyze-only":
+    scored_threads_data = []
+    other_threads_data = []
+    total_messages = 0
+    total_threads = 0
+    scrape_timestamp = ""
+    if os.path.exists(RAW_THREADS_FILE):
+        print(f"[ANALYZE-ONLY] Loading raw thread data from {RAW_THREADS_FILE}")
+        with open(RAW_THREADS_FILE) as _rf:
+            _raw = json.load(_rf)
+        _rd = _raw.get("data", {})
+        scored_threads_data = _rd.get("scored_threads", [])
+        other_threads_data = _rd.get("other_threads", [])
+        total_messages = _rd.get("total_messages", 0)
+        total_threads = _rd.get("total_threads", 0)
+        dt_label = _rd.get("dt_label", dt_label)
+        dt_file = _rd.get("dt_file", dt_file)
+        scrape_timestamp = _raw.get("scrape_timestamp", "")
+        print(f"  Loaded: {len(scored_threads_data)} scored threads (scraped {scrape_timestamp})")
+    else:
+        print(f"ERROR: Raw data file not found: {RAW_THREADS_FILE}")
+        print("Run with --scrape-only first.")
+        sys.exit(1)
+
+# Load from work-dir cache (or None if no cache)
+# In analyze-only mode, threads_data is already set above to prevent network fetch
+if RUN_MODE == "analyze-only":
+    threads_data = {"scored_threads": scored_threads_data,
+                    "other_threads": other_threads_data,
+                    "total_messages": total_messages,
+                    "total_threads": total_threads}
+else:
+    threads_data = load_intermediate("pass1-threads.json")
 
 if threads_data:
     print("[PASS 1] Recovered from disk — loading cached threads")
@@ -346,57 +388,208 @@ if threads_data:
     total_messages = threads_data["total_messages"]
     total_threads = threads_data["total_threads"]
 else:
-    print(f"[PASS 1] Fetching {LORE_LIST} Atom feed ({dt_start}..{dt_end})")
-    feed_url = f"{LORE_BASE}/?q=d:{dt_start}..{dt_end}&x=A"
-    raw_xml = fetch_url(feed_url, timeout=45)
+    FEED_SOURCE = FEED.get("source", "lore")
 
-    if not raw_xml:
-        print("  FATAL: could not fetch Atom feed")
-        send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n❌ Failed to fetch {LORE_LIST} feed from lore.kernel.org")
-        sys.exit(1)
+    if FEED_SOURCE == "mailman":
+        # ─── Mailman pipermail mbox fetcher ───
+        import gzip, email as email_mod, email.utils, email.header, mailbox as mbox_mod
 
-    with open(os.path.join(WORK_DIR, "feed-raw.xml"), "wb") as f:
-        f.write(raw_xml)
+        mailman_url = FEED["mailman_url"]
 
-    try:
-        root = ET.fromstring(raw_xml)
-    except ET.ParseError as ex:
-        print(f"  XML parse error: {ex}")
-        send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n❌ Failed to parse Atom feed XML")
-        sys.exit(1)
+        # Determine which monthly archives to fetch (may span two months)
+        t_start = now - timedelta(hours=36)
+        months_needed = set()
+        months_needed.add((t_start.year, t_start.month))
+        months_needed.add((now.year, now.month))
+        month_names = {1: "January", 2: "February", 3: "March", 4: "April",
+                       5: "May", 6: "June", 7: "July", 8: "August",
+                       9: "September", 10: "October", 11: "November", 12: "December"}
 
-    messages = []
-    for entry in root.findall('atom:entry', NS):
-        author_el = entry.find('atom:author/atom:name', NS)
-        email_el = entry.find('atom:author/atom:email', NS)
-        title_el = entry.find('atom:title', NS)
-        updated_el = entry.find('atom:updated', NS)
-        link_el = entry.find('atom:link', NS)
-        content_el = entry.find('atom:content', NS)
-        reply_el = entry.find('thr:in-reply-to', NS)
+        print(f"[PASS 1] Fetching {LORE_LIST} Mailman archive ({dt_start}..{dt_end})")
+        print(f"  Source: {mailman_url}")
 
-        author = author_el.text if author_el is not None else "?"
-        email = email_el.text if email_el is not None else ""
-        subject = title_el.text if title_el is not None else "(no subject)"
-        updated = updated_el.text if updated_el is not None else ""
-        link = link_el.get('href', '') if link_el is not None else ""
+        all_raw_mbox = b""
+        for (yr, mo) in sorted(months_needed):
+            mbox_url = f"{mailman_url}/{yr}-{month_names[mo]}.txt.gz"
+            print(f"  Fetching: {yr}-{month_names[mo]}.txt.gz ...")
+            raw_gz = fetch_url(mbox_url, timeout=120)
+            if raw_gz:
+                try:
+                    raw_text = gzip.decompress(raw_gz)
+                    all_raw_mbox += raw_text
+                    print(f"    OK: {len(raw_text) / 1024:.0f}KB decompressed")
+                except Exception as ex:
+                    print(f"    Gzip decompress error: {ex}")
+            else:
+                print(f"    Warning: could not fetch {mbox_url}")
 
-        body_text = ""
-        if content_el is not None:
-            raw_content = ET.tostring(content_el, encoding='unicode', method='html')
-            body_text = strip_html(raw_content)
+        if not all_raw_mbox:
+            print("  FATAL: could not fetch any Mailman mbox archives")
+            if RUN_MODE != "scrape-only":
+                send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n❌ Failed to fetch {LORE_LIST} from {mailman_url}")
+            sys.exit(1)
 
-        is_reply = reply_el is not None
-        messages.append({
-            "author": author, "email": email, "subject": subject,
-            "updated": updated, "link": link, "body": body_text,
-            "is_reply": is_reply, "norm_subject": normalize_subject(subject),
-        })
+        # Save raw mbox for debugging
+        with open(os.path.join(WORK_DIR, "feed-raw.mbox"), "wb") as f:
+            f.write(all_raw_mbox)
 
-    print(f"  Parsed {len(messages)} messages")
+        # Parse mbox and filter by date range
+        import tempfile
+        mbox_tmp = os.path.join(WORK_DIR, "feed.mbox")
+        with open(mbox_tmp, "wb") as f:
+            f.write(all_raw_mbox)
+
+        mb = mbox_mod.mbox(mbox_tmp)
+        messages = []
+        skipped_date = 0
+
+        for key, msg in mb.items():
+            # Parse date
+            date_str = msg.get("Date", "")
+            msg_date = None
+            if date_str:
+                try:
+                    parsed = email.utils.parsedate_to_datetime(date_str)
+                    if parsed.tzinfo is None:
+                        parsed = parsed.replace(tzinfo=timezone.utc)
+                    else:
+                        parsed = parsed.astimezone(timezone.utc)
+                    msg_date = parsed
+                except Exception:
+                    pass
+
+            # Filter: only messages within our 36h window
+            if msg_date and msg_date < t_start:
+                skipped_date += 1
+                continue
+
+            # Decode subject
+            raw_subject = msg.get("Subject", "(no subject)")
+            decoded_parts = email.header.decode_header(raw_subject)
+            subject = ""
+            for part, charset in decoded_parts:
+                if isinstance(part, bytes):
+                    subject += part.decode(charset or "utf-8", errors="replace")
+                else:
+                    subject += part
+            subject = re.sub(r'\s+', ' ', subject).strip()
+
+            # Author
+            raw_from = msg.get("From", "?")
+            decoded_from = email.header.decode_header(raw_from)
+            from_str = ""
+            for part, charset in decoded_from:
+                if isinstance(part, bytes):
+                    from_str += part.decode(charset or "utf-8", errors="replace")
+                else:
+                    from_str += part
+            # Parse "Name <email>" or "email (Name)" or just "email"
+            from_name, from_email = email.utils.parseaddr(from_str)
+            if not from_name:
+                from_name = from_email.split("@")[0] if from_email else "?"
+
+            # Body text
+            body_text = ""
+            if msg.is_multipart():
+                for part in msg.walk():
+                    ct = part.get_content_type()
+                    if ct == "text/plain":
+                        payload = part.get_payload(decode=True)
+                        if payload:
+                            charset = part.get_content_charset() or "utf-8"
+                            body_text = payload.decode(charset, errors="replace")
+                        break
+            else:
+                payload = msg.get_payload(decode=True)
+                if payload:
+                    charset = msg.get_content_charset() or "utf-8"
+                    body_text = payload.decode(charset, errors="replace")
+
+            # Is reply?
+            in_reply_to = msg.get("In-Reply-To", "")
+            is_reply = bool(in_reply_to) or subject.lower().startswith("re:")
+
+            # Message-ID for link construction
+            message_id = msg.get("Message-ID", "")
+            # Build archive link from Mailman URL
+            link = ""
+            if message_id:
+                # Mailman doesn't have clean per-message URLs from Message-ID,
+                # so link to the monthly thread view instead
+                if msg_date:
+                    link = f"{mailman_url}/{msg_date.strftime('%Y-%B')}/thread.html"
+                else:
+                    link = f"{mailman_url}/"
+
+            updated = msg_date.isoformat() if msg_date else ""
+
+            messages.append({
+                "author": from_name, "email": from_email,
+                "subject": subject, "updated": updated,
+                "link": link, "body": body_text,
+                "is_reply": is_reply,
+                "norm_subject": normalize_subject(subject),
+            })
+
+        mb.close()
+        print(f"  Parsed {len(messages)} messages in window ({skipped_date} older skipped)")
+
+    else:
+        # ─── lore.kernel.org Atom feed fetcher ───
+        print(f"[PASS 1] Fetching {LORE_LIST} Atom feed ({dt_start}..{dt_end})")
+        feed_url = f"{LORE_BASE}/?q=d:{dt_start}..{dt_end}&x=A"
+        raw_xml = fetch_url(feed_url, timeout=45)
+
+        if not raw_xml:
+            print("  FATAL: could not fetch Atom feed")
+            if RUN_MODE != "scrape-only":
+                send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n❌ Failed to fetch {LORE_LIST} feed from lore.kernel.org")
+            sys.exit(1)
+
+        with open(os.path.join(WORK_DIR, "feed-raw.xml"), "wb") as f:
+            f.write(raw_xml)
+
+        try:
+            root = ET.fromstring(raw_xml)
+        except ET.ParseError as ex:
+            print(f"  XML parse error: {ex}")
+            if RUN_MODE != "scrape-only":
+                send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n❌ Failed to parse Atom feed XML")
+            sys.exit(1)
+
+        messages = []
+        for entry in root.findall('atom:entry', NS):
+            author_el = entry.find('atom:author/atom:name', NS)
+            email_el = entry.find('atom:author/atom:email', NS)
+            title_el = entry.find('atom:title', NS)
+            updated_el = entry.find('atom:updated', NS)
+            link_el = entry.find('atom:link', NS)
+            content_el = entry.find('atom:content', NS)
+            reply_el = entry.find('thr:in-reply-to', NS)
+
+            author = author_el.text if author_el is not None else "?"
+            email = email_el.text if email_el is not None else ""
+            subject = title_el.text if title_el is not None else "(no subject)"
+            updated = updated_el.text if updated_el is not None else ""
+            link = link_el.get('href', '') if link_el is not None else ""
+
+            body_text = ""
+            if content_el is not None:
+                raw_content = ET.tostring(content_el, encoding='unicode', method='html')
+                body_text = strip_html(raw_content)
+
+            is_reply = reply_el is not None
+            messages.append({
+                "author": author, "email": email, "subject": subject,
+                "updated": updated, "link": link, "body": body_text,
+                "is_reply": is_reply, "norm_subject": normalize_subject(subject),
+            })
+
+        print(f"  Parsed {len(messages)} messages")
 
     if not messages:
-        send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n😴 Quiet day — no messages on {LORE_LIST}")
+        if RUN_MODE != "scrape-only":
+            send_signal(f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n😴 Quiet day — no messages on {LORE_LIST}")
         sys.exit(0)
 
     threads = defaultdict(lambda: {"messages": [], "authors": set(),
@@ -467,12 +660,43 @@ else:
     })
     print(f"  {total_threads} threads, {len(scored_threads_data)} scored ≥{MIN_SCORE}, {len(other_threads_data)} other — saved")
 
+scrape_timestamp = datetime.now().isoformat(timespec="seconds")
+
+# ── Scrape-only: save raw data and exit ──
+if RUN_MODE == "scrape-only":
+    raw_data = {
+        "scrape_timestamp": scrape_timestamp,
+        "scrape_version": 1,
+        "feed_id": FEED_ID,
+        "feed_name": FEED_NAME,
+        "lore_list": LORE_LIST,
+        "data": {
+            "scored_threads": scored_threads_data,
+            "other_threads": other_threads_data,
+            "total_messages": total_messages,
+            "total_threads": total_threads,
+            "dt_label": dt_label,
+            "dt_file": dt_file,
+        },
+        "scrape_errors": [],
+    }
+    _tmp = RAW_THREADS_FILE + ".tmp"
+    with open(_tmp, "w") as _f:
+        json.dump(raw_data, _f, indent=2, default=str)
+    os.replace(_tmp, RAW_THREADS_FILE)
+    print(f"[SCRAPE-ONLY] Saved raw thread data: {RAW_THREADS_FILE}")
+    print(f"  {len(scored_threads_data)} scored threads, {total_messages} messages")
+    sys.exit(0)
+
 if not scored_threads_data:
     bulletin_text = f"{FEED_EMOJI} {FEED_NAME.upper()} DIGEST — {dt_label}\n\n😴 No relevant threads scored ≥{MIN_SCORE} today.\n📊 {total_messages} messages, {total_threads} threads — none matched {FEED_NAME} keywords."
     digest = {
         "date": dt_label, "date_file": dt_file, "feed_id": FEED_ID,
         "feed_name": FEED_NAME, "lore_list": LORE_LIST,
         "generated": datetime.now().isoformat(timespec="seconds"),
+        "scrape_timestamp": scrape_timestamp,
+        "analyze_timestamp": datetime.now().isoformat(timespec="seconds"),
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
         "total_messages": total_messages, "total_threads": total_threads,
         "scored_threads": 0, "other_threads": len(other_threads_data),
         "top_threads": [], "other_thread_subjects": [t["subject"] for t in other_threads_data[:20]],
@@ -484,7 +708,8 @@ if not scored_threads_data:
     digest_path = os.path.join(FEED_DIR, f"digest-{dt_file}.json")
     with open(digest_path, "w") as f:
         json.dump(digest, f, indent=2, default=str)
-    send_signal(bulletin_text)
+    if RUN_MODE != "scrape-only":
+        send_signal(bulletin_text)
     print(f"  No relevant threads — quiet day for {FEED_NAME}")
     sys.exit(0)
 
@@ -737,6 +962,9 @@ digest = {
     "feed_name": FEED_NAME,
     "lore_list": LORE_LIST,
     "generated": datetime.now().isoformat(timespec="seconds"),
+    "scrape_timestamp": scrape_timestamp,
+    "analyze_timestamp": datetime.now().isoformat(timespec="seconds"),
+    "timestamp": datetime.now().isoformat(timespec="seconds"),
     "total_messages": total_messages,
     "total_threads": total_threads,
     "scored_threads": len(scored_threads_data),
@@ -814,10 +1042,13 @@ if len(thread_summaries) > 4:
 alert_lines.append(f"\n🔗 {alert_url}")
 
 alert_text = "\n".join(alert_lines)
-if send_signal(alert_text):
-    print(f"  ✅ Signal alert sent ({len(alert_text)} chars)")
+if RUN_MODE != "scrape-only":
+    if send_signal(alert_text):
+        print(f"  ✅ Signal alert sent ({len(alert_text)} chars)")
+    else:
+        print("  ⚠ Signal send failed — bulletin saved to file only")
 else:
-    print("  ⚠ Signal send failed — bulletin saved to file only")
+    print("  [SCRAPE-ONLY] Signal skipped")
 
 # Regenerate web dashboard
 if os.path.exists("/opt/netscan/generate-html.py"):

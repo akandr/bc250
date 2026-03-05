@@ -1,6 +1,7 @@
 [Unit]
 Description=Ollama Service
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 ExecStart=/usr/local/bin/ollama serve
@@ -8,6 +9,8 @@ User=ollama
 Group=ollama
 Restart=always
 RestartSec=3
+StartLimitIntervalSec=300
+StartLimitBurst=10
 Environment="PATH=/home/$USER/.local/bin:/home/$USER/bin:/usr/local/bin:/usr/bin"
 
 [Install]

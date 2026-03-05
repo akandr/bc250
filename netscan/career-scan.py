@@ -9,9 +9,9 @@ Saves structured JSON + think-system note for the dashboard.
 Targets:
   - Direct career pages: Nvidia, Google, AMD, Intel, Samsung, Amazon,
     TCL Research Europe, Harman (employer monitoring)
-  - Job aggregators: LinkedIn, Indeed, justjoin.it, nofluffjobs.com
+  - Job aggregators: LinkedIn, nofluffjobs.com, Indeed (via DDG proxy)
   - Company intel: gowork.pl, layoffs.fyi, levels.fyi, glassdoor
-  - Tech job boards: kernel.org/jobs, lwn.net/jobs
+  - Tech job boards: LWN.net/jobs, Kernel Newbies
 
 Filters:
   - Remote-from-Poland OR hybrid in Łódź/Warsaw
@@ -29,6 +29,7 @@ Schedule (cron): Mon/Thu at 11:00
 Location on bc250: /opt/netscan/career-scan.py
 """
 
+import argparse
 import json
 import os
 import re
@@ -149,6 +150,250 @@ COMPANIES = {
         "keywords": ["kernel", "driver", "linux", "embedded", "GPU", "mali", "firmware"],
         "industry": "silicon",
     },
+    "cerence": {
+        "name": "Cerence AI",
+        "career_urls": [],
+        "workday_api": "https://cerence.wd5.myworkdayjobs.com/wday/cxs/cerence/Cerence",
+        "workday_searches": ["remote", "engineer", "AI"],
+        "keywords": ["AI", "software", "engineer", "python", "linux", "embedded", "automotive", "NLP", "machine learning", "remote", "Poland"],
+        "industry": "automotive",
+        "location_filter": ["poland", "polska", "remote", "warsaw", "warszawa"],
+        "remote_only": True,
+    },
+    # ── Group A: companies from company-think, now adding career scanning ──
+    "aptiv": {
+        "name": "Aptiv",
+        "career_urls": [
+            "https://www.aptiv.com/en/jobs/search?query=embedded+linux",
+            "https://www.aptiv.com/en/jobs/search?query=software+engineer+Poland",
+        ],
+        "keywords": ["linux", "embedded", "ADAS", "automotive", "camera", "driver", "software", "Poland"],
+        "industry": "automotive",
+    },
+    "continental": {
+        "name": "Continental",
+        "career_urls": [
+            "https://jobs.continental.com/en/search-results/?keywords=embedded+linux&location=Poland",
+            "https://jobs.continental.com/en/search-results/?keywords=ADAS+camera&location=Poland",
+        ],
+        "keywords": ["linux", "embedded", "ADAS", "automotive", "camera", "driver", "kernel", "software"],
+        "industry": "automotive",
+    },
+    "tesla": {
+        "name": "Tesla",
+        "career_urls": [
+            "https://www.tesla.com/careers/search/?query=embedded+linux&region=5",
+            "https://www.tesla.com/careers/search/?query=linux+kernel+driver&region=5",
+        ],
+        "keywords": ["linux", "embedded", "autopilot", "camera", "driver", "kernel", "firmware", "ADAS"],
+        "industry": "automotive",
+    },
+    "waymo": {
+        "name": "Waymo",
+        "career_urls": [
+            "https://careers.withwaymo.com/jobs/search?query=embedded+linux",
+            "https://careers.withwaymo.com/jobs/search?query=camera+perception",
+        ],
+        "keywords": ["linux", "embedded", "camera", "perception", "driver", "autonomous", "kernel"],
+        "industry": "automotive",
+    },
+    "hailo": {
+        "name": "Hailo",
+        "career_urls": [
+            "https://hailo.ai/careers/",
+        ],
+        "keywords": ["linux", "embedded", "AI", "edge", "driver", "kernel", "NPU", "accelerator"],
+        "industry": "silicon",
+    },
+    "bootlin": {
+        "name": "Bootlin",
+        "career_urls": [
+            "https://bootlin.com/company/",
+        ],
+        "keywords": ["linux", "kernel", "driver", "embedded", "BSP", "camera", "V4L2", "device tree"],
+        "industry": "open_source",
+    },
+    "collabora": {
+        "name": "Collabora",
+        "career_urls": [
+            "https://www.collabora.com/careers.html",
+        ],
+        "keywords": ["linux", "kernel", "driver", "camera", "V4L2", "GStreamer", "multimedia", "mesa", "open source"],
+        "industry": "open_source",
+    },
+    "pengutronix": {
+        "name": "Pengutronix",
+        "career_urls": [
+            "https://www.pengutronix.de/de/karriere.html",
+        ],
+        "keywords": ["linux", "kernel", "embedded", "BSP", "barebox", "device tree", "driver"],
+        "industry": "open_source",
+    },
+    "igalia": {
+        "name": "Igalia",
+        "career_urls": [
+            "https://www.igalia.com/jobs/open",
+        ],
+        "keywords": ["linux", "kernel", "driver", "multimedia", "GStreamer", "mesa", "open source", "remote"],
+        "industry": "open_source",
+    },
+    "toradex": {
+        "name": "Toradex",
+        "career_urls": [
+            "https://careers.toradex.com/careers-at-toradex",
+        ],
+        "keywords": ["linux", "embedded", "kernel", "BSP", "Yocto", "device tree", "Arm", "driver"],
+        "industry": "silicon",
+    },
+    "linaro": {
+        "name": "Linaro",
+        "career_urls": [
+            "https://www.linaro.org/careers/",
+        ],
+        "keywords": ["linux", "kernel", "Arm", "embedded", "multimedia", "camera", "driver", "open source"],
+        "industry": "open_source",
+    },
+    "canonical": {
+        "name": "Canonical",
+        "career_urls": [
+            "https://canonical.com/careers/engineering",
+        ],
+        "keywords": ["linux", "kernel", "Ubuntu", "embedded", "IoT", "driver", "remote"],
+        "industry": "open_source",
+    },
+    "redhat": {
+        "name": "Red Hat",
+        "career_urls": [],
+        "workday_api": "https://redhat.wd5.myworkdayjobs.com/wday/cxs/redhat/jobs",
+        "workday_searches": ["linux kernel driver", "embedded linux Poland", "kernel engineer remote"],
+        "keywords": ["linux", "kernel", "driver", "RHEL", "enterprise", "embedded", "remote"],
+        "industry": "open_source",
+    },
+    "suse": {
+        "name": "SUSE",
+        "career_urls": [],
+        "workday_api": "https://suse.wd3.myworkdayjobs.com/wday/cxs/suse/Jobsatsuse",
+        "workday_searches": ["linux kernel", "embedded linux", "kernel engineer"],
+        "keywords": ["linux", "kernel", "driver", "enterprise", "embedded", "remote"],
+        "industry": "open_source",
+    },
+    "sifive": {
+        "name": "SiFive",
+        "career_urls": [],
+        "workday_api": "https://sifive.wd1.myworkdayjobs.com/wday/cxs/sifive/sifivecareers",
+        "workday_searches": ["linux kernel", "embedded software", "BSP engineer"],
+        "keywords": ["RISC-V", "linux", "kernel", "embedded", "BSP", "driver", "SoC"],
+        "industry": "silicon",
+    },
+    "tenstorrent": {
+        "name": "Tenstorrent",
+        "career_urls": [
+            "https://tenstorrent.com/careers/",
+        ],
+        "keywords": ["RISC-V", "linux", "kernel", "embedded", "AI", "driver", "firmware", "software"],
+        "industry": "silicon",
+    },
+    "cerebras": {
+        "name": "Cerebras",
+        "career_urls": [
+            "https://www.cerebras.ai/open-positions",
+        ],
+        "keywords": ["linux", "kernel", "embedded", "AI", "driver", "firmware", "HPC"],
+        "industry": "silicon",
+    },
+    # ── Group B: new companies not previously tracked ──
+    "mobileye": {
+        "name": "Mobileye (Intel)",
+        "career_urls": [
+            "https://careers.mobileye.com/jobs?team=Software",
+            "https://careers.mobileye.com/jobs?team=Hardware",
+        ],
+        "keywords": ["linux", "embedded", "ADAS", "EyeQ", "camera", "driver", "kernel", "autonomous", "SoC"],
+        "industry": "automotive",
+    },
+    "valeo": {
+        "name": "Valeo",
+        "career_urls": [],
+        "workday_api": "https://valeo.wd3.myworkdayjobs.com/wday/cxs/valeo/valeo_jobs",
+        "workday_searches": ["embedded linux Poland", "ADAS camera", "software engineer Poland remote"],
+        "keywords": ["linux", "embedded", "ADAS", "camera", "parking", "automotive", "driver", "software"],
+        "industry": "automotive",
+    },
+    "bosch": {
+        "name": "Bosch",
+        "career_urls": [
+            "https://jobs.bosch.com/en/search-results/?keywords=embedded+linux&country=Poland",
+            "https://jobs.bosch.com/en/search-results/?keywords=ADAS+camera&country=Poland",
+        ],
+        "keywords": ["linux", "embedded", "ADAS", "automotive", "camera", "driver", "software", "IoT"],
+        "industry": "automotive",
+    },
+    "zf": {
+        "name": "ZF Friedrichshafen",
+        "career_urls": [
+            "https://jobs.zf.com/en/jobs?search=embedded+linux",
+            "https://jobs.zf.com/en/jobs?search=ADAS+camera",
+        ],
+        "keywords": ["linux", "embedded", "ADAS", "automotive", "camera", "driver", "autonomous"],
+        "industry": "automotive",
+    },
+    "nxp": {
+        "name": "NXP Semiconductors",
+        "career_urls": [],
+        "workday_api": "https://nxp.wd3.myworkdayjobs.com/wday/cxs/nxp/careers",
+        "workday_searches": ["linux kernel driver", "embedded software Poland", "camera BSP", "i.MX software"],
+        "keywords": ["linux", "kernel", "driver", "i.MX", "embedded", "BSP", "camera", "automotive", "SoC"],
+        "industry": "silicon",
+    },
+    "renesas": {
+        "name": "Renesas",
+        "career_urls": [
+            "https://jobs.renesas.com/",
+        ],
+        "keywords": ["linux", "kernel", "driver", "R-Car", "embedded", "BSP", "automotive", "camera", "SoC"],
+        "industry": "silicon",
+    },
+    "mediatek": {
+        "name": "MediaTek",
+        "career_urls": [
+            "https://careers.mediatek.com/eREC/",
+        ],
+        "keywords": ["linux", "kernel", "driver", "ISP", "camera", "SoC", "embedded", "multimedia"],
+        "industry": "silicon",
+    },
+    "ambarella": {
+        "name": "Ambarella",
+        "career_urls": [
+            "https://www.ambarella.com/careers/",
+        ],
+        "keywords": ["linux", "embedded", "camera", "SoC", "computer vision", "ISP", "driver", "ADAS"],
+        "industry": "silicon",
+    },
+    "onsemi": {
+        "name": "onsemi",
+        "career_urls": [
+            "https://www.onsemi.com/careers",
+        ],
+        "keywords": ["image sensor", "ADAS", "automotive", "camera", "Hyperlux", "embedded", "driver"],
+        "industry": "silicon",
+    },
+    "infineon": {
+        "name": "Infineon",
+        "career_urls": [
+            "https://jobs.infineon.com/careers?query=embedded+linux",
+            "https://jobs.infineon.com/careers?query=software+engineer",
+        ],
+        "keywords": ["linux", "embedded", "automotive", "driver", "security", "power", "kernel"],
+        "industry": "silicon",
+    },
+    "stmicro": {
+        "name": "STMicroelectronics",
+        "career_urls": [
+            "https://www.st.com/content/st_com/en/about/careers/job-categories.html",
+        ],
+        "keywords": ["linux", "embedded", "STM32", "automotive", "driver", "kernel", "SoC"],
+        "industry": "silicon",
+    },
 }
 
 # ─── Job boards & aggregators ───
@@ -168,6 +413,26 @@ JOB_BOARDS = {
         "urls": [
             "https://www.linkedin.com/jobs/search/?keywords=linux%20kernel%20driver&location=Poland&f_WT=2",
             "https://www.linkedin.com/jobs/search/?keywords=embedded%20linux%20camera&location=Poland&f_WT=2",
+        ],
+    },
+    "indeed": {
+        "name": "Indeed (via DDG)",
+        "urls": [
+            # Indeed blocks direct scraping; DDG HTML search as proxy
+            "https://html.duckduckgo.com/html/?q=site%3Apl.indeed.com+embedded+linux+kernel+driver+Poland",
+            "https://html.duckduckgo.com/html/?q=site%3Apl.indeed.com+camera+firmware+BSP+Poland",
+        ],
+    },
+    "lwn": {
+        "name": "LWN.net Jobs",
+        "urls": [
+            "https://lwn.net/Jobs/",
+        ],
+    },
+    "kernel_newbies": {
+        "name": "Kernel Newbies Jobs",
+        "urls": [
+            "https://kernelnewbies.org/KernelJobs",
         ],
     },
 }
@@ -197,6 +462,13 @@ INTEL_SOURCES = {
             "https://www.levels.fyi/t/software-engineer/locations/poland",
         ],
     },
+    "glassdoor": {
+        "name": "Glassdoor",
+        "urls": [
+            "https://www.glassdoor.com/Reviews/Poland-embedded-reviews-SRCH_IL.0,6_IN193_KE7,15.htm",
+            "https://www.glassdoor.com/Salaries/poland-embedded-software-engineer-salary-SRCH_IL.0,6_IN193_KO7,33.htm",
+        ],
+    },
 }
 
 
@@ -214,6 +486,8 @@ def fetch_workday(api_base, search_terms, limit=20):
     Workday career sites (NVIDIA, Samsung) are JavaScript SPAs that return
     nothing useful via HTML scraping.  Their public CXS API accepts POST
     requests and returns structured JSON with real job listings.
+
+    Returns (text_for_llm, structured_jobs_with_urls).
     """
     url = api_base + "/jobs"
     seen = set()
@@ -240,22 +514,36 @@ def fetch_workday(api_base, search_terms, limit=20):
                 key = (title, loc)
                 if key not in seen:
                     seen.add(key)
+                    ext_path = j.get("externalPath", "")
+                    # Build full URL from external path
+                    if ext_path and not ext_path.startswith("http"):
+                        full_url = api_base.split("/wday/")[0].replace(
+                            ".myworkdayjobs.com/wday/cxs/",
+                            ".myworkdayjobs.com/"
+                        ).rstrip("/") + "/" + ext_path.lstrip("/")
+                    elif ext_path:
+                        full_url = ext_path
+                    else:
+                        full_url = ""
                     combined.append({
                         "title": title,
                         "loc": loc,
                         "posted": j.get("postedOn", ""),
-                        "url": j.get("externalPath", ""),
+                        "url": full_url,
                     })
         except Exception:
             pass  # silently skip failed search terms
 
     if not combined:
-        return "[fetch_error: Workday API returned 0 results]"
+        return "[fetch_error: Workday API returned 0 results]", []
 
     lines = [f"Job Listings ({len(combined)} results):"]
     for j in combined:
-        lines.append(f"- {j['title']} | Location: {j['loc']} | Posted: {j['posted']}")
-    return "\n".join(lines)
+        line = f"- {j['title']} | Location: {j['loc']} | Posted: {j['posted']}"
+        if j['url']:
+            line += f" | URL: {j['url']}"
+        lines.append(line)
+    return "\n".join(lines), combined
 
 
 def fetch_page(url, timeout=25):
@@ -339,6 +627,51 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=3000):
     except Exception as ex:
         print(f"  Ollama failed: {ex}")
         return None
+
+
+def _merge_workday_urls(llm_jobs, workday_jobs):
+    """Merge Workday URLs back into LLM-extracted job objects.
+
+    The LLM sees titles in its prompt but can't invent real URLs.
+    Match each LLM job to its Workday source by fuzzy title match
+    and copy the verified URL into job_url.
+    """
+    if not workday_jobs:
+        return
+    for job in llm_jobs:
+        title = job.get("title", "").lower().strip()
+        if not title:
+            continue
+        # Already has a URL? Skip.
+        if job.get("job_url"):
+            continue
+        best_url = ""
+        best_score = 0
+        for wj in workday_jobs:
+            wt = wj.get("title", "").lower().strip()
+            if not wt:
+                continue
+            # Score: exact match > substring > word overlap
+            if title == wt:
+                best_url = wj["url"]
+                break
+            elif title in wt or wt in title:
+                score = min(len(title), len(wt)) / max(len(title), len(wt))
+                if score > best_score:
+                    best_score = score
+                    best_url = wj["url"]
+            else:
+                # Word overlap
+                t_words = set(title.split())
+                w_words = set(wt.split())
+                overlap = len(t_words & w_words)
+                if overlap >= 2:
+                    score = overlap / max(len(t_words), len(w_words))
+                    if score > best_score:
+                        best_score = score
+                        best_url = wj["url"]
+        if best_url:
+            job["job_url"] = best_url
 
 
 def signal_send(msg):
@@ -480,7 +813,8 @@ For each relevant job found, output a JSON array entry:
   "match_score": 0-100,  // how well it matches the profile
   "match_reasons": ["reason1", "reason2"],
   "key_requirements": ["req1", "req2"],
-  "url_hint": "any URL fragment found",
+  "url_hint": "any URL fragment found in the listing",
+  "job_url": "direct URL to apply or view this specific job posting, if available",
   "remote_compatible": true/false,  // can work from Poland?
   "salary_hint": "if mentioned",
   "red_flags": ["if any — e.g. AUTOSAR-only, pure management"]
@@ -571,7 +905,7 @@ def scan_career_pages():
         # Workday CXS API — replaces HTML scraping for JS-rendered sites
         if "workday_api" in company:
             print(f"  [{name}] Querying Workday CXS API...")
-            text = fetch_workday(
+            text, workday_jobs = fetch_workday(
                 company["workday_api"],
                 company.get("workday_searches", ["software engineer"]),
             )
@@ -591,6 +925,8 @@ def scan_career_pages():
                         else:
                             jobs = []
                         if isinstance(jobs, list):
+                            # Merge Workday URLs back into LLM-extracted jobs
+                            _merge_workday_urls(jobs, workday_jobs)
                             for j in jobs:
                                 j["source_company"] = cid
                                 j["company"] = j.get("company", name)
@@ -648,6 +984,9 @@ def scan_career_pages():
                         for j in jobs:
                             j["source_company"] = cid
                             j["company"] = j.get("company", name)
+                            # Use career page URL as fallback if LLM didn't produce a specific URL
+                            if not j.get("job_url"):
+                                j["job_url"] = url
                         jobs_for_company.extend(jobs)
                         print(f"    ✓ Found {len(jobs)} potential matches")
                 except (json.JSONDecodeError, ValueError) as e:
@@ -700,6 +1039,9 @@ def scan_job_boards():
                 if isinstance(jobs, list):
                     for j in jobs:
                         j["source_board"] = bid
+                        # Use first board URL as fallback link
+                        if not j.get("job_url") and board["urls"]:
+                            j["job_url"] = board["urls"][0]
                     all_jobs.extend(jobs)
                     print(f"    ✓ Found {len(jobs)} potential matches")
             except (json.JSONDecodeError, ValueError):
@@ -800,8 +1142,9 @@ def generate_summary(jobs, intel_data, scan_meta):
 # ─── Signal alerts for hot matches ───
 
 def send_hot_alerts(jobs, intel_data):
-    """Send Signal notifications for very hot matches and urgent intel."""
-    hot_jobs = [j for j in jobs if j.get("match_score", 0) >= 80 and j.get("remote_compatible", False)]
+    """Send Signal notifications for very hot matches and urgent intel.
+    Per refactor policy: only score>=85 during scrape phase (immediate), or LLM-flagged during analyze."""
+    hot_jobs = [j for j in jobs if j.get("match_score", 0) >= 85 and j.get("remote_compatible", False)]
     urgent_intel = []
     if intel_data and "alerts" in intel_data:
         urgent_intel = [a for a in intel_data["alerts"] if a.get("severity") == "urgent"]
@@ -834,59 +1177,18 @@ def send_hot_alerts(jobs, intel_data):
     return alerts_sent
 
 
-# ─── Main ───
+# ─── Raw data file for scrape/analyze split ───
+RAW_CAREERS_FILE = os.path.join(CAREER_DIR, "raw-careers.json")
 
-def main():
-    quick = "--quick" in sys.argv
-    signal_test = "--signal-test" in sys.argv
 
-    if signal_test:
-        ok = signal_send("🧪 Career scanner test — Signal notifications working!")
-        print("Signal test:", "OK" if ok else "FAILED")
-        return
+# ─── Scrape phase ───
 
-    quiet = is_quiet_hours()
-    mode_str = f"{'quick' if quick else 'full'}, {'QUIET HOURS' if quiet else 'daytime'}"
-    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] career-scan starting ({mode_str})")
-
-    # Guard: don't compete with other batch scripts for GPU
-    import subprocess
-    for proc in ["lore-digest.sh", "repo-watch.sh", "idle-think.sh", "ha-journal.py"]:
-        try:
-            r = subprocess.run(["pgrep", "-f", proc], capture_output=True, timeout=5)
-            if r.returncode == 0:
-                print(f"  {proc} is running — skipping")
-                return
-        except Exception:
-            pass
-
-    # GPU guard — during quiet hours (00-06) we own the GPU, skip guard entirely
-    if not quiet:
-        try:
-            req = urllib.request.Request(f"{OLLAMA_URL}/api/ps")
-            resp = urllib.request.urlopen(req, timeout=5)
-            ps = json.loads(resp.read())
-            for m in ps.get("models", []):
-                name = m.get("name", "")
-                if name and name != OLLAMA_MODEL:
-                    from datetime import timezone
-                    expires = m.get("expires_at", "")
-                    if expires:
-                        try:
-                            exp_dt = datetime.fromisoformat(expires.replace("Z", "+00:00"))
-                            remaining = (exp_dt - datetime.now(timezone.utc)).total_seconds()
-                            if remaining > 25 * 60:
-                                print(f"  {name} recently active ({remaining/60:.0f}m left) — skipping")
-                                return
-                        except Exception:
-                            pass
-                    print(f"  {name} warm/cached — will evict for batch job")
-        except Exception:
-            pass
-    else:
-        print("  Quiet hours — GPU free for batch, no chat guard needed")
-
-    scan_start = time.time()
+def run_scrape(quick=False, signal_ok=True):
+    """Phases 1-3: Scrape career pages, job boards, intel sources. Save raw JSON."""
+    dt = datetime.now()
+    os.makedirs(CAREER_DIR, exist_ok=True)
+    t0 = time.time()
+    scrape_errors = []
 
     # Phase 1: Career pages
     career_jobs, career_results = scan_career_pages()
@@ -904,12 +1206,12 @@ def main():
     all_jobs = deduplicate_jobs(career_jobs + board_jobs)
     all_jobs.sort(key=lambda x: -x.get("match_score", 0))
 
-    scan_duration = time.time() - scan_start
+    scrape_duration = time.time() - t0
 
     scan_meta = {
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "timestamp": dt.isoformat(timespec="seconds"),
         "mode": "quick" if quick else "full",
-        "duration_seconds": round(scan_duration),
+        "duration_seconds": round(scrape_duration),
         "companies_scanned": len(career_results),
         "boards_scanned": len(board_results),
         "pages_fetched": sum(1 for r in career_results.values() if r.get("status") == "ok")
@@ -919,26 +1221,102 @@ def main():
         "remote_compatible": len([j for j in all_jobs if j.get("remote_compatible", False)]),
     }
 
-    print(f"\n  === Results ===")
+    print(f"\n  === Scrape Results ===")
     print(f"  Jobs found: {len(all_jobs)}")
     print(f"  Hot matches (>=70): {scan_meta['hot_matches']}")
     print(f"  Remote-compatible: {scan_meta['remote_compatible']}")
-    print(f"  Duration: {scan_duration:.0f}s")
+    print(f"  Duration: {scrape_duration:.0f}s")
+
+    # Send Signal alerts for very hot matches (score>=85) during scrape
+    # Only send if running full mode (not --scrape-only, to avoid noise)
+    if signal_ok:
+        alerts = send_hot_alerts(all_jobs, intel_data)
+        if alerts:
+            print(f"  Sent {alerts} Signal alert(s) for hot matches")
+
+    # Save raw intermediate data
+    raw_data = {
+        "scrape_timestamp": dt.isoformat(timespec="seconds"),
+        "scrape_duration_seconds": round(scrape_duration),
+        "scrape_version": 1,
+        "data": {
+            "jobs": all_jobs[:50],  # top 50
+            "intel": intel_data,
+            "scan_meta": scan_meta,
+            "source_results": {
+                "career_pages": career_results,
+                "job_boards": board_results,
+                "intel_sources": intel_results,
+            },
+        },
+        "scrape_errors": scrape_errors,
+    }
+    tmp_path = RAW_CAREERS_FILE + ".tmp"
+    with open(tmp_path, "w") as f:
+        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+    os.rename(tmp_path, RAW_CAREERS_FILE)
+
+    print(f"  Saved raw data to {RAW_CAREERS_FILE}")
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] career-scan scrape done ({scrape_duration:.0f}s)")
+
+
+# ─── Analyze phase ───
+
+def run_analyze():
+    """Load raw data, run LLM summary, save final output + think note."""
+    dt = datetime.now()
+    os.makedirs(CAREER_DIR, exist_ok=True)
+    os.makedirs(THINK_DIR, exist_ok=True)
+    t0 = time.time()
+
+    # Load raw data
+    if not os.path.exists(RAW_CAREERS_FILE):
+        print(f"ERROR: Raw data file not found: {RAW_CAREERS_FILE}", file=sys.stderr)
+        print("Run with --scrape-only first to collect career data.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(RAW_CAREERS_FILE) as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"ERROR: Failed to read raw data: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    scrape_ts = raw.get("scrape_timestamp", "")
+    all_jobs = raw.get("data", {}).get("jobs", [])
+    intel_data = raw.get("data", {}).get("intel")
+    scan_meta = raw.get("data", {}).get("scan_meta", {})
+    source_results = raw.get("data", {}).get("source_results", {})
+
+    # Check staleness
+    if scrape_ts:
+        try:
+            scrape_dt = datetime.fromisoformat(scrape_ts)
+            age_hours = (dt - scrape_dt).total_seconds() / 3600
+            if age_hours > 48:
+                print(f"  WARNING: Raw data is {age_hours:.0f}h old (scraped {scrape_ts})")
+        except ValueError:
+            pass
+
+    print(f"  Loaded {len(all_jobs)} jobs from raw data (scraped {scrape_ts})")
 
     # Generate LLM summary
     print("\n  === Generating summary ===")
     summary = generate_summary(all_jobs, intel_data, scan_meta)
 
-    # Save scan data
+    # Build final scan data with dual timestamps
+    analyze_duration = time.time() - t0
+    scan_meta_final = dict(scan_meta)
+    scan_meta_final["scrape_timestamp"] = scrape_ts
+    scan_meta_final["analyze_timestamp"] = dt.isoformat(timespec="seconds")
+    scan_meta_final["timestamp"] = dt.isoformat(timespec="seconds")  # backward compat
+    scan_meta_final["analyze_duration_seconds"] = round(analyze_duration)
+
     scan_data = {
-        "meta": scan_meta,
-        "jobs": all_jobs[:50],  # Keep top 50
+        "meta": scan_meta_final,
+        "jobs": all_jobs,
         "intel": intel_data,
-        "source_results": {
-            "career_pages": career_results,
-            "job_boards": board_results,
-            "intel_sources": intel_results,
-        },
+        "source_results": source_results,
         "summary": summary,
     }
     save_scan(scan_data)
@@ -946,26 +1324,101 @@ def main():
 
     # Save as think-system note
     save_note(
-        f"Career Scan — {datetime.now().strftime('%d %b %Y')}",
+        f"Career Scan — {dt.strftime('%d %b %Y')}",
         summary,
-        context=scan_meta,
+        context=scan_meta_final,
     )
     print(f"  Saved think note")
 
-    # Send Signal alerts for hot matches
-    alerts = send_hot_alerts(all_jobs, intel_data)
-    if alerts:
-        print(f"  Sent {alerts} Signal alert(s)")
-
-    print(f"\n  Done in {scan_duration:.0f}s.")
+    print(f"\n  Analyze done in {analyze_duration:.0f}s.")
 
     # Regenerate dashboard HTML
     try:
+        import subprocess
         subprocess.run(["python3", "/opt/netscan/generate-html.py"],
                        capture_output=True, timeout=60)
         print("  Dashboard HTML regenerated")
     except Exception:
         pass
+
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] career-scan analyze done ({analyze_duration:.0f}s)")
+
+
+# ─── Main ───
+
+def main():
+    parser = argparse.ArgumentParser(description="Career scanner — OSINT career intelligence")
+    parser.add_argument('--scrape-only', action='store_true',
+                        help='Only scrape career data, save raw (no LLM)')
+    parser.add_argument('--analyze-only', action='store_true',
+                        help='Only run LLM analysis on previously scraped raw data')
+    parser.add_argument('--quick', action='store_true',
+                        help='Quick mode: skip company intel sources')
+    parser.add_argument('--signal-test', action='store_true',
+                        help='Test Signal notification and exit')
+    args = parser.parse_args()
+
+    if args.signal_test:
+        ok = signal_send("🧪 Career scanner test — Signal notifications working!")
+        print("Signal test:", "OK" if ok else "FAILED")
+        return
+
+    quiet = is_quiet_hours()
+    mode_parts = []
+    if args.scrape_only:  mode_parts.append("scrape-only")
+    elif args.analyze_only: mode_parts.append("analyze-only")
+    if args.quick: mode_parts.append("quick")
+    mode_parts.append("QUIET HOURS" if quiet else "daytime")
+    mode_str = ", ".join(mode_parts)
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] career-scan starting ({mode_str})")
+
+    # GPU guard — only needed for analyze phase (not scrape-only)
+    if not args.scrape_only:
+        # Guard: don't compete with other batch scripts for GPU
+        import subprocess
+        for proc in ["lore-digest.sh", "repo-watch.sh", "idle-think.sh", "ha-journal.py"]:
+            try:
+                r = subprocess.run(["pgrep", "-f", proc], capture_output=True, timeout=5)
+                if r.returncode == 0:
+                    print(f"  {proc} is running — skipping")
+                    return
+            except Exception:
+                pass
+
+        # GPU guard — during quiet hours (00-06) we own the GPU, skip guard entirely
+        if not quiet:
+            try:
+                req = urllib.request.Request(f"{OLLAMA_URL}/api/ps")
+                resp = urllib.request.urlopen(req, timeout=5)
+                ps = json.loads(resp.read())
+                for m in ps.get("models", []):
+                    name = m.get("name", "")
+                    if name and name != OLLAMA_MODEL:
+                        from datetime import timezone
+                        expires = m.get("expires_at", "")
+                        if expires:
+                            try:
+                                exp_dt = datetime.fromisoformat(expires.replace("Z", "+00:00"))
+                                remaining = (exp_dt - datetime.now(timezone.utc)).total_seconds()
+                                if remaining > 25 * 60:
+                                    print(f"  {name} recently active ({remaining/60:.0f}m left) — skipping")
+                                    return
+                            except Exception:
+                                pass
+                        print(f"  {name} warm/cached — will evict for batch job")
+            except Exception:
+                pass
+        else:
+            print("  Quiet hours — GPU free for batch, no chat guard needed")
+
+    if args.scrape_only:
+        run_scrape(quick=args.quick, signal_ok=False)
+    elif args.analyze_only:
+        run_analyze()
+    else:
+        # Legacy: full run (backward compatible)
+        run_scrape(quick=args.quick)
+        run_analyze()
 
 
 if __name__ == "__main__":

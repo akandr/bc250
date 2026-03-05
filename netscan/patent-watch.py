@@ -13,9 +13,9 @@ Monitors patent publications related to:
 
 Sources:
   - Google Patents (public search, no API key needed)
-  - European Patent Office (EPO) Open Patent Services
-  - USPTO PatFT/AppFT (full-text search)
-  - Lens.org (open scholarly patent search)
+  - EPO Open Patent Services (OPS) — published-data search API (free, no key for search)
+  - USPTO (via DuckDuckGo site: search proxy)
+  - DuckDuckGo patent search (catches results from Lens.org, FPO, Espacenet)
 
 Output: /opt/netscan/data/patents/
   - patents-YYYYMMDD.json     (daily new findings)
@@ -25,6 +25,7 @@ Output: /opt/netscan/data/patents/
 Cron: 0 3 * * * flock -w 1200 /tmp/ollama-gpu.lock python3 /opt/netscan/patent-watch.py
 """
 
+import argparse
 import json
 import os
 import re
@@ -247,11 +248,14 @@ def search_google_patents(query_text, max_results=15):
     html = fetch_url(url, timeout=30)
 
 
-# ── Lens.org Search ────────────────────────────────────────────────────────
+# ── Lens.org / DDG Patent Search ────────────────────────────────────────────
 
-def search_lens_org(query_text, max_results=10):
-    """Search for patents via DuckDuckGo (Lens.org is a JS SPA, not scrapeable).
-    Uses DDG to find patent-related results and extracts patent IDs."""
+def search_ddg_patents(query_text, max_results=10):
+    """Search for patents via DuckDuckGo.
+
+    Lens.org is a JS SPA and not scrapeable. Instead, we use DDG HTML
+    search which often surfaces Lens.org, FPO, Espacenet and Google Patent
+    results.  We extract patent IDs from the result snippets."""
     patents = []
     encoded = urllib.parse.quote(f'{query_text} patent publication')
     url = f"https://html.duckduckgo.com/html/?q={encoded}"
@@ -287,6 +291,121 @@ def search_lens_org(query_text, max_results=10):
             "pub_date": "",
             "url": f"https://patents.google.com/patent/{patent_id}/en",
             "source": "ddg_patent_search",
+        })
+
+    return patents
+
+
+# ── EPO Open Patent Services (OPS) ────────────────────────────────────────
+
+def search_epo_ops(query_text, max_results=8):
+    """Search European Patent Office OPS published-data search.
+
+    EPO OPS bibliographic search is free and doesn't need an API key.
+    Returns published patent documents matching the query in title/abstract.
+    """
+    patents = []
+    # OPS published-data search: /rest-services/published-data/search
+    encoded = urllib.parse.quote(query_text)
+    url = (
+        f"https://ops.epo.org/3.2/rest-services/published-data/search?"
+        f"q=ta%3D%22{encoded}%22&Range=1-{max_results}"
+    )
+
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (patent-watch bot)",
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read())
+    except Exception as e:
+        log(f"  EPO OPS: {e}")
+        return patents
+
+    # Navigate the nested OPS response structure
+    try:
+        results = data.get("ops:world-patent-data", {}).get(
+            "ops:biblio-search", {}
+        ).get("ops:search-result", {}).get(
+            "ops:publication-reference", []
+        )
+        if isinstance(results, dict):
+            results = [results]
+    except (AttributeError, KeyError):
+        return patents
+
+    for ref in results[:max_results]:
+        try:
+            doc_id = ref.get("document-id", {})
+            if isinstance(doc_id, list):
+                doc_id = doc_id[0]
+            country = doc_id.get("country", {}).get("$", "")
+            doc_num = doc_id.get("doc-number", {}).get("$", "")
+            kind = doc_id.get("kind", {}).get("$", "")
+            patent_id = f"{country}{doc_num}{kind}"
+
+            if not patent_id or len(patent_id) < 5:
+                continue
+
+            patents.append({
+                "patent_id": patent_id,
+                "title": "",  # OPS search doesn't return titles; will be filled by dedup/analysis
+                "abstract": "",
+                "assignee": "",
+                "pub_date": "",
+                "url": f"https://worldwide.espacenet.com/patent/search?q={patent_id}",
+                "source": "epo_ops",
+            })
+        except (KeyError, TypeError, IndexError):
+            continue
+
+    return patents
+
+
+# ── USPTO via DuckDuckGo ──────────────────────────────────────────────────
+
+def search_uspto_ddg(query_text, max_results=6):
+    """Search USPTO patents via DuckDuckGo site: search.
+
+    USPTO PatFT/AppFT are JavaScript-heavy and not directly scrapeable.
+    We use DDG to search within USPTO and extract patent numbers.
+    """
+    patents = []
+    encoded = urllib.parse.quote(f"site:patents.google.com US {query_text} patent")
+    url = f"https://html.duckduckgo.com/html/?q={encoded}"
+
+    html = fetch_url(url, timeout=25)
+    if not html:
+        return patents
+
+    # Extract US patent IDs from DDG results
+    patent_ids = re.findall(
+        r'\b(US\d{7,}[A-Z0-9]*)\b', html
+    )
+    seen = set()
+
+    ddg_titles = re.findall(r'class="result__a"[^>]*>(.*?)</a>', html, re.DOTALL)
+    ddg_snippets = re.findall(r'class="result__snippet"[^>]*>(.*?)</[^>]+>', html, re.DOTALL)
+
+    for i, patent_id in enumerate(patent_ids):
+        if patent_id in seen:
+            continue
+        seen.add(patent_id)
+        if len(seen) > max_results:
+            break
+
+        title = strip_html(ddg_titles[i]) if i < len(ddg_titles) else ""
+        snippet = strip_html(ddg_snippets[i])[:300] if i < len(ddg_snippets) else ""
+        patents.append({
+            "patent_id": patent_id,
+            "title": title,
+            "abstract": snippet,
+            "assignee": "",
+            "pub_date": "",
+            "url": f"https://patents.google.com/patent/{patent_id}/en",
+            "source": "uspto_ddg",
         })
 
     return patents
@@ -427,15 +546,20 @@ def save_db(db):
         json.dump(db, f, indent=2, ensure_ascii=False)
 
 
+# ── Raw data file for scrape/analyze split ─────────────────────────────────
+RAW_PATENTS_FILE = PATENT_DIR / "raw-patents.json"
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
-def main():
+def run_scrape():
+    """Scrape patent sources for all queries. Save raw JSON (no LLM)."""
     sys.stdout.reconfigure(line_buffering=True)
     sys.stderr.reconfigure(line_buffering=True)
 
     dt = datetime.now()
     today = dt.strftime("%Y-%m-%d")
-    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] patent-watch starting", flush=True)
+    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] patent-watch scrape starting", flush=True)
 
     PATENT_DIR.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -450,19 +574,26 @@ def main():
 
         patents = []
 
-        # Google Patents
         gp = search_google_patents(qcfg["google_q"], max_results=10)
         patents.extend(gp)
         log(f"  Google Patents: {len(gp)} results")
         time.sleep(3)
 
-        # Lens.org
-        lo = search_lens_org(qcfg["query"], max_results=8)
+        lo = search_ddg_patents(qcfg["query"], max_results=8)
         patents.extend(lo)
-        log(f"  Lens.org: {len(lo)} results")
+        log(f"  DDG patents: {len(lo)} results")
         time.sleep(2)
 
-        # DDG patent news
+        epo = search_epo_ops(qcfg["query"], max_results=8)
+        patents.extend(epo)
+        log(f"  EPO OPS: {len(epo)} results")
+        time.sleep(2)
+
+        usp = search_uspto_ddg(qcfg["query"], max_results=6)
+        patents.extend(usp)
+        log(f"  USPTO (DDG): {len(usp)} results")
+        time.sleep(2)
+
         news = search_ddg_patent_news(qcfg["query"])
         log(f"  Patent news: {len(news)} articles")
 
@@ -476,18 +607,10 @@ def main():
                 score_patent(p, qcfg)
                 unique_patents.append(p)
 
-        # Sort by relevance
         unique_patents.sort(key=lambda p: p.get("relevance_score", 0), reverse=True)
 
-        # Filter new patents (not in DB)
         new_patents = [p for p in unique_patents if p["patent_id"] not in db.get("patents", {})]
         all_new_patents.extend(new_patents)
-
-        # LLM analysis if we have enough patents
-        analysis = None
-        if len(unique_patents) >= 3:
-            analysis = analyze_patents_batch(unique_patents[:10], qid)
-            time.sleep(3)
 
         query_results[qid] = {
             "query": qcfg["query"],
@@ -495,7 +618,7 @@ def main():
             "new_patents": len(new_patents),
             "top_patents": unique_patents[:5],
             "news": news,
-            "analysis": analysis,
+            "analysis": None,  # will be filled in analyze phase
         }
 
         # Update DB with all found patents
@@ -510,7 +633,80 @@ def main():
                     "query_source": qid,
                 }
 
-    # ── Cross-query synthesis ──
+    save_db(db)
+
+    # Save raw intermediate data
+    scrape_duration = int(time.time() - t0)
+    raw_data = {
+        "scrape_timestamp": dt.isoformat(timespec="seconds"),
+        "scrape_duration_seconds": scrape_duration,
+        "scrape_version": 1,
+        "data": {
+            "query_results": query_results,
+            "all_new_patents": all_new_patents,
+            "db_total": len(db.get("patents", {})),
+        },
+        "scrape_errors": [],
+    }
+    tmp = RAW_PATENTS_FILE.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(raw_data, f, indent=2, ensure_ascii=False)
+    tmp.rename(RAW_PATENTS_FILE)
+
+    log(f"Scrape done: {sum(qr['total_found'] for qr in query_results.values())} patents found ({scrape_duration}s)")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] patent-watch scrape done ({scrape_duration}s)", flush=True)
+
+
+def run_analyze():
+    """Load raw data, run per-query LLM + cross-query synthesis. Save final output."""
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+
+    dt = datetime.now()
+    print(f"[{dt.strftime('%Y-%m-%d %H:%M:%S')}] patent-watch analyze starting", flush=True)
+
+    PATENT_DIR.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+
+    if not RAW_PATENTS_FILE.exists():
+        print(f"ERROR: Raw data file not found: {RAW_PATENTS_FILE}", file=sys.stderr)
+        print("Run with --scrape-only first.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(RAW_PATENTS_FILE) as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"ERROR: Failed to read raw data: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    scrape_ts = raw.get("scrape_timestamp", "")
+    query_results = raw.get("data", {}).get("query_results", {})
+    all_new_patents = raw.get("data", {}).get("all_new_patents", [])
+    db_total = raw.get("data", {}).get("db_total", 0)
+
+    # Check staleness
+    if scrape_ts:
+        try:
+            scrape_dt = datetime.fromisoformat(scrape_ts)
+            age_hours = (dt - scrape_dt).total_seconds() / 3600
+            if age_hours > 48:
+                log(f"WARNING: Raw data is {age_hours:.0f}h old (scraped {scrape_ts})")
+        except ValueError:
+            pass
+
+    log(f"Loaded {len(query_results)} query results from raw data (scraped {scrape_ts})")
+
+    # Per-query LLM analysis
+    for qid, qr in query_results.items():
+        top_patents = qr.get("top_patents", [])
+        if len(top_patents) >= 3:
+            log(f"LLM analysis for query: {qid}")
+            analysis = analyze_patents_batch(top_patents[:10], qid)
+            qr["analysis"] = analysis
+            time.sleep(3)
+
+    # Cross-query synthesis
     if all_new_patents:
         log("Synthesis: cross-query patent trends...")
         synthesis_system = """You are a patent intelligence analyst focused on camera/imaging
@@ -540,16 +736,18 @@ Provide:
     else:
         synthesis = "No new patents found today."
 
-    # ── Save output ──
+    # Save output with dual timestamps
     duration = int(time.time() - t0)
     output = {
         "meta": {
-            "timestamp": dt.isoformat(timespec="seconds"),
+            "scrape_timestamp": scrape_ts,
+            "analyze_timestamp": dt.isoformat(timespec="seconds"),
+            "timestamp": dt.isoformat(timespec="seconds"),  # backward compat
             "duration_seconds": duration,
             "queries_run": len(SEARCH_QUERIES),
             "total_patents_found": sum(qr["total_found"] for qr in query_results.values()),
             "new_patents": len(all_new_patents),
-            "db_total": len(db.get("patents", {})),
+            "db_total": db_total,
         },
         "queries": query_results,
         "synthesis": synthesis,
@@ -564,15 +762,31 @@ Provide:
     latest.unlink(missing_ok=True)
     latest.symlink_to(fname)
 
-    save_db(db)
-
     # Cleanup: keep last 60 reports
     reports = sorted(PATENT_DIR.glob("patents-2*.json"))
     for old in reports[:-60]:
         old.unlink(missing_ok=True)
 
     log(f"Saved: {out_path}")
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] patent-watch done ({duration}s)", flush=True)
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] patent-watch analyze done ({duration}s)", flush=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Patent watch — camera/imaging patent tracker")
+    parser.add_argument('--scrape-only', action='store_true',
+                        help='Only scrape patent sources, save raw data (no LLM)')
+    parser.add_argument('--analyze-only', action='store_true',
+                        help='Only run LLM analysis on previously scraped raw data')
+    args = parser.parse_args()
+
+    if args.scrape_only:
+        run_scrape()
+    elif args.analyze_only:
+        run_analyze()
+    else:
+        # Legacy: full run (backward compatible)
+        run_scrape()
+        run_analyze()
 
 
 if __name__ == "__main__":
