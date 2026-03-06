@@ -682,7 +682,12 @@ Format: 2-3 paragraphs of analysis, then a bullet list of key findings."""
     if location_clusters:
         lines.append("=== Frequent Locations ===")
         for c in location_clusters[:10]:
-            lines.append(f"  {c['location']}: {c['visits']} visits, {c['total_minutes']:.0f} min total")
+            # Handle both in-memory (total_minutes) and JSON-loaded (total_hours) data
+            if 'total_minutes' in c:
+                hrs = c['total_minutes'] / 60
+            else:
+                hrs = c.get('total_hours', 0)
+            lines.append(f"  {c['location']}: {c['visits']} visits, {hrs:.1f} hrs total")
         lines.append("")
 
     prompt = "\n".join(lines)

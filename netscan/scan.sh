@@ -26,6 +26,18 @@ sudo nmap -sn --max-retries 2 --host-timeout 5s \
 HOST_COUNT=$(grep -c "Host is up" "$NMAP_PING" || echo 0)
 echo "[$(date)] Found $HOST_COUNT hosts"
 
+# ── Phase 1.3: ARP scan (finds hidden hosts, better MAC/vendor detection) ──
+ARP_FILE="/tmp/netscan-arp-${DATE}.txt"
+if command -v arp-scan &>/dev/null; then
+    echo "[$(date)] Phase 1.3: ARP scan..."
+    sudo arp-scan --localnet --retry=2 --timeout=500 2>/dev/null > "$ARP_FILE" || true
+    ARP_COUNT=$(grep -cP '^\d+\.\d+\.\d+\.\d+' "$ARP_FILE" 2>/dev/null || echo 0)
+    echo "[$(date)] ARP scan: $ARP_COUNT hosts (may find hosts missed by ping)"
+else
+    touch "$ARP_FILE"
+    echo "[$(date)] ARP scan: arp-scan not installed, skipping"
+fi
+
 # ── Phase 1.5: mDNS discovery ──
 echo "[$(date)] Phase 1.5: mDNS discovery..."
 MDNS_FILE="/tmp/netscan-mdns-${DATE}.txt"
@@ -46,13 +58,33 @@ sudo nmap -sS --top-ports 100 --open --max-retries 1 --host-timeout 15s \
   -iL /tmp/netscan-targets.txt > "$NMAP_PORTS" 2>/dev/null || true
 echo "[$(date)] Port scan done"
 
+# ── Phase 2.5: Service version detection on hosts with open ports ──
+echo "[$(date)] Phase 2.5: Service banners (top open ports)..."
+NMAP_SVC="/tmp/netscan-svc-${DATE}.txt"
+# Only scan hosts that had open ports — extract IPs from port scan output
+OPEN_HOSTS=$(grep "Nmap scan report" "$NMAP_PORTS" | grep -oP '\d+\.\d+\.\d+\.\d+' | sort -u)
+if [ -n "$OPEN_HOSTS" ]; then
+    echo "$OPEN_HOSTS" > /tmp/netscan-svc-targets.txt
+    SVC_COUNT=$(wc -l < /tmp/netscan-svc-targets.txt)
+    echo "[$(date)] Service scan: $SVC_COUNT hosts with open ports"
+    sudo nmap -sV --version-intensity 3 --top-ports 20 --open \
+      --max-retries 1 --host-timeout 20s \
+      -iL /tmp/netscan-svc-targets.txt > "$NMAP_SVC" 2>/dev/null || true
+    echo "[$(date)] Service scan done"
+else
+    touch "$NMAP_SVC"
+    echo "[$(date)] No hosts with open ports — skipping service scan"
+fi
+
 # ── Phase 3: Build JSON + mDNS + inventory + security + alerts ──
 echo "[$(date)] Phase 3: Database + analysis..."
-python3 - "$NMAP_PING" "$NMAP_PORTS" "$MDNS_FILE" "$SCAN_FILE" "$TIMESTAMP" "$HOSTS_DB" "$DATA_DIR" << 'PYEOF'
+python3 - "$NMAP_PING" "$NMAP_PORTS" "$MDNS_FILE" "$SCAN_FILE" "$TIMESTAMP" "$HOSTS_DB" "$DATA_DIR" "$ARP_FILE" "$NMAP_SVC" << 'PYEOF'
 import json, sys, re, os, glob, urllib.request
 from datetime import datetime
 
 ping_file, port_file, mdns_file, out_file, timestamp, hosts_db_file, data_dir = sys.argv[1:8]
+arp_file = sys.argv[8] if len(sys.argv) > 8 else ""
+svc_file = sys.argv[9] if len(sys.argv) > 9 else ""
 date_str = timestamp[:8]
 first_run = not os.path.exists(hosts_db_file)
 
@@ -88,6 +120,69 @@ if os.path.exists(port_file):
             hosts[cur_ip]["ports"].append({
                 "port": int(pm.group(1)), "proto": pm.group(2), "service": pm.group(3)
             })
+
+# ─── Parse arp-scan (enriches vendor + finds hosts missed by nmap ping) ───
+if arp_file and os.path.exists(arp_file):
+    arp_count = 0
+    for line in open(arp_file):
+        m = re.match(r'^(\d+\.\d+\.\d+\.\d+)\s+([0-9a-fA-F:]+)\s+(.*)', line)
+        if not m:
+            continue
+        ip, mac, vendor = m.group(1), m.group(2).upper(), m.group(3).strip()
+        arp_count += 1
+        if ip in hosts:
+            # Enrich: fill in missing MAC/vendor from arp-scan
+            if not hosts[ip]["mac"] and mac:
+                hosts[ip]["mac"] = mac
+            if not hosts[ip]["vendor_nmap"] and vendor:
+                hosts[ip]["vendor_nmap"] = vendor
+            hosts[ip]["arp_vendor"] = vendor
+        else:
+            # Host found by arp-scan but missed by nmap ping sweep
+            hosts[ip] = {
+                "mac": mac,
+                "vendor_nmap": vendor,
+                "arp_vendor": vendor,
+                "hostname": "",
+                "latency_ms": 0,
+                "ports": [],
+                "mdns_name": "",
+                "mdns_services": [],
+                "discovery": "arp-scan",
+            }
+    if arp_count:
+        print(f"  ARP scan: enriched/added {arp_count} hosts")
+
+# ─── Parse service version detection ───
+if svc_file and os.path.exists(svc_file):
+    svc_ip = None
+    svc_count = 0
+    for line in open(svc_file):
+        m = re.search(r'Nmap scan report for (?:\S+ \()?(\d+\.\d+\.\d+\.\d+)\)?', line)
+        if m:
+            svc_ip = m.group(1)
+            continue
+        # Format: PORT/PROTO  STATE  SERVICE  VERSION
+        sm = re.match(r'\s*(\d+)/(\w+)\s+open\s+(\S+)\s+(.*)', line)
+        if sm and svc_ip and svc_ip in hosts:
+            port_num = int(sm.group(1))
+            version_info = sm.group(4).strip()
+            if version_info:
+                # Update matching port entry with version info
+                for p in hosts[svc_ip].get("ports", []):
+                    if p["port"] == port_num:
+                        p["version"] = version_info
+                        svc_count += 1
+                        break
+                else:
+                    # Port not yet in list — add with version
+                    hosts[svc_ip]["ports"].append({
+                        "port": port_num, "proto": sm.group(2),
+                        "service": sm.group(3), "version": version_info
+                    })
+                    svc_count += 1
+    if svc_count:
+        print(f"  Service scan: {svc_count} version banners collected")
 
 # ─── Parse mDNS (avahi-browse resolved entries) ───
 # Format: =;interface;proto;name;service;domain;hostname;address;port;txt
