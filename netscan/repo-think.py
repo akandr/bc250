@@ -138,6 +138,18 @@ REPO_FOCUS_AREAS = {
                 "evolution, format/fourcc additions, DMA-BUF import/export, compliance tests",
             "ddg_query": "Linux V4L2 media controller subdev framework core changes",
         },
+        "gmsl-serdes": {
+            "name": "GMSL & SerDes Camera Links",
+            "keywords": ["gmsl", "max96712", "max9295", "max96714", "max96717",
+                         "max9296", "max96724", "deserializer", "serializer", "serdes",
+                         "fpd-link", "ds90ub", "coax", "fakra"],
+            "prompt_focus": "GMSL (Gigabit Multimedia Serial Link) camera serializer/deserializer "
+                "drivers in the kernel — MAX96712, MAX9295, MAX96714, MAX96717 line of Analog Devices "
+                "(formerly Maxim) chips. Also TI FPD-Link III/IV (DS90UBxxx). Focus on V4L2 subdev "
+                "drivers, I2C address translation, virtual channel routing, MIPI CSI-2 output config, "
+                "and device tree bindings for multi-camera automotive setups",
+            "ddg_query": "Linux kernel GMSL MAX96712 MAX9295 serializer deserializer V4L2 driver",
+        },
     },
     "v4l2loopback": {
         "features": {
@@ -157,6 +169,39 @@ REPO_FOCUS_AREAS = {
             "prompt_focus": "PipeWire camera support (PipeWire-V4L2 compat layer, libcamera "
                 "integration), video routing/filtering, camera portal for sandboxed apps",
             "ddg_query": "PipeWire camera V4L2 libcamera video routing portal Linux",
+        },
+    },
+    "adi-linux": {
+        "gmsl-drivers": {
+            "name": "GMSL SerDes Drivers",
+            "keywords": ["gmsl", "max96712", "max9295", "max96714", "max96717",
+                         "max9296", "max96724", "max96793", "deserializer", "serializer",
+                         "serdes", "i2c", "virtual channel"],
+            "prompt_focus": "Analog Devices (formerly Maxim) GMSL serializer/deserializer Linux "
+                "drivers in the ADI kernel tree — MAX96712/MAX9296 deserializers, MAX9295/MAX96717 "
+                "serializers. I2C address translation, MIPI CSI-2 virtual channel management, "
+                "multi-camera topology, remote GPIO/I2C tunneling, coax link management",
+            "ddg_query": "Analog Devices GMSL Linux driver MAX96712 MAX9295 camera serializer",
+        },
+        "camera-sensor": {
+            "name": "Camera Sensor Integration",
+            "keywords": ["camera", "sensor", "imx", "ov", "ar0", "isp",
+                         "mipi", "csi", "v4l2", "subdev", "media"],
+            "prompt_focus": "Camera sensor drivers in the ADI kernel fork — sensor register "
+                "configuration, V4L2 subdev operations, MIPI CSI-2 lane config, device tree "
+                "bindings for automotive camera modules behind GMSL links",
+            "ddg_query": "ADI Linux camera sensor driver GMSL MIPI CSI-2 automotive",
+        },
+    },
+    "adi-gmsl": {
+        "standalone-driver": {
+            "name": "Standalone GMSL Driver",
+            "keywords": ["gmsl", "max96712", "max9295", "max96714", "max96717",
+                         "max9296", "max96724", "driver", "i2c", "dt-binding"],
+            "prompt_focus": "Standalone GMSL driver package from Analog Devices — out-of-tree "
+                "module build, DKMS packaging, device tree overlay examples, platform compatibility, "
+                "API usage for multi-camera setups with MAX96712 hub deserializer",
+            "ddg_query": "analogdevicesinc gmsl standalone driver module Linux",
         },
     },
 }

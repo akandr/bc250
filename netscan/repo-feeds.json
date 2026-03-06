@@ -50,6 +50,7 @@
       "android": 2, "hal": 2,
       "control": 2, "property": 2,
       "rockchip": 4, "qualcomm": 4, "mediatek": 3,
+      "gmsl": 4, "serdes": 3, "max96712": 4, "deserializer": 3,
       "imx": 3, "omnivision": 3, "sony": 3,
       "usb": 2, "uvc": 3,
       "format": 2, "drm": 2,
@@ -131,6 +132,9 @@
       "raw": 2, "bayer": 3, "metadata": 3,
       "format": 2, "fourcc": 3,
       "imx": 3, "omnivision": 3, "sony": 3,
+      "gmsl": 5, "max96712": 5, "max9295": 5, "max96714": 5, "max96717": 5,
+      "max9296": 5, "deserializer": 5, "serializer": 5, "serdes": 5,
+      "fpd-link": 4, "fpd_link": 4, "ds90ub": 4,
       "uvc": 3, "usb": 2,
       "vimc": 2, "vivid": 2,
       "cec": -1, "dvb": -2, "rc": -2, "ir": -2, "radio": -2
@@ -158,6 +162,55 @@
       "dmabuf": 3, "mmap": 2,
       "v4l2-ctl": 4, "v4l2-compliance": 4,
       "docs": -1, "typo": -2
+    },
+    "min_score": 2
+  },
+
+  "adi-linux": {
+    "name": "Analog Devices Linux Drivers",
+    "emoji": "🔌",
+    "type": "github",
+    "owner": "analogdevicesinc",
+    "repo": "linux",
+    "web_url": "https://github.com/analogdevicesinc/linux",
+    "track": ["issues", "pull_requests"],
+    "data_dir": "repos/adi-linux",
+    "nav_label": "ADI-LINUX",
+    "page_slug": "issues",
+    "relevance": {
+      "gmsl": 5, "max96712": 5, "max9295": 5, "max96714": 5, "max96717": 5,
+      "max9296": 5, "max96724": 5, "deserializer": 5, "serializer": 5,
+      "serdes": 5, "coax": 4,
+      "mipi": 4, "csi": 4, "camera": 4, "sensor": 3,
+      "i2c": 3, "v4l2": 4, "media": 3, "subdev": 3,
+      "device tree": 3, "dt-binding": 3, "dts": 2,
+      "isp": 3, "fpd-link": 4, "fpd_link": 4,
+      "video": 2, "driver": 2,
+      "docs": -1, "ci": -1, "typo": -2
+    },
+    "min_score": 3
+  },
+
+  "adi-gmsl": {
+    "name": "ADI GMSL Drivers (standalone)",
+    "emoji": "🔗",
+    "type": "github",
+    "owner": "analogdevicesinc",
+    "repo": "gmsl",
+    "web_url": "https://github.com/analogdevicesinc/gmsl",
+    "track": ["issues", "pull_requests"],
+    "data_dir": "repos/adi-gmsl",
+    "nav_label": "ADI-GMSL",
+    "page_slug": "issues",
+    "relevance": {
+      "gmsl": 5, "max96712": 5, "max9295": 5, "max96714": 5, "max96717": 5,
+      "max9296": 5, "max96724": 5, "max96793": 4,
+      "deserializer": 5, "serializer": 5, "serdes": 5,
+      "mipi": 4, "csi": 4, "coax": 4,
+      "i2c": 3, "camera": 4, "sensor": 3,
+      "v4l2": 4, "device tree": 3, "dt-binding": 3,
+      "fpd-link": 4, "video": 2, "driver": 2,
+      "docs": -1, "ci": -1
     },
     "min_score": 2
   },

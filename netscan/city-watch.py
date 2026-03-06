@@ -604,17 +604,26 @@ def run_analyze():
     # Save
     save_results(data, analysis)
 
-    # Signal alert — only from analyze phase, let LLM decide importance
+    # Signal alert — send LLM summary, not individual thread list
     if analysis:
-        hot_threads = [t for t in data.get("threads", []) if t.get("total_score", 0) >= 5]
-        if hot_threads:
-            alert_parts = [f"🏗️ Neighborhood Watch — {len(hot_threads)} important updates"]
-            for t in hot_threads[:3]:
-                kw = ", ".join(t.get("matched_keywords", [])[:3])
-                alert_parts.append(f"  → {t['title'][:60]}")
-                alert_parts.append(f"    [{kw}] score={t.get('total_score', 0):.0f}")
-            alert_parts.append(f"\n📊 {relevant_count} relevant / {data['meta'].get('total_threads_scanned', '?')} scanned")
-            signal_send("\n".join(alert_parts))
+        # Extract key points from analysis for compact Signal message
+        alert_parts = [f"🏗️ Neighborhood Watch — {relevant_count} relevant threads"]
+        # Send the LLM summary directly — user wants insights, not topic list
+        # Trim to fit Signal nicely
+        summary_text = analysis.strip()
+        # Try to extract just the SUMMARY section if available
+        summary_section = ""
+        for marker in ["## 📋 SUMMARY", "SUMMARY", "## IMPACT", "ACTIONABLE"]:
+            idx = summary_text.upper().find(marker.upper())
+            if idx >= 0:
+                summary_section = summary_text[idx:]
+                break
+        if summary_section:
+            alert_parts.append(f"\n{summary_section[:800]}")
+        else:
+            # Use first ~800 chars of the full analysis
+            alert_parts.append(f"\n{summary_text[:800]}")
+        signal_send("\n".join(alert_parts)[:1200])
     else:
         log(f"No LLM analysis — skipping Signal alert.")
 

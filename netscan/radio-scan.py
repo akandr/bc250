@@ -83,6 +83,25 @@ KEYWORDS_HIGH = [
     "dx", "propagacj", "sporadic", "e-skip", "tropo",
     "tetra", "dmr", "p25", "nxdn", "dstar", "d-star", "c4fm",
     "sdr", "rtl-sdr", "hackrf", "airspy",
+    # Wardriving & WiFi hacking
+    "wardriving", "wardrive", "wifi hack", "wpa", "wpa2", "wpa3",
+    "kismet", "wigle", "wifite", "aircrack", "deauth",
+    "flipperzero", "flipper zero", "pwnagotchi",
+    # Bluetooth hacking
+    "bluetooth", "ble", "blueborne", "btlejuice", "ubertooth",
+    "bluetooth hack", "bluetooth sniff", "btle",
+    # Satellite phone / Iridium / Inmarsat / Thuraya
+    "iridium", "inmarsat", "thuraya", "satphone", "sat phone",
+    "globalstar", "orbcomm",
+    # Fun satellites to listen
+    "cubesat", "funcube", "fox-1", "amsat", "ao-91", "ao-92",
+    "eo-88", "lilacsat", "cas-4", "xw-2",
+    "goes", "hrpt", "lrpt", "apt",
+    "starlink", "gps", "gnss", "galileo", "glonass",
+    # Practical RF attacks
+    "replay attack", "jamm", "spoof", "evil twin",
+    "imsi catcher", "stingray", "gsm crack",
+    "rf hack", "radio hack",
 ]
 
 KEYWORDS_MEDIUM = [
@@ -96,6 +115,16 @@ KEYWORDS_MEDIUM = [
     "straż", "policj", "pogotow", "ratunk",
     "space", "kosm", "rakiet", "starlink",
     "signal", "sygnał",
+    # Extended wireless security
+    "wifi", "wlan", "802.11", "hotspot", "captive portal",
+    "zigbee", "z-wave", "lora", "lorawan", "meshtastic",
+    "ads-b", "adsb", "dump1090", "fr24",
+    "nrf24", "nrf52", "cc1101", "rfcat",
+    "gnuradio", "gnu radio", "sdr++", "sdr#", "gqrx",
+    "osmocom", "gr-gsm", "kalibrate",
+    # Satellite & space
+    "meteor", "fengyun", "metop", "weather sat",
+    "ham satellite", "transponder", "beacon",
 ]
 
 # SSL context (some MyBB sites have cert issues)
@@ -257,7 +286,7 @@ def llm_analyze_radio(highlights, all_threads, section_stats):
         cat_counts[cat] = cat_counts.get(cat, 0) + 1
     cat_str = ", ".join(f"{c}: {n}" for c, n in sorted(cat_counts.items(), key=lambda x: -x[1]))
 
-    system_prompt = f"""You are an AI radio monitoring analyst for {user_name}, a radio enthusiast located in {user_location}.
+    system_prompt = f"""You are an AI radio monitoring & wireless security analyst for {user_name}, a radio enthusiast located in {user_location}.
 Their interests include: {interests_str}.
 
 Your job is to analyze scraped forum threads from radioscanner.pl (the largest Polish radio monitoring community)
@@ -265,19 +294,33 @@ and produce a concise intelligence briefing about what's happening in the radio 
 
 Focus on:
 1. Local activity near Łódź / region 93 — any monitoring reports, new frequencies, interesting catches
-2. Satellite communications — NOAA APT, Meteor-M LRPT, ISS SSTV, AMSAT, cubesat signals
+2. Satellite communications — NOAA APT, Meteor-M LRPT, ISS SSTV, AMSAT, cubesat signals, fun satellites to listen to
 3. Shortwave / HF propagation — DX catches, sporadic-E, tropo openings, propagation forecasts
 4. SDR & equipment — new SDR releases, antenna builds, software updates (SDR#, SDR++, GNURadio)
 5. Airband & scanner activity — aviation monitoring, ADS-B, trunked radio (TETRA, DMR, P25)
 6. Any unusual or emergency signals reported by the community
+7. **WARDRIVING & WIFI SECURITY** — wardriving reports, WiFi hacking techniques (WPA2/WPA3 cracking,
+   deauth attacks, evil twin APs, Pwnagotchi/Flipper Zero captures), Kismet/WiGLE mapping,
+   practical techniques the operator could try at home with RTL-SDR or HackRF
+8. **BLUETOOTH HACKING** — BLE sniffing, Ubertooth captures, BlueBorne-style vulnerabilities,
+   BtleJuice MITM, practical Bluetooth reconnaissance & attack techniques
+9. **SATELLITE PHONE SNIFFING** — Iridium/Inmarsat/Thuraya/Globalstar signal monitoring,
+   L-band reception, pager decoding, ORBCOMM data capture
+10. **FUN SATELLITES** — cubesats worth listening to (FunCube, AO-91, AO-92, LILACSAT),
+    weather satellite imaging (GOES HRPT, Meteor-M LRPT, NOAA APT), GPS/GNSS experiments,
+    upcoming satellite passes, DIY ground station ideas
 
 Structure your briefing as:
 - SITUATION OVERVIEW (2-3 sentences on overall radio activity level)
-- KEY FINDINGS (bullet points, most interesting items, with WHY they matter to the operator)
+- KEY FINDINGS (bullet points, most interesting items, with WHY they matter)
 - PROPAGATION & CONDITIONS (if any propagation reports found)
-- RECOMMENDATIONS (what to tune into, when to listen, any upcoming events)
+- WIRELESS SECURITY & HACKING (any wardriving, WiFi, Bluetooth, or RF attack news — prioritize
+  practical techniques the user could experiment with at home safely and legally)
+- SATELLITE CORNER (interesting satellites, upcoming passes, new reception techniques)
+- RECOMMENDATIONS (what to tune into, when to listen, what to try, any upcoming events)
 
-Be concise and actionable. Write in English. Output plain text, no markdown formatting."""
+Be concise and actionable. Write in English. Output plain text, no markdown formatting.
+For the security/hacking section, focus on educational and research aspects."""
 
     user_prompt = f"""Radio scanner forum scan completed. Here are the results from radioscanner.pl:
 
