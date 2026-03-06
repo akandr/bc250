@@ -276,6 +276,20 @@ COMPANIES = {
         "news_url": "https://www.cerence.com/news",
         "search_terms": ["Cerence AI Poland", "Cerence AI automotive", "Cerence AI layoffs hiring"],
     },
+    "apple": {
+        "name": "Apple",
+        "industry": "faang",
+        "gowork_id": None,
+        "news_url": "https://www.apple.com/newsroom/",
+        "search_terms": ["Apple Poland", "Apple embedded camera", "Apple silicon kernel"],
+    },
+    "dell": {
+        "name": "Dell Technologies",
+        "industry": "hardware",
+        "gowork_id": None,
+        "news_url": "https://www.dell.com/en-us/blog/",
+        "search_terms": ["Dell Technologies Poland", "Dell embedded firmware", "Dell layoffs hiring"],
+    },
     # ── Group A: open-source / embedded / automotive companies ──
     "aptiv": {
         "name": "Aptiv",

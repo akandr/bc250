@@ -707,16 +707,20 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
 
 # ── Garage car tracker ─────────────────────────────────────────────────────
 
+# Outdoor reference sensor — Dach (roof/attic, unheated, tracks outdoor temp)
+OUTDOOR_REF_SENSORS = ["sensor.1000bec2f1_t"]  # Dach sensor (exposed)
+
 def detect_garage_events(all_history):
-    """Detect car leaving/returning events from garage door + temperature data.
+    """Collect garage door activations + temperature context for LLM analysis.
 
-    Pattern:
-      1. Gate/door switch activates (on→off pulse = momentary relay)
-      2. Garage temp briefly dips (cold air ingress)
-      3. If temp then rises sharply within 30min → warm car parked = CAR RETURNED
-      4. If temp stays flat / drops → car drove away = CAR LEFT
+    Instead of hardcoded thresholds, we collect raw data:
+    - Door/gate activation times (merged)
+    - Garage temp before, during, and after each event
+    - Outdoor reference temperature
+    - Temp trend (5-min, 15-min, 30-min after)
 
-    Returns list of event dicts with timestamp, type, temp_before, temp_after, delta.
+    The LLM analyzes the data considering season, outdoor temp, and context
+    to determine car_returned / car_left / door_event classification.
     """
     events = []
 
@@ -769,43 +773,59 @@ def detect_garage_events(all_history):
 
     temp_points.sort(key=lambda x: x[0])
 
-    def temp_at(target_ts, tolerance_min=20):
-        """Find closest temp reading within tolerance of target time."""
+    # Get outdoor reference temp history
+    outdoor_points = []
+    for ref_sensor in OUTDOOR_REF_SENSORS:
+        if ref_sensor not in all_history:
+            continue
+        for p in all_history[ref_sensor]:
+            try:
+                v = float(p["state"])
+                ts_str = p.get("last_changed", "")
+                ts = datetime.fromisoformat(
+                    ts_str.replace("+00:00", "").replace("Z", "")
+                ).replace(tzinfo=timezone.utc)
+                outdoor_points.append((ts, v))
+            except (ValueError, TypeError, KeyError):
+                pass
+    outdoor_points.sort(key=lambda x: x[0])
+
+    def temp_at(points, target_ts, tolerance_min=20):
+        """Find closest reading within tolerance of target time."""
         best = None
         best_delta = timedelta(minutes=tolerance_min)
-        for ts, v in temp_points:
+        for ts, v in points:
             d = abs(ts - target_ts)
             if d < best_delta:
                 best = v
                 best_delta = d
         return best
 
-    def temp_max_after(target_ts, window_min=GARAGE_TEMP_WINDOW_MIN):
+    def temp_series_after(points, target_ts, windows=(5, 15, 30)):
+        """Get temp readings at specific minute offsets after target time."""
+        result = {}
+        for w in windows:
+            v = temp_at(points, target_ts + timedelta(minutes=w), tolerance_min=10)
+            if v is not None:
+                result[f"+{w}min"] = round(v, 1)
+        return result
+
+    def temp_max_after(points, target_ts, window_min=30):
         """Find max temp within window after target time."""
         cutoff = target_ts + timedelta(minutes=window_min)
-        temps_in_window = [
-            v for ts, v in temp_points
-            if target_ts <= ts <= cutoff
-        ]
-        return max(temps_in_window) if temps_in_window else None
+        temps_in_window = [v for ts, v in points if target_ts <= ts <= cutoff]
+        return round(max(temps_in_window), 1) if temps_in_window else None
 
-    def temp_at_after(target_ts, window_min=GARAGE_TEMP_WINDOW_MIN):
-        """Find temp reading closest to end of window (for trend check)."""
+    def temp_min_after(points, target_ts, window_min=30):
+        """Find min temp within window after target time."""
         cutoff = target_ts + timedelta(minutes=window_min)
-        candidates = [
-            (ts, v) for ts, v in temp_points
-            if target_ts + timedelta(minutes=5) <= ts <= cutoff
-        ]
-        if not candidates:
-            return None
-        # Return the latest reading in the window
-        return candidates[-1][1]
+        temps_in_window = [v for ts, v in points if target_ts <= ts <= cutoff]
+        return round(min(temps_in_window), 1) if temps_in_window else None
 
-    # Analyze each door event
+    # Analyze each door event — collect raw data, no classification
     for door_ts in merged:
-        temp_before = temp_at(door_ts - timedelta(minutes=10), tolerance_min=30)
-        temp_peak = temp_max_after(door_ts, window_min=GARAGE_TEMP_WINDOW_MIN)
-        temp_end = temp_at_after(door_ts, window_min=GARAGE_TEMP_WINDOW_MIN)
+        temp_before = temp_at(temp_points, door_ts - timedelta(minutes=5), tolerance_min=30)
+        outdoor_temp = temp_at(outdoor_points, door_ts, tolerance_min=60)
 
         if temp_before is None:
             continue
@@ -814,53 +834,45 @@ def detect_garage_events(all_history):
             "timestamp": door_ts.isoformat(timespec="seconds"),
             "time_local": door_ts.strftime("%H:%M"),
             "temp_before": round(temp_before, 1),
+            "outdoor_temp": outdoor_temp,
+            "temp_after": temp_series_after(temp_points, door_ts),
+            "temp_peak_30min": temp_max_after(temp_points, door_ts, 30),
+            "temp_min_30min": temp_min_after(temp_points, door_ts, 30),
         }
 
-        if temp_peak is not None:
-            delta = temp_peak - temp_before
-            event["temp_peak"] = round(temp_peak, 1)
+        # Compute simple delta for backward compat + logging
+        peak = event["temp_peak_30min"]
+        if peak is not None:
+            delta = peak - temp_before
             event["delta"] = round(delta, 1)
+        else:
+            event["delta"] = 0.0
 
-            if delta >= GARAGE_TEMP_RISE_THRESHOLD:
-                event["type"] = "car_returned"
-                event["detail"] = (
-                    f"Temp rose {delta:+.1f}°C "
-                    f"({temp_before:.1f}→{temp_peak:.1f}°C) "
-                    f"within {GARAGE_TEMP_WINDOW_MIN}min — warm engine parked"
-                )
-            elif delta <= -GARAGE_TEMP_DROP_THRESHOLD:
-                # Significant temp drop = cold air ingress = garage door opened
-                event["type"] = "car_left"
-                event["detail"] = (
-                    f"Temp dropped {delta:+.1f}°C "
-                    f"({temp_before:.1f}→{temp_peak:.1f}°C) — "
-                    f"cold air ingress, car likely left"
-                )
-            else:
-                # Small fluctuation — door activated but no significant temp change
-                event["type"] = "door_event"
-                event["detail"] = (
-                    f"Temp change {delta:+.1f}°C "
-                    f"({temp_before:.1f}→{temp_peak:.1f}°C) — "
-                    f"no significant temp change, door button press only"
-                )
-        elif temp_end is not None:
-            delta = temp_end - temp_before
-            event["temp_end"] = round(temp_end, 1)
-            event["delta"] = round(delta, 1)
-            if delta >= GARAGE_TEMP_RISE_THRESHOLD:
-                event["type"] = "car_returned"
-                event["detail"] = f"Temp rose {delta:+.1f}°C after door event — warm engine"
-            elif delta <= -GARAGE_TEMP_DROP_THRESHOLD:
-                event["type"] = "car_left"
-                event["detail"] = f"Temp dropped {delta:+.1f}°C after door event — cold air ingress"
-            else:
-                event["type"] = "door_event"
-                event["detail"] = f"Temp change {delta:+.1f}°C after door event — no significant change"
+        # LLM will classify — provide a preliminary label based on simple heuristic
+        # but mark it as "preliminary" so LLM can override
+        delta = event["delta"]
+        if delta >= 1.5:
+            event["type"] = "car_returned"
+            event["preliminary"] = True
+            event["detail"] = (
+                f"Temp rose {delta:+.1f}°C ({temp_before:.1f}→{peak:.1f}°C) "
+                f"within 30min (outdoor: {outdoor_temp}°C)"
+            )
+        elif delta <= -1.5:
+            event["type"] = "car_left"
+            event["preliminary"] = True
+            event["detail"] = (
+                f"Temp dropped {delta:+.1f}°C ({temp_before:.1f}→{peak:.1f}°C) "
+                f"(outdoor: {outdoor_temp}°C)"
+            )
         else:
             event["type"] = "door_event"
-            event["delta"] = 0.0
-            event["detail"] = "Door activated but no temperature data in follow-up window"
+            event["preliminary"] = True
+            event["detail"] = (
+                f"Temp change {delta:+.1f}°C ({temp_before:.1f}→"
+                f"{peak:.1f if peak else '?'}°C) — "
+                f"outdoor: {outdoor_temp}°C — needs LLM analysis"
+            )
 
         events.append(event)
 
@@ -1368,14 +1380,27 @@ def run_analyze():
                 f"({s['samples']} samples: [{vals_str}])"
             )
 
-    # Garage car tracker
+    # Garage car tracker — raw data for LLM classification
     if garage_events:
-        summary_parts.append("\n🚗 GARAGE CAR TRACKER:")
+        summary_parts.append("\n🚗 GARAGE DOOR EVENTS (classify using temp + outdoor context):")
         for ge in garage_events:
-            emoji = "🚗" if ge["type"] == "car_returned" else "🚙💨"
-            summary_parts.append(
-                f"  {emoji} {ge['time_local']} — {ge['type'].replace('_', ' ').upper()}: {ge['detail']}"
-            )
+            parts = [f"  {ge['time_local']} — garage temp before: {ge['temp_before']}°C"]
+            if ge.get("outdoor_temp") is not None:
+                parts.append(f"outdoor: {ge['outdoor_temp']}°C")
+            if ge.get("temp_after"):
+                after_str = ", ".join(f"{k}={v}°C" for k, v in ge["temp_after"].items())
+                parts.append(f"temp after: {after_str}")
+            if ge.get("temp_peak_30min") is not None:
+                parts.append(f"peak(30min): {ge['temp_peak_30min']}°C")
+            if ge.get("temp_min_30min") is not None:
+                parts.append(f"min(30min): {ge['temp_min_30min']}°C")
+            parts.append(f"delta: {ge.get('delta', 0):+.1f}°C")
+            parts.append(f"(preliminary: {ge.get('type', '?')})")
+            summary_parts.append(", ".join(parts))
+        summary_parts.append("  NOTE: Classify each event as car_returned/car_left/door_only.")
+        summary_parts.append("  Consider: outdoor temp vs garage temp, season, time of day,")
+        summary_parts.append("  temp delta relative to outdoor-indoor difference.")
+        summary_parts.append("  In warm weather, small deltas are expected even with car movement.")
 
     # Duty cycles
     interesting_dc = {eid: dc for eid, dc in duty_cycles.items()
@@ -1480,8 +1505,17 @@ Your report MUST include these sections:
 - Identify automation patterns vs. human behavior
 
 ## 🚗 Garage & Vehicle Activity
-- Car leaving/returning events with timing
-- Temperature signature analysis
+- Classify each garage door event as: CAR RETURNED / CAR LEFT / DOOR ONLY
+- Use temperature differential logic WITH outdoor temp context:
+  * Hot engine parked → garage temp rises ABOVE what outdoor temp alone would cause
+  * Car leaving → brief cold air ingress (outdoor air enters), then temp recovers
+  * Door-only → button pressed but temp barely changes relative to outdoor baseline
+- In WARM weather (outdoor >15°C), temp deltas will be SMALL even with car movement
+  because garage and outdoor are similar — look at temp TREND shape, not absolute delta
+- In COLD weather (outdoor <5°C), temp changes are dramatic — easier to classify
+- Consider time of day: 7-9 AM departures, 16-19 PM returns are typical commute patterns
+- The "preliminary" classification in the data is a rough heuristic — override it if your
+  analysis of the temperature curve and outdoor context suggests differently
 
 ## ⚡ Energy & Efficiency
 - Which switches have unusual duty cycles
@@ -1494,6 +1528,8 @@ Formatting rules:
 - End with 3-5 actionable recommendations
 - Be specific: "open bedroom window at 22:00" not "improve ventilation"
 - Write 400-600 words
+- NEVER repeat the same observation or sentence — each bullet must be unique
+- If a correlation appears in multiple rooms, consolidate into ONE statement
 
 Known devices (do NOT flag as anomalies):
 - Garaż termometr (garage heater): auto on when humidity high — dehumidification
@@ -1505,7 +1541,7 @@ Known devices (do NOT flag as anomalies):
 
     llm_analysis = call_ollama(system_prompt, data_summary)
 
-    # Sanitize LLM output — strip Chinese prefix / thinking tokens / artifacts
+    # Sanitize LLM output — strip Chinese prefix / thinking tokens / artifacts / repetition
     if llm_analysis:
         # Remove any leading Chinese characters or non-ASCII junk
         llm_analysis = re.sub(r'^[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef：:]+\s*', '', llm_analysis)
@@ -1514,7 +1550,33 @@ Known devices (do NOT flag as anomalies):
         if '</think>' in llm_analysis:
             llm_analysis = llm_analysis.split('</think>')[-1]
         llm_analysis = re.sub(r'<think>.*?</think>', '', llm_analysis, flags=re.DOTALL)
-        llm_analysis = llm_analysis.strip()
+
+        # Detect and remove repetitive lines (hallucination pattern)
+        lines = llm_analysis.split('\n')
+        seen_lines = {}
+        deduped = []
+        for line in lines:
+            # Normalize for comparison (strip whitespace, emoji, punctuation variations)
+            norm = re.sub(r'[^\w\s]', '', line.strip().lower())
+            norm = re.sub(r'\s+', ' ', norm).strip()
+            if len(norm) < 10:  # keep short lines (headers, blank)
+                deduped.append(line)
+                continue
+            if norm in seen_lines:
+                seen_lines[norm] += 1
+                if seen_lines[norm] <= 2:
+                    deduped.append(line)  # allow at most 2 occurrences
+                # else: skip repeated line
+            else:
+                seen_lines[norm] = 1
+                deduped.append(line)
+
+        # Check for excessive repetition (>3 duplicate lines = likely hallucination)
+        repeat_count = sum(1 for c in seen_lines.values() if c > 2)
+        if repeat_count > 0:
+            log(f"Stripped {repeat_count} repeated line pattern(s) from LLM output")
+
+        llm_analysis = '\n'.join(deduped).strip()
 
     report["llm_analysis"] = llm_analysis
 

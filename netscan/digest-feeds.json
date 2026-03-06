@@ -294,12 +294,12 @@
   "devicetree": {
     "name": "Device Tree",
     "emoji": "🌳",
-    "lore_list": "devicetree",
+    "lore_list": "linux-devicetree",
     "description": "Device tree bindings, DT schema, board DTS files, DT overlay, of_* API",
     "data_dir": "dt",
     "nav_label": "DT",
     "page_slug": "dt",
-    "about_url": "https://lore.kernel.org/devicetree/",
+    "about_url": "https://lore.kernel.org/linux-devicetree/",
     "relevance": {
       "device tree": 4, "devicetree": 4, "dt-binding": 4, "dt-bindings": 4,
       "schema": 3, "yaml": 2, "json-schema": 2, "dt-schema": 3,

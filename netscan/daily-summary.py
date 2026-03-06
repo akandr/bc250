@@ -189,7 +189,7 @@ def extract_lore_highlights():
 
 
 def extract_academic_highlights():
-    """Extract academic/patent discoveries."""
+    """Extract academic/patent discoveries with titles and summaries."""
     files = sorted(glob.glob(str(DATA_DIR / f"academic/latest-*.json")),
                    key=os.path.getmtime, reverse=True)[:5]
     highlights = []
@@ -198,9 +198,19 @@ def extract_academic_highlights():
         if not d:
             continue
         topic = d.get("topic", os.path.basename(f))
-        new_count = len(d.get("new_items", d.get("results", [])))
-        if new_count > 0:
-            highlights.append(f"**{topic}**: {new_count} new item(s)")
+        items = d.get("new_items", d.get("results", []))
+        if not items:
+            continue
+        highlights.append(f"**{topic}**: {len(items)} new item(s)")
+        # Include top items with titles and brief descriptions
+        for item in items[:3]:
+            title = item.get("title", item.get("name", ""))
+            summary = item.get("summary", item.get("abstract", item.get("description", "")))[:200]
+            if title:
+                entry = f"  - {title}"
+                if summary:
+                    entry += f": {summary}"
+                highlights.append(entry)
     return {"source": "academic-research", "highlights": highlights} if highlights else None
 
 
@@ -332,31 +342,59 @@ def main():
         return
 
     # LLM synthesis
-    system_prompt = """You are a concise executive briefing analyst for a personal intelligence dashboard.
-The user is a senior Linux kernel/camera/embedded engineer tracking career opportunities,
-company intelligence, open-source repos, financial markets, academic papers, and home automation.
+    system_prompt = """You are a senior intelligence analyst producing a personal daily briefing.
+The reader is a senior embedded Linux kernel/camera/ISP engineer in Poland, tracking:
+- Career opportunities (kernel, camera, V4L2, embedded roles at tech companies)
+- Corporate intelligence (hiring signals, layoffs, strategy shifts, M&A)
+- Open-source repos and kernel mailing lists (media, device tree, SoC)
+- Financial markets (semiconductor, automotive, tech sector)
+- Academic research (computer vision, image processing, embedded systems)
+- Home automation and security (smart home sensors, network monitoring)
 
-Write a SHORT executive briefing (300-500 words). Use these sections:
-🔑 KEY HIGHLIGHTS (3-5 bullet points — the most actionable items across all domains)
-📊 MARKET & CAREER (brief market moves + top career opportunities)
-🔬 TECH & RESEARCH (kernel/repo changes + academic discoveries worth noting)
-🏠 HOME & SECURITY (HA insights + any security alerts)
+Write a SUBSTANTIVE executive briefing (600-1000 words). Structure:
+
+🔑 KEY HIGHLIGHTS (5-7 bullet points)
+   The most actionable, time-sensitive, or unusual items. Each bullet should explain
+   WHY it matters to the reader specifically. Connect dots across domains when relevant
+   (e.g., "Company X announced layoffs → their open role may be backfill → act fast").
+
+📊 MARKET & CAREER SIGNALS
+   Go beyond listing numbers. Analyze: which companies are hiring vs contracting?
+   Any sector trends (semiconductor cycle, automotive ADAS spending)?
+   Specific roles worth applying to, with reasoning about fit and timing.
+
+🔬 TECH & OPEN SOURCE
+   Kernel patch series affecting camera/media/DT subsystems.
+   Notable repo activity (new releases, breaking changes, deprecations).
+   Academic papers with practical relevance — not just titles but why they matter.
+
+🏠 HOME & SECURITY
+   Correlations from HA sensor data (temperature, humidity, energy patterns).
+   Network scan findings. Only mention if something genuinely unusual happened.
+
+⚡ CROSS-CUTTING THEMES
+   Identify 2-3 patterns that span multiple data sources. Example:
+   "Multiple semiconductor companies reporting margin pressure → may accelerate
+   hiring freezes → but open-source consultancies expanding headcount."
 
 Rules:
-- Be specific: mention company names, ticker symbols, kernel subsystems
-- Prioritize actionable items over background info
-- If a section has no notable items, skip it entirely
-- Use plain text with emoji section headers, no markdown
-- End with a one-line "Bottom line:" takeaway"""
+- Be SPECIFIC: real company names, ticker symbols, kernel subsystem names, patch authors
+- PRIORITIZE relevance to an embedded Linux camera engineer job-seeking in Poland
+- EXPLAIN significance, don't just list facts
+- If a data source had nothing notable, skip it — don't pad
+- Cross-reference between sources when patterns emerge
+- Use plain text with emoji section headers, no markdown formatting
+- End with: "⏭️ Watch for:" — 2-3 things to monitor tomorrow"""
 
     user_prompt = f"""Here is today's intelligence data ({TODAY_LABEL}).
-Synthesize a brief executive dashboard summary:
+Produce a substantive executive briefing. Focus on cross-correlating signals across domains
+and explaining relevance to an embedded Linux engineer's career decisions:
 
 {context_text}"""
 
     print("Calling LLM for synthesis...")
     try:
-        summary_text = call_llm(system_prompt, user_prompt)
+        summary_text = call_llm(system_prompt, user_prompt, max_tokens=6144)
     except Exception as e:
         print(f"ERROR: LLM call failed — {e}")
         summary_text = None

@@ -1561,7 +1561,7 @@ def gen_dashboard(all_scans):
   <div class="section-body">{type_rows}</div>
 </div>"""
 
-    # Network diff (last 2 scans)
+    # Network diff (last 2 scans) — split into truly-new vs known churn
     diff_html = ""
     if len(dates) >= 2:
         prev = load_json(f"{DATA_DIR}/scan-{dates[-2]}.json")
@@ -1570,25 +1570,61 @@ def gen_dashboard(all_scans):
             curr_ips = set(hosts.keys())
             new_ips = curr_ips - prev_ips
             gone_ips = prev_ips - curr_ips
-            diff_lines = []
-            if new_ips:
-                for ip in sorted(new_ips):
-                    h = hosts[ip]
-                    name = best_name(h)
-                    name_str = f" — {e(name)}" if name else ""
-                    diff_lines.append(f'<div class="diff-new">{ip_link(ip)}{name_str} {badge(h.get("device_type",""))}</div>')
-            if gone_ips:
-                for ip in sorted(gone_ips):
-                    h = prev["hosts"].get(ip, {})
-                    name = best_name(h)
-                    name_str = f" — {e(name)}" if name else ""
-                    diff_lines.append(f'<div class="diff-gone">{e(ip)}{name_str}</div>')
-            if not new_ips and not gone_ips:
-                diff_lines.append('<div style="color:var(--fg-dim)">No host changes from previous scan</div>')
+
+            # Load persistent device inventory to distinguish new vs known
+            hosts_db = {}
+            db_path = f"{DATA_DIR}/hosts-db.json"
+            if os.path.exists(db_path):
+                hosts_db = load_json(db_path) or {}
+            known_macs = set(hosts_db.keys())
+
+            truly_new_lines = []
+            truly_gone_lines = []
+            known_appeared = []
+            known_disappeared = []
+
+            for ip in sorted(new_ips):
+                h = hosts[ip]
+                mac = h.get("mac", "")
+                key = mac if mac else f"nomac-{ip}"
+                name = best_name(h)
+                name_str = f" — {e(name)}" if name else ""
+                entry = f'{ip_link(ip)}{name_str} {badge(h.get("device_type",""))}'
+                if key in known_macs:
+                    known_appeared.append(f'<div class="diff-new" style="opacity:0.6">{entry}</div>')
+                else:
+                    truly_new_lines.append(f'<div class="diff-new">{entry}</div>')
+
+            for ip in sorted(gone_ips):
+                h = prev["hosts"].get(ip, {})
+                mac = h.get("mac", "")
+                key = mac if mac else f"nomac-{ip}"
+                name = best_name(h)
+                name_str = f" — {e(name)}" if name else ""
+                entry = f'{e(ip)}{name_str}'
+                if key in known_macs:
+                    known_disappeared.append(f'<div class="diff-gone" style="opacity:0.6">{entry}</div>')
+                else:
+                    truly_gone_lines.append(f'<div class="diff-gone">{entry}</div>')
+
+            diff_lines = truly_new_lines + truly_gone_lines
+            if not diff_lines:
+                diff_lines.append('<div style="color:var(--fg-dim)">No new or unknown device changes</div>')
+
+            # Known device churn in a collapsible section
+            known_section = ""
+            if known_appeared or known_disappeared:
+                known_items = "".join(known_appeared + known_disappeared)
+                known_section = f"""
+<details style="margin-top:8px">
+  <summary style="color:var(--fg-dim);cursor:pointer;font-size:0.85em">{len(known_appeared)} known appeared, {len(known_disappeared)} known disappeared</summary>
+  <div style="margin-top:4px">{known_items}</div>
+</details>"""
+
             diff_html = f"""
 <div class="section">
   <div class="section-title">NETWORK CHANGES (vs {e(dates[-2])})</div>
-  <div class="section-body">{"".join(diff_lines)}</div>
+  <div class="section-body">{"".join(diff_lines)}{known_section}</div>
 </div>"""
 
     # Port changes
