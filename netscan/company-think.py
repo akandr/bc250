@@ -563,6 +563,52 @@ def strip_html(text):
     return text
 
 
+# ── NVIDIA Developer Forum Search (Discourse JSON API) ────────────────────
+
+NVIDIA_FORUM_BASE = "https://forums.developer.nvidia.com"
+
+def search_nvidia_devforum(keywords, category_ids=None, max_results=8):
+    """Search NVIDIA Developer Forums for topics matching keywords.
+    Uses Discourse JSON search API."""
+    results = []
+    seen_ids = set()
+    if category_ids is None:
+        category_ids = [486, 487, 632, 15, 636]
+
+    for query in keywords[:3]:
+        for cat_id in category_ids[:4]:
+            search_q = urllib.parse.quote(f"{query} #c/{cat_id}")
+            url = f"{NVIDIA_FORUM_BASE}/search.json?q={search_q}&order=latest"
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": UA})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    data = json.loads(resp.read())
+                for topic in data.get("topics", []):
+                    tid = topic.get("id")
+                    if tid in seen_ids:
+                        continue
+                    seen_ids.add(tid)
+                    slug = topic.get("slug", "")
+                    results.append({
+                        "title": topic.get("title", "")[:200],
+                        "url": f"{NVIDIA_FORUM_BASE}/t/{slug}/{tid}",
+                        "category_id": topic.get("category_id"),
+                        "views": topic.get("views", 0),
+                        "replies": topic.get("posts_count", 1) - 1,
+                        "date": topic.get("created_at", "")[:10],
+                        "last_posted": topic.get("last_posted_at", "")[:10],
+                    })
+            except Exception as e:
+                log(f"  NVIDIA forum search error: {e}")
+            time.sleep(0.5)
+        if len(results) >= max_results:
+            break
+        time.sleep(1)
+
+    results.sort(key=lambda r: r.get("last_posted", ""), reverse=True)
+    return results[:max_results]
+
+
 def fetch_url(url, timeout=20):
     try:
         req = urllib.request.Request(url, headers={"User-Agent": UA})
@@ -691,7 +737,17 @@ def fetch_company_intel(slug, company):
             data["news_page"] = strip_html(raw)[:3000]
             log(f"  News page: {len(data['news_page'])} chars")
 
-    # 5. Previous intel data
+    # 5. NVIDIA Developer Forum (camera/ISP/CSI topics)
+    if slug == "nvidia":
+        log(f"  NVIDIA DevForum: searching CSI/camera topics...")
+        data["nvidia_devforum"] = search_nvidia_devforum(
+            keywords=["CSI camera driver", "ISP pipeline", "Argus libargus"],
+            category_ids=[486, 487, 632, 636, 15],
+            max_results=8,
+        )
+        log(f"  NVIDIA DevForum: {len(data['nvidia_devforum'])} topics")
+
+    # 6. Previous intel data
     latest_intel = INTEL_DIR / "latest-intel.json"
     if latest_intel.exists():
         try:
@@ -754,6 +810,11 @@ Previous intelligence assessment:
         except Exception:
             pass
 
+    # Format NVIDIA Developer Forum topics
+    nvidia_forum_text = ""
+    for nf in intel_data.get("nvidia_devforum", [])[:6]:
+        nvidia_forum_text += f"  • [{nf.get('date','')}] {nf.get('title','')[:120]} ({nf.get('replies',0)} replies, {nf.get('views',0)} views)\n"
+
     # Data block (shared between focused and unfocused prompts)
     data_block = f"""Recent news and discussions:
 {news_text or '  (no recent news found)'}
@@ -764,6 +825,7 @@ Employee reviews (GoWork.pl):
 Hacker News discussions:
 {hn_text or '  (no recent HN threads)'}
 
+{f"NVIDIA Developer Forum (Jetson/DRIVE camera & ISP):{chr(10)}{nvidia_forum_text}" if nvidia_forum_text else ""}
 {f"Company news page excerpt:{chr(10)}{news_page[:1000]}" if news_page else ""}
 {prev_text}"""
 
