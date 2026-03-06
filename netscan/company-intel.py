@@ -1056,6 +1056,101 @@ def search_semiwiki(company_name, max_results=5):
     return results[:max_results]
 
 
+# ── NVIDIA Developer Forum Search (Discourse JSON API) ────────────────────
+
+NVIDIA_FORUM_BASE = "https://forums.developer.nvidia.com"
+# Key Jetson subcategory IDs for camera/ISP/CSI topics
+NVIDIA_FORUM_CATEGORIES = {
+    "jetson-orin":   486,   # Jetson AGX Orin — 9840 topics
+    "jetson-orin-nx": 487,  # Jetson Orin NX — 5132 topics
+    "jetson-orin-nano": 632, # Jetson Orin Nano — 6110 topics
+    "jetson-xavier": 75,    # Jetson AGX Xavier — 10401 topics
+    "jetson-nano":   76,    # Jetson Nano — 17748 topics
+    "deepstream":    15,    # DeepStream SDK — 14370 topics
+    "drive-orin":    636,   # DRIVE AGX Orin
+    "drive-thor":    741,   # DRIVE AGX Thor
+    "video-processing": 189, # Video Processing & Optical Flow — 1216 topics
+    "cv-image":      591,   # Computer Vision & Image Processing — 216 topics
+}
+
+def search_nvidia_devforum(keywords, category_ids=None, max_results=8):
+    """Search NVIDIA Developer Forums for topics matching keywords.
+    Uses Discourse JSON search API. Returns list of {title, url, category, views, replies, date}."""
+    results = []
+    seen_ids = set()
+
+    if category_ids is None:
+        # Default: Jetson Orin boards + DeepStream + DRIVE
+        category_ids = [486, 487, 632, 15, 636]
+
+    for query in keywords[:3]:
+        for cat_id in category_ids[:4]:
+            search_q = urllib.parse.quote(f"{query} #c/{cat_id}")
+            url = f"{NVIDIA_FORUM_BASE}/search.json?q={search_q}&order=latest"
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": UA})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    data = json.loads(resp.read())
+
+                for topic in data.get("topics", []):
+                    tid = topic.get("id")
+                    if tid in seen_ids:
+                        continue
+                    seen_ids.add(tid)
+                    slug = topic.get("slug", "")
+                    results.append({
+                        "title": topic.get("title", "")[:200],
+                        "url": f"{NVIDIA_FORUM_BASE}/t/{slug}/{tid}",
+                        "category_id": topic.get("category_id"),
+                        "views": topic.get("views", 0),
+                        "replies": topic.get("posts_count", 1) - 1,
+                        "date": topic.get("created_at", "")[:10],
+                        "last_posted": topic.get("last_posted_at", "")[:10],
+                    })
+            except Exception as e:
+                log(f"  NVIDIA forum search error (cat={cat_id}): {e}")
+            time.sleep(0.5)
+
+        if len(results) >= max_results:
+            break
+        time.sleep(1)
+
+    # Also grab latest topics from key categories (catches new posts even without keyword match)
+    for cat_id in category_ids[:3]:
+        url = f"{NVIDIA_FORUM_BASE}/c/{cat_id}.json?order=created"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read())
+            for topic in data.get("topic_list", {}).get("topics", [])[:5]:
+                tid = topic.get("id")
+                if tid in seen_ids:
+                    continue
+                seen_ids.add(tid)
+                title_lower = topic.get("title", "").lower()
+                # Only add if relevant to camera/CSI/ISP/V4L2/driver keywords
+                if any(kw in title_lower for kw in ["camera", "csi", "isp", "v4l2", "argus",
+                                                      "mipi", "sensor", "imx", "driver",
+                                                      "capture", "video", "gstreamer"]):
+                    slug = topic.get("slug", "")
+                    results.append({
+                        "title": topic.get("title", "")[:200],
+                        "url": f"{NVIDIA_FORUM_BASE}/t/{slug}/{tid}",
+                        "category_id": cat_id,
+                        "views": topic.get("views", 0),
+                        "replies": topic.get("posts_count", 1) - 1,
+                        "date": topic.get("created_at", "")[:10],
+                        "last_posted": topic.get("last_posted_at", "")[:10],
+                    })
+        except Exception as e:
+            log(f"  NVIDIA forum latest error (cat={cat_id}): {e}")
+        time.sleep(0.5)
+
+    # Sort by most recent activity
+    results.sort(key=lambda r: r.get("last_posted", ""), reverse=True)
+    return results[:max_results]
+
+
 # ── Hacker News Search (via Algolia API) ──────────────────────────────────
 
 HN_API = "http://hn.algolia.com/api/v1"
@@ -1318,6 +1413,18 @@ def scrape_company(key, company, db_entry):
     intel["hackernews"] = hn_results
     log(f"  Hacker News: {len(hn_results)} threads")
 
+    # 5e. NVIDIA Developer Forum (Jetson/DRIVE camera & ISP topics)
+    nvidia_forum_results = []
+    if key == "nvidia":
+        nvidia_forum_results = search_nvidia_devforum(
+            keywords=["CSI camera driver", "ISP pipeline", "Argus libargus", "V4L2 sensor"],
+            category_ids=[486, 487, 632, 636, 15],  # Orin/OrinNX/OrinNano/DRIVE/DeepStream
+            max_results=10,
+        )
+    intel["nvidia_devforum"] = nvidia_forum_results
+    if nvidia_forum_results:
+        log(f"  NVIDIA DevForum: {len(nvidia_forum_results)} topics")
+
     # 6. Previous intel from DB
     intel["prev_rating"] = None
     intel["prev_sentiment"] = None
@@ -1344,6 +1451,7 @@ def llm_analyze_company(intel, company):
     reddit_results = intel.get("reddit", [])
     semiwiki_results = intel.get("semiwiki", [])
     hn_results = intel.get("hackernews", [])
+    nvidia_forum = intel.get("nvidia_devforum", [])
     prev_sentiment = intel.get("prev_sentiment")
     prev_rating = intel.get("prev_rating")
     system = """You are a corporate intelligence analyst specializing in tech companies
@@ -1378,6 +1486,11 @@ Output ONLY valid JSON, no markdown. /no_think"""
     hn_text = "\n".join(
         f"  • [{r.get('type','?')}|{r.get('points',0)}pts] {r['title'][:100]}: {r['snippet'][:150]}"
         for r in hn_results[:4]
+    )
+
+    nvidia_forum_text = "\n".join(
+        f"  • [{r.get('date','')}] {r['title'][:120]} ({r.get('replies',0)} replies, {r.get('views',0)} views)"
+        for r in nvidia_forum[:6]
     )
 
     careers_text = "\n".join(
@@ -1415,6 +1528,9 @@ SemiWiki forum (semiconductor industry):
 
 Hacker News discussions:
 {hn_text or '  (none)'}
+
+NVIDIA Developer Forum topics (Jetson/DRIVE camera & ISP):
+{nvidia_forum_text or '  (none)'}
 
 Context: The user is a Principal Embedded SW Engineer at HARMAN (Samsung subsidiary),
 working on automotive camera drivers (V4L2, MIPI CSI-2, ADAS DMS/OMS).
