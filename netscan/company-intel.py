@@ -1350,6 +1350,119 @@ def search_hn_who_is_hiring(max_results=15):
     return matches[:max_results], thread_url
 
 
+# ── AD EngineerZone Forum Scraping ────────────────────────────────────────
+
+ADI_EZ_BASE = "https://ez.analog.com"
+ADI_EZ_SEARCH_URLS = [
+    # GMSL tag page — aggregates all GMSL-tagged content
+    f"{ADI_EZ_BASE}/tags/GMSL",
+    # Chinese GMSL forum — the most active discussion board for GMSL
+    f"{ADI_EZ_BASE}/cn/gmsl/f/forum",
+    # Interface & Isolation Q&A — has GMSL threads mixed in
+    f"{ADI_EZ_BASE}/interface-isolation/f/q-a",
+    # Video Q&A — GMSL threads about MAX96712 I2C, MIPI
+    f"{ADI_EZ_BASE}/video/f/q-a",
+]
+
+ADI_EZ_KEYWORDS = [
+    "gmsl", "max96712", "max9295", "max96714", "max96717",
+    "max9296", "max96724", "max96793",
+    "deserializer", "serializer", "serdes",
+    "mipi", "csi", "camera", "i2c", "coax",
+    "fpd-link", "virtual channel",
+]
+
+
+def search_adi_engineerzone(search_queries=None, max_results=10):
+    """Scrape Analog Devices EngineerZone forum for GMSL/SerDes discussions.
+
+    The forum uses Telligent platform (no JSON API), so we parse HTML.
+    Scrapes tag pages, forum listings, and search results.
+    """
+    import html as html_mod
+    results = []
+    seen_urls = set()
+
+    # 1. Scrape tag + forum listing pages
+    for page_url in ADI_EZ_SEARCH_URLS:
+        html = fetch_url(page_url, timeout=20)
+        if not html:
+            continue
+
+        # Parse thread/discussion links from Telligent HTML
+        # Pattern: <a href="/path/f/forum/123/thread-title" ...>Title</a>
+        # Also: <a href="/path/d/discussion-title/123">Title</a>
+        for m in re.finditer(
+            r'<a\s+[^>]*href="(/[^"]*(?:/f/[^/]+/\d+|/d/[^/]+/\d+)[^"]*)"[^>]*>(.*?)</a>',
+            html, re.S
+        ):
+            url_path = m.group(1)
+            title_raw = re.sub(r'<[^>]+>', '', m.group(2)).strip()
+            title = html_mod.unescape(title_raw)
+
+            if not title or len(title) < 5:
+                continue
+
+            full_url = ADI_EZ_BASE + url_path
+            if full_url in seen_urls:
+                continue
+
+            # Check keyword relevance
+            title_lower = title.lower()
+            score = sum(2 for kw in ADI_EZ_KEYWORDS if kw in title_lower)
+            if score == 0:
+                continue
+
+            seen_urls.add(full_url)
+            results.append({
+                "title": title[:200],
+                "url": full_url,
+                "source": "adi-engineerzone",
+                "score": score,
+            })
+
+        time.sleep(1)
+
+    # 2. Search for specific queries
+    queries = search_queries or ["GMSL MAX96712", "MAX9295 camera", "GMSL deserializer Linux"]
+    for query in queries[:3]:
+        search_url = f"{ADI_EZ_BASE}/search?q={urllib.parse.quote(query)}"
+        html = fetch_url(search_url, timeout=20)
+        if not html:
+            continue
+
+        # Parse search results — Telligent search results page
+        for m in re.finditer(
+            r'<a\s+[^>]*href="(/[^"]*(?:/f/[^/]+/\d+|/d/[^/]+/\d+)[^"]*)"[^>]*>(.*?)</a>',
+            html, re.S
+        ):
+            url_path = m.group(1)
+            title_raw = re.sub(r'<[^>]+>', '', m.group(2)).strip()
+            title = html_mod.unescape(title_raw)
+
+            if not title or len(title) < 5:
+                continue
+
+            full_url = ADI_EZ_BASE + url_path
+            if full_url in seen_urls:
+                continue
+
+            seen_urls.add(full_url)
+            results.append({
+                "title": title[:200],
+                "url": full_url,
+                "source": "adi-engineerzone-search",
+                "score": 3,  # found via search = relevant
+                "query": query,
+            })
+
+        time.sleep(2)
+
+    # Sort by score, return top results
+    results.sort(key=lambda r: -r.get("score", 0))
+    return results[:max_results]
+
+
 # ── Per-Company Analysis ───────────────────────────────────────────────────
 
 def scrape_company(key, company, db_entry):
@@ -1425,6 +1538,23 @@ def scrape_company(key, company, db_entry):
     if nvidia_forum_results:
         log(f"  NVIDIA DevForum: {len(nvidia_forum_results)} topics")
 
+    # 5f. AD EngineerZone forum (GMSL/SerDes — for relevant companies)
+    adi_ez_results = []
+    gmsl_companies = {"nvidia", "nxp", "renesas", "onsemi", "infineon", "stmicro",
+                      "ambarella", "mobileye", "bosch", "zf", "valeo", "mediatek"}
+    if key in gmsl_companies or company.get("industry") == "automotive":
+        adi_ez_results = search_adi_engineerzone(
+            search_queries=[
+                f"GMSL {company['name']}",
+                "MAX96712 camera driver",
+                "GMSL deserializer automotive",
+            ],
+            max_results=8,
+        )
+    intel["adi_engineerzone"] = adi_ez_results
+    if adi_ez_results:
+        log(f"  ADI EngineerZone: {len(adi_ez_results)} threads")
+
     # 6. Previous intel from DB
     intel["prev_rating"] = None
     intel["prev_sentiment"] = None
@@ -1493,6 +1623,12 @@ Output ONLY valid JSON, no markdown. /no_think"""
         for r in nvidia_forum[:6]
     )
 
+    adi_ez = intel.get("adi_engineerzone", [])
+    adi_ez_text = "\n".join(
+        f"  • {r['title'][:150]} — {r['url']}"
+        for r in adi_ez[:5]
+    )
+
     careers_text = "\n".join(
         f"  • {j['title']} — {j['location']}" + (f" (ID: {j['job_id']})" if j.get('job_id') else "")
         for j in careers_jobs[:10]
@@ -1531,6 +1667,9 @@ Hacker News discussions:
 
 NVIDIA Developer Forum topics (Jetson/DRIVE camera & ISP):
 {nvidia_forum_text or '  (none)'}
+
+ADI EngineerZone forum (GMSL/SerDes discussions):
+{adi_ez_text or '  (none)'}
 
 Context: The user is a Principal Embedded SW Engineer at HARMAN (Samsung subsidiary),
 working on automotive camera drivers (V4L2, MIPI CSI-2, ADAS DMS/OMS).

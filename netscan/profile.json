@@ -15,6 +15,7 @@
 
   "interests": [
     "Camera / imaging pipelines on embedded Linux (V4L2, libcamera, ISP, MIPI CSI-2)",
+    "GMSL SerDes camera links — MAX96712, MAX9295, MAX96714, FPD-Link, FAKRA",
     "ARM SoC bringup — Qualcomm, Rockchip, MediaTek, Amlogic, Allwinner, NXP i.MX",
     "GStreamer video pipelines, v4l2src, hardware-accelerated encode/decode",
     "FFmpeg hardware acceleration, VAAPI, Vulkan video, AMF",
@@ -22,23 +23,46 @@
     "Local LLM inference on consumer/edge hardware",
     "RISC-V SoC enablement (StarFive, T-Head)",
     "Device tree bindings, clock/pinctrl/regulator frameworks",
-    "USB video (UVC), USB gadget, USB3 camera"
+    "USB video (UVC), USB gadget, USB3 camera",
+    "SDR & radio monitoring — RTL-SDR, HackRF, satellite comms, shortwave DX",
+    "Wireless security research — wardriving, Bluetooth hacking, WiFi pentesting",
+    "Satellite reception — NOAA APT, Meteor-M LRPT, GPS/GNSS, ADS-B, amateur satellites",
+    "Home automation & sensor networks — Home Assistant, Zigbee, Z-Wave, ESPHome",
+    "Automotive ADAS — DMS/OMS cameras, surround view, in-cabin monitoring"
   ],
 
   "hardware": [
     "AMD BC-250 (Zen 2 6c/12t + Cyan Skillfish RDNA1 gfx1013, 16GB GDDR6)",
-    "Various ARM SBCs (Rockchip, Qualcomm, Allwinner)"
+    "Various ARM SBCs (Rockchip, Qualcomm, Allwinner)",
+    "RTL-SDR v3 dongle for radio monitoring",
+    "Various embedded camera modules (MIPI CSI-2, GMSL)"
+  ],
+
+  "book_interests": [
+    "Linux kernel internals & driver development",
+    "Embedded systems & real-time programming",
+    "Camera systems & image processing",
+    "Software-defined radio & RF engineering",
+    "Wireless & network security / pentesting",
+    "RISC-V architecture & programming",
+    "Machine learning on edge hardware",
+    "GStreamer & multimedia frameworks",
+    "Automotive software (AUTOSAR, ADAS)",
+    "Rust for systems programming"
   ],
 
   "interest_keywords": {
     "high": [
       "v4l2", "libcamera", "isp", "mipi", "csi-2", "camera", "uvc",
       "gstreamer", "v4l2src", "vaapi", "vulkan video",
+      "gmsl", "max96712", "max9295", "max96714", "max96717", "serdes",
+      "fpd-link", "coax", "deserializer", "serializer",
       "rockchip", "qualcomm", "qcom", "mediatek", "amlogic", "allwinner",
       "rk3588", "rk3566", "imx8m", "sm8", "mt8", "sun50i",
       "device tree", "devicetree", "dt-binding",
       "rdna", "amdgpu", "radv", "cyan skillfish", "gfx1013",
-      "ollama", "llama.cpp", "gguf", "vulkan compute"
+      "ollama", "llama.cpp", "gguf", "vulkan compute",
+      "sdr", "rtl-sdr", "hackrf", "satellite", "noaa", "meteor-m"
     ],
     "medium": [
       "sensor", "imx", "omnivision", "pixel format", "bayer",
@@ -46,13 +70,17 @@
       "ffmpeg", "hwaccel", "encode", "decode",
       "usb", "gadget", "xhci",
       "risc-v", "starfive", "thead",
-      "mesa", "drm", "kms"
+      "mesa", "drm", "kms",
+      "wardriving", "bluetooth", "ble", "wifi", "pentesting",
+      "ads-b", "gnss", "gps", "sstv", "amsat",
+      "analog devices", "adi", "maxim", "ti"
     ],
     "low": [
       "arm64", "dts", "soc", "platform_driver",
       "mmc", "emmc", "sdio",
       "pcie", "nvme",
-      "thermal", "cpufreq"
+      "thermal", "cpufreq",
+      "zigbee", "z-wave", "esphome", "home assistant"
     ]
   }
 }
