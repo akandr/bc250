@@ -150,6 +150,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": ["https://elinux.org/ELC"],
         "keywords": ["embedded linux conference", "elc", "elinux"],
         "relevance": 10,
+        "cfp_url": "https://events.linuxfoundation.org/embedded-linux-conference/program/cfp/",
+        "cfp_keywords": ["call for proposals", "cfp", "submit", "proposal deadline", "abstract"],
+        "typical_cfp_months": [1, 2, 3],  # CFP usually opens Jan-Mar
     },
     {
         "name": "Linux Plumbers Conference (LPC)",
@@ -157,6 +160,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": ["https://www.linuxplumbersconf.org/"],
         "keywords": ["linux plumbers", "lpc"],
         "relevance": 10,
+        "cfp_url": "https://lpc.events/",
+        "cfp_keywords": ["call for proposals", "cfp", "microconference", "submit", "deadline"],
+        "typical_cfp_months": [4, 5, 6],
     },
     {
         "name": "FOSDEM",
@@ -164,6 +170,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["fosdem"],
         "relevance": 9,
+        "cfp_url": "https://fosdem.org/",
+        "cfp_keywords": ["call for participation", "devroom", "call for proposals", "cfp", "stand"],
+        "typical_cfp_months": [9, 10, 11],
     },
     {
         "name": "Automotive Linux Summit",
@@ -171,6 +180,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["automotive linux summit", "als"],
         "relevance": 9,
+        "cfp_url": "https://events.linuxfoundation.org/automotive-linux-summit/program/cfp/",
+        "cfp_keywords": ["call for proposals", "cfp", "submit", "proposal deadline"],
+        "typical_cfp_months": [2, 3, 4],
     },
     {
         "name": "Embedded World",
@@ -178,6 +190,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["embedded world", "nuremberg embedded"],
         "relevance": 8,
+        "cfp_url": "https://www.embedded-world.de/en/embedded-world-conference/call-for-papers",
+        "cfp_keywords": ["call for papers", "submit", "paper deadline", "abstract submission"],
+        "typical_cfp_months": [5, 6, 7],
     },
     {
         "name": "Open Source Summit Europe",
@@ -185,6 +200,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["open source summit europe", "osseu"],
         "relevance": 7,
+        "cfp_url": "https://events.linuxfoundation.org/open-source-summit-europe/program/cfp/",
+        "cfp_keywords": ["call for proposals", "cfp", "submit"],
+        "typical_cfp_months": [3, 4, 5],
     },
     {
         "name": "GStreamer Conference",
@@ -192,6 +210,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["gstreamer conference"],
         "relevance": 9,
+        "cfp_url": "https://gstreamer.freedesktop.org/conference/",
+        "cfp_keywords": ["call for papers", "cfp", "talk proposals", "submit", "lightning talk"],
+        "typical_cfp_months": [5, 6, 7],
     },
     {
         "name": "Yocto Project Summit",
@@ -199,6 +220,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": [],
         "keywords": ["yocto summit", "yocto project summit"],
         "relevance": 7,
+        "cfp_url": "https://www.yoctoproject.org/",
+        "cfp_keywords": ["call for talks", "cfp", "submit"],
+        "typical_cfp_months": [3, 4],
     },
     {
         "name": "KernelCI Hackfest",
@@ -214,6 +238,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": ["https://jesien.org/2025/en/", "https://jesien.org/2026/"],
         "keywords": ["jesień linuksowa", "linux autumn", "plug", "polish linux"],
         "relevance": 9,
+        "cfp_url": "https://jesien.org/",
+        "cfp_keywords": ["call for papers", "cfp", "zgłoszenia", "prelekcje"],
+        "typical_cfp_months": [6, 7, 8],
     },
     {
         "name": "Embedded Recipes",
@@ -221,6 +248,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": ["https://embedded-recipes.org/2026/"],
         "keywords": ["embedded recipes", "isp", "libcamera", "yocto"],
         "relevance": 10,
+        "cfp_url": "https://embedded-recipes.org/",
+        "cfp_keywords": ["call for presentations", "cfp", "submit a talk", "proposal"],
+        "typical_cfp_months": [5, 6, 7],
     },
     {
         "name": "code::dive",
@@ -228,6 +258,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": ["https://www.codedive.pl/"],
         "keywords": ["code::dive", "codedive", "c++ conference wrocław"],
         "relevance": 7,
+        "cfp_url": "https://codedive.pl/",
+        "cfp_keywords": ["call for papers", "cfp", "submit", "speaker"],
+        "typical_cfp_months": [4, 5, 6],
     },
     {
         "name": "Kernel Recipes",
@@ -235,6 +268,9 @@ KNOWN_CONFERENCES = [
         "alt_urls": ["https://kernel-recipes.org/en/2026/"],
         "keywords": ["kernel recipes", "linux kernel conference"],
         "relevance": 9,
+        "cfp_url": "https://kernel-recipes.org/",
+        "cfp_keywords": ["call for presentations", "cfp", "submit", "proposal"],
+        "typical_cfp_months": [4, 5, 6],
     },
     {
         "name": "Linux Security Summit Europe",
@@ -711,6 +747,86 @@ def search_eventbrite(query, location="Poland"):
 
 
 # ── Source: Known conference websites ──────────────────────────────────────
+
+def search_cfp_deadlines():
+    """Search for Call for Papers/Proposals deadlines across known conferences."""
+    cfp_results = []
+    current_month = datetime.now().month
+    year = datetime.now().year
+
+    for conf in KNOWN_CONFERENCES:
+        cfp_url = conf.get("cfp_url")
+        cfp_keywords = conf.get("cfp_keywords", [])
+        typical_months = conf.get("typical_cfp_months", [])
+        if not cfp_url or not cfp_keywords:
+            continue
+
+        # Check if we're in or near CFP season for this conference
+        is_cfp_season = any(
+            abs(current_month - m) <= 2 or abs(current_month - m + 12) <= 2
+            for m in typical_months
+        ) if typical_months else True
+
+        if not is_cfp_season:
+            continue
+
+        log(f"  CFP check: {conf['name']}")
+        html = fetch_url(cfp_url, timeout=20)
+        if not html:
+            continue
+
+        text = strip_html(html)[:8000].lower()
+
+        # Check if CFP is mentioned
+        cfp_found = any(kw.lower() in text for kw in cfp_keywords)
+        if not cfp_found:
+            # Also try main URL
+            html2 = fetch_url(conf["url"], timeout=20)
+            if html2:
+                text2 = strip_html(html2)[:8000].lower()
+                cfp_found = any(kw.lower() in text2 for kw in cfp_keywords)
+                if cfp_found:
+                    text = text2
+
+        if cfp_found:
+            # Try to extract deadline
+            deadline = None
+            deadline_patterns = [
+                r'(?:deadline|due|closes?|submission)\s*(?:date)?\s*:?\s*'
+                r'((?:January|February|March|April|May|June|July|August|September|'
+                r'October|November|December)\s+\d{1,2},?\s*\d{4})',
+                r'(?:deadline|due|closes?)\s*(?:date)?\s*:?\s*(\d{1,2}\s+'
+                r'(?:January|February|March|April|May|June|July|August|September|'
+                r'October|November|December)\s+\d{4})',
+                r'(?:deadline|due|closes?)\s*(?:date)?\s*:?\s*(\d{4}-\d{2}-\d{2})',
+            ]
+            for pat in deadline_patterns:
+                m = re.search(pat, text, re.IGNORECASE)
+                if m:
+                    deadline = m.group(1).strip()
+                    break
+
+            # Check CFP status: open, closed, upcoming
+            status = "detected"
+            if any(w in text for w in ["cfp is open", "now accepting", "submit your", "call for"]):
+                status = "open"
+            elif any(w in text for w in ["cfp closed", "submissions closed", "deadline passed"]):
+                status = "closed"
+
+            cfp_results.append({
+                "conference": conf["name"],
+                "cfp_url": cfp_url,
+                "status": status,
+                "deadline": deadline,
+                "relevance": conf["relevance"],
+                "typical_cfp_months": typical_months,
+            })
+
+        time.sleep(2)
+
+    log(f"CFP deadlines found: {len(cfp_results)}")
+    return cfp_results
+
 
 def check_known_conferences():
     """Check known conference websites for upcoming dates."""
@@ -1286,7 +1402,7 @@ def search_community_sources():
 
 # ── LLM Analysis ──────────────────────────────────────────────────────────
 
-def llm_analyze_events(events):
+def llm_analyze_events(events, cfp_deadlines=None):
     """Use LLM to prioritize and analyze found events."""
     if not events:
         return None
@@ -1309,6 +1425,7 @@ Respond in JSON:
 - networking_opportunities: specific people/companies likely at top events
 - calendar_conflicts: any events that overlap
 - preparation_tips: what to do before the top events (submit talks, prepare papers)
+- cfp_action_items: list of {conference, deadline, talk_topic_suggestions} — conferences where CFP is open or upcoming, with specific talk ideas based on user's expertise
 Output ONLY valid JSON. /no_think"""
 
     event_text = "\n".join(
@@ -1331,6 +1448,20 @@ User context:
 - Budget: personal budget for Poland events, would need employer sponsorship for Europe
 
 Prioritize and recommend."""
+
+    # Add CFP deadlines section
+    if cfp_deadlines:
+        cfp_text = "\n\n=== CALL FOR PAPERS / PROPOSALS ===\n"
+        for cfp in cfp_deadlines:
+            deadline_str = ""
+            if cfp.get("deadline"):
+                dl = cfp["deadline"]
+                deadline_str = f", deadline: {dl}"
+            rel = cfp["relevance"]
+            cfp_text += (f"• {cfp['conference']} — status: {cfp['status']}"
+                         f"{deadline_str}"
+                         f" (relevance {rel})\n")
+        prompt += cfp_text
 
     return call_ollama(system, prompt, temperature=0.3, max_tokens=2500)
 
@@ -1454,7 +1585,11 @@ def run_scrape():
         all_events.extend(search_ddg_events(query, region))
         time.sleep(2)
 
-    log(f"Total raw events: {len(all_events)}")
+    # CFP deadline tracking
+    log("Checking CFP deadlines...")
+    cfp_deadlines = search_cfp_deadlines()
+
+    log(f"Total raw events: {len(all_events)}, CFP: {len(cfp_deadlines)}")
 
     # ── Phase 2: Score and filter ──
     log("Phase 2: Scoring events...")
@@ -1493,6 +1628,7 @@ def run_scrape():
         "scrape_version": 1,
         "data": {
             "events": deduped,
+            "cfp_deadlines": cfp_deadlines,
             "sources_meta": sources_meta,
             "total_found": len(all_events),
         },
@@ -1551,6 +1687,7 @@ def run_analyze():
 
     scrape_ts = raw.get("scrape_timestamp", "")
     deduped = raw.get("data", {}).get("events", [])
+    cfp_deadlines = raw.get("data", {}).get("cfp_deadlines", [])
     sources_meta = raw.get("data", {}).get("sources_meta", [])
     total_found = raw.get("data", {}).get("total_found", len(deduped))
 
@@ -1568,7 +1705,7 @@ def run_analyze():
 
     # ── Phase 3: LLM analysis ──
     log("Phase 3: LLM event analysis...")
-    analysis_raw = llm_analyze_events(deduped[:25])
+    analysis_raw = llm_analyze_events(deduped[:25], cfp_deadlines)
 
     analysis = {}
     if analysis_raw:

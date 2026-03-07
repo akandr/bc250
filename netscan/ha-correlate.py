@@ -399,6 +399,78 @@ def compute_duty_cycle(onoff_series, hours=24):
     }
 
 
+def compute_duty_heatmap(onoff_series):
+    """Compute hourly duty cycle heatmap (24 bins) from on/off state series.
+    Returns dict with hour (0-23) → fraction of time ON in that hour."""
+    if not onoff_series:
+        return None
+
+    # Build minute-resolution on/off timeline
+    hour_on = [0.0] * 24   # seconds ON per hour
+    hour_total = [0.0] * 24  # seconds observed per hour
+
+    prev_ts = None
+    prev_state = None
+
+    for ts_str, is_on in onoff_series:
+        try:
+            ts = datetime.fromisoformat(ts_str)
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+
+        if prev_ts is not None and prev_state is not None:
+            # Walk through each hour boundary between prev_ts and ts
+            cursor = prev_ts
+            while cursor < ts:
+                h = cursor.hour
+                next_hour = cursor.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+                end = min(next_hour, ts)
+                secs = (end - cursor).total_seconds()
+                if secs > 0:
+                    hour_total[h] += secs
+                    if prev_state:
+                        hour_on[h] += secs
+                cursor = end
+
+        prev_ts = ts
+        prev_state = is_on
+
+    # Account for time from last change to now
+    if prev_ts is not None and prev_state is not None:
+        now = datetime.now(timezone.utc)
+        cursor = prev_ts
+        while cursor < now:
+            h = cursor.hour
+            next_hour = cursor.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+            end = min(next_hour, now)
+            secs = (end - cursor).total_seconds()
+            if secs > 0:
+                hour_total[h] += secs
+                if prev_state:
+                    hour_on[h] += secs
+            cursor = end
+
+    heatmap = {}
+    for h in range(24):
+        if hour_total[h] > 0:
+            heatmap[h] = round(hour_on[h] / hour_total[h] * 100, 1)
+        else:
+            heatmap[h] = 0.0
+
+    # Find peak usage hours (>50% on)
+    peak_hours = [h for h in range(24) if heatmap.get(h, 0) > 50]
+    # Find idle hours (0% on)
+    idle_hours = [h for h in range(24) if heatmap.get(h, 0) == 0 and hour_total[h] > 0]
+
+    return {
+        "hourly_pct": heatmap,
+        "peak_hours": peak_hours,
+        "idle_hours": idle_hours,
+    }
+
+
 def detect_anomalies(series, label=""):
     """Detect anomalies in a numeric time series using z-score."""
     if len(series) < MIN_SAMPLES:
@@ -1092,6 +1164,7 @@ def run_scrape():
     # ── Step 5: Duty cycle analysis ───────────────────────────────────────
     log("Analyzing switch duty cycles...")
     duty_cycles = {}
+    duty_heatmaps = {}
 
     for eid, ts in switch_ts.items():
         info = switch_entities[eid]
@@ -1102,7 +1175,14 @@ def run_scrape():
             dc["known_behavior"] = KNOWN_DEVICES.get(eid, {}).get("behavior", "")
             duty_cycles[eid] = dc
 
-    log(f"Analyzed {len(duty_cycles)} switch duty cycles")
+            # Compute hourly heatmap for interesting switches
+            heatmap = compute_duty_heatmap(ts)
+            if heatmap:
+                heatmap["fname"] = info["fname"]
+                heatmap["room"] = info["room"]
+                duty_heatmaps[eid] = heatmap
+
+    log(f"Analyzed {len(duty_cycles)} switch duty cycles, {len(duty_heatmaps)} heatmaps")
 
     # ── Step 5.5: Room occupancy estimation ────────────────────────────────
     log("Estimating room usage from light activity...")
@@ -1256,6 +1336,7 @@ def run_scrape():
         "sensor_stats": sensor_stats,
         "sparse_sensors": sparse_sensors,
         "duty_cycles": duty_cycles,
+        "duty_heatmaps": duty_heatmaps,
         "correlations": correlations[:20],  # top 20
         "anomalies": all_anomalies[:30],    # max 30
         "garage_events": garage_events,
@@ -1325,6 +1406,7 @@ def run_analyze():
     sensor_stats = report.get("sensor_stats", {})
     sparse_sensors = report.get("sparse_sensors", {})
     duty_cycles = report.get("duty_cycles", {})
+    duty_heatmaps = report.get("duty_heatmaps", {})
     correlations = report.get("correlations", [])
     all_anomalies = report.get("anomalies", [])
     garage_events = report.get("garage_events", [])
@@ -1414,6 +1496,24 @@ def run_analyze():
                 f"{dc['toggle_count']} toggles, "
                 f"total {dc['total_on_min']:.0f}min on{known}"
             )
+
+    # Duty cycle heatmaps — hourly usage patterns
+    if duty_heatmaps:
+        # Show heatmaps for switches with >2 toggles (interesting patterns only)
+        interesting_hm = {eid: hm for eid, hm in duty_heatmaps.items()
+                         if eid in interesting_dc and interesting_dc[eid]["toggle_count"] >= 2}
+        if interesting_hm:
+            summary_parts.append("\nAPPLIANCE HOURLY HEATMAPS (% on per hour, 0-23):")
+            for eid, hm in sorted(interesting_hm.items(),
+                                   key=lambda x: len(x[1].get("peak_hours", [])), reverse=True):
+                hourly = hm["hourly_pct"]
+                # Compact format: show non-zero hours
+                active_hours = [f"{h}:{hourly[h]:.0f}%" for h in range(24) if hourly.get(h, 0) > 0]
+                if active_hours:
+                    summary_parts.append(f"  {hm['fname']} ({hm['room']}):")
+                    summary_parts.append(f"    active: {', '.join(active_hours)}")
+                    if hm.get("peak_hours"):
+                        summary_parts.append(f"    peak hours (>50%): {hm['peak_hours']}")
 
     # Room usage
     if room_usage:
@@ -1521,6 +1621,9 @@ Your report MUST include these sections:
 - Which switches have unusual duty cycles
 - Lights left on in unoccupied rooms = energy waste
 - Known automation devices (listed below) should NOT be flagged
+- Analyze APPLIANCE HOURLY HEATMAPS: identify usage patterns, peak hours, and suggest
+  scheduling optimizations (e.g., "dishwasher always runs at 20:00 — consider off-peak 02:00")
+- Flag pattern changes: if a switch normally active at certain hours is idle, note it
 
 Formatting rules:
 - Use emoji for quick scanning: 🌡️ temp, 💨 air, 💡 lights, ⚡ energy, 📊 pattern, ⚠️ warning, ✅ ok
