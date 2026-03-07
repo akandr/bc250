@@ -585,6 +585,97 @@ def daily_summary(trips, stops, mileage_entry=None):
     return result
 
 
+# ── Drive pattern anomaly detection ────────────────────────────────────────
+
+def detect_drive_anomalies(trips, location_clusters, mileage):
+    """Analyze trips for unusual patterns. Returns list of anomaly dicts.
+
+    Flags:
+    - Late-night drives (23:00 - 05:00)
+    - Unusually long trips (>2h or >100km)
+    - New/unknown destinations (not in top clusters)
+    - Unusually high speed trips (max > 130 km/h)
+    - Gap days (no driving when expected)
+    - Weekend vs weekday pattern deviation
+    """
+    anomalies = []
+    if not trips:
+        return anomalies
+
+    # Build set of known locations from top clusters
+    known_locations = set()
+    for c in (location_clusters or [])[:10]:
+        known_locations.add(c.get("location", ""))
+
+    # Typical trip stats for baseline
+    durations = [t["duration_min"] for t in trips]
+    distances = [t["distance_km"] for t in trips]
+    speeds = [t["max_speed_kmh"] for t in trips]
+
+    avg_dur = statistics.mean(durations) if durations else 30
+    avg_dist = statistics.mean(distances) if distances else 10
+    std_dur = statistics.stdev(durations) if len(durations) > 2 else avg_dur
+    std_dist = statistics.stdev(distances) if len(distances) > 2 else avg_dist
+
+    for trip in trips:
+        trip_anomalies = []
+
+        # Late-night trips (23:00 - 05:00)
+        try:
+            start_hour = int(trip["start_ts"][11:13])
+            if start_hour >= 23 or start_hour < 5:
+                trip_anomalies.append(f"late-night start ({start_hour:02d}:00)")
+        except (ValueError, IndexError):
+            pass
+
+        # Unusually long duration (>2h or >2σ above mean)
+        if trip["duration_min"] > 120:
+            trip_anomalies.append(f"long duration ({trip['duration_min']:.0f} min)")
+        elif std_dur > 0 and trip["duration_min"] > avg_dur + 2 * std_dur:
+            trip_anomalies.append(f"unusual duration ({trip['duration_min']:.0f} min, avg={avg_dur:.0f})")
+
+        # Unusually long distance (>100km or >2σ above mean)
+        if trip["distance_km"] > 100:
+            trip_anomalies.append(f"long distance ({trip['distance_km']:.1f} km)")
+        elif std_dist > 0 and trip["distance_km"] > avg_dist + 2 * std_dist:
+            trip_anomalies.append(f"unusual distance ({trip['distance_km']:.1f} km, avg={avg_dist:.0f})")
+
+        # High speed
+        if trip["max_speed_kmh"] > 130:
+            trip_anomalies.append(f"high speed ({trip['max_speed_kmh']} km/h)")
+
+        # Unknown destination
+        end_loc = trip.get("end_location", "")
+        if end_loc and end_loc not in known_locations and "," in end_loc:
+            # Coordinates mean it's not a known place
+            trip_anomalies.append(f"new destination ({end_loc})")
+
+        if trip_anomalies:
+            anomalies.append({
+                "trip": f"{trip['start_ts']} → {trip['end_ts']}",
+                "route": f"{trip.get('start_location', '?')} → {trip.get('end_location', '?')}",
+                "distance_km": trip["distance_km"],
+                "flags": trip_anomalies,
+            })
+
+    # Check mileage for gap days (no driving on weekdays)
+    if mileage and mileage.get("daily"):
+        for entry in mileage["daily"]:
+            try:
+                d = datetime.strptime(entry["date"], "%Y-%m-%d")
+                if d.weekday() < 5 and entry["km"] < 0.5:  # weekday with no driving
+                    anomalies.append({
+                        "trip": entry["date"],
+                        "route": "N/A",
+                        "distance_km": 0,
+                        "flags": [f"zero-drive weekday ({entry['date']}, {d.strftime('%A')})"],
+                    })
+            except (ValueError, KeyError):
+                pass
+
+    return anomalies
+
+
 # ── LLM Analysis ──────────────────────────────────────────────────────────
 
 def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2000):
@@ -629,7 +720,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2000):
         return None
 
 
-def llm_analyze(status, daily, mileage, location_clusters, trips):
+def llm_analyze(status, daily, mileage, location_clusters, trips, drive_anomalies=None):
     """Use LLM to synthesize movement analysis."""
     system = """You are a vehicle movement analyst for a personal car GPS tracker.
 Analyze the driving data and provide insights about:
@@ -637,11 +728,13 @@ Analyze the driving data and provide insights about:
 2. Notable trips (longest, fastest, unusual destinations)
 3. Vehicle usage statistics (daily avg, idle days, etc.)
 4. Safety observations (speeding, night driving, long continuous drives)
-5. Any anomalies or interesting patterns
+5. Drive pattern anomalies (flagged unusual trips, new destinations, schedule deviations)
+6. Any other interesting patterns
 
 IMPORTANT: Respond ONLY in English. Be concise, factual. Use metric units.
 The car is located in Łódź, Poland area.
-Format: 2-3 paragraphs of analysis, then a bullet list of key findings."""
+Format: 2-3 paragraphs of analysis, then a bullet list of key findings.
+If there are drive anomalies, highlight them with ⚠️ markers."""
 
     # Build data summary for LLM
     lines = []
@@ -688,6 +781,13 @@ Format: 2-3 paragraphs of analysis, then a bullet list of key findings."""
             else:
                 hrs = c.get('total_hours', 0)
             lines.append(f"  {c['location']}: {c['visits']} visits, {hrs:.1f} hrs total")
+        lines.append("")
+
+    if drive_anomalies:
+        lines.append(f"=== Drive Pattern Anomalies ({len(drive_anomalies)} flagged) ===")
+        for a in drive_anomalies[:15]:
+            flags = ", ".join(a["flags"])
+            lines.append(f"  ⚠️ {a['trip']}: {a['route']} ({a['distance_km']} km) — {flags}")
         lines.append("")
 
     prompt = "\n".join(lines)
@@ -860,9 +960,14 @@ def run_analyze():
 
     log(f"Loaded raw data (scraped {scrape_ts}): {len(trips)} trips")
 
+    # Detect drive pattern anomalies
+    log("Detecting drive pattern anomalies...")
+    drive_anomalies = detect_drive_anomalies(trips, location_clusters, mileage)
+    log(f"  Found {len(drive_anomalies)} anomalies")
+
     # LLM analysis
     log("Running LLM analysis...")
-    llm_text = llm_analyze(status, daily, mileage, location_clusters, trips)
+    llm_text = llm_analyze(status, daily, mileage, location_clusters, trips, drive_anomalies)
     if llm_text:
         log(f"  LLM analysis: {len(llm_text)} chars")
     else:
@@ -880,6 +985,7 @@ def run_analyze():
         "location_clusters": location_clusters,
         "daily_summary": daily,
         "alarms": alarms,
+        "drive_anomalies": drive_anomalies,
         "llm_analysis": llm_text,
         "meta": {
             "scrape_timestamp": scrape_ts,

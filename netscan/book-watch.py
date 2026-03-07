@@ -40,6 +40,7 @@ import time
 import urllib.request
 import urllib.error
 import urllib.parse
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 
@@ -198,6 +199,54 @@ BOOK_TOPICS = {
     },
 }
 
+# ── Publisher RSS Feeds ────────────────────────────────────────────────────
+# Direct feeds from major tech publishers for more reliable book discovery
+
+PUBLISHER_FEEDS = [
+    {
+        "id": "oreilly",
+        "name": "O'Reilly Media",
+        "url": "https://www.oreilly.com/content/feed/",
+        "alt_url": "https://feeds.feedburner.com/oreilly/newbooks",
+        "publisher_score": 8,
+    },
+    {
+        "id": "manning",
+        "name": "Manning Publications",
+        "url": "https://www.manning.com/feed",
+        "alt_url": "https://freecontent.manning.com/feed/",
+        "publisher_score": 7,
+    },
+    {
+        "id": "nostarch",
+        "name": "No Starch Press",
+        "url": "https://nostarch.com/rss.xml",
+        "alt_url": None,
+        "publisher_score": 8,
+    },
+    {
+        "id": "pragprog",
+        "name": "Pragmatic Programmers",
+        "url": "https://pragprog.com/feed.xml",
+        "alt_url": None,
+        "publisher_score": 7,
+    },
+    {
+        "id": "apress",
+        "name": "Apress (Springer)",
+        "url": "https://www.apress.com/us/rss/catalog/new",
+        "alt_url": "https://link.springer.com/search.rss?facet-content-type=%22Book%22&query=embedded+linux",
+        "publisher_score": 5,
+    },
+    {
+        "id": "packt",
+        "name": "Packt Publishing",
+        "url": "https://www.packtpub.com/rss.xml",
+        "alt_url": None,
+        "publisher_score": 3,
+    },
+]
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -265,6 +314,75 @@ def search_ddg(query, max_results=8):
             break
 
     return results
+
+
+def fetch_publisher_rss():
+    """Fetch books from publisher RSS feeds (more reliable than DDG)."""
+    log("📡 Fetching publisher RSS feeds...")
+    all_books = []
+
+    for pub in PUBLISHER_FEEDS:
+        for url in [pub["url"], pub.get("alt_url")]:
+            if not url:
+                continue
+            log(f"  Feed: {pub['name']}...")
+            xml_text = fetch_url(url, timeout=20)
+            if not xml_text:
+                continue
+
+            try:
+                root = ET.fromstring(xml_text)
+            except ET.ParseError:
+                continue
+
+            # Parse RSS items
+            ns_atom = "http://www.w3.org/2005/Atom"
+            items = root.findall(".//item")
+            if not items:
+                items = root.findall(f".//{{{ns_atom}}}entry")
+
+            for item in items[:20]:  # Max 20 per feed
+                title = ""
+                link = ""
+                desc = ""
+
+                # RSS 2.0
+                t = item.find("title")
+                if t is None:
+                    t = item.find(f"{{{ns_atom}}}title")
+                if t is not None and t.text:
+                    title = t.text.strip()
+
+                l = item.find("link")
+                if l is None:
+                    l = item.find(f"{{{ns_atom}}}link")
+                if l is not None:
+                    link = (l.text or l.get("href", "")).strip()
+
+                d = item.find("description")
+                if d is None:
+                    d = item.find(f"{{{ns_atom}}}summary")
+                    if d is None:
+                        d = item.find(f"{{{ns_atom}}}content")
+                if d is not None and d.text:
+                    desc = re.sub(r'<[^>]+>', ' ', d.text).strip()[:300]
+
+                if title:
+                    all_books.append({
+                        "title": title[:200],
+                        "url": link[:500],
+                        "snippet": desc[:300],
+                        "source": f"rss-{pub['id']}",
+                        "publisher": pub["name"],
+                        "publisher_score": pub["publisher_score"],
+                    })
+
+            break  # Got data from primary URL
+
+        time.sleep(1)
+
+    log(f"  Got {len(all_books)} books from RSS feeds")
+    return all_books
 
 
 def score_book_result(result, topic_config):
@@ -397,11 +515,27 @@ def signal_send(msg):
 
 # ── Main scan logic ────────────────────────────────────────────────────────
 
-def scan_topic(topic_id, topic_config):
+def scan_topic(topic_id, topic_config, rss_books=None):
     """Scan for new books in a single topic. Returns list of book results."""
     log(f"📚 Scanning: {topic_config['label']}")
     all_results = []
     seen_urls = set()
+
+    # Include matching books from publisher RSS feeds
+    if rss_books:
+        for r in rss_books:
+            url = r.get("url", "")
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
+
+            score, reasons = score_book_result(r, topic_config)
+            if score >= 10:
+                r["score"] = score
+                r["reasons"] = reasons
+                r["topic"] = topic_id
+                r["source"] = r.get("source", "rss")
+                all_results.append(r)
 
     for query in topic_config["search_queries"]:
         results = search_ddg(query)
@@ -510,10 +644,15 @@ def run_scan(topic_filter=None):
             sys.exit(1)
         topics_to_scan = {topic_filter: BOOK_TOPICS[topic_filter]}
 
+    # Fetch publisher RSS feeds once (shared across all topics)
+    log("📡 Fetching publisher RSS feeds...")
+    rss_books = fetch_publisher_rss()
+    log(f"  Got {len(rss_books)} books from publisher RSS feeds")
+
     all_books = []
     topic_stats = {}
     for tid, tconfig in topics_to_scan.items():
-        books = scan_topic(tid, tconfig)
+        books = scan_topic(tid, tconfig, rss_books=rss_books)
         all_books.extend(books)
         topic_stats[tid] = {
             "label": tconfig["label"],
@@ -546,6 +685,8 @@ def run_scan(topic_filter=None):
                 "score": b.get("score", 0),
                 "reasons": b.get("reasons", []),
                 "topic": b.get("topic", ""),
+                "source": b.get("source", "ddg"),
+                "publisher": b.get("publisher", ""),
             }
             for b in all_books[:50]  # cap at 50
         ],

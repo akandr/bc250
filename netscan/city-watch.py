@@ -30,6 +30,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
+import urllib.parse
 import html as html_mod
 from datetime import datetime, timezone
 from pathlib import Path
@@ -50,6 +51,25 @@ THINK_DIR = Path("/opt/netscan/data/think")
 FORUM_BASE = "https://www.skyscrapercity.com"
 FORUM_URL = f"{FORUM_BASE}/forums/%C5%82%C3%B3d%C5%BA.4185/"
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
+
+# BIP Łódź — public building permit / planning portal
+BIP_BASE = "https://bip.uml.lodz.pl"
+BIP_SEARCH_URLS = [
+    # Town planning decisions
+    "https://bip.uml.lodz.pl/urzad-miasta/wydzialy-i-biura/wydzial-urbanistyki-i-architektury/",
+    # Building permits public register
+    "https://wyszukiwarka.gunb.gov.pl/",
+]
+# Geoportal Łódź for local plans (MPZP)
+GEOPORTAL_URL = "https://mapa.lodz.pl/portal/"
+
+# Streets to monitor for BIP building permits
+BIP_WATCH_STREETS = [
+    "do folwarku", "milionowa", "rokicińska", "szparagowa",
+    "marszałków", "przybyszewskiego", "widzewska", "ziarnista",
+    "konstytucyjna", "jasieniem", "jasień", "chocianowicka",
+    "pabianicka", "rzgowska", "taborowa", "augustów",
+]
 
 # How many pages of thread listing to scan (1 = front page only, ~30 threads)
 FORUM_PAGES = 2
@@ -435,19 +455,109 @@ def crawl_forum():
     }
 
 
+def scrape_bip_permits():
+    """Scrape BIP Łódź and GUNB for building permits near our area."""
+    log("Scraping BIP Łódź / GUNB for building permits...")
+    permits = []
+
+    # GUNB public register — search for Łódź permits
+    # We use DDG to search GUNB since their search form uses POST/JS
+    for street in BIP_WATCH_STREETS[:8]:  # Top 8 streets
+        query = f"site:wyszukiwarka.gunb.gov.pl OR site:bip.uml.lodz.pl \"{street}\" łódź pozwolenie budowlane"
+        encoded = urllib.parse.quote(query)
+        url = f"https://html.duckduckgo.com/html/?q={encoded}&t=h_"
+
+        html_text = fetch_page(url)
+        if not html_text:
+            continue
+
+        # Extract results
+        results = re.findall(
+            r'<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>(.+?)</a>.*?'
+            r'<a[^>]+class="result__snippet"[^>]*>(.+?)</a>',
+            html_text, re.DOTALL
+        )
+        # Also try simpler pattern
+        if not results:
+            results = re.findall(
+                r'<a[^>]+rel="noopener"[^>]*href="([^"]+)"[^>]*>(.*?)</a>.*?'
+                r'class="result__snippet"[^>]*>(.*?)</(?:a|div)',
+                html_text, re.DOTALL
+            )
+
+        for link, title, snippet in results[:3]:
+            title_clean = re.sub(r'<[^>]+>', '', title).strip()
+            snippet_clean = re.sub(r'<[^>]+>', '', snippet).strip()
+
+            # Check if it mentions our streets
+            combined = (title_clean + " " + snippet_clean).lower()
+            matched = [s for s in BIP_WATCH_STREETS if s in combined]
+            if matched:
+                permits.append({
+                    "street": street,
+                    "title": title_clean[:200],
+                    "snippet": snippet_clean[:300],
+                    "url": link,
+                    "matched_streets": matched,
+                    "source": "bip-ddg",
+                })
+
+        time.sleep(3)
+
+    # Direct BIP UML scrape — architecture department announcements
+    for bip_url in BIP_SEARCH_URLS[:1]:
+        html_text = fetch_page(bip_url)
+        if not html_text:
+            continue
+
+        # Look for announcements mentioning our streets
+        # BIP pages typically have lists of decisions/announcements
+        text = re.sub(r'<[^>]+>', ' ', html_text)
+        text = re.sub(r'\s+', ' ', text)
+
+        for street in BIP_WATCH_STREETS:
+            if street in text.lower():
+                # Extract context around the mention
+                idx = text.lower().find(street)
+                context = text[max(0, idx-150):idx+200].strip()
+                permits.append({
+                    "street": street,
+                    "title": f"BIP UML mention: {street}",
+                    "snippet": context[:300],
+                    "url": bip_url,
+                    "matched_streets": [street],
+                    "source": "bip-direct",
+                })
+
+    log(f"  Found {len(permits)} permit-related results")
+    return permits
+
+
 def llm_analyze(data):
-    """Use LLM to analyze crawled forum data for neighborhood briefing."""
+    """Use LLM to analyze crawled forum data + BIP permits for neighborhood briefing."""
     relevant = data.get("threads", [])
-    if not relevant:
+    bip_permits = data.get("bip_permits", [])
+    if not relevant and not bip_permits:
         return ""
 
     # Build summary for LLM
     parts = []
-    for t in relevant[:10]:
-        parts.append(f"\n### {t['title']} (score: {t['total_score']:.0f})")
-        parts.append(f"Keywords: {', '.join(t['matched_keywords'][:6])}")
-        for p in t.get("posts", [])[:4]:
-            parts.append(f"  [{p['date']}] {p['author']}: {p['text'][:250]}")
+
+    # Forum threads
+    if relevant:
+        parts.append("=== SKYSCRAPERCITY FORUM THREADS ===")
+        for t in relevant[:10]:
+            parts.append(f"\n### {t['title']} (score: {t['total_score']:.0f})")
+            parts.append(f"Keywords: {', '.join(t['matched_keywords'][:6])}")
+            for p in t.get("posts", [])[:4]:
+                parts.append(f"  [{p['date']}] {p['author']}: {p['text'][:250]}")
+
+    # BIP permits
+    if bip_permits:
+        parts.append("\n=== BUILDING PERMITS / PLANNING DECISIONS (BIP) ===")
+        for p in bip_permits[:10]:
+            parts.append(f"  {p['street']}: {p['title']}")
+            parts.append(f"    {p['snippet'][:200]}")
 
     forum_text = "\n".join(parts)
 
@@ -472,6 +582,11 @@ What's new near Do Folwarku? Focus on:
 ## 📋 SUMMARY
 - 3-5 bullet points of most actionable intel
 - Flag anything that needs attention this week
+
+## 🏛️ BUILDING PERMITS & PLANNING
+- Any new building permits or planning decisions near the area
+- Development projects in the pipeline
+- Zoning changes or MPZP (local spatial plan) updates
 
 Rules:
 - Write in English
@@ -537,6 +652,10 @@ def run_scrape():
     t0 = time.time()
 
     data = crawl_forum()
+
+    # Scrape BIP for building permits
+    bip_permits = scrape_bip_permits()
+    data["bip_permits"] = bip_permits
 
     # Save raw intermediate data
     scrape_duration = round(time.time() - t0, 1)
