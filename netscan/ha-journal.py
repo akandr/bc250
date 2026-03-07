@@ -29,6 +29,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
+from llm_sanitize import sanitize_llm_output
 
 # ─── Config ───
 
@@ -294,7 +295,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=2000):
         tokens = result.get("eval_count", 0)
         tps = tokens / elapsed if elapsed > 0 else 0
         print(f"  Ollama OK: {elapsed:.0f}s, {tokens} tok ({tps:.1f} t/s)")
-        return content
+        return sanitize_llm_output(content)
     except Exception as ex:
         print(f"  Ollama failed: {ex}")
         return None

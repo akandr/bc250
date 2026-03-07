@@ -16,6 +16,7 @@ import urllib.error
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
@@ -287,7 +288,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
             elapsed = time.time() - t0
             tokens = result.get("eval_count", len(content.split()))
             log(f"  LLM: {elapsed:.0f}s, {tokens} tok")
-            return content
+            return sanitize_llm_output(content)
     except Exception as e:
         log(f"  Ollama call failed: {e}")
         return None

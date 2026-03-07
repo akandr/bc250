@@ -34,6 +34,7 @@ import urllib.error
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
@@ -1644,42 +1645,9 @@ Known devices (do NOT flag as anomalies):
 
     llm_analysis = call_ollama(system_prompt, data_summary)
 
-    # Sanitize LLM output — strip Chinese prefix / thinking tokens / artifacts / repetition
+    # Sanitize LLM output — strip Chinese / thinking tokens / artifacts / repetition
     if llm_analysis:
-        # Remove any leading Chinese characters or non-ASCII junk
-        llm_analysis = re.sub(r'^[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef：:]+\s*', '', llm_analysis)
-        llm_analysis = re.sub(r'^(?:sample output|example output)[:\s]*', '', llm_analysis, flags=re.IGNORECASE)
-        # Strip qwen3 thinking tags and duplicated content before </think>
-        if '</think>' in llm_analysis:
-            llm_analysis = llm_analysis.split('</think>')[-1]
-        llm_analysis = re.sub(r'<think>.*?</think>', '', llm_analysis, flags=re.DOTALL)
-
-        # Detect and remove repetitive lines (hallucination pattern)
-        lines = llm_analysis.split('\n')
-        seen_lines = {}
-        deduped = []
-        for line in lines:
-            # Normalize for comparison (strip whitespace, emoji, punctuation variations)
-            norm = re.sub(r'[^\w\s]', '', line.strip().lower())
-            norm = re.sub(r'\s+', ' ', norm).strip()
-            if len(norm) < 10:  # keep short lines (headers, blank)
-                deduped.append(line)
-                continue
-            if norm in seen_lines:
-                seen_lines[norm] += 1
-                if seen_lines[norm] <= 2:
-                    deduped.append(line)  # allow at most 2 occurrences
-                # else: skip repeated line
-            else:
-                seen_lines[norm] = 1
-                deduped.append(line)
-
-        # Check for excessive repetition (>3 duplicate lines = likely hallucination)
-        repeat_count = sum(1 for c in seen_lines.values() if c > 2)
-        if repeat_count > 0:
-            log(f"Stripped {repeat_count} repeated line pattern(s) from LLM output")
-
-        llm_analysis = '\n'.join(deduped).strip()
+        llm_analysis = sanitize_llm_output(llm_analysis)
 
     report["llm_analysis"] = llm_analysis
 

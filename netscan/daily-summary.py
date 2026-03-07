@@ -29,6 +29,7 @@ import glob
 import urllib.request
 from datetime import datetime, date
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 DATA_DIR = Path("/opt/netscan/data")
@@ -270,7 +271,7 @@ def call_llm(system_prompt, user_prompt, temperature=0.7, max_tokens=4096):
                                 headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=600) as resp:
         result = json.loads(resp.read())
-    return result.get("message", {}).get("content", "")
+    return sanitize_llm_output(result.get("message", {}).get("content", ""))
 
 
 # ─── Main ───────────────────────────────────────────────────────────────────

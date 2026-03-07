@@ -43,6 +43,7 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
@@ -481,13 +482,8 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=2000):
 
 
 def _strip_thinking(text):
-    """Remove chain-of-thought reasoning leaked by the model."""
-    if not text:
-        return text
-    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
-    if '</think>' in text:
-        text = text.split('</think>', 1)[-1].strip()
-    return text
+    """Remove chain-of-thought reasoning and Chinese text from LLM output."""
+    return sanitize_llm_output(text) if text else text
 
 
 def signal_send(msg):
