@@ -17,6 +17,7 @@ Output: /opt/netscan/data/market/think/<ticker>-YYYYMMDD.json
 import argparse, json, os, sys, time, urllib.request, urllib.error
 from datetime import datetime
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
@@ -121,6 +122,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.5, max_tokens=4000, th
             # Strip <think>...</think> CoT block, keep only the analysis
             if "</think>" in content:
                 content = content.split("</think>", 1)[1].strip()
+            content = sanitize_llm_output(content)
             log(f"LLM: {elapsed:.0f}s, {tokens} tok ({tps:.1f} t/s)")
             return content
     except Exception as e:

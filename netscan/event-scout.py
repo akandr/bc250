@@ -42,6 +42,7 @@ import urllib.error
 import urllib.parse
 from datetime import datetime, timedelta
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
@@ -530,7 +531,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2000):
             tokens = result.get("eval_count", len(content.split()))
             tps = tokens / elapsed if elapsed > 0 else 0
             log(f"  LLM: {elapsed:.0f}s, {tokens} tok ({tps:.1f} t/s)")
-            return content
+            return sanitize_llm_output(content)
     except Exception as e:
         log(f"  Ollama call failed: {e}")
         return None

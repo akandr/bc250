@@ -18,6 +18,7 @@ Usage:
 import os, sys, json, time, re
 import urllib.request, urllib.error, urllib.parse
 from datetime import datetime
+from llm_sanitize import sanitize_llm_output
 
 # ─── Config ───
 
@@ -237,6 +238,7 @@ def call_ollama(prompt, timeout=900):
         # Strip think blocks
         if "</think>" in content:
             content = content.split("</think>", 1)[1].strip()
+        content = sanitize_llm_output(content)
         elapsed = time.time() - t0
         tokens = data.get("eval_count", 0)
         print(f"  LLM: {elapsed:.0f}s, {tokens} tokens, {len(content)} chars")

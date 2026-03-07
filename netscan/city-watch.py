@@ -34,6 +34,7 @@ import urllib.parse
 import html as html_mod
 from datetime import datetime, timezone
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
@@ -314,10 +315,8 @@ def call_ollama(system_prompt, user_content, timeout=OLLAMA_TIMEOUT):
         return ""
 
 def _strip_thinking(text):
-    """Strip CoT thinking tags from LLM output."""
-    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
-    text = re.sub(r'<\|begin_of_thought\|>.*?<\|end_of_thought\|>', '', text, flags=re.DOTALL)
-    return text.strip()
+    """Strip CoT thinking tags and Chinese text from LLM output."""
+    return sanitize_llm_output(text)
 
 def signal_send(msg):
     """Send Signal notification."""

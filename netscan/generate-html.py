@@ -9,6 +9,7 @@ Location on bc250: /opt/netscan/generate-html.py
 import json, os, glob, re, base64, urllib.parse
 from datetime import datetime, timedelta
 from html import escape
+from pathlib import Path
 
 DATA_DIR = "/opt/netscan/data"
 WEB_DIR = "/opt/netscan/web"
@@ -896,6 +897,9 @@ def page_wrap(title, body, active_page="index"):
     nav_items.append(("/advisor.html", "ADVISOR", "advisor"))
     nav_items.append(("/load.html", "LOAD", "load"))
     nav_items.append(("/leaks.html", "LEAKS", "leaks"))
+    nav_items.append(("/weather.html", "WEATHER", "weather"))
+    nav_items.append(("/news.html", "NEWS", "news"))
+    nav_items.append(("/health.html", "HEALTH", "health"))
     nav_items += [
         ("/security.html", "SECURITY", "security"),
         ("/history.html", "HISTORY", "history"),
@@ -6454,6 +6458,428 @@ function showLog(d) {{
     return page_wrap("SCAN LOG", body, "log")
 
 
+# ── Weather page ───────────────────────────────────────────────────────────
+
+def gen_weather():
+    """Generate the weather forecast & air quality page."""
+    latest = os.path.join(DATA_DIR, "latest-weather.json")
+    if os.path.islink(latest):
+        data = load_json(latest)
+    else:
+        # Try finding most recent weather file
+        wfiles = sorted(Path(DATA_DIR).glob("weather-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        data = load_json(str(wfiles[0])) if wfiles else None
+
+    if not data:
+        body = """
+<div class="section">
+  <div class="section-title">🌤️ WEATHER FORECAST</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🌤️</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No weather data yet</div>
+    <div style="margin-top:12px;font-size:0.9rem">
+      weather-watch.py fetches OpenMeteo forecasts, air quality data,<br>
+      and correlates with Home Assistant indoor sensors.<br>
+      First data will appear after the scheduled scrape runs.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("WEATHER", body, "weather")
+
+    meta = data.get("meta", {})
+    forecast = data.get("forecast", {})
+    air_quality = data.get("air_quality", {})
+    ha_sensors = data.get("ha_sensors", {})
+    analysis = data.get("analysis", "")
+
+    scan_ts = meta.get("scrape_timestamp", "")[:16]
+    analyze_ts = meta.get("analyze_timestamp", "")[:16]
+    lat = meta.get("latitude", "?")
+    lon = meta.get("longitude", "?")
+
+    # ─ Current conditions ─
+    temp_data = forecast.get("temperature", [])
+    humid_data = forecast.get("humidity", [])
+    wind_data = forecast.get("wind_speed", [])
+    precip_data = forecast.get("precipitation", [])
+
+    current_temp = temp_data[0] if temp_data else "?"
+    current_humid = humid_data[0] if humid_data else "?"
+    current_wind = wind_data[0] if wind_data else "?"
+
+    # Min/max from forecast
+    temp_min = min(temp_data) if temp_data else "?"
+    temp_max = max(temp_data) if temp_data else "?"
+
+    overview = f"""
+<div class="section">
+  <div class="section-title">🌤️ WEATHER FORECAST — Łódź &nbsp;
+    <span style="color:var(--fg-dim);font-size:0.8rem">// {e(scan_ts)} &nbsp; {lat}°N {lon}°E</span>
+  </div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--cyan);font-size:1.8rem;font-weight:bold">{current_temp}°C</span><br><span style="color:var(--fg-dim)">now</span></div>
+      <div><span style="color:var(--blue);font-size:1.8rem;font-weight:bold">{temp_min}°</span> / <span style="color:var(--red);font-size:1.8rem;font-weight:bold">{temp_max}°</span><br><span style="color:var(--fg-dim)">min / max</span></div>
+      <div><span style="color:var(--green);font-size:1.8rem;font-weight:bold">{current_humid}%</span><br><span style="color:var(--fg-dim)">humidity</span></div>
+      <div><span style="color:var(--amber);font-size:1.8rem;font-weight:bold">{current_wind}</span><br><span style="color:var(--fg-dim)">wind km/h</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # ─ Air quality ─
+    aqi = air_quality.get("european_aqi", [])
+    pm25 = air_quality.get("pm2_5", [])
+    pm10 = air_quality.get("pm10", [])
+    current_aqi = aqi[0] if aqi else "?"
+    current_pm25 = pm25[0] if pm25 else "?"
+    current_pm10 = pm10[0] if pm10 else "?"
+
+    aqi_color = "var(--green)" if isinstance(current_aqi, (int, float)) and current_aqi <= 25 else "var(--amber)" if isinstance(current_aqi, (int, float)) and current_aqi <= 50 else "var(--red)"
+
+    aq_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🌬️ AIR QUALITY</div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:{aqi_color};font-size:1.8rem;font-weight:bold">{current_aqi}</span><br><span style="color:var(--fg-dim)">EU AQI</span></div>
+      <div><span style="color:var(--amber);font-size:1.8rem;font-weight:bold">{current_pm25}</span><br><span style="color:var(--fg-dim)">PM2.5 µg/m³</span></div>
+      <div><span style="color:var(--amber);font-size:1.8rem;font-weight:bold">{current_pm10}</span><br><span style="color:var(--fg-dim)">PM10 µg/m³</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # ─ HA indoor sensors ─
+    ha_html = ""
+    if ha_sensors:
+        rows = ""
+        for sensor_name, readings in ha_sensors.items():
+            if isinstance(readings, list) and readings:
+                latest_val = readings[-1] if readings else "?"
+                avg_val = sum(r for r in readings if isinstance(r, (int, float))) / max(len([r for r in readings if isinstance(r, (int, float))]), 1)
+                rows += f"""<tr>
+                  <td style="color:var(--cyan)">{e(sensor_name)}</td>
+                  <td style="font-weight:bold">{latest_val}</td>
+                  <td style="color:var(--fg-dim)">{avg_val:.1f}</td>
+                  <td style="color:var(--fg-dim)">{len(readings)} pts</td>
+                </tr>"""
+            elif isinstance(readings, dict):
+                val = readings.get("value", readings.get("state", "?"))
+                rows += f"""<tr>
+                  <td style="color:var(--cyan)">{e(sensor_name)}</td>
+                  <td style="font-weight:bold">{val}</td>
+                  <td colspan="2" style="color:var(--fg-dim)">—</td>
+                </tr>"""
+
+        if rows:
+            ha_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🏠 INDOOR SENSORS (Home Assistant)</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th>Sensor</th><th>Latest</th><th>Avg</th><th>Points</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ─ AI Analysis ─
+    analysis_html = ""
+    if analysis:
+        lines = ""
+        for line in analysis.strip().split("\n"):
+            line_esc = e(line)
+            if line.strip() and (line.strip().startswith("#") or line.strip().endswith(":")):
+                lines += f'<div style="color:var(--amber);font-weight:bold;margin-top:10px">{line_esc}</div>\n'
+            elif line.strip().startswith("- ") or line.strip().startswith("• "):
+                lines += f'<div style="padding-left:16px;color:var(--fg)">{line_esc}</div>\n'
+            else:
+                lines += f'<div style="color:var(--fg-dim)">{line_esc}</div>\n'
+        analysis_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🤖 AI WEATHER ANALYSIS &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(analyze_ts)}</span></div>
+  <div class="section-body" style="font-size:0.88rem;line-height:1.6">{lines}</div>
+</div>"""
+
+    body = overview + aq_html + ha_html + analysis_html
+    return page_wrap("WEATHER", body, "weather")
+
+
+# ── News page ──────────────────────────────────────────────────────────────
+
+def gen_news():
+    """Generate the news digest page."""
+    latest = os.path.join(DATA_DIR, "latest-news.json")
+    if os.path.islink(latest):
+        data = load_json(latest)
+    else:
+        nfiles = sorted(Path(DATA_DIR).glob("news-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        data = load_json(str(nfiles[0])) if nfiles else None
+
+    if not data:
+        body = """
+<div class="section">
+  <div class="section-title">📰 NEWS DIGEST</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">📰</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No news data yet</div>
+    <div style="margin-top:12px;font-size:0.9rem">
+      news-watch.py aggregates RSS feeds from tech news sources<br>
+      with LLM-powered filtering for automotive, embedded, and Linux topics.<br>
+      First digest will appear after the scheduled scrape.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("NEWS", body, "news")
+
+    meta = data.get("meta", {})
+    articles = data.get("articles", [])
+    digest = data.get("digest", "")
+    feed_stats = data.get("feed_stats", {})
+
+    scan_ts = meta.get("scrape_timestamp", "")[:16]
+    analyze_ts = meta.get("analyze_timestamp", "")[:16]
+
+    # ─ Overview ─
+    n_articles = len(articles)
+    n_feeds = len(feed_stats) if feed_stats else meta.get("feeds_scraped", 0)
+    n_relevant = sum(1 for a in articles if a.get("relevance_score", 0) >= 50)
+
+    overview = f"""
+<div class="section">
+  <div class="section-title">📰 NEWS DIGEST &nbsp;
+    <span style="color:var(--fg-dim);font-size:0.8rem">// {e(scan_ts)}</span>
+  </div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--cyan);font-size:1.8rem;font-weight:bold">{n_articles}</span><br><span style="color:var(--fg-dim)">articles</span></div>
+      <div><span style="color:var(--green);font-size:1.8rem;font-weight:bold">{n_relevant}</span><br><span style="color:var(--fg-dim)">relevant</span></div>
+      <div><span style="color:var(--purple);font-size:1.8rem;font-weight:bold">{n_feeds}</span><br><span style="color:var(--fg-dim)">feeds</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # ─ AI Digest ─
+    digest_html = ""
+    if digest:
+        lines = ""
+        for line in digest.strip().split("\n"):
+            line_esc = e(line)
+            if line.strip() and (line.strip().startswith("#") or line.strip().endswith(":")):
+                lines += f'<div style="color:var(--amber);font-weight:bold;margin-top:10px">{line_esc}</div>\n'
+            elif line.strip().startswith("- ") or line.strip().startswith("• "):
+                lines += f'<div style="padding-left:16px;color:var(--fg)">{line_esc}</div>\n'
+            else:
+                lines += f'<div style="color:var(--fg-dim)">{line_esc}</div>\n'
+        digest_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🤖 AI NEWS DIGEST &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(analyze_ts)}</span></div>
+  <div class="section-body" style="font-size:0.88rem;line-height:1.6">{lines}</div>
+</div>"""
+
+    # ─ Feed stats ─
+    feed_html = ""
+    if feed_stats:
+        rows = ""
+        for feed_name, stats in sorted(feed_stats.items(), key=lambda x: -x[1].get("articles", 0)):
+            count = stats.get("articles", 0)
+            status = stats.get("status", "ok")
+            status_icon = "✓" if status == "ok" else "⚠" if status == "partial" else "✗"
+            status_color = "var(--green)" if status == "ok" else "var(--amber)" if status == "partial" else "var(--red)"
+            rows += f"""<tr>
+              <td style="color:{status_color}">{status_icon}</td>
+              <td style="color:var(--cyan)">{e(feed_name)}</td>
+              <td style="font-weight:bold">{count}</td>
+              <td style="color:var(--fg-dim)">{e(status)}</td>
+            </tr>"""
+        feed_html = f"""
+<div class="section">
+  <div class="section-title">▸ 📡 FEED STATUS</div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th></th><th>Feed</th><th>Articles</th><th>Status</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ─ Articles list ─
+    article_cards = ""
+    for a in articles[:30]:
+        title = e(a.get("title", "Untitled"))[:120]
+        source = e(a.get("source", "?"))
+        url = a.get("url", "")
+        score = a.get("relevance_score", 0)
+        pub_date = a.get("published", "")[:10]
+        summary = e(a.get("summary", "")[:200])
+
+        score_color = "var(--green)" if score >= 70 else "var(--amber)" if score >= 40 else "var(--fg-dim)"
+        title_link = f'<a href="{e(url)}" target="_blank" style="color:var(--cyan);text-decoration:none">{title} ↗</a>' if url else title
+        summary_div = f'<div style="margin-top:4px;color:var(--fg-dim);font-size:0.82rem">{summary}</div>' if summary else ""
+
+        article_cards += f"""
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <span style="color:{score_color};font-weight:bold">{score}</span>
+          <span style="margin-left:8px">{title_link}</span>
+          <div style="margin-top:3px;font-size:0.8rem;color:var(--fg-dim)">
+            {source} &nbsp;│&nbsp; {pub_date}
+          </div>
+          {summary_div}
+        </div>
+      </div>
+    </div>"""
+
+    articles_html = f"""
+<div class="section">
+  <div class="section-title">▸ 📋 ARTICLES</div>
+  <div class="section-body">{article_cards if article_cards else '<div style="color:var(--fg-dim)">No articles found</div>'}</div>
+</div>"""
+
+    body = overview + digest_html + feed_html + articles_html
+    return page_wrap("NEWS", body, "news")
+
+
+# ── Health page ────────────────────────────────────────────────────────────
+
+def gen_health():
+    """Generate the system health assessment page."""
+    latest = os.path.join(DATA_DIR, "latest-health.json")
+    if os.path.islink(latest):
+        data = load_json(latest)
+    else:
+        hfiles = sorted(Path(DATA_DIR).glob("health-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        data = load_json(str(hfiles[0])) if hfiles else None
+
+    if not data:
+        body = """
+<div class="section">
+  <div class="section-title">🏥 SYSTEM HEALTH</div>
+  <div class="section-body" style="text-align:center;padding:40px;color:var(--fg-dim)">
+    <div style="font-size:3rem;margin-bottom:16px">🏥</div>
+    <div style="font-size:1.1rem;color:var(--amber)">No health report yet</div>
+    <div style="margin-top:12px;font-size:0.9rem">
+      Run bc250-extended-health.py to generate a comprehensive health assessment.
+    </div>
+  </div>
+</div>"""
+        return page_wrap("HEALTH", body, "health")
+
+    ts = data.get("timestamp", "")[:16]
+    services = data.get("services", {})
+    data_freshness = data.get("data_freshness", {})
+    dashboard = data.get("dashboard_freshness", {})
+    chinese = data.get("chinese_contamination", {})
+    queue = data.get("queue_runner", {})
+    assessment = data.get("llm_assessment", "")
+
+    # ─ Services ─
+    svc_rows = ""
+    for svc, info in services.items():
+        if svc == "ollama_loaded":
+            continue
+        if isinstance(info, dict):
+            status = info.get("status", "?")
+        else:
+            status = str(info)
+        icon = "✓" if status in ("OK", "active") else "⚠" if status == "NO_MODEL" else "✗"
+        color = "var(--green)" if status in ("OK", "active") else "var(--amber)" if status == "NO_MODEL" else "var(--red)"
+        svc_rows += f'<tr><td style="color:{color}">{icon}</td><td style="color:var(--cyan)">{e(svc)}</td><td style="color:{color}">{e(status)}</td></tr>'
+
+    svc_html = f"""
+<div class="section">
+  <div class="section-title">🏥 SYSTEM HEALTH &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">// {e(ts)}</span></div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th></th><th>Service</th><th>Status</th></tr></thead>
+      <tbody>{svc_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ─ Data freshness ─
+    ok_cnt = sum(1 for v in data_freshness.values() if v.get("status") == "OK")
+    stale_cnt = sum(1 for v in data_freshness.values() if v.get("status") == "STALE")
+    miss_cnt = sum(1 for v in data_freshness.values() if v.get("status") == "MISSING")
+
+    df_rows = ""
+    for name, info in sorted(data_freshness.items(), key=lambda x: x[1].get("status", "Z")):
+        status = info.get("status", "?")
+        age = info.get("age_hours", -1)
+        mx = info.get("max_hours", 0)
+        icon = "✓" if status == "OK" else "⚠" if status == "STALE" else "✗"
+        color = "var(--green)" if status == "OK" else "var(--amber)" if status == "STALE" else "var(--red)"
+        age_str = f"{age:.0f}h" if age >= 0 else "—"
+        df_rows += f'<tr><td style="color:{color}">{icon}</td><td style="color:var(--cyan)">{e(name)}</td><td style="color:{color}">{age_str}</td><td style="color:var(--fg-dim)">{mx}h max</td><td style="color:{color}">{e(status)}</td></tr>'
+
+    df_html = f"""
+<div class="section">
+  <div class="section-title">▸ 📊 DATA FRESHNESS &nbsp;<span style="color:var(--fg-dim);font-size:0.8rem">({ok_cnt} OK / {stale_cnt} stale / {miss_cnt} missing)</span></div>
+  <div class="section-body">
+    <table class="host-table">
+      <thead><tr><th></th><th>Source</th><th>Age</th><th>Max</th><th>Status</th></tr></thead>
+      <tbody>{df_rows}</tbody>
+    </table>
+  </div>
+</div>"""
+
+    # ─ Chinese contamination ─
+    ch_clean = chinese.get("clean", 0)
+    ch_dirty = chinese.get("contaminated", 0)
+    ch_color = "var(--green)" if ch_dirty == 0 else "var(--red)"
+    ch_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🈲 LLM OUTPUT QUALITY</div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--green);font-size:1.8rem;font-weight:bold">{ch_clean}</span><br><span style="color:var(--fg-dim)">clean notes</span></div>
+      <div><span style="color:{ch_color};font-size:1.8rem;font-weight:bold">{ch_dirty}</span><br><span style="color:var(--fg-dim)">contaminated</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # ─ Queue runner ─
+    qr_total = queue.get("total", 0)
+    qr_ok = queue.get("recent_ok", 0)
+    qr_stale = queue.get("stale", 0)
+    qr_never = queue.get("never_run", 0)
+    qr_html = f"""
+<div class="section">
+  <div class="section-title">▸ ⚙️ QUEUE RUNNER JOBS</div>
+  <div class="section-body">
+    <div style="display:flex;gap:32px;flex-wrap:wrap;font-size:0.9rem">
+      <div><span style="color:var(--cyan);font-size:1.8rem;font-weight:bold">{qr_total}</span><br><span style="color:var(--fg-dim)">total</span></div>
+      <div><span style="color:var(--green);font-size:1.8rem;font-weight:bold">{qr_ok}</span><br><span style="color:var(--fg-dim)">recent OK</span></div>
+      <div><span style="color:var(--amber);font-size:1.8rem;font-weight:bold">{qr_stale}</span><br><span style="color:var(--fg-dim)">stale</span></div>
+      <div><span style="color:var(--red);font-size:1.8rem;font-weight:bold">{qr_never}</span><br><span style="color:var(--fg-dim)">never run</span></div>
+    </div>
+  </div>
+</div>"""
+
+    # ─ LLM Assessment ─
+    assess_html = ""
+    if assessment:
+        lines = ""
+        for line in assessment.strip().split("\n"):
+            line_esc = e(line)
+            if line.strip().startswith("##"):
+                lines += f'<div style="color:var(--amber);font-weight:bold;margin-top:12px;font-size:1.05rem">{line_esc}</div>\n'
+            elif line.strip().startswith("#"):
+                lines += f'<div style="color:var(--amber);font-weight:bold;margin-top:10px">{line_esc}</div>\n'
+            elif line.strip().startswith("- ") or line.strip().startswith("• "):
+                lines += f'<div style="padding-left:16px;color:var(--fg)">{line_esc}</div>\n'
+            else:
+                lines += f'<div style="color:var(--fg-dim)">{line_esc}</div>\n'
+        assess_html = f"""
+<div class="section">
+  <div class="section-title">▸ 🤖 AI HEALTH ASSESSMENT</div>
+  <div class="section-body" style="font-size:0.88rem;line-height:1.6">{lines}</div>
+</div>"""
+
+    body = svc_html + df_html + ch_html + qr_html + assess_html
+    return page_wrap("HEALTH", body, "health")
+
+
 # ─── Generate all pages ───
 
 def main():
@@ -6481,6 +6907,9 @@ def main():
         "advisor.html": gen_advisor,
         "load.html": gen_load,
         "leaks.html": gen_leaks,
+        "weather.html": gen_weather,
+        "news.html": gen_news,
+        "health.html": gen_health,
     }
     # Dynamic feed pages from digest-feeds.json
     for fid, fcfg in DIGEST_FEEDS.items():

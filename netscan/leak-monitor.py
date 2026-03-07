@@ -46,6 +46,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
+from llm_sanitize import sanitize_llm_output
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
@@ -401,25 +402,8 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2000):
 
 
 def _strip_thinking(text):
-    """Remove chain-of-thought reasoning leaked by the model before the actual answer."""
-    if not text:
-        return text
-    # Remove <think>...</think> blocks (with or without opening tag)
-    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
-    # Handle case where </think> appears without opening <think>
-    if '</think>' in text:
-        text = text.split('</think>', 1)[-1].strip()
-    # Look for structured headers that signal start of real answer
-    headers = ["EXECUTIVE SUMMARY", "CRITICAL", "SITUATION OVERVIEW",
-               "KEY FINDINGS", "NOTABLE TRENDS", "RECOMMENDED"]
-    for hdr in headers:
-        idx = text.upper().find(hdr)
-        if idx > 0:
-            text = text[idx:]
-            break
-    # Remove leading garbage characters
-    text = re.sub(r'^[^\x20-\x7E\n]+', '', text).strip()
-    return text
+    """Remove chain-of-thought reasoning and Chinese text from LLM output."""
+    return sanitize_llm_output(text) if text else text
 
 
 # ── Database ───────────────────────────────────────────────────────────────
