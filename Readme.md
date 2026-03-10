@@ -69,7 +69,6 @@ The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/dist
 | **TDP** | 220W board (idle: 35–45W) |
 | **BIOS** | Community-patched UEFI (not Samsung stock) — [Miyconst tutorial](https://www.youtube.com/watch?v=YLO3fYyCo2s) |
 | **CPU governor** | `performance` (stock `schedutil` causes LLM latency spikes) |
-| **IP** | `192.168.3.151` |
 
 ### Unified memory is your friend (but needs tuning)
 
@@ -601,7 +600,7 @@ The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD sc
 
 ## 7. Netscan Ecosystem
 
-A comprehensive research, monitoring, and intelligence system with **336 autonomous jobs** running on a GPU-constrained single-board computer. Dashboard at `http://192.168.3.151:8888` — 29 main pages + 101 per-host detail pages.
+A comprehensive research, monitoring, and intelligence system with **336 autonomous jobs** running on a GPU-constrained single-board computer. Dashboard at `http://<LAN_IP>:8888` — 29 main pages + 101 per-host detail pages.
 
 ### 7.1 Architecture — queue-runner v7
 
@@ -965,7 +964,7 @@ bc250/
 │   ├── news-watch.py               # Tech news aggregation + RSS feeds
 │   ├── book-watch.py               # Book/publication tracker
 │   ├── weather-watch.py            # Weather forecast + HA sensor correlation
-│   ├── car-tracker.py              # Car listing tracker
+│   ├── car-tracker.py              # GPS car tracker (SinoTrack API, trip/stop detection)
 │   ├── bc250-extended-health.py    # System health assessment (services, data freshness, LLM quality)
 │   ├── llm_sanitize.py             # LLM output sanitizer (thinking tags, JSON repair)
 │   ├── generate-html.py            # Dashboard builder (6900+ lines, 29 main + 101 host pages)
