@@ -416,7 +416,7 @@ ollama create qwen3-14b-16k -f /tmp/Modelfile.16k
 The BC-250 runs a personal AI assistant accessible via Signal messenger — no gateway, no middleware. signal-cli runs as a standalone systemd service exposing a JSON-RPC API, and queue-runner handles all LLM interaction directly.
 
 ```
-  📱 Signal ──→ signal-cli (JSON-RPC :8080) ──→ queue-runner ──→ Ollama ──→ GPU (Vulkan)
+  Signal --> signal-cli (JSON-RPC :8080) --> queue-runner --> Ollama --> GPU (Vulkan)
 ```
 
 > **Software:** signal-cli v0.13.24 (native binary) · Ollama 0.16+ · queue-runner v7
@@ -466,26 +466,19 @@ Register a separate phone number for the bot via `signal-cli register` or `signa
 Between every queued job, `queue-runner.py` polls the signal-cli journal for incoming messages:
 
 ```
-  ┌──────────────────────────────────────────────────────────────┐
-  │  queue-runner v7 — continuous loop                           │
-  │                                                              │
-  │  ┌──────────┐  ┌──────────────┐  ┌─────────┐  ┌──────────┐  │
-  │  │  job N   │→ │ check Signal │→ │  chat   │→ │ job N+1  │  │
-  │  └──────────┘  │  inbox       │  │ (if msg)│  └──────────┘  │
-  │                └──────┬───────┘  └────┬────┘                │
-  │                       │               │                     │
-  │                       ▼               ▼                     │
-  │                journalctl -u    Ollama /api/chat             │
-  │                signal-cli       (16K ctx, /think)            │
-  │                       │               │                     │
-  │                       │          ┌────┴────┐                │
-  │                       │          │EXEC cmd │ ← tool use     │
-  │                       │          └────┬────┘                │
-  │                       │               │                     │
-  │                       ▼               ▼                     │
-  │                signal-cli        signal-cli                  │
-  │                JSON-RPC :8080    send reply                  │
-  └──────────────────────────────────────────────────────────────┘
+queue-runner v7 — continuous loop
+
+  job N  →  check Signal inbox  →  chat (if msg)  →  job N+1
+                    |                     |
+                    v                     v
+            journalctl -u           Ollama /api/chat
+            signal-cli              (16K ctx, /think)
+                    |                     |
+                    |               EXEC cmd ← tool use
+                    |                     |
+                    v                     v
+            signal-cli              signal-cli
+            JSON-RPC :8080          send reply
 ```
 
 **Key parameters:**
@@ -597,9 +590,9 @@ SD and Ollama can't run simultaneously (shared 16 GB VRAM). queue-runner handles
 
 ```
   "draw a cyberpunk cat"
-  ╰─→ queue-runner intercepts EXEC(generate-and-send "...")
-       ╰─→ stop Ollama → run sd-cli → send image via Signal → restart Ollama
-            ╰─→ 📱 image arrives (~60s total)
+    +-> queue-runner intercepts EXEC(generate-and-send "...")
+         +-> stop Ollama -> run sd-cli -> send image via Signal -> restart Ollama
+              +-> image arrives (~60s total)
 ```
 
 The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD script path. queue-runner stops Ollama first (freeing ~11 GB VRAM), generates the image, sends it as a Signal attachment, then restarts Ollama. Total downtime ~60s.
@@ -619,22 +612,20 @@ A comprehensive research, monitoring, and intelligence system with **336 autonom
 The BC-250 has 14 GB GTT shared with the CPU — only **one LLM job can run at a time**. `queue-runner.py` (systemd service) orchestrates all 336 jobs in a continuous loop, with Signal chat between every job:
 
 ```
-  ┌─────────────────────────────────────────────────────────────────┐
-  │  queue-runner v7 — Continuous Loop + Signal Chat                │
-  │                                                                 │
-  │  Cycle N:                                                       │
-  │    336 jobs sequential, ordered by category:                    │
-  │    scrape → infra → lore → academic → repo → company → career  │
-  │           → think → meta → market → report                     │
-  │    HA observations interleaved every 50 jobs                    │
-  │    Signal inbox checked between EVERY job                       │
-  │    Chat processed with LLM (EXEC tool use + image gen)          │
-  │    Crash recovery: resumes from last completed job              │
-  │                                                                 │
-  │  Cycle N+1:                                                     │
-  │    Immediately starts — no pause, no idle windows               │
-  │    No nightly/daytime distinction                               │
-  └─────────────────────────────────────────────────────────────────┘
+queue-runner v7 -- Continuous Loop + Signal Chat
+
+Cycle N:
+  336 jobs sequential, ordered by category:
+  scrape -> infra -> lore -> academic -> repo -> company -> career
+         -> think -> meta -> market -> report
+  HA observations interleaved every 50 jobs
+  Signal inbox checked between EVERY job
+  Chat processed with LLM (EXEC tool use + image gen)
+  Crash recovery: resumes from last completed job
+
+Cycle N+1:
+  Immediately starts -- no pause, no idle windows
+  No nightly/daytime distinction
 ```
 
 **Key design decisions (v5 → v7):**
@@ -656,20 +647,20 @@ The BC-250 has 14 GB GTT shared with the CPU — only **one LLM job can run at a
 The queue prioritizes **data diversity** — all dashboard tabs get fresh data even if the cycle is interrupted:
 
 ```
- ┌── SCRAPE (data gathering, no LLM) ───────── career-scan, salary, patents, events, repos, lore
- │── INFRA (6 jobs, ~0.6h) ──────────────────── leak-monitor, netscan, watchdog
- │── LORE-ANALYSIS (12 jobs) ────────────────── lkml, soc, jetson, libcamera, dri, usb, riscv, dt
- │── ACADEMIC (17 jobs) ─────────────────────── publications, dissertations, patents
- │── REPO-THINK (22 jobs) ──────────────────── LLM analysis of repo changes
- │── OTHER (11 jobs) ────────────────────────── car-tracker, city-watch, csi-sensor
- │── COMPANY (46 jobs) ──────────────────────── company-think per entity
- │── CAREER (49 jobs) ──────────────────────── career-think per domain
- │── THINK (37 jobs, ~2.2h) ────────────────── research, trends, crawl, crossfeed
- │── META (5 jobs) ──────────────────────────── life-advisor, system-think
- │── MARKET (21 jobs) ──────────────────────── market-watch + sector analysis
- └── REPORT (1 job) ─────────────────────────── daily-summary → Signal
-     ↕ HA observations interleaved every 50 jobs (ha-correlate, ha-journal)
-     ↕ Signal chat checked between EVERY job
+ SCRAPE (data gathering, no LLM) ----------- career-scan, salary, patents, events, repos, lore
+ INFRA (6 jobs, ~0.6h) --------------------- leak-monitor, netscan, watchdog
+ LORE-ANALYSIS (12 jobs) ------------------- lkml, soc, jetson, libcamera, dri, usb, riscv, dt
+ ACADEMIC (17 jobs) ------------------------ publications, dissertations, patents
+ REPO-THINK (22 jobs) ---------------------- LLM analysis of repo changes
+ OTHER (11 jobs) --------------------------- car-tracker, city-watch, csi-sensor
+ COMPANY (46 jobs) ------------------------- company-think per entity
+ CAREER (49 jobs) -------------------------- career-think per domain
+ THINK (37 jobs, ~2.2h) -------------------- research, trends, crawl, crossfeed
+ META (5 jobs) ----------------------------- life-advisor, system-think
+ MARKET (21 jobs) -------------------------- market-watch + sector analysis
+ REPORT (1 job) ---------------------------- daily-summary -> Signal
+   + HA observations interleaved every 50 jobs (ha-correlate, ha-journal)
+   + Signal chat checked between EVERY job
 ```
 
 ### 7.1.2 GPU idle detection
@@ -754,22 +745,23 @@ All 336 jobs are defined in `~/.openclaw/cron/jobs.json` and scheduled dynamical
 **Data flow:**
 
 ```
-  jobs.json (336 jobs)
-       │
-  queue-runner.py reads ──╯
-    │
-    ├─ All jobs → subprocess.Popen → python3/bash /opt/netscan/...
-    │                                      │
-    │      JSON results ←──────────────────╯
-    │         │
-    │         ├─→ /opt/netscan/data/{category}/*.json
-    │         │
-    │         └─→ generate-html.py → /opt/netscan/web/*.html → nginx :8888
-    │
-    ├─→ Signal chat (between every job)
-    │    via JSON-RPC http://127.0.0.1:8080/api/v1/rpc
-    │
-    └─→ Signal alerts (career matches, leaks, events, daily summary)
+jobs.json (336 jobs)
+  |
+  v
+queue-runner.py
+  |
+  |-- All jobs -> subprocess.Popen -> python3/bash /opt/netscan/...
+  |                                         |
+  |       JSON results <--------------------+
+  |         |
+  |         |-- /opt/netscan/data/{category}/*.json
+  |         |
+  |         +-- generate-html.py -> /opt/netscan/web/*.html -> nginx :8888
+  |
+  |-- Signal chat (between every job)
+  |     via JSON-RPC http://127.0.0.1:8080/api/v1/rpc
+  |
+  +-- Signal alerts (career matches, leaks, events, daily summary)
 ```
 
 ### 7.4 System crontab — non-GPU
@@ -903,11 +895,11 @@ Automated career opportunity scanner with a two-phase anti-hallucination archite
 
 ```
   HTML page
-   ╰─→ Phase 1: extract jobs (NO candidate profile) → raw job list
-                                                           │
-  Candidate Profile + single job ──────────────────────────╯
-   ╰─→ Phase 2: score match → repeat per job
-                                  ╰─→ aggregate → JSON + Signal alerts
+    +-> Phase 1: extract jobs (NO candidate profile) -> raw job list
+                                                            |
+  Candidate Profile + single job ---------------------------+
+    +-> Phase 2: score match -> repeat per job
+                                   +-> aggregate -> JSON + Signal alerts
 ```
 
 **Phase 1** extracts jobs from raw HTML without seeing the candidate profile — prevents the LLM from inventing matching jobs. **Phase 2** scores each job individually against the profile.

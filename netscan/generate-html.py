@@ -1318,8 +1318,8 @@ def gen_home():
         # Last 3 trips inline
         last_trips = ""
         for t in car_trips[-3:][::-1]:
-            from_loc = e(t.get("start_location", "?"))[:15]
-            to_loc = e(t.get("end_location", "?"))[:15]
+            from_loc = e(t.get("start_location", "?"))[:30]
+            to_loc = e(t.get("end_location", "?"))[:30]
             dist = t.get("distance_km", 0)
             ts = t.get("start_ts", "?")[5:]
             last_trips += f'<div style="font-size:0.82rem;color:var(--fg-dim)">{ts} <span style="color:var(--cyan)">{from_loc}</span> → <span style="color:var(--cyan)">{to_loc}</span> {dist:.1f} km</div>'
@@ -4431,8 +4431,8 @@ def gen_car_tracker():
     if trips:
         trip_rows = ""
         for t in reversed(trips):
-            from_loc = e(t.get("start_location", "?"))[:25]
-            to_loc = e(t.get("end_location", "?"))[:25]
+            from_loc_full = e(t.get("start_location", "?"))
+            to_loc_full = e(t.get("end_location", "?"))
             dist = t.get("distance_km", 0)
             dur = t.get("duration_min", 0)
             max_spd = t.get("max_speed_kmh", 0)
@@ -4445,9 +4445,9 @@ def gen_car_tracker():
             trip_rows += f"""<tr>
               <td style="color:var(--fg-dim);white-space:nowrap">{ts_start}</td>
               <td style="color:var(--fg-dim);white-space:nowrap">{ts_end}</td>
-              <td style="color:var(--cyan)">{from_loc}</td>
+              <td style="color:var(--cyan);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{from_loc_full}">{from_loc_full}</td>
               <td style="color:var(--fg-dim)">→</td>
-              <td style="color:var(--cyan)">{to_loc}</td>
+              <td style="color:var(--cyan);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{to_loc_full}">{to_loc_full}</td>
               <td style="text-align:right;color:{dist_color}">{dist:.1f}</td>
               <td style="text-align:right;color:var(--fg-dim)">{dur:.0f}m</td>
               <td style="text-align:right;color:{spd_color}">{max_spd}</td>
@@ -4514,7 +4514,7 @@ def gen_car_tracker():
     if stops:
         stop_rows = ""
         for s in sorted(stops, key=lambda x: x.get("start_time", 0), reverse=True)[:50]:
-            loc = e(s.get("location", "?"))[:25]
+            loc_full = e(s.get("location", "?"))
             dur = s.get("duration_min", 0)
             start_ts = s.get("start_ts", "?")
             end_ts = s.get("end_ts", "?")[-5:] if s.get("end_ts") else "?"
@@ -4522,7 +4522,7 @@ def gen_car_tracker():
             stop_rows += f"""<tr>
               <td style="color:var(--fg-dim);white-space:nowrap">{start_ts}</td>
               <td style="color:var(--fg-dim)">{end_ts}</td>
-              <td style="color:var(--cyan)">{loc}</td>
+              <td style="color:var(--cyan);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{loc_full}">{loc_full}</td>
               <td style="text-align:right;color:{dur_color}">{dur:.0f}m</td>
             </tr>"""
         stops_html = f"""

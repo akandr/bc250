@@ -61,6 +61,10 @@ PARK_MIN_DURATION = 300      # seconds — minimum stop to count as "parked"
 CLUSTER_RADIUS_M = 150       # meters — group nearby stops as same location
 MILEAGE_HISTORY_DAYS = 14    # days of mileage history to fetch
 MIN_TRIP_DISPLACEMENT_M = 1000  # meters — ignore trips that stay within this radius of start (GPS noise)
+MIN_TRIP_DURATION_S = 120     # seconds — ignore trips shorter than 2 minutes (GPS glitches)
+MIN_TRIP_DISTANCE_KM = 0.3   # km — ignore trips with less than 300m actual distance
+STOP_MIN_DURATION = 1800     # seconds — minimum stop to show in stop log (30 min = real parking)
+STOP_MERGE_GAP_S = 600       # seconds — merge stops at same location if gap < 10 min (GPS noise tolerance)
 
 # ── Known locations (for labeling) ────────────────────────────────────────
 # Load from env var KNOWN_LOCATIONS_JSON or /opt/netscan/car-known-locations.json
@@ -220,11 +224,33 @@ def label_location(lat, lon):
 
 # ── Reverse geocoding (Nominatim / OpenStreetMap) ─────────────────────────
 
-_geocode_cache = {}
+_GEOCODE_CACHE_FILE = DATA_DIR / "geocode-cache.json"
+
+def _load_geocode_cache():
+    """Load persistent geocode cache from disk."""
+    try:
+        if _GEOCODE_CACHE_FILE.exists():
+            with open(_GEOCODE_CACHE_FILE) as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+def _save_geocode_cache(cache):
+    """Save geocode cache to disk."""
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        with open(_GEOCODE_CACHE_FILE, "w") as f:
+            json.dump(cache, f, ensure_ascii=False, indent=1)
+    except Exception as ex:
+        print(f"[geocode] WARNING: failed to save cache: {ex}", file=sys.stderr)
+
+_geocode_cache = _load_geocode_cache()
 
 def reverse_geocode(lat, lon):
     """Reverse-geocode coordinates to a human-readable address via Nominatim.
-    Returns short address string, or 'lat,lon' on failure. Results are cached."""
+    Returns short address string, or 'lat,lon' on failure.
+    Successful results are cached persistently; failures are not cached."""
     key = f"{lat:.4f},{lon:.4f}"
     if key in _geocode_cache:
         return _geocode_cache[key]
@@ -252,10 +278,11 @@ def reverse_geocode(lat, lon):
             parts.append(city)
         result = ", ".join(parts) if parts else key
         _geocode_cache[key] = result
+        _save_geocode_cache(_geocode_cache)
         time.sleep(1)  # Nominatim rate limit: 1 req/s
         return result
-    except Exception:
-        _geocode_cache[key] = key
+    except Exception as ex:
+        print(f"[geocode] WARNING: reverse_geocode({lat},{lon}) failed: {ex}", file=sys.stderr)
         return key
 
 
@@ -349,19 +376,22 @@ def detect_trips(track_points):
 
                     duration_s = last_moving_time - trip_start["t"]
 
-                    # GPS noise filter: check max displacement from start
+                    # GPS noise filters
                     max_disp = max(
                         haversine_m(trip_start["lat"], trip_start["lon"], tp["lat"], tp["lon"])
                         for tp in trip_points
                     )
-                    if max_disp >= MIN_TRIP_DISPLACEMENT_M:
+                    distance_km = round(distance_m / 1000, 1)
+                    if (max_disp >= MIN_TRIP_DISPLACEMENT_M
+                            and duration_s >= MIN_TRIP_DURATION_S
+                            and distance_km >= MIN_TRIP_DISTANCE_KM):
                         trips.append({
                             "start_time": trip_start["t"],
                             "end_time": last_moving_time,
                             "start_ts": datetime.fromtimestamp(trip_start["t"]).strftime("%Y-%m-%d %H:%M"),
                             "end_ts": datetime.fromtimestamp(last_moving_time).strftime("%Y-%m-%d %H:%M"),
                             "duration_min": round(duration_s / 60, 1),
-                            "distance_km": round(distance_m / 1000, 1),
+                            "distance_km": distance_km,
                             "max_speed_kmh": max_speed,
                             "avg_speed_kmh": round((distance_m / 1000) / (duration_s / 3600), 1) if duration_s > 0 else 0,
                             "start_lat": trip_start["lat"],
@@ -391,19 +421,22 @@ def detect_trips(track_points):
                 for j in range(1, len(trip_points))
             )
         duration_s = last_moving_time - trip_start["t"]
-        # GPS noise filter: check max displacement from start
+        # GPS noise filters
         max_disp = max(
             haversine_m(trip_start["lat"], trip_start["lon"], tp["lat"], tp["lon"])
             for tp in trip_points
         )
-        if max_disp >= MIN_TRIP_DISPLACEMENT_M:
+        distance_km = round(distance_m / 1000, 1)
+        if (max_disp >= MIN_TRIP_DISPLACEMENT_M
+                and duration_s >= MIN_TRIP_DURATION_S
+                and distance_km >= MIN_TRIP_DISTANCE_KM):
             trips.append({
                 "start_time": trip_start["t"],
                 "end_time": last_moving_time,
                 "start_ts": datetime.fromtimestamp(trip_start["t"]).strftime("%Y-%m-%d %H:%M"),
                 "end_ts": datetime.fromtimestamp(last_moving_time).strftime("%Y-%m-%d %H:%M"),
                 "duration_min": round(duration_s / 60, 1),
-                "distance_km": round(distance_m / 1000, 1),
+                "distance_km": distance_km,
                 "max_speed_kmh": max_speed,
                 "avg_speed_kmh": round((distance_m / 1000) / (duration_s / 3600), 1) if duration_s > 0 else 0,
                 "start_lat": trip_start["lat"],
@@ -421,7 +454,14 @@ def detect_trips(track_points):
 # ── Stop/parking analysis ─────────────────────────────────────────────────
 
 def detect_stops(track_points):
-    """Detect significant parking/stop locations from track data."""
+    """Detect significant parking/stop locations from track data.
+
+    Uses displacement-based stop breaking: a stop is only ended when the car
+    actually moves away (displacement > CLUSTER_RADIUS_M from stop center),
+    not just because of brief GPS speed spikes. After initial detection,
+    nearby consecutive stops with short gaps are merged, and only stops
+    >= STOP_MIN_DURATION (30 min) are kept.
+    """
     if not track_points:
         return []
 
@@ -439,9 +479,12 @@ def detect_stops(track_points):
 
     points.sort(key=lambda p: p["t"])
 
-    stops = []
+    # Phase 1: detect raw stops using displacement-based breaking.
+    # A speed spike alone doesn't break a stop — the car must actually
+    # move away from the stop's average position.
+    raw_stops = []
     stop_start = None
-    stop_points = []
+    stop_points = []  # only stationary points (for averaging)
 
     for pt in points:
         if pt["speed"] <= SPEED_MOVING_THRESHOLD:
@@ -449,20 +492,23 @@ def detect_stops(track_points):
                 stop_start = pt
             stop_points.append(pt)
         else:
+            # Speed spike — check if it's real movement or GPS noise
             if stop_start and stop_points:
+                avg_lat = statistics.mean(p["lat"] for p in stop_points)
+                avg_lon = statistics.mean(p["lon"] for p in stop_points)
+                dist_from_stop = haversine_m(avg_lat, avg_lon, pt["lat"], pt["lon"])
+                if dist_from_stop < CLUSTER_RADIUS_M:
+                    # Still near the stop center — GPS noise, keep the stop open
+                    continue
+                # Real movement — close the stop
                 duration = stop_points[-1]["t"] - stop_start["t"]
                 if duration >= PARK_MIN_DURATION:
-                    avg_lat = statistics.mean(p["lat"] for p in stop_points)
-                    avg_lon = statistics.mean(p["lon"] for p in stop_points)
-                    stops.append({
+                    raw_stops.append({
                         "start_time": stop_start["t"],
                         "end_time": stop_points[-1]["t"],
-                        "start_ts": datetime.fromtimestamp(stop_start["t"]).strftime("%Y-%m-%d %H:%M"),
-                        "end_ts": datetime.fromtimestamp(stop_points[-1]["t"]).strftime("%Y-%m-%d %H:%M"),
-                        "duration_min": round(duration / 60, 1),
-                        "lat": round(avg_lat, 6),
-                        "lon": round(avg_lon, 6),
-                        "location": label_location(avg_lat, avg_lon),
+                        "lat": avg_lat,
+                        "lon": avg_lon,
+                        "duration_s": duration,
                     })
             stop_start = None
             stop_points = []
@@ -473,16 +519,48 @@ def detect_stops(track_points):
         if duration >= PARK_MIN_DURATION:
             avg_lat = statistics.mean(p["lat"] for p in stop_points)
             avg_lon = statistics.mean(p["lon"] for p in stop_points)
-            stops.append({
+            raw_stops.append({
                 "start_time": stop_start["t"],
                 "end_time": stop_points[-1]["t"],
-                "start_ts": datetime.fromtimestamp(stop_start["t"]).strftime("%Y-%m-%d %H:%M"),
-                "end_ts": datetime.fromtimestamp(stop_points[-1]["t"]).strftime("%Y-%m-%d %H:%M"),
-                "duration_min": round(duration / 60, 1),
-                "lat": round(avg_lat, 6),
-                "lon": round(avg_lon, 6),
-                "location": label_location(avg_lat, avg_lon),
+                "lat": avg_lat,
+                "lon": avg_lon,
+                "duration_s": duration,
             })
+
+    # Phase 2: merge consecutive stops at the same location with short gaps
+    merged = []
+    for stop in raw_stops:
+        if merged:
+            prev = merged[-1]
+            gap = stop["start_time"] - prev["end_time"]
+            dist = haversine_m(prev["lat"], prev["lon"], stop["lat"], stop["lon"])
+            if gap <= STOP_MERGE_GAP_S and dist < CLUSTER_RADIUS_M:
+                # Merge: extend previous stop, re-average position weighted by duration
+                total_dur = prev["duration_s"] + stop["duration_s"]
+                prev["lat"] = (prev["lat"] * prev["duration_s"] + stop["lat"] * stop["duration_s"]) / total_dur
+                prev["lon"] = (prev["lon"] * prev["duration_s"] + stop["lon"] * stop["duration_s"]) / total_dur
+                prev["end_time"] = stop["end_time"]
+                prev["duration_s"] = prev["end_time"] - prev["start_time"]
+                continue
+        merged.append(stop)
+
+    # Phase 3: filter by STOP_MIN_DURATION and format output
+    stops = []
+    for s in merged:
+        if s["duration_s"] < STOP_MIN_DURATION:
+            continue
+        avg_lat = round(s["lat"], 6)
+        avg_lon = round(s["lon"], 6)
+        stops.append({
+            "start_time": s["start_time"],
+            "end_time": s["end_time"],
+            "start_ts": datetime.fromtimestamp(s["start_time"]).strftime("%Y-%m-%d %H:%M"),
+            "end_ts": datetime.fromtimestamp(s["end_time"]).strftime("%Y-%m-%d %H:%M"),
+            "duration_min": round(s["duration_s"] / 60, 1),
+            "lat": avg_lat,
+            "lon": avg_lon,
+            "location": label_location(avg_lat, avg_lon),
+        })
 
     return stops
 
@@ -582,6 +660,7 @@ def parse_position(pos_data):
         "location": label_location(lat, lon),
         "total_mileage_km": round(mileage / 1000, 1),
         "is_moving": speed > SPEED_MOVING_THRESHOLD,
+        "acc_on": bool(car_state & 1),
         "car_state_raw": car_state,
         "device_state_raw": te_state,
     }
