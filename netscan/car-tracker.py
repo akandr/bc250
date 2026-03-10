@@ -63,10 +63,15 @@ MILEAGE_HISTORY_DAYS = 14    # days of mileage history to fetch
 MIN_TRIP_DISPLACEMENT_M = 1000  # meters — ignore trips that stay within this radius of start (GPS noise)
 
 # ── Known locations (for labeling) ────────────────────────────────────────
-KNOWN_LOCATIONS = [
-    {"name": "Home",        "lat": REDACTED_LAT, "lon": REDACTED_LON, "radius_m": 200},
-    {"name": "Łódź center", "lat": REDACTED_LAT, "lon": REDACTED_LON, "radius_m": 1500},
-]
+# Load from env var KNOWN_LOCATIONS_JSON or /opt/netscan/car-known-locations.json
+_locs_env = os.environ.get("KNOWN_LOCATIONS_JSON", "")
+_locs_file = Path("/opt/netscan/car-known-locations.json")
+if _locs_env:
+    KNOWN_LOCATIONS = json.loads(_locs_env)
+elif _locs_file.exists():
+    KNOWN_LOCATIONS = json.loads(_locs_file.read_text())
+else:
+    KNOWN_LOCATIONS = []
 
 TODAY = datetime.now().strftime("%Y%m%d")
 
@@ -205,12 +210,53 @@ def haversine_m(lat1, lon1, lat2, lon2):
 
 
 def label_location(lat, lon):
-    """Match coordinates to a known location or return generic label."""
+    """Match coordinates to a known location, or reverse-geocode via Nominatim."""
     for loc in KNOWN_LOCATIONS:
         dist = haversine_m(lat, lon, loc["lat"], loc["lon"])
         if dist <= loc["radius_m"]:
             return loc["name"]
-    return f"{lat:.4f},{lon:.4f}"
+    return reverse_geocode(lat, lon)
+
+
+# ── Reverse geocoding (Nominatim / OpenStreetMap) ─────────────────────────
+
+_geocode_cache = {}
+
+def reverse_geocode(lat, lon):
+    """Reverse-geocode coordinates to a human-readable address via Nominatim.
+    Returns short address string, or 'lat,lon' on failure. Results are cached."""
+    key = f"{lat:.4f},{lon:.4f}"
+    if key in _geocode_cache:
+        return _geocode_cache[key]
+    try:
+        url = (
+            f"https://nominatim.openstreetmap.org/reverse?"
+            f"lat={lat}&lon={lon}&format=json&zoom=18&addressdetails=1"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "bc250-car-tracker/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+        addr = data.get("address", {})
+        # Build a concise address: road + house_number, suburb/neighbourhood, city
+        parts = []
+        road = addr.get("road", "")
+        house = addr.get("house_number", "")
+        if road:
+            parts.append(f"{road} {house}".strip())
+        for field in ("suburb", "neighbourhood", "city_district"):
+            if addr.get(field):
+                parts.append(addr[field])
+                break
+        city = addr.get("city") or addr.get("town") or addr.get("village", "")
+        if city and city not in parts:
+            parts.append(city)
+        result = ", ".join(parts) if parts else key
+        _geocode_cache[key] = result
+        time.sleep(1)  # Nominatim rate limit: 1 req/s
+        return result
+    except Exception:
+        _geocode_cache[key] = key
+        return key
 
 
 def bearing(lat1, lon1, lat2, lon2):
