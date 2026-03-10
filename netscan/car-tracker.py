@@ -1011,6 +1011,17 @@ def run_scrape():
     # Step 9: Daily summary
     daily = daily_summary(trips, stops)
 
+    # Step 10: Fix parked_since from track data (nParkTime unreliable without ACC wire)
+    if status and not status.get("is_moving") and trips:
+        last_trip = trips[-1]
+        # Use the last trip's end time as "parked since"
+        try:
+            last_trip_end = datetime.strptime(last_trip["end_ts"], "%Y-%m-%d %H:%M")
+            status["parked_since"] = last_trip_end.strftime("%Y-%m-%d %H:%M")
+            status["parked_duration_h"] = round((time.time() - last_trip_end.timestamp()) / 3600, 1)
+        except (ValueError, KeyError):
+            pass
+
     # Save raw intermediate data
     scrape_duration = round(time.time() - t_start, 1)
     raw_data = {
