@@ -660,14 +660,10 @@ def parse_position(pos_data):
         "location": label_location(lat, lon),
         "total_mileage_km": round(mileage / 1000, 1),
         "is_moving": speed > SPEED_MOVING_THRESHOLD,
-        "acc_on": bool(car_state & 1),
+        "engine_on": bool(car_state & 0x80),  # bit 7 = vibration/engine sensor
         "car_state_raw": car_state,
         "device_state_raw": te_state,
     }
-
-    if park_time > 0:
-        status["parked_since"] = datetime.fromtimestamp(park_time).strftime("%Y-%m-%d %H:%M")
-        status["parked_duration_h"] = round((now - park_time) / 3600, 1)
 
     if run_time > 0:
         status["last_drive_ended"] = datetime.fromtimestamp(run_time).strftime("%Y-%m-%d %H:%M")
@@ -1011,16 +1007,19 @@ def run_scrape():
     # Step 9: Daily summary
     daily = daily_summary(trips, stops)
 
-    # Step 10: Fix parked_since from track data (nParkTime unreliable without ACC wire)
-    if status and not status.get("is_moving") and trips:
-        last_trip = trips[-1]
-        # Use the last trip's end time as "parked since"
-        try:
-            last_trip_end = datetime.strptime(last_trip["end_ts"], "%Y-%m-%d %H:%M")
-            status["parked_since"] = last_trip_end.strftime("%Y-%m-%d %H:%M")
-            status["parked_duration_h"] = round((time.time() - last_trip_end.timestamp()) / 3600, 1)
-        except (ValueError, KeyError):
-            pass
+    # Step 10: Derive parked_since from track data engine state (bit 7 = vibration sensor)
+    if status and not status.get("is_moving") and track:
+        # Walk backwards through track points to find when engine last turned off
+        engine_off_ts = None
+        for p in reversed(track):
+            cs = int(p.get("nCarState", 0))
+            if cs & 0x80:  # bit 7 = engine/vibration on
+                # Next point after this is when engine turned off
+                break
+            engine_off_ts = int(p.get("nTime", 0))
+        if engine_off_ts and engine_off_ts > 0:
+            status["parked_since"] = datetime.fromtimestamp(engine_off_ts).strftime("%Y-%m-%d %H:%M")
+            status["parked_duration_h"] = round((time.time() - engine_off_ts) / 3600, 1)
 
     # Save raw intermediate data
     scrape_duration = round(time.time() - t_start, 1)
