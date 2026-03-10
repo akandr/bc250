@@ -289,39 +289,24 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 ### 4.2 Benchmark visualization
 
-```
-  Token generation speed (tok/s) — higher is better
-  ──────────────────────────────────────────────────────────────────────
+**Token generation speed (tok/s) — higher is better:**
 
-  qwen2.5:3b         ████████████████████████████████████████████████████ 101
-  llama3.1:8b         ██████████████████████████████████████░░░░░░░░░░░░░  75
-  lexi-8b             █████████████████████████████████████░░░░░░░░░░░░░░  73
-  qwen2.5:7b          ██████████████████████████████░░░░░░░░░░░░░░░░░░░░░  59
-  qwen2.5-coder:7b    █████████████████████████████░░░░░░░░░░░░░░░░░░░░░░  57
-  seed-coder:8b       ██████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░  52
-  qwen3:8b            ██████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  44
-  mistral-nemo:12b    █████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  34
-  qwen3:14b ← prod    █████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  27
-  gemma2:9b            █████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  26
-  phi4:14b             ████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  25
-  Qwen3-30B-A3B Q2_K   ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  12
+| Model | tok/s | VRAM |
+|-------|------:|-----:|
+| qwen2.5:3b | 101 | 2.4 GB |
+| llama3.1:8b | 75 | 4.9 GB |
+| lexi-8b | 73 | 4.9 GB |
+| qwen2.5:7b | 59 | 4.7 GB |
+| qwen2.5-coder:7b | 57 | 4.7 GB |
+| seed-coder:8b | 52 | 5.0 GB |
+| qwen3:8b | 44 | 5.2 GB |
+| mistral-nemo:12b | 34 | 7.1 GB |
+| **qwen3:14b** ← prod | **27** | **9.3 GB** |
+| gemma2:9b | 26 | 5.4 GB |
+| phi4:14b | 25 | 9.1 GB |
+| Qwen3-30B-A3B Q2_K | 12 | 11.0 GB |
 
-  ──────────────────────────────────────────────────────────────────────
-  VRAM usage (GB) — lower is better (14.5 GB max)
-  ──────────────────────────────────────────────────────────────────────
-
-  qwen2.5:3b        ██░░░░░░░░░░░░░  2.4 GB
-  qwen2.5:7b        ███░░░░░░░░░░░░  4.7 GB
-  llama3.1:8b       ████░░░░░░░░░░░  4.9 GB
-  qwen3:8b          ████░░░░░░░░░░░  5.2 GB
-  gemma2:9b         ████░░░░░░░░░░░  5.4 GB
-  mistral-nemo:12b  █████░░░░░░░░░░  7.1 GB
-  phi4:14b          ██████░░░░░░░░░  9.1 GB
-  qwen3:14b         ███████░░░░░░░░  9.3 GB ← production
-  Qwen3-30B-A3B     ████████░░░░░░░ 11.0 GB ← barely fits
-                    ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
-                    0    5   10  14.5 GB (Vulkan max)
-```
+> Vulkan max: 14.5 GB. All 14B models at 100% GPU offload. 30B MoE barely fits at Q2_K (heavy quality loss).
 
 ### 4.3 Model testing journey
 
@@ -374,22 +359,18 @@ The path to running 14B models on this hardware was non-trivial. Here's the chro
 
 The context window directly controls KV cache size, and on 16 GB unified memory, every megabyte counts:
 
-```
-  Context Window vs Memory (qwen3:14b Q4_K_M)
-  ─────────────────────────────────────────────────────────────────
-  ctx=8192   │████████░░░░░░░░│ ~9.5 GB total  │ 6.5 GB free  │ ✅ safe
-  ctx=12288  │██████████░░░░░░│ ~10.3 GB total  │ 5.7 GB free  │ ✅ conservative
-  ctx=16384  │████████████░░░░│ ~11.1 GB total  │ 4.9 GB free  │ ✅ production ←
-  ctx=24576  │██████████████░░│ ~12.3 GB total  │ 3.7 GB free  │ ❌ deadlocks
-  ctx=32768  │████████████████│ ~13.5 GB total  │ 2.5 GB free  │ ❌ OOM kills
-  ctx=40960  │██████████████████ ~16.0 GB total │ OOM           │ 💀 instant death
-             └────────────────┘
-              0 GB        16 GB
+**Context window vs memory (qwen3:14b Q4_K_M)**
 
-  Lesson: 16K is the sweet spot — enough for complex reasoning,
-  leaves ~4.9 GB for OS/services. 24K worked initially but failed
-  under sustained load (8+ hours of continuous inference).
-```
+| Context | Total RAM | Free | Status |
+|--------:|----------:|-----:|--------|
+| 8192 | ~9.5 GB | 6.5 GB | ✅ Safe |
+| 12288 | ~10.3 GB | 5.7 GB | ✅ Conservative |
+| **16384** | **~11.1 GB** | **4.9 GB** | **✅ Production** |
+| 24576 | ~12.3 GB | 3.7 GB | ❌ Deadlocks under sustained load |
+| 32768 | ~13.5 GB | 2.5 GB | ❌ OOM kills |
+| 40960 | ~16.0 GB | 0 | 💀 Instant death |
+
+> **16K is the sweet spot** — enough for complex reasoning, leaves ~4.9 GB for OS/services. 24K worked initially but failed under sustained load (8+ hours of continuous inference).
 
 > **Flash attention** (`OLLAMA_FLASH_ATTENTION=1`) reduces KV cache memory ~30% but on Vulkan/GFX1013 the savings aren't enough to safely run 24K. The 16K→24K experiment was the costliest failure: 8 hours of silent 500 errors before discovery.
 
@@ -485,26 +466,26 @@ Register a separate phone number for the bot via `signal-cli register` or `signa
 Between every queued job, `queue-runner.py` polls the signal-cli journal for incoming messages:
 
 ```
-  ┌────────────────────────────────────────────────────────────────┐
-  │   queue-runner v7 — continuous loop                            │
-  │                                                                │
-  │   ┌──────────┐  ┌──────────────┐  ┌──────────┐  ┌──────────┐  │
-  │   │  job N   │→ │ check Signal │→ │  chat    │→ │ job N+1  │  │
-  │   └──────────┘  │  inbox       │  │ (if msg) │  └──────────┘  │
-  │                 └──────┬───────┘  └────┬─────┘               │
-  │                        │               │                      │
-  │                        ▼               ▼                      │
-  │                 journalctl -u   Ollama /api/chat              │
-  │                 signal-cli      (16K ctx, /think)             │
-  │                        │               │                      │
-  │                        │          ┌────┴─────┐                │
-  │                        │          │ EXEC cmd │  ← tool use    │
-  │                        │          └────┬─────┘                │
-  │                        │               │                      │
-  │                        ▼               ▼                      │
-  │                 signal-cli       signal-cli                   │
-  │                 JSON-RPC :8080   send reply                   │
-  └────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────┐
+  │  queue-runner v7 — continuous loop                           │
+  │                                                              │
+  │  ┌──────────┐  ┌──────────────┐  ┌─────────┐  ┌──────────┐  │
+  │  │  job N   │→ │ check Signal │→ │  chat   │→ │ job N+1  │  │
+  │  └──────────┘  │  inbox       │  │ (if msg)│  └──────────┘  │
+  │                └──────┬───────┘  └────┬────┘                │
+  │                       │               │                     │
+  │                       ▼               ▼                     │
+  │                journalctl -u    Ollama /api/chat             │
+  │                signal-cli       (16K ctx, /think)            │
+  │                       │               │                     │
+  │                       │          ┌────┴────┐                │
+  │                       │          │EXEC cmd │ ← tool use     │
+  │                       │          └────┬────┘                │
+  │                       │               │                     │
+  │                       ▼               ▼                     │
+  │                signal-cli        signal-cli                  │
+  │                JSON-RPC :8080    send reply                  │
+  └──────────────────────────────────────────────────────────────┘
 ```
 
 **Key parameters:**
