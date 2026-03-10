@@ -21,7 +21,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 
 OLLAMA_URL = "http://localhost:11434"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
 
 DATA_DIR = Path("/opt/netscan/data/news")
@@ -273,7 +273,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -705,12 +705,21 @@ def run_analyze():
 
     log(f"Saved {out_path}, think note ({len(must_read)} must-read)")
 
-    # Signal alert — only if we have highly relevant articles
-    if must_read:
+    # Signal alert — only for NEW highly relevant articles (not already sent)
+    sent_path = DATA_DIR / f"sent-{TODAY}.json"
+    already_sent = set()
+    try:
+        already_sent = set(json.loads(sent_path.read_text()))
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+
+    new_articles = [a for a in must_read if a.get("title", "") not in already_sent]
+
+    if new_articles:
         msg_parts = ["📰 Tech News Digest"]
-        msg_parts.append(f"{len(must_read)} relevant articles today:")
+        msg_parts.append(f"{len(new_articles)} new relevant articles:")
         msg_parts.append("")
-        for a in must_read[:5]:
+        for a in new_articles[:5]:
             msg_parts.append(f"• [{a['source_name']}] {a['title']}")
         if analysis:
             # Extract just the Must-Read section
@@ -726,6 +735,12 @@ def run_analyze():
 
         msg = "\n".join(msg_parts)
         signal_send(msg[:1500])
+
+        # Track sent titles
+        already_sent.update(a.get("title", "") for a in new_articles)
+        sent_path.write_text(json.dumps(sorted(already_sent)))
+    elif must_read:
+        log(f"  {len(must_read)} must-read articles already sent — no duplicate alert")
     else:
         log("  No must-read articles — no Signal alert")
 

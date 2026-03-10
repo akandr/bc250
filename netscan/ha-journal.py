@@ -39,7 +39,7 @@ HA_OBSERVE = "/opt/netscan/ha-observe.py"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # consolidated model for all batch scripts
+OLLAMA_MODEL = "qwen3:14b"  # consolidated model for all batch scripts
 
 QUIET_START = 0   # 00:00
 QUIET_END   = 6   # 06:00 — no chat, GPU free for batch jobs
@@ -277,7 +277,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=2000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
         "keep_alive": "5m",
     })
 

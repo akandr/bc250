@@ -48,7 +48,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 
 DATA_DIR = Path("/opt/netscan/data")
 BOOKS_DIR = DATA_DIR / "books"
@@ -460,7 +460,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=2000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -725,16 +725,27 @@ def run_scan(topic_filter=None):
             json.dump(note, f, indent=2, ensure_ascii=False)
         log(f"Think note: {note_path}")
 
-    # Signal — only if we found interesting books
+    # Signal — only if we found interesting books not already sent today
     hot_books = [b for b in all_books if b.get("score", 0) >= 25]
-    if hot_books:
-        alert = f"📚 Book Watch — {len(hot_books)} hot new books found:\n"
-        for b in hot_books[:5]:
+    sent_path = BOOKS_DIR / f"sent-{now.strftime('%Y%m%d')}.json"
+    already_sent = set()
+    try:
+        already_sent = set(json.loads(sent_path.read_text()))
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    new_books = [b for b in hot_books if b.get("title", "") not in already_sent]
+    if new_books:
+        alert = f"📚 Book Watch — {len(new_books)} hot new books found:\n"
+        for b in new_books[:5]:
             alert += f"  → [{b['score']}] {b['title'][:80]}\n"
         if analysis:
             summary_lines = analysis.strip().split("\n")[:6]
             alert += "\n" + "\n".join(summary_lines)
         signal_send(alert[:1500])
+        already_sent.update(b.get("title", "") for b in new_books)
+        sent_path.write_text(json.dumps(sorted(already_sent)))
+    elif hot_books:
+        log(f"  {len(hot_books)} hot books already sent today — no duplicate alert")
 
     duration = time.time() - t0
     log(f"\nDone: {len(all_books)} books, {duration:.0f}s")

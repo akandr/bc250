@@ -1,0 +1,9 @@
+[Unit]
+Description=Ollama Watchdog - detect GPU hangs and auto-restart
+After=ollama.service
+Requires=ollama.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/netscan/ollama-watchdog.sh
+User=root

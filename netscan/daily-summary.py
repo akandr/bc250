@@ -36,7 +36,7 @@ DATA_DIR = Path("/opt/netscan/data")
 SUMMARY_DIR = DATA_DIR / "summary"
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 
 TODAY = date.today().isoformat().replace("-", "")
 TODAY_LABEL = date.today().strftime("%B %d, %Y")
@@ -263,7 +263,7 @@ def call_llm(system_prompt, user_prompt, temperature=0.7, max_tokens=4096):
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-            "num_ctx": 16384,
+            "num_ctx": 24576,
         },
     }).encode()
 

@@ -26,7 +26,7 @@ WEB_DIR = Path(os.environ.get("NETSCAN_WEB", "/opt/netscan/web"))
 THINK_DIR = DATA_DIR / "think"
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_CHAT = f"{OLLAMA_URL}/v1/chat/completions"
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "huihui_ai/qwen3-abliterated:14b")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3:14b")
 
 # CJK detection regex
 CJK_RE = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\u3000-\u303f\uff00-\uffef]')
@@ -417,7 +417,7 @@ Keep it under 500 words. Be specific and actionable."""
                 {"role": "user", "content": "/nothink\n" + data_text},
             ],
             "stream": False,
-            "options": {"temperature": 0.2, "num_predict": 1500, "num_ctx": 8192},
+            "options": {"temperature": 0.2, "num_predict": 1500, "num_ctx": 24576},
         }).encode()
 
         req = urllib.request.Request(

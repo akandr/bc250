@@ -118,7 +118,7 @@ USER_AGENT = f"netscan-bc250-digest/2.0 ({FEED_ID} daily digest bot)"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # consolidated model for all batch scripts
+OLLAMA_MODEL = "qwen3:14b"  # consolidated model for all batch scripts
 OLLAMA_TIMEOUT_PER_CALL = 900     # 15 min max per LLM call
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
@@ -293,7 +293,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2048,
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-            "num_ctx": 16384,
+            "num_ctx": 24576,
         },
         "keep_alive": "5m",
     })

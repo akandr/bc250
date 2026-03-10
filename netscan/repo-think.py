@@ -27,7 +27,7 @@ DATA_DIR = "/opt/netscan/data"
 REPO_FEEDS = os.path.join(SCRIPT_DIR, "repo-feeds.json")
 PROFILE_JSON = os.path.join(SCRIPT_DIR, "profile.json")
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-MODEL = "huihui_ai/qwen3-abliterated:14b"
+MODEL = "qwen3:14b"
 
 # ─── Per-repo sub-topic focus areas ───
 # Each focus area gets its own dedicated LLM thinking session for deeper analysis.
@@ -224,7 +224,7 @@ def call_ollama(prompt, timeout=900):
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
-        "options": {"num_ctx": 16384, "temperature": 0.7}
+        "options": {"num_ctx": 24576, "temperature": 0.7}
     })
     req = urllib.request.Request(
         OLLAMA_URL, data=payload.encode(),

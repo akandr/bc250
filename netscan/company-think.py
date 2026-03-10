@@ -22,7 +22,7 @@ from llm_sanitize import sanitize_llm_output
 
 OLLAMA_URL   = "http://localhost:11434"
 OLLAMA_CHAT  = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 
 THINK_DIR    = Path("/opt/netscan/data/intel/think")
 INTEL_DIR    = Path("/opt/netscan/data/intel")
@@ -532,7 +532,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.5, max_tokens=4000, th
             {"role": "user", "content": prefix + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 16384},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload,

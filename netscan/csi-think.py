@@ -36,7 +36,7 @@ from llm_sanitize import sanitize_llm_output
 
 OLLAMA_URL   = "http://localhost:11434"
 OLLAMA_CHAT  = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 
 DATA_DIR     = Path("/opt/netscan/data")
 CSI_DIR      = DATA_DIR / "csi-think"
@@ -335,7 +335,7 @@ def call_ollama(system, user, temperature=0.5, max_tokens=4000, think=True):
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-            "num_ctx": 12288,
+            "num_ctx": 24576,
         },
     }).encode()
 

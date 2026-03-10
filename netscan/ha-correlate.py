@@ -39,7 +39,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 
 HASS_URL = os.environ.get("HASS_URL", "http://homeassistant:8123")
 HASS_TOKEN = os.environ.get("HASS_TOKEN", "")
@@ -756,7 +756,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -941,9 +941,10 @@ def detect_garage_events(all_history):
         else:
             event["type"] = "door_event"
             event["preliminary"] = True
+            peak_str = f"{peak:.1f}" if peak else "?"
             event["detail"] = (
                 f"Temp change {delta:+.1f}°C ({temp_before:.1f}→"
-                f"{peak:.1f if peak else '?'}°C) — "
+                f"{peak_str}°C) — "
                 f"outdoor: {outdoor_temp}°C — needs LLM analysis"
             )
 
@@ -1750,11 +1751,37 @@ Known devices (do NOT flag as anomalies):
         concerns.append(f"{emoji} {ge['time_local']} {ge['type'].replace('_', ' ')}: {ge['detail']}")
 
     if concerns:
-        alert_parts = [f"🏠 Home Alert — {dt_label}"]
-        alert_parts.extend(concerns[:8])
-        alert_parts.append(f"\n⏱ {elapsed:.0f}s | Full report on dashboard HOME tab")
-        signal_send("\n".join(alert_parts))
-        log(f"Signal alert sent: {len(concerns)} concerns")
+        # Cooldown: suppress same concern types for 6 hours
+        cooldown_path = DATA_DIR / "alert-cooldown.json"
+        cooldown_data = {}
+        try:
+            cooldown_data = json.loads(cooldown_path.read_text())
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        now_ts = time.time()
+        cooldown_secs = 6 * 3600  # 6 hours
+        # Key each concern by its type prefix (emoji + category)
+        new_concerns = []
+        for c in concerns:
+            # Use first ~40 chars as the dedup key (covers emoji + metric + room)
+            ckey = c[:40]
+            last_sent = cooldown_data.get(ckey, 0)
+            if now_ts - last_sent > cooldown_secs:
+                new_concerns.append(c)
+                cooldown_data[ckey] = now_ts
+        # Garage events always pass through (time-specific, never duplicate)
+        garage = [c for c in concerns if "🚗" in c or "🚙" in c]
+        new_concerns = list(dict.fromkeys(new_concerns + garage))  # dedup, preserve order
+
+        if new_concerns:
+            alert_parts = [f"🏠 Home Alert — {dt_label}"]
+            alert_parts.extend(new_concerns[:8])
+            alert_parts.append(f"\n⏱ {elapsed:.0f}s | Full report on dashboard HOME tab")
+            signal_send("\n".join(alert_parts))
+            cooldown_path.write_text(json.dumps(cooldown_data))
+            log(f"Signal alert sent: {len(new_concerns)} new concerns (of {len(concerns)} total)")
+        else:
+            log(f"All {len(concerns)} concerns already alerted within 6h — suppressed")
     else:
         log(f"No important concerns — skipping Signal alert (routine data saved to dashboard)")
 

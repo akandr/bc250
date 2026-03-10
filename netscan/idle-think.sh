@@ -122,7 +122,7 @@ SIGNAL_TO = SIGNAL_CFG.get("to", "+<OWNER_PHONE>")
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model for richer analysis
+OLLAMA_MODEL = "qwen3:14b"  # best model for richer analysis
 
 QUIET_START = 0
 QUIET_END   = 6
@@ -200,7 +200,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.4, max_tokens=3000, la
             {"role": "user", "content": "/nothink\n" + user_prompt}
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288}
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576}
     })
 
     try:

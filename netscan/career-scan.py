@@ -52,7 +52,7 @@ PROFILE_PRIVATE_PATH = os.path.join(SCRIPT_DIR, "profile-private.json")
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"  # best model — batch runs during quiet hours
+OLLAMA_MODEL = "qwen3:14b"  # best model — batch runs during quiet hours
 
 QUIET_START = 0   # 00:00
 QUIET_END   = 6   # 06:00  — no chat, GPU free for batch jobs
@@ -607,7 +607,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=3000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     })
 
     try:
@@ -1143,15 +1143,30 @@ def generate_summary(jobs, intel_data, scan_meta):
 
 def send_hot_alerts(jobs, intel_data):
     """Send Signal notifications for very hot matches and urgent intel.
-    Per refactor policy: only score>=85 during scrape phase (immediate), or LLM-flagged during analyze."""
+    Per refactor policy: only score>=85 during scrape phase (immediate), or LLM-flagged during analyze.
+    Tracks sent items in daily file to avoid duplicate notifications."""
     hot_jobs = [j for j in jobs if j.get("match_score", 0) >= 85 and j.get("remote_compatible", False)]
     urgent_intel = []
     if intel_data and "alerts" in intel_data:
         urgent_intel = [a for a in intel_data["alerts"] if a.get("severity") == "urgent"]
 
+    # Load already-sent keys for today
+    today_str = datetime.now().strftime("%Y%m%d")
+    sent_path = os.path.join(CAREER_DIR, f"sent-{today_str}.json")
+    already_sent = set()
+    try:
+        with open(sent_path) as f:
+            already_sent = set(json.load(f))
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+
     alerts_sent = 0
+    newly_sent = []
 
     for j in hot_jobs[:3]:  # Max 3 job alerts per scan
+        key = f"job:{j.get('company','?')}:{j.get('title','?')}"
+        if key in already_sent:
+            continue
         msg = (
             f"🎯 HOT JOB MATCH ({j.get('match_score', 0)}%)\n"
             f"{j.get('title', '?')} @ {j.get('company', '?')}\n"
@@ -1162,9 +1177,13 @@ def send_hot_alerts(jobs, intel_data):
         )
         if signal_send(msg):
             alerts_sent += 1
+            newly_sent.append(key)
             print(f"  📡 Signal alert sent: {j.get('title', '?')}")
 
     for a in urgent_intel[:2]:  # Max 2 intel alerts
+        key = f"intel:{a.get('company','?')}:{a.get('summary','?')}"
+        if key in already_sent:
+            continue
         msg = (
             f"⚠️ CAREER ALERT: {a.get('type', 'unknown').upper()}\n"
             f"{a.get('company', '?')}: {a.get('summary', '?')}\n"
@@ -1172,7 +1191,17 @@ def send_hot_alerts(jobs, intel_data):
         )
         if signal_send(msg):
             alerts_sent += 1
+            newly_sent.append(key)
             print(f"  📡 Signal alert sent: {a.get('summary', '?')}")
+
+    # Persist sent keys
+    if newly_sent:
+        already_sent.update(newly_sent)
+        with open(sent_path, "w") as f:
+            json.dump(sorted(already_sent), f)
+
+    if not alerts_sent and (hot_jobs or urgent_intel):
+        print(f"  All {len(hot_jobs)} hot jobs / {len(urgent_intel)} intel already sent today")
 
     return alerts_sent
 

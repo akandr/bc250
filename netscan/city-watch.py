@@ -39,7 +39,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 OLLAMA_TIMEOUT = 900
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
@@ -298,7 +298,7 @@ def call_ollama(system_prompt, user_content, timeout=OLLAMA_TIMEOUT):
             {"role": "user", "content": user_content},
         ],
         "stream": False,
-        "options": {"num_ctx": 16384, "temperature": 0.4},
+        "options": {"num_ctx": 24576, "temperature": 0.4},
     }).encode()
 
     req = urllib.request.Request(
@@ -722,8 +722,10 @@ def run_analyze():
     # Save
     save_results(data, analysis)
 
-    # Signal alert — send LLM summary, not individual thread list
-    if analysis:
+    # Signal alert — send LLM summary, but only once per day
+    today_str = dt.strftime("%Y%m%d")
+    sent_flag = DATA_DIR / f"sent-{today_str}.flag"
+    if analysis and not sent_flag.exists():
         # Extract key points from analysis for compact Signal message
         alert_parts = [f"🏗️ Neighborhood Watch — {relevant_count} relevant threads"]
         # Send the LLM summary directly — user wants insights, not topic list
@@ -742,6 +744,9 @@ def run_analyze():
             # Use first ~800 chars of the full analysis
             alert_parts.append(f"\n{summary_text[:800]}")
         signal_send("\n".join(alert_parts)[:1200])
+        sent_flag.write_text(dt.isoformat())
+    elif analysis:
+        log(f"City watch alert already sent today — suppressed")
     else:
         log(f"No LLM analysis — skipping Signal alert.")
 

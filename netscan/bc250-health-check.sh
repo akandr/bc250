@@ -129,7 +129,7 @@ else:
                     sys_cmd="systemctl --machine=akandr@.host --user"
                 fi
                 local gw_errors
-                gw_errors=$($jctl_cmd -u openclaw-gateway.service --since "30 min ago" --no-pager 2>/dev/null | grep -c "fetch failed" || echo 0)
+                gw_errors=$($jctl_cmd -u openclaw-gateway.service --since "30 min ago" --no-pager 2>/dev/null | grep -c "fetch failed" || true)
                 if [[ "$gw_errors" -gt 3 ]]; then
                     log "CRITICAL: Gateway in fetch-failed loop ($gw_errors errors in 30min). Restarting gateway..."
                     $sys_cmd restart openclaw-gateway.service
@@ -167,7 +167,7 @@ check_gateway() {
 
     # Check for persistent fetch-failed errors (deadlock pattern)
     local recent_errors
-    recent_errors=$($jctl_cmd -u openclaw-gateway.service --since "30 min ago" --no-pager 2>/dev/null | grep -c "fetch failed" || echo 0)
+    recent_errors=$($jctl_cmd -u openclaw-gateway.service --since "30 min ago" --no-pager 2>/dev/null | grep -c "fetch failed" || true)
     if [[ "$recent_errors" -gt 6 ]]; then
         local fail_count
         fail_count=$(cat "$STATE_DIR/gateway-fails" 2>/dev/null || echo 0)
@@ -197,7 +197,7 @@ check_queue_runner() {
 
     # Check if queue-runner is stuck in a busy-wait loop for too long
     local busy_count
-    busy_count=$(journalctl -u queue-runner --since "60 min ago" --no-pager 2>/dev/null | grep -c "GPU busy" || echo 0)
+    busy_count=$(journalctl -u queue-runner --since "60 min ago" --no-pager 2>/dev/null | grep -c "GPU busy" || true)
     if [[ "$busy_count" -gt 10 ]]; then
         # GPU busy for 10+ checks (50+ min) — likely a deadlock with gateway
         local fail_count
@@ -239,6 +239,17 @@ main() {
         log "OK: All services healthy"
     else
         log "ISSUES: $issues check(s) flagged"
+    fi
+
+    # Refresh extended health data for dashboard (at most once per hour)
+    local ext_stamp="$STATE_DIR/extended-health-last"
+    local now
+    now=$(date +%s)
+    local last=0
+    [[ -f "$ext_stamp" ]] && last=$(cat "$ext_stamp")
+    if (( now - last > 3600 )); then
+        python3 /opt/netscan/bc250-extended-health.py --quick >/dev/null 2>&1 || true
+        echo "$now" > "$ext_stamp"
     fi
 }
 

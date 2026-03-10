@@ -41,7 +41,7 @@ PROFILE_PATH = os.path.join(SCRIPT_DIR, "profile.json")
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 OLLAMA_TIMEOUT = 900
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
@@ -117,7 +117,7 @@ def call_ollama(system_prompt, user_content, timeout=OLLAMA_TIMEOUT):
             {"role": "user", "content": user_content},
         ],
         "stream": False,
-        "options": {"num_ctx": 16384, "temperature": 0.4},
+        "options": {"num_ctx": 24576, "temperature": 0.4},
         "keep_alive": "10m",
     }).encode()
     req = urllib.request.Request(

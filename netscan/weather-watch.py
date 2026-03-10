@@ -22,7 +22,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 
 OLLAMA_URL = "http://localhost:11434"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
 
 HASS_URL = os.environ.get("HASS_URL", "http://homeassistant:8123")
@@ -218,7 +218,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2500):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -856,14 +856,32 @@ def run_analyze():
             alert_parts.append(f"🌿 Pollen alert: {peaks}")
 
     if alert_parts:
-        msg = "🌤 Weather Watch\n" + "\n".join(alert_parts)
-        if analysis:
-            # Add first actionable recommendation from analysis
-            for line in analysis.split("\n"):
-                if line.strip().startswith("- ") or line.strip().startswith("• "):
-                    msg += f"\n\nTip: {line.strip()[2:]}"
-                    break
-        signal_send(msg[:1500])
+        # Cooldown: don't re-send identical weather alerts within 6 hours
+        import hashlib
+        alert_key = hashlib.md5("\n".join(sorted(alert_parts)).encode()).hexdigest()[:16]
+        cooldown_path = DATA_DIR / "alert-cooldown.json"
+        cooldown_data = {}
+        try:
+            cooldown_data = json.loads(cooldown_path.read_text())
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        now_ts = time.time()
+        last_sent = cooldown_data.get(alert_key, 0)
+        if now_ts - last_sent > 6 * 3600:
+            msg = "🌤 Weather Watch\n" + "\n".join(alert_parts)
+            if analysis:
+                # Add first actionable recommendation from analysis
+                for line in analysis.split("\n"):
+                    if line.strip().startswith("- ") or line.strip().startswith("• "):
+                        msg += f"\n\nTip: {line.strip()[2:]}"
+                        break
+            signal_send(msg[:1500])
+            cooldown_data[alert_key] = now_ts
+            # Prune old entries (> 24h)
+            cooldown_data = {k: v for k, v in cooldown_data.items() if now_ts - v < 86400}
+            cooldown_path.write_text(json.dumps(cooldown_data))
+        else:
+            log("  Same weather alert already sent within 6h — suppressed")
     else:
         log("  No weather alerts needed")
 

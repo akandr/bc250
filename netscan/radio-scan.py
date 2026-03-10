@@ -54,7 +54,7 @@ LOGIN_URL = f"{BASE_URL}/member.php"
 # ── Ollama LLM ──
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "huihui_ai/qwen3-abliterated:14b"
+OLLAMA_MODEL = "qwen3:14b"
 
 # ── Signal notifications ──
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
@@ -177,7 +177,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.3, max_tokens=2000):
             {"role": "user", "content": "/nothink\n" + user_prompt},
         ],
         "stream": False,
-        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 12288},
+        "options": {"temperature": temperature, "num_predict": max_tokens, "num_ctx": 24576},
     }).encode()
 
     req = urllib.request.Request(OLLAMA_CHAT, data=payload, headers={
@@ -826,15 +826,29 @@ def run_analyze():
     log(f"Daily snapshot: {daily_path}")
 
     # Signal notification — only from analyze phase when LLM finds important content
+    # Track sent thread titles to avoid duplicate alerts within the same day
+    sent_path = os.path.join(RADIO_DIR, f"sent-{now.strftime('%Y%m%d')}.json")
+    already_sent = set()
+    try:
+        with open(sent_path) as _f:
+            already_sent = set(json.load(_f))
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
     if highlights and briefing:
         hot = [h for h in highlights if h.get("score", 0) >= 40]
-        if hot:
-            alert_lines = [f"📻 RADIO SCAN — {len(highlights)} highlights:\n"]
-            for h in hot[:3]:
+        new_hot = [h for h in hot if h.get("title", "") not in already_sent]
+        if new_hot:
+            alert_lines = [f"📻 RADIO SCAN — {len(new_hot)} new highlights:\n"]
+            for h in new_hot[:3]:
                 alert_lines.append(f"[{h['score']}] {h.get('section_emoji', '📻')} {h['title'][:80]}")
             brief_lines = briefing.strip().split("\n")[:8]
             alert_lines.append(f"\n🤖 AI Briefing:\n" + "\n".join(brief_lines))
             signal_send("\n".join(alert_lines)[:1500])
+            already_sent.update(h.get("title", "") for h in new_hot)
+            with open(sent_path, "w") as _f:
+                json.dump(sorted(already_sent), _f)
+        elif hot:
+            log(f"  {len(hot)} hot highlights already sent today — no duplicate alert")
 
     duration = time.time() - start_time
     log(f"\n{'='*60}")

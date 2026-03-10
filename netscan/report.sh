@@ -12,9 +12,18 @@ SCAN_YEST="$DATA_DIR/scan-${YESTERDAY}.json"
 HEALTH="$DATA_DIR/health-${TODAY}.json"
 DASHBOARD_URL="http://192.168.3.151:8888/"
 
+# Fall back to yesterday's scan if today's doesn't exist yet
+# (nightly cycle crosses midnight, so scan file may be dated yesterday)
 if [[ ! -f "$SCAN_TODAY" ]]; then
-    echo "No scan for today ($TODAY). Aborting."
-    exit 1
+    if [[ -f "$SCAN_YEST" ]]; then
+        echo "No scan for today ($TODAY), using yesterday's ($YESTERDAY)."
+        SCAN_TODAY="$SCAN_YEST"
+        # Use day-before-yesterday for diff
+        SCAN_YEST="$DATA_DIR/scan-$(date -d '2 days ago' +%Y%m%d).json"
+    else
+        echo "No scan for today ($TODAY) or yesterday ($YESTERDAY). Aborting."
+        exit 1
+    fi
 fi
 
 MESSAGE=$(python3 - "$SCAN_TODAY" "$SCAN_YEST" "$HEALTH" "$DASHBOARD_URL" << 'PYEOF'
