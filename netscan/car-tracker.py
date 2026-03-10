@@ -257,7 +257,7 @@ def reverse_geocode(lat, lon):
     try:
         url = (
             f"https://nominatim.openstreetmap.org/reverse?"
-            f"lat={lat}&lon={lon}&format=json&zoom=18&addressdetails=1"
+            f"lat={lat}&lon={lon}&format=json&zoom=17&addressdetails=1"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "bc250-car-tracker/1.0"})
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -494,9 +494,9 @@ def detect_stops(track_points):
         else:
             # Speed spike — check if it's real movement or GPS noise
             if stop_start and stop_points:
-                avg_lat = statistics.mean(p["lat"] for p in stop_points)
-                avg_lon = statistics.mean(p["lon"] for p in stop_points)
-                dist_from_stop = haversine_m(avg_lat, avg_lon, pt["lat"], pt["lon"])
+                med_lat = statistics.median(p["lat"] for p in stop_points)
+                med_lon = statistics.median(p["lon"] for p in stop_points)
+                dist_from_stop = haversine_m(med_lat, med_lon, pt["lat"], pt["lon"])
                 if dist_from_stop < CLUSTER_RADIUS_M:
                     # Still near the stop center — GPS noise, keep the stop open
                     continue
@@ -506,8 +506,8 @@ def detect_stops(track_points):
                     raw_stops.append({
                         "start_time": stop_start["t"],
                         "end_time": stop_points[-1]["t"],
-                        "lat": avg_lat,
-                        "lon": avg_lon,
+                        "lat": med_lat,
+                        "lon": med_lon,
                         "duration_s": duration,
                     })
             stop_start = None
@@ -517,13 +517,13 @@ def detect_stops(track_points):
     if stop_start and stop_points:
         duration = stop_points[-1]["t"] - stop_start["t"]
         if duration >= PARK_MIN_DURATION:
-            avg_lat = statistics.mean(p["lat"] for p in stop_points)
-            avg_lon = statistics.mean(p["lon"] for p in stop_points)
+            med_lat = statistics.median(p["lat"] for p in stop_points)
+            med_lon = statistics.median(p["lon"] for p in stop_points)
             raw_stops.append({
                 "start_time": stop_start["t"],
                 "end_time": stop_points[-1]["t"],
-                "lat": avg_lat,
-                "lon": avg_lon,
+                "lat": med_lat,
+                "lon": med_lon,
                 "duration_s": duration,
             })
 
