@@ -80,7 +80,7 @@ CPU and GPU share the same 16 GB pool. Only 512 MB is carved out as VRAM — the
 1. **GTT cap** — `amdgpu` driver defaults to 50% of RAM (~7.4 GiB). Fix: `amdgpu.gttsize=14336` in kernel cmdline → GPU gets 14 GiB GTT.
 2. **TTM pages_limit** — kernel TTM memory manager independently caps allocations at ~7.4 GiB. Fix: `ttm.pages_limit=4194304` (16 GiB in 4K pages).
 
-After both fixes: Vulkan sees **14.5 GiB** — enough for **14B parameter models at 16K context, 100% GPU**.
+After both fixes: Vulkan sees **14.5 GiB** — enough for **14B parameter models at 24K context, 100% GPU**.
 
 ---
 
@@ -129,7 +129,7 @@ Environment=OLLAMA_KEEP_ALIVE=30m
 Environment=OLLAMA_MAX_LOADED_MODELS=1
 Environment=OLLAMA_FLASH_ATTENTION=1
 Environment=OLLAMA_GPU_OVERHEAD=0
-Environment=OLLAMA_CONTEXT_LENGTH=16384
+Environment=OLLAMA_CONTEXT_LENGTH=24576
 OOMScoreAdjust=-1000
 EOF
 sudo systemctl daemon-reload && sudo systemctl restart ollama
@@ -169,20 +169,11 @@ sudo dracut -f
 
 Ollama allocates KV cache based on the model's declared context window. The default `qwen3-abliterated:14b` declares `num_ctx 40960` — that's **16 GB** of KV cache + weights, exceeding available RAM and triggering OOM kills.
 
-**Fix:** Bake a hard context cap into a custom Ollama model:
+**Fix:** Set `OLLAMA_CONTEXT_LENGTH=24576` in the Ollama systemd override (see §3.3). This caps all inference to 24K context regardless of model defaults.
 
-```bash
-cat > /tmp/Modelfile.16k << 'EOF'
-FROM huihui_ai/qwen3-abliterated:14b
-PARAMETER num_ctx 16384
-EOF
+This reduces total memory from **~16 GB** (40960 ctx) to **~12.3 GB** (24576 ctx). The standard `qwen3:14b` model is used directly — no custom Modelfile needed.
 
-ollama create qwen3-14b-16k -f /tmp/Modelfile.16k
-```
-
-This reduces total memory from **~16 GB** (40960 ctx) to **~11.1 GB** (16384 ctx). The model name `qwen3-14b-16k` is then used everywhere in OpenClaw config.
-
-> ⚠️ Setting `OLLAMA_CONTEXT_LENGTH` in the environment is not reliable — some API calls bypass it. The Modelfile approach is the only guaranteed fix.
+> **Why 24K?** Systematic testing (see §4.4) showed 24K is the maximum context that runs at full speed (~27 tok/s) with adequate headroom. 26K works but is 10% slower due to swap pressure. 28K+ deadlocks.
 
 ### 3.5 Swap — NVMe-backed safety net
 
@@ -254,12 +245,12 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 | Consumer | Usage | Notes |
 |----------|-------|-------|
-| Model (qwen3-14b-16k) | ~11.1 GiB | GPU memory |
+| Model (qwen3:14b @ 24K) | ~12.3 GiB | GPU memory (GTT) |
 | signal-cli + queue-runner | ~1.0 GiB | System RAM |
 | OS + services | ~1.5 GiB | System RAM |
 | NVMe swap | 16 GiB | Safety net |
 | zram | 2 GiB | Boot-limited ▼ |
-| **Status** | **Stable** | 16K context, swap headroom ~14 GB |
+| **Status** | **Stable** | 24K context, ~1.5 GB free RAM |
 
 ---
 
@@ -349,43 +340,53 @@ The path to running 14B models on this hardware was non-trivial. Here's the chro
   │          → Committed: 4f41926 "v7: Replace OpenClaw with standalone Signal"
   │
   Mar 7 ──── Tested phi4:14b, Qwen3-30B-A3B (Q2_K), seed-coder
-             phi4: 25 tok/s, good reasoning but slower than qwen3.
-             30B MoE: fits at Q2_K (11 GB) but ~12 tok/s, heavy quality loss.
-             seed-coder: decent for code, 52 tok/s, but not general-purpose.
-             Decision: keep qwen3:14b as primary. ✅
+  │          phi4: 25 tok/s, good reasoning but slower than qwen3.
+  │          30B MoE: fits at Q2_K (11 GB) but ~12 tok/s, heavy quality loss.
+  │          seed-coder: decent for code, 52 tok/s, but not general-purpose.
+  │          Decision: keep qwen3:14b as primary. ✅
+  │
+  Mar 10 ─── Context window re-test: 16K → 24K ✅
+             v7 freed 700 MB + 14 GB GTT = enough headroom for 24K.
+             Tested 16K–32K in 2K steps. 24K: full speed (26.7 t/s), 1.5 GB free.
+             26K: 10% slower. 28K+: deadlocks. Production bumped to 24K.
 ```
 
 ### 4.4 Context window experiments
 
-The context window directly controls KV cache size, and on 16 GB unified memory, every megabyte counts:
+The context window directly controls KV cache size, and on 16 GB unified memory, every megabyte counts. After v7 (OpenClaw removal freed ~700 MB, GTT bumped to 14 GB), we re-tested all context sizes systematically:
 
-**Context window vs memory (qwen3:14b Q4_K_M)**
+**Context window vs memory (qwen3:14b Q4_K_M, flash attention, 14 GB GTT)**
 
-| Context | Total RAM | Free | Status |
-|--------:|----------:|-----:|--------|
-| 8192 | ~9.5 GB | 6.5 GB | ✅ Safe |
-| 12288 | ~10.3 GB | 5.7 GB | ✅ Conservative |
-| **16384** | **~11.1 GB** | **4.9 GB** | **✅ Production** |
-| 24576 | ~12.3 GB | 3.7 GB | ❌ Deadlocks under sustained load |
-| 32768 | ~13.5 GB | 2.5 GB | ❌ OOM kills |
-| 40960 | ~16.0 GB | 0 | 💀 Instant death |
+| Context | RAM Used | Free | Swap | Speed | Status |
+|--------:|---------:|-----:|-----:|------:|--------|
+| 8192 | ~9.5 GB | 6.5 GB | — | ~27 t/s | ✅ Safe |
+| 12288 | ~10.3 GB | 5.7 GB | — | ~27 t/s | ✅ Conservative |
+| 16384 | ~11.1 GB | 4.9 GB | — | ~27 t/s | ✅ Comfortable |
+| 18432 | ~13.2 GB | 2.7 GB | 0.9 GB | 26.8 t/s | ✅ Works |
+| 20480 | ~13.7 GB | 2.3 GB | 0.9 GB | 26.8 t/s | ✅ Works |
+| 22528 | ~14.0 GB | 2.0 GB | 0.9 GB | 26.7 t/s | ✅ Works |
+| **24576** | **~14.4 GB** | **1.5 GB** | **0.9 GB** | **26.7 t/s** | **✅ Production** |
+| 26624 | ~14.6 GB | 1.3 GB | 1.0 GB | 23.9 t/s | ⚠️ 10% slower |
+| 28672 | ~14.2 GB | — | 1.7 GB | timeout | ❌ Deadlocks |
+| 32768 | ~15.7 GB | 0.2 GB | 2.1 GB | timeout | ❌ Deadlocks |
+| 40960 | ~16.0 GB | 0 | — | — | 💀 Instant OOM |
 
-> **16K is the sweet spot** — enough for complex reasoning, leaves ~4.9 GB for OS/services. 24K worked initially but failed under sustained load (8+ hours of continuous inference).
+> **24K is the sweet spot** — full speed (~27 tok/s), leaves ~1.5 GB for OS/services with stable swap at 0.9 GB. 26K works but inference drops 10% due to swap pressure. 28K+ deadlocks under Vulkan.
 
-> **Flash attention** (`OLLAMA_FLASH_ATTENTION=1`) reduces KV cache memory ~30% but on Vulkan/GFX1013 the savings aren't enough to safely run 24K. The 16K→24K experiment was the costliest failure: 8 hours of silent 500 errors before discovery.
+> **History:** The original 24K experiment (Feb 25) deadlocked because OpenClaw gateway consumed ~700 MB. After v7 removed OpenClaw and bumped GTT to 14 GB (Mar 5), 24K became stable. Flash attention (`OLLAMA_FLASH_ATTENTION=1`) is essential — without it, 24K would not fit.
 
 ### 4.2 Memory budget
 
-**qwen3-14b-16k loaded · headless server**
+**qwen3:14b @ 24K context · headless server**
 
 | Component | Memory | Notes |
 |-----------|--------|-------|
 | OS + system | ~0.9 GB | Headless Fedora 43 |
-| Ollama + model (GPU) | ~11.1 GB | GTT allocation |
+| Ollama + model (GPU) | ~12.3 GB | GTT allocation (24K ctx) |
 | signal-cli | ~0.1 GB | JSON-RPC daemon |
 | queue-runner | ~0.05 GB | Python process |
-| **Free RAM** | **~1.5–3.8 GB** | Fluctuates with inference |
-| NVMe swap | 16 GB (1.4 used) | Safety net |
+| **Free RAM** | **~1.0–2.5 GB** | Fluctuates with inference |
+| NVMe swap | 16 GB (~0.9 used) | Safety net |
 | zram | 2 GB | Boot limit |
 | GTT (VRAM) | 14 GB | See §3.2 |
 | **Status** | **Stable ✓** | OOM protection: Ollama=-1000 |
@@ -397,14 +398,9 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 "Abliterated" models have refusal mechanisms removed — identical intelligence, zero quality loss, no safety refusals. The abliterated 14B is the primary model for all tasks.
 
 ```bash
-ollama pull huihui_ai/qwen3-abliterated:14b
-
-# Create context-capped variant (required for 16 GB systems — see §3.4)
-cat > /tmp/Modelfile.16k << 'EOF'
-FROM huihui_ai/qwen3-abliterated:14b
-PARAMETER num_ctx 16384
-EOF
-ollama create qwen3-14b-16k -f /tmp/Modelfile.16k
+ollama pull qwen3:14b
+# Context is capped via OLLAMA_CONTEXT_LENGTH=24576 in systemd (see §3.3, §3.4)
+# No custom Modelfile needed — the env var caps all models
 ```
 
 ---
@@ -485,7 +481,7 @@ queue-runner v7 — continuous loop
 
 | Setting | Value | Purpose |
 |---------|:-----:|---------|
-| `SIGNAL_CHAT_CTX` | 16384 | Full 16K context window for reasoning |
+| `SIGNAL_CHAT_CTX` | 24576 | Full 24K context window for reasoning |
 | `SIGNAL_CHAT_MAX_EXEC` | 3 | Max shell commands per message (search → fetch → verify) |
 | `SIGNAL_EXEC_TIMEOUT_S` | 30 | Per-command timeout |
 | `SIGNAL_MAX_REPLY` | 1800 | Signal message character limit |
