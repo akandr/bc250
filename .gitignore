@@ -23,3 +23,6 @@ tmp/
 
 # Internal notes (Claude session context, not for repo)
 internal_notes_claude.txt
+
+# Presentation materials
+presentation/
