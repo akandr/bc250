@@ -315,6 +315,78 @@ def signal_send(msg):
         log(f"  Signal send failed: {e}")
 
 
+def llm_notification_filter(articles):
+    """Ask LLM which articles truly deserve a push notification.
+
+    Returns only articles the LLM marks as NOTIFY, with a reason.
+    Keeps the dashboard must-read list unchanged — this only gates Signal alerts.
+    """
+    if not articles:
+        return []
+
+    lines = []
+    for i, a in enumerate(articles):
+        lines.append(f"[{i}] [{a.get('source_name', '?')}] {a.get('title', '?')}")
+        if a.get("summary"):
+            lines.append(f"    {a['summary'][:150]}")
+
+    prompt = "\n".join(lines)
+
+    system = """\
+You are a personal news notification filter for a Principal Embedded SW Engineer
+who works on V4L2, libcamera, GStreamer, GMSL/SerDes, camera ISP, Linux kernel
+drivers, MIPI CSI-2, AMD GPU/Vulkan, and home automation (Home Assistant).
+
+The user gets these articles on their dashboard anyway. The question is:
+which ones are important enough to INTERRUPT them with a phone notification?
+
+ONLY mark as NOTIFY if the article is:
+- A critical security vulnerability affecting Linux/embedded systems
+- A major kernel release or subsystem change in areas they work on
+- Breaking news directly about their tech stack (V4L2, libcamera, GStreamer, AMD RDNA)
+- A significant new product/chip they'd need to evaluate for work
+- Something they'd genuinely regret missing if they didn't check the dashboard today
+
+Do NOT notify for:
+- Generic new SBC/board announcements (Raspberry Pi accessories, random dev boards)
+- Routine Mesa/driver point releases unless they fix AMD RDNA bugs
+- General industry news, market trends, AI hype
+- Products/chips outside their direct work scope
+
+Reply with ONLY a JSON array. For each article, output:
+{"idx": N, "action": "NOTIFY" or "SKIP", "reason": "one-sentence why"}
+
+Output ONLY the JSON array, no other text."""
+
+    result = call_ollama(system, prompt, temperature=0.1, max_tokens=1500)
+    if not result:
+        log("  LLM notification filter failed — sending all")
+        return articles[:3]
+
+    # Parse JSON from LLM response
+    try:
+        # Find JSON array in response
+        match = re.search(r'\[.*\]', result, re.DOTALL)
+        if not match:
+            log("  LLM filter: no JSON found — sending all")
+            return articles[:3]
+        decisions = json.loads(match.group())
+    except (json.JSONDecodeError, ValueError) as e:
+        log(f"  LLM filter parse error: {e} — sending all")
+        return articles[:3]
+
+    notify = []
+    for d in decisions:
+        if d.get("action") == "NOTIFY":
+            idx = d.get("idx", -1)
+            if 0 <= idx < len(articles):
+                articles[idx]["notify_reason"] = d.get("reason", "")
+                notify.append(articles[idx])
+
+    log(f"  LLM notification filter: {len(notify)}/{len(articles)} pass")
+    return notify
+
+
 # ── Feed Parsing ───────────────────────────────────────────────────────────
 
 def parse_rss(xml_text, feed_config):
@@ -716,27 +788,23 @@ def run_analyze():
     new_articles = [a for a in must_read if a.get("title", "") not in already_sent]
 
     if new_articles:
-        msg_parts = ["📰 Tech News Digest"]
-        msg_parts.append(f"{len(new_articles)} new relevant articles:")
-        msg_parts.append("")
-        for a in new_articles[:5]:
-            msg_parts.append(f"• [{a['source_name']}] {a['title']}")
-        if analysis:
-            # Extract just the Must-Read section
-            for line in analysis.split("\n"):
-                if "must-read" in line.lower() or "🔥" in line:
-                    break
-            # Add first tip from analysis
-            for line in analysis.split("\n"):
-                stripped = line.strip()
-                if stripped.startswith("- ") and "why" in stripped.lower():
-                    msg_parts.append(f"\n{stripped}")
-                    break
+        # LLM relevance gate — only push-notify truly important articles
+        notify_articles = llm_notification_filter(new_articles)
 
-        msg = "\n".join(msg_parts)
-        signal_send(msg[:1500])
+        if notify_articles:
+            msg_parts = [f"📰 Tech News — {len(notify_articles)} important"]
+            msg_parts.append("")
+            for a in notify_articles:
+                reason = a.get("notify_reason", "")
+                msg_parts.append(f"• [{a['source_name']}] {a['title']}")
+                if reason:
+                    msg_parts.append(f"  → {reason}")
+            msg = "\n".join(msg_parts)
+            signal_send(msg[:1500])
+        else:
+            log(f"  LLM filtered out all {len(new_articles)} candidates — no notification")
 
-        # Track sent titles
+        # Track ALL new must-read titles as sent (even if filtered from notification)
         already_sent.update(a.get("title", "") for a in new_articles)
         sent_path.write_text(json.dumps(sorted(already_sent)))
     elif must_read:
