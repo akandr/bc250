@@ -11,15 +11,15 @@
 
 **GPU-accelerated AI home server on an obscure AMD APU — Vulkan inference, autonomous intelligence, Signal chat**
 
-`Zen 2 · RDNA 1 · 16 GB unified · Vulkan · 14B @ 27 tok/s · 336 autonomous jobs/cycle · 130 dashboard pages`
+`Zen 2 · RDNA 1.5 · 16 GB unified · Vulkan · 14B @ 27 tok/s · 337 autonomous jobs/cycle · 130 dashboard pages`
 
 </div>
 
-> A complete guide to running a 14B-parameter LLM, image generation, and 336 autonomous jobs on the AMD BC-250 — an obscure APU (Zen 2 CPU + Cyan Skillfish RDNA 1 GPU) found in Samsung's blockchain/distributed-ledger rack appliances. Not a "crypto mining GPU," not a PS5 prototype — it's a custom SoC that Samsung used for private DLT infrastructure, repurposed here as a headless AI server with a community-patched BIOS.
+> A complete guide to running a 14B-parameter LLM, image generation, and 337 autonomous jobs on the AMD BC-250 — an obscure APU (Zen 2 CPU + Cyan Skillfish RDNA 1.5 GPU) found in Samsung's blockchain/distributed-ledger rack appliances. Not a "crypto mining GPU," not a PS5 prototype — it's a custom SoC that Samsung used for private DLT infrastructure, repurposed here as a headless AI server with a community-patched BIOS.
 >
 > **March 2026** · Hardware-specific driver workarounds, memory tuning discoveries, context window experiments, and real-world benchmarks that aren't documented anywhere else.
 
-> **What makes this unique:** The BC-250's Cyan Skillfish GPU (`GFX1013`) is possibly the only RDNA 1 silicon running production LLM inference. ROCm doesn't support it. OpenCL doesn't expose it. The only viable compute path is **Vulkan** — and even that required discovering two hidden kernel memory bottlenecks (GTT cap + TTM pages_limit) before 14B models would run.
+> **What makes this unique:** The BC-250's Cyan Skillfish GPU (`GFX1013`) is possibly the only RDNA 1.5 silicon running production LLM inference. ROCm doesn't support it. OpenCL doesn't expose it. The only viable compute path is **Vulkan** — and even that required discovering two hidden kernel memory bottlenecks (GTT cap + TTM pages_limit) before 14B models would run.
 
 ---
 
@@ -36,7 +36,7 @@
 | [5](#5-signal-chat-bot) | Signal Chat Bot | Bot builders | Direct Signal chat via queue-runner, LLM tool use |
 | [6](#6-image-generation) | Image Generation | Creative users | FLUX.1-schnell, synchronous pipeline |
 | | **`PART III ─ MONITORING & INTEL`** | | |
-| [7](#7-netscan-ecosystem) | Netscan Ecosystem | Home lab admins | 336 jobs, queue-runner v7, 130-page dashboard |
+| [7](#7-netscan-ecosystem) | Netscan Ecosystem | Home lab admins | 337 jobs, queue-runner v7, 130-page dashboard |
 | [8](#8-career-intelligence) | Career Intelligence | Job seekers | Two-phase scanner, salary, patents |
 | | **`PART IV ─ REFERENCE`** | | |
 | [9](#9-repository-structure) | Repository Structure | Contributors | File layout, deployment paths |
@@ -50,36 +50,42 @@
 
 ## 1. Hardware Overview
 
-The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/distributed-ledger rack appliances (not a traditional "mining GPU"). It's a full SoC — Zen 2 CPU and Cyan Skillfish RDNA 1 GPU on a single package, with 16 GB of on-package unified memory. Samsung deployed these in rack-mount enclosures for private DLT workloads; decommissioned boards now sell for ~$100–150 on the secondhand market, making them possibly the cheapest way to run 14B LLMs on dedicated hardware.
+The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/distributed-ledger rack appliances (not a traditional "mining GPU"). It's a full SoC — Zen 2 CPU and Cyan Skillfish RDNA 1.5 GPU on a single package, with 16 GB of on-package unified memory. Samsung deployed these in rack-mount enclosures for private DLT workloads; decommissioned boards now sell for ~$100–150 on the secondhand market, making them possibly the cheapest way to run 14B LLMs on dedicated hardware.
 
-> **Not a PlayStation 5.** Despite superficial similarities (both use Zen 2 + 16 GB memory), the BC-250 has nothing to do with the PS5. The PS5's Oberon SoC is **RDNA 2** (GFX10.3, gfx1030+) with hardware ray tracing; the BC-250's Cyan Skillfish is **RDNA 1** (GFX10.1, gfx1013) — one full GPU architecture generation earlier, no RT hardware. LLVM's AMDGPU processor table lists GFX1013 as product "TBA" under GFX10.1, confirming it was never a retail part. Samsung also licensed RDNA 2 for mobile (Exynos 2200 / Xclipse 920) — that's a completely separate deal.
+> **Not a PlayStation 5.** Despite superficial similarities (both use Zen 2 + 16 GB memory), the BC-250 has nothing to do with the PS5. The PS5's Oberon SoC is **RDNA 2** (GFX10.3, gfx1030+); the BC-250's Cyan Skillfish is **RDNA 1.5** (GFX10.1, gfx1013) — a hybrid architecture: GFX10.1 instruction set (RDNA 1) but with **hardware ray tracing support** (full `VK_KHR_ray_tracing_pipeline`, `VK_KHR_acceleration_structure`, `VK_KHR_ray_query`). LLVM's AMDGPU processor table lists GFX1013 as product "TBA" under GFX10.1, confirming it was never a retail part. Samsung also licensed RDNA 2 for mobile (Exynos 2200 / Xclipse 920) — that's a completely separate deal.
+>
+> **Why "RDNA 1.5"?** GFX1013 doesn't fit cleanly into AMD's public RDNA generations. It has the RDNA 1 (GFX10.1) ISA and shader compiler target, but includes hardware ray tracing — a feature AMD only shipped publicly with RDNA 2 (GFX10.3). This makes Cyan Skillfish a transitional/custom design, likely built for Samsung's specific workload requirements. We call it "RDNA 1.5" as a practical label.
 
 > **BIOS and CPU governor are not stock.** The board ships with a minimal Samsung BIOS meant for rack operation. A community-patched BIOS (from [Miyconst's YouTube tutorial](https://www.youtube.com/watch?v=YLO3fYyCo2s)) enables standard UEFI features (boot menu, NVMe boot, fan control). The CPU `performance` governor is set explicitly — the stock `schedutil` governor causes latency spikes during LLM inference.
 
 | Component | Details |
 |-----------|---------|
 | **CPU** | Zen 2 — 6c/12t @ 2.0 GHz |
-| **GPU** | Cyan Skillfish — RDNA 1, `GFX1013`, 24 CUs (1536 SPs) |
+| **GPU** | Cyan Skillfish — RDNA 1.5, `GFX1013`, 24 CUs (1536 SPs), ray tracing capable |
 | **Memory** | **16 GB unified** (16 × 1 GB on-package), shared CPU/GPU |
-| **VRAM** | 512 MB dedicated framebuffer |
+| **VRAM** | 512 MB BIOS-carved framebuffer (same physical UMA pool — see note below) |
 | **GTT** | **14 GiB** (tuned, default 7.4 GiB) — `amdgpu.gttsize=14336` |
 | **Vulkan total** | **14.5 GiB** after tuning |
 | **Storage** | 475 GB NVMe |
 | **OS** | Fedora 43, kernel 6.18.9, headless |
-| **TDP** | 220W board (idle: 35–45W) |
+| **TDP** | 220W board (between jobs: 55–60W measured, true idle w/o model: ~35W) |
 | **BIOS** | Community-patched UEFI (not Samsung stock) — [Miyconst tutorial](https://www.youtube.com/watch?v=YLO3fYyCo2s) |
 | **CPU governor** | `performance` (stock `schedutil` causes LLM latency spikes) |
 
 ### Unified memory is your friend (but needs tuning)
 
-CPU and GPU share the same 16 GB pool. Only 512 MB is carved out as VRAM — the rest is accessible as **GTT (Graphics Translation Table)**.
+CPU and GPU share the same 16 GB physical pool (UMA — Unified Memory Architecture). The 512 MB "dedicated framebuffer" reported by `mem_info_vram_total` is carved from the *same* physical memory — it's a BIOS reservation, not separate silicon. The rest is accessible as **GTT (Graphics Translation Table)**.
+
+> **UMA reality:** On unified memory, "100% GPU offload" means the model weights and KV cache live in GTT-mapped pages that the GPU accesses directly — there's no PCIe copy. However, it's still the same physical RAM the CPU uses. "Fallback to CPU" on UMA isn't catastrophic like on discrete GPUs (no bus transfer penalty), but GPU ALUs are faster than CPU ALUs for matrix ops.
 
 **Two bottlenecks must be fixed:**
 
 1. **GTT cap** — `amdgpu` driver defaults to 50% of RAM (~7.4 GiB). Fix: `amdgpu.gttsize=14336` in kernel cmdline → GPU gets 14 GiB GTT.
 2. **TTM pages_limit** — kernel TTM memory manager independently caps allocations at ~7.4 GiB. Fix: `ttm.pages_limit=4194304` (16 GiB in 4K pages).
 
-After both fixes: Vulkan sees **14.5 GiB** — enough for **14B parameter models at 24K context, 100% GPU**.
+> ⚠️ **GTT deprecation (kernel 6.12+):** The `amdgpu.gttsize` module parameter is deprecated since kernel 6.12. On kernel 6.18+, dmesg warns: *"Configuring gttsize via module parameter is deprecated, please use ttm.pages_limit."* The parameter still works for now, but will be removed in a future kernel. The TTM `pages_limit` fix (item 2) is the forward-compatible solution.
+
+After both fixes: Vulkan sees **14.5 GiB** — enough for **14B parameter models at 24K context, with all inference on GPU**.
 
 ---
 
@@ -140,6 +146,8 @@ sudo systemctl daemon-reload && sudo systemctl restart ollama
 
 ### 3.2 Tune GTT size
 
+> ⚠️ `amdgpu.gttsize` is deprecated since kernel 6.12 (see §1 note). It still works on 6.18 but will be removed. The TTM fix below (§3.3) is the primary memory tuning going forward.
+
 ```bash
 sudo grubby --update-kernel=ALL --args="amdgpu.gttsize=14336"
 # Reboot required. Verify:
@@ -164,9 +172,9 @@ w /sys/module/ttm/parameters/page_pool_size - - - - 4194304\n" | \
 sudo dracut -f
 ```
 
-### 3.4 Context window — the silent OOM killer
+### 3.4 Context window — the silent killer
 
-Ollama allocates KV cache based on the model's declared context window. The default `qwen3-abliterated:14b` declares `num_ctx 40960` — that's **16 GB** of KV cache + weights, exceeding available RAM and triggering OOM kills.
+Ollama allocates KV cache based on the model's declared context window. The default `qwen3-abliterated:14b` declares `num_ctx 40960` — that's **~16 GB** of KV cache + weights. While the raw numbers fit in 16 GB RAM, **TTM fragmentation** prevents the kernel from allocating contiguous pages for the KV cache, causing OOM kills or deadlocks.
 
 **Fix:** Set `OLLAMA_CONTEXT_LENGTH=24576` in the Ollama systemd override (see §3.3). This caps all inference to 24K context regardless of model defaults.
 
@@ -232,15 +240,15 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 | Region | Size | Notes |
 |--------|------|-------|
-| VRAM carveout | 512 MB | Dedicated framebuffer |
-| GTT | **14 GiB** | Tuned ▲ (default 7.4 GiB) — `amdgpu.gttsize=14336` |
+| VRAM carveout | 512 MB | BIOS-reserved from UMA pool (not separate memory) |
+| GTT | **14 GiB** | Tuned ▲ (default 7.4 GiB) — `amdgpu.gttsize=14336` (deprecated, see §1) |
 | TTM pages_limit | **16 GiB** | Tuned ▲ (default ~7.4 GiB) — `ttm.pages_limit=4194304` |
 
 | Vulkan heap | Size |
 |-------------|------|
 | Device-local | 8.33 GiB |
 | Host-visible | 4.17 GiB |
-| **Total** | **12.5 GiB** → 14B models fit, 100% GPU, zero-copy |
+| **Total** | **12.5 GiB** → 14B models fit, all inference on GPU (UMA — same physical pool) |
 
 | Consumer | Usage | Notes |
 |----------|-------|-------|
@@ -296,7 +304,7 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 | phi4:14b | 25 | 9.1 GB |
 | Qwen3-30B-A3B Q2_K | 12 | 11.0 GB |
 
-> Vulkan max: 14.5 GB. All 14B models at 100% GPU offload. 30B MoE barely fits at Q2_K (heavy quality loss).
+> Vulkan max: 14.5 GB. All 14B models with full GPU inference (UMA). 30B MoE barely fits at Q2_K (heavy quality loss).
 
 ### 4.3 Model testing journey
 
@@ -368,9 +376,11 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 | 26624 | ~14.6 GB | 1.3 GB | 1.0 GB | 23.9 t/s | ⚠️ 10% slower |
 | 28672 | ~14.2 GB | — | 1.7 GB | timeout | ❌ Deadlocks |
 | 32768 | ~15.7 GB | 0.2 GB | 2.1 GB | timeout | ❌ Deadlocks |
-| 40960 | ~16.0 GB | 0 | — | — | 💀 Instant OOM |
+| 40960 | ~16.0 GB | 0 | — | — | 💀 TTM fragmentation¹ |
 
 > **24K is the sweet spot** — full speed (~27 tok/s), leaves ~1.5 GB for OS/services with stable swap at 0.9 GB. 26K works but inference drops 10% due to swap pressure. 28K+ deadlocks under Vulkan.
+>
+> ¹ **Why 40K fails isn't raw OOM.** The math: 9.3 GB weights + 2 GB KV cache + 1 GB OS ≈ 12.3 GB < 16 GB available. The actual failure is **TTM fragmentation** — the kernel's TTM memory manager can't allocate a contiguous block large enough for the KV cache because physical pages are fragmented across GPU and CPU consumers. This is a UMA-specific problem: on discrete GPUs with dedicated VRAM, fragmentation doesn't cross the PCIe boundary.
 
 > **History:** The original 24K experiment (Feb 25) deadlocked because OpenClaw gateway consumed ~700 MB. After v7 removed OpenClaw and bumped GTT to 14 GB (Mar 5), 24K became stable. Flash attention (`OLLAMA_FLASH_ATTENTION=1`) is essential — without it, 24K would not fit.
 
@@ -579,6 +589,42 @@ curl -L -o sd-turbo.safetensors \
 | **FLUX.1-schnell Q4_K** | 512² | 4 | **~48s** | ★★★★★ |
 | SD-Turbo | 512² | 1 | **~3s** | ★★☆☆☆ |
 
+### 6.2.1 Upgrade roadmap — beyond FLUX.1-schnell
+
+sd.cpp (master-504+) supports significantly more models than what we currently run. The BC-250 has ~14 GB available with Ollama stopped, the constraint is UMA fragmentation (same as LLM §3.4). All advanced models use `--offload-to-cpu` (which on UMA just manages allocation pools, no PCIe penalty).
+
+**Image generation — potential upgrades:**
+
+| Model | Params | GGUF Size | Total RAM¹ | Steps | Quality vs schnell | Status |
+|-------|:------:|:---------:|:----------:|:-----:|:------------------:|--------|
+| FLUX.1-schnell Q4_K | 12B | 6.5 GB | ~10 GB | 4 | baseline | ✅ Current |
+| FLUX.1-dev Q4_K | 12B | 6.5 GB | ~10 GB | 20–50 | ★ better (same arch, more steps) | 🔬 Test needed |
+| FLUX.2-klein-4B Q4_K | 4B | ~2.5 GB | ~6 GB | 4 | similar, much faster | 🔬 Needs Qwen3-4B encoder |
+| FLUX.2-klein-9B Q4_K | 9B | ~5 GB | ~9 GB | 4 | ★ better (latest gen) | 🔬 Needs Qwen3-8B encoder |
+| Chroma Q4_K | 12B | ~6.5 GB | ~10 GB | 20+ | ★★ better (open, cfg guidance) | 🔬 Reuses our T5+VAE |
+| SD3.5-medium | 2.5B | ~2.5 GB | ~6 GB | 20–30 | comparable, faster | 🔬 Needs clip_g + T5 |
+
+> ¹ Total RAM includes diffusion model + text encoder(s) + VAE. With `--clip-on-cpu` and `--offload-to-cpu`, these share the UMA pool.
+
+**Video generation — new capability:**
+
+| Model | Params | GGUF Size | Total RAM¹ | Notes |
+|-------|:------:|:---------:|:----------:|-------|
+| WAN 2.1 T2V 1.3B | 1.3B | ~1.5 GB | ~5 GB | Text→video, lightweight, 33 frames feasible |
+| WAN 2.2 TI2V 5B | 5B | ~5 GB | ~9 GB | Text/image→video, good quality |
+| WAN 2.1/2.2 14B | 14B | ~14 GB | ~18 GB | ❌ Too large for 16 GB UMA |
+
+> **WAN 2.1 1.3B is the realistic video option** — small enough to fit with comfortable headroom, and sd.cpp supports `--offload-to-cpu --diffusion-fa --vae-tiling` to minimize peak memory. Resolution: 480×832 or 832×480, 33 frames at ~8 FPS = 4s video clip. The 5B model is borderline — might work with aggressive tiling and Q4_K quantization.
+
+**Image editing — Kontext:**
+
+| Model | Notes |
+|-------|-------|
+| FLUX.1-Kontext-dev | Edit existing images via text prompts (e.g., "change the background to a beach") |
+| FLUX.2-klein-4B | Also supports Kontext-style editing via `-r` reference image |
+
+> Kontext reuses the same FLUX diffusion model + a reference image. No additional model downloads needed beyond what's already on disk.
+
 ### 6.3 Signal integration — synchronous pipeline
 
 SD and Ollama can't run simultaneously (shared 16 GB VRAM). queue-runner handles this synchronously — no worker scripts, no delays:
@@ -600,17 +646,17 @@ The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD sc
 
 ## 7. Netscan Ecosystem
 
-A comprehensive research, monitoring, and intelligence system with **336 autonomous jobs** running on a GPU-constrained single-board computer. Dashboard at `http://<LAN_IP>:8888` — 29 main pages + 101 per-host detail pages.
+A comprehensive research, monitoring, and intelligence system with **337 autonomous jobs** running on a GPU-constrained single-board computer. Dashboard at `http://<LAN_IP>:8888` — 29 main pages + 101 per-host detail pages.
 
 ### 7.1 Architecture — queue-runner v7
 
-The BC-250 has 14 GB GTT shared with the CPU — only **one LLM job can run at a time**. `queue-runner.py` (systemd service) orchestrates all 336 jobs in a continuous loop, with Signal chat between every job:
+The BC-250 has 14 GB GTT shared with the CPU — only **one LLM job can run at a time**. `queue-runner.py` (systemd service) orchestrates all 337 jobs in a continuous loop, with Signal chat between every job:
 
 ```
 queue-runner v7 -- Continuous Loop + Signal Chat
 
 Cycle N:
-  336 jobs sequential, ordered by category:
+  337 jobs sequential, ordered by category:
   scrape -> infra -> lore -> academic -> repo -> company -> career
          -> think -> meta -> market -> report
   HA observations interleaved every 50 jobs
@@ -628,7 +674,7 @@ Cycle N+1:
 | v5 (OpenClaw era) | v7 (current) |
 |--------------------|--------------|
 | Nightly batch + daytime fill | Continuous loop, no distinction |
-| 354 jobs (including duplicates) | 336 jobs (deduped, expanded) |
+| 354 jobs (including duplicates) | 337 jobs (deduped, expanded) |
 | LLM jobs routed through `openclaw cron run` | All jobs run as direct subprocesses |
 | Signal via OpenClaw gateway (~700 MB) | signal-cli standalone (~100 MB) |
 | Chat only when gateway available | Chat between every job |
@@ -716,7 +762,7 @@ In continuous loop mode (default), GPU detection is only used for pre-flight hea
 
 ### 7.3 Job scheduling — queue-runner v7
 
-All 336 jobs are defined in `~/.openclaw/cron/jobs.json` and scheduled dynamically by `queue-runner.py` (systemd service, `WatchdogSec=14400`). There are **no fixed cron times** — jobs run sequentially as fast as the GPU allows, in a continuous loop.
+All 337 jobs are defined in `~/.openclaw/cron/jobs.json` and scheduled dynamically by `queue-runner.py` (systemd service, `WatchdogSec=14400`). There are **no fixed cron times** — jobs run sequentially as fast as the GPU allows, in a continuous loop.
 
 **Job categories** (auto-classified by name pattern):
 
@@ -735,12 +781,12 @@ All 336 jobs are defined in `~/.openclaw/cron/jobs.json` and scheduled dynamical
 | `ha` | 2 | 0.5h | ha-correlate, ha-journal (interleaved) |
 | `report` | 1 | — | daily-summary → Signal |
 | `weekly` | 3 | — | vulnscan, csi-sensor-discover/improve |
-| **Total** | **336** | **~11h** | |
+| **Total** | **337** | **~11h** | |
 
 **Data flow:**
 
 ```
-jobs.json (336 jobs)
+jobs.json (337 jobs)
   |
   v
 queue-runner.py
@@ -864,7 +910,7 @@ Per-minute sampling via `pp_dpm_sclk`:
 | `repo-feeds.json` | Repository API endpoints |
 | `sensor-watchlist.json` | CSI camera sensor tracking list |
 | `queue-runner-state.json` | Cycle count, resume index *(in data/)* |
-| `~/.openclaw/cron/jobs.json` | All 336 job definitions *(legacy path, may be migrated)* |
+| `~/.openclaw/cron/jobs.json` | All 337 job definitions *(legacy path, may be migrated)* |
 
 ### 7.9 Resilience
 
@@ -940,7 +986,7 @@ Nightly at 02:30. Discovers tech events with geographic scoring (Łódź 10, War
 bc250/
 ├── README.md                       ← you are here
 ├── netscan/                        → /opt/netscan/
-│   ├── queue-runner.py             # v7 — continuous loop + Signal chat (336 jobs)
+│   ├── queue-runner.py             # v7 — continuous loop + Signal chat (337 jobs)
 │   ├── career-scan.py              # Two-phase career scanner
 │   ├── career-think.py             # Per-company career analysis
 │   ├── salary-tracker.py           # Salary intelligence
@@ -1149,7 +1195,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 - [x] Fix OOM kills — custom 16K context model + NVMe swap + OOM score protection
 - [x] Fix gateway orphan processes — KillMode=control-group
-- [x] Scale from 38 → 56 → 58 → 354 → 309 → **336** jobs/cycle (deduped)
+- [x] Scale from 38 → 56 → 58 → 354 → 309 → **337** jobs/cycle (deduped, +frost-guard)
 - [x] Add best-effort-deliver to all announce jobs
 - [x] Queue-runner v2 → v3 → v4 → v5 → v6 → **v7** — continuous loop, Signal chat, synchronous SD
 - [x] Fix nightly resume across midnight (batch_date accepts today or yesterday)
@@ -1170,6 +1216,34 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - [ ] Weekly career summary digest via Signal
 - [ ] Migrate jobs.json away from ~/.openclaw/ path
 - [ ] Evaluate if zram can be fully disabled (currently 2 GB boot limit)
+
+### ☐ Action points — verified corrections & upgrades
+
+**Memory tuning — GTT deprecation (kernel 6.12+):**
+
+- [ ] Test removing `amdgpu.gttsize=14336` from kernel cmdline and relying solely on `ttm.pages_limit=4194304`
+- [ ] Verify Vulkan heap sizes remain the same with TTM-only tuning
+- [ ] If confirmed working, remove gttsize from grubby and documentation
+
+**Image generation — model upgrades:**
+
+- [ ] Update sd.cpp from master-504 to latest (master-525+, adds FLUX.2, Anima, Chroma-Radiance, spectrum caching)
+- [ ] Test Chroma Q4_K — reuses existing T5-XXL + FLUX VAE, potentially better quality with cfg guidance
+- [ ] Test FLUX.2-klein-4B — much smaller diffusion model (2.5 GB vs 6.5 GB), uses Qwen3-4B as text encoder, enabling faster generation
+- [ ] Test 768×768 resolution with FLUX.1-schnell (may need `--vae-tiling` for memory)
+- [ ] Test WAN 2.1 T2V 1.3B for short text-to-video clips (4s @ 8fps) — first video generation on BC-250
+- [ ] Add `--fa` (flash attention) and `--vae-tiling` to generation pipeline for memory efficiency
+- [ ] Update `generate-and-send-worker.sh` to support model selection via env var or argument
+
+**Image generation — pipeline improvements:**
+
+- [ ] Add `--offload-to-cpu` to sd-cli command (explicit UMA management, required for newer models)
+- [ ] Implement video generation path in queue-runner (vid_gen mode, mp4 → Signal attachment)
+- [ ] Add ESRGAN upscale option in pipeline (512→1024 or 768→1536) using sd-cli `--upscale-model`
+
+**Power monitoring:**
+
+- [ ] Add accurate power state labels to `gpu-monitor.sh` — distinguish "model loaded idle" (55-60W) from "true idle" (35W) from "inference" (140-155W)
 
 ---
 
@@ -1192,7 +1266,7 @@ OpenClaw v2026.2.26 was used as the Signal ↔ Ollama gateway from project incep
 - signal-cli runs as standalone systemd service (JSON-RPC on :8080)
 - queue-runner.py talks to Ollama `/api/chat` directly
 - System prompt is a Python string in queue-runner.py (~3K tokens)
-- All 336 jobs run as `subprocess.Popen` — no agent routing
+- All 337 jobs run as `subprocess.Popen` — no agent routing
 - SD image generation handled synchronously by queue-runner
 
 ### A.1 Installation (historical)
@@ -1308,6 +1382,6 @@ systemctl --user mask openclaw-gateway
 
 <div align="center">
 
-`bc250` · AMD Cyan Skillfish · 336 autonomous jobs · *hack the planet* 🦞
+`bc250` · AMD Cyan Skillfish · 337 autonomous jobs · *hack the planet* 🦞
 
 </div>
