@@ -6,9 +6,9 @@ Checks Open-Meteo hourly forecast for Łódź and sends Signal notifications
 on state transitions:
 
   1. Frost protection (heat pump + garden water):
-     - FROST: any nighttime hour (18:00–08:00) forecast below 0°C
+     - FROST: any forecast hour below 0°C
        → "Disable heat pump, cut garden water"
-     - SAFE:  all nighttime hours above 0°C for next 3 days
+     - SAFE:  all forecast hours above 0°C for next 3 days
        → "Re-enable heat pump and garden water"
 
   2. Deep frost (external blinds/rollers):
@@ -46,9 +46,6 @@ STATE_FILE = DATA_DIR / "frost-guard-state.json"
 FROST_THRESHOLD = 0.0        # °C — frost danger for heat pump / water
 DEEP_FROST_THRESHOLD = -5.0  # °C — close blinds/rollers
 DEFROST_THRESHOLD = 0.0      # °C — hysteresis: reopen blinds when ALL hours > 0
-
-# Night hours (18:00–07:59 next day) for frost check
-NIGHT_HOURS = set(range(18, 24)) | set(range(0, 8))
 
 FORECAST_DAYS = 3
 
@@ -123,35 +120,30 @@ def fetch_forecast():
 
 def analyze(hourly):
     """Analyze forecast and return new desired states + reasons."""
-    night_temps = []
     all_temps = []
-    night_details = []
+    frost_details = []
     cold_details = []
 
     for time_str, temp in hourly:
         if temp is None:
             continue
         all_temps.append(temp)
-        hour = int(time_str.split("T")[1].split(":")[0])
-        if hour in NIGHT_HOURS:
-            night_temps.append(temp)
-            if temp < FROST_THRESHOLD:
-                night_details.append(f"  {time_str}: {temp}°C")
+        if temp < FROST_THRESHOLD:
+            frost_details.append(f"  {time_str}: {temp}°C")
         if temp <= DEEP_FROST_THRESHOLD:
             cold_details.append(f"  {time_str}: {temp}°C")
 
-    if not night_temps or not all_temps:
+    if not all_temps:
         log("No forecast data available")
         return None, None, [], []
 
-    night_min = min(night_temps)
     all_min = min(all_temps)
 
-    log(f"Forecast: night min {night_min}°C, overall min {all_min}°C "
+    log(f"Forecast: overall min {all_min}°C "
         f"({len(hourly)} hours, {FORECAST_DAYS}d ahead)")
 
-    # Frost protection: any night hour below 0 → frost
-    frost_state = "frost" if night_min < FROST_THRESHOLD else "safe"
+    # Frost protection: any hour below 0 → frost
+    frost_state = "frost" if all_min < FROST_THRESHOLD else "safe"
 
     # Blinds: any hour ≤ -5 → closed; all hours > 0 → open; else no change (None)
     if all_min <= DEEP_FROST_THRESHOLD:
@@ -161,7 +153,7 @@ def analyze(hourly):
     else:
         blinds_state = None  # in hysteresis band — keep current state
 
-    return frost_state, blinds_state, night_details, cold_details
+    return frost_state, blinds_state, frost_details, cold_details
 
 
 # ── Main ───────────────────────────────────────────────────────────────────
@@ -178,7 +170,7 @@ def run():
     old_frost = state.get("frost_protection", "safe")
     old_blinds = state.get("blinds", "open")
 
-    new_frost, new_blinds, night_details, cold_details = analyze(hourly)
+    new_frost, new_blinds, frost_details, cold_details = analyze(hourly)
     if new_frost is None:
         return
 
@@ -187,22 +179,22 @@ def run():
     # ── Frost protection transitions ──
     if new_frost != old_frost:
         if new_frost == "frost":
-            detail = "\n".join(night_details[:5])
-            if len(night_details) > 5:
-                detail += f"\n  ... and {len(night_details) - 5} more hours"
+            detail = "\n".join(frost_details[:5])
+            if len(frost_details) > 5:
+                detail += f"\n  ... and {len(frost_details) - 5} more hours"
             msg = (
                 f"🥶 FROST WARNING — Łódź\n\n"
-                f"Nighttime temps going below 0°C in next {FORECAST_DAYS} days.\n\n"
+                f"Temps going below 0°C in next {FORECAST_DAYS} days.\n\n"
                 f"→ Disable heat pump\n"
                 f"→ Cut garden water supply\n\n"
-                f"Coldest night hours:\n{detail}"
+                f"Coldest hours:\n{detail}"
             )
             log(f"Transition: {old_frost} → frost")
             signal_send(msg)
         else:
             msg = (
                 f"✅ FROST CLEAR — Łódź\n\n"
-                f"All nighttime temps above 0°C for next {FORECAST_DAYS} days.\n\n"
+                f"All temps above 0°C for next {FORECAST_DAYS} days.\n\n"
                 f"→ Re-enable heat pump\n"
                 f"→ Re-enable garden water"
             )
