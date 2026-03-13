@@ -384,6 +384,48 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 
 > **History:** The original 24K experiment (Feb 25) deadlocked because OpenClaw gateway consumed ~700 MB. After v7 removed OpenClaw and bumped GTT to 14 GB (Mar 5), 24K became stable. Flash attention (`OLLAMA_FLASH_ATTENTION=1`) is essential — without it, 24K would not fit.
 
+### 4.5 KV cache quantization — breaking the context ceiling
+
+**UPDATE (March 2026):** KV cache quantization **WORKS on Vulkan**. Our README previously stated it was a no-op — that was wrong. Tested on Ollama 0.16.1 + RADV Mesa 25.3.4:
+
+| KV Type | 24K ctx | 32K ctx | 48K ctx | KV Cache Size | Gen tok/s | Notes |
+|---------|:-------:|:-------:|:-------:|:-------------:|:---------:|-------|
+| **FP16** (default) | ✅ | ⚠️ 10% slow | ❌ deadlock | ~3.0 GiB | 27.2 | Current production |
+| **Q8_0** | ✅ | ✅ | ✅ | **2.0 GiB** | 27.3 | ← recommended upgrade |
+| **Q4_0** | ✅ | ✅ | ✅ | **1.1 GiB** | 27.3 | Aggressive, quality TBD |
+
+**Key findings:**
+- **Zero performance penalty** — Q8_0 and Q4_0 both match FP16 generation speed (27.2–27.3 tok/s)
+- **Q8_0 saves ~1 GiB** KV cache → 32K and 48K context now run at full speed
+- **Q4_0 saves ~2 GiB** KV cache → even more headroom, but needs quality validation
+- **48K context at Q8_0** is the breakthrough: 2× the current 24K production limit, zero speed loss
+
+**To enable:**
+```bash
+# Add to /etc/systemd/system/ollama.service.d/override.conf:
+Environment=OLLAMA_KV_CACHE_TYPE=q8_0
+# Then: sudo systemctl daemon-reload && sudo systemctl restart ollama
+```
+
+> **Quality note:** Q8_0 is virtually lossless for KV cache (negligible precision loss on attention weights). Q4_0 may degrade output quality on complex reasoning tasks — needs separate quality evaluation before production use.
+
+### 4.6 Prefill (prompt evaluation) benchmarks
+
+On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200). Prefill is the time the model spends "reading" the prompt before generating the first token.
+
+**Prefill rate vs prompt size (qwen3:14b Q4_K_M, FP16 KV cache, 24K context):**
+
+| Prompt Size | Tokens | Prefill | Gen tok/s | TTFT (warm) |
+|-------------|:------:|--------:|----------:|------------:|
+| Tiny | 86 | 88 tok/s | 27.2 | ~1s |
+| Short | 353 | 67 tok/s | 27.2 | ~5s |
+| Medium | 1,351 | 128 tok/s | 26.1 | ~11s |
+| Long | 3,354 | 113 tok/s | 24.6 | ~30s |
+| XL | 6,686 | 88 tok/s | 22.5 | ~76s |
+| Massive | 10,014 | 70 tok/s | 20.7 | ~143s |
+
+> **Observations:** Prefill peaks at 128 tok/s for medium prompts, then degrades with context length — likely attention computation scaling (O(n²)) plus UMA bandwidth saturation. Generation rate also degrades: 27.2 tok/s with small context → 20.7 tok/s at 10K tokens. This means real-world Signal chat (3K system prompt + conversation) runs at ~24–25 tok/s, not the headline 27 tok/s.
+
 ### 4.2 Memory budget
 
 **qwen3:14b @ 24K context · headless server**
@@ -1184,12 +1226,11 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 |-------|--------|
 | Shared VRAM | Image gen requires stopping Ollama. Bot offline ~60s. |
 | 14B memory pressure | ~1.5–3.8 GB free when loaded. NVMe swap essential. |
-| Context cap at 16K | Hard limit to stay within 11.1 GB. Can't use 32K+ context. |
 | Signal latency | Messages queue during job execution (typical job 2–15 min). Chat checked between every job. |
 | sd-cli hangs on GFX1013 | Vulkan cleanup bug → poll + kill workaround. |
 | Cold start latency | 30–60s after Ollama restart (model loading). |
 | Chinese thinking leak | Qwen3 occasionally outputs Chinese reasoning. Cosmetic. |
-| KV cache quantization | `q8_0`/`q4_0` no-op on Vulkan (CUDA/Metal only). |
+| Prefill rate degrades with context | 128 tok/s at 1.3K → 70 tok/s at 10K tokens (UMA bandwidth + attention scaling). |
 
 ### ☐ TODO
 
