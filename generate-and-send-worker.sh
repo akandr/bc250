@@ -34,15 +34,26 @@ sudo systemctl stop ollama
 sleep 3
 log "Ollama stopped."
 
-# Step 3: Auto-detect model — prefer FLUX.2-klein-4B, fall back to FLUX.1-schnell
+# Step 3: Auto-detect model — prefer FLUX.2-klein-9B, fall back to 4B, then FLUX.1-schnell
 FLUX2_DIR="$MODELS_DIR/flux2"
 USE_FLUX2=false
+FLUX2_DIFFUSION=""
+FLUX2_LLM=""
 
-if [ -f "$FLUX2_DIR/flux-2-klein-4b-Q4_0.gguf" ] && \
+if [ -f "$FLUX2_DIR/flux-2-klein-9b-Q4_0.gguf" ] && \
+   [ -f "$FLUX2_DIR/flux2-vae.safetensors" ] && \
+   [ -f "$FLUX2_DIR/qwen3-8b-Q4_K_M.gguf" ]; then
+  USE_FLUX2=true
+  FLUX2_DIFFUSION="$FLUX2_DIR/flux-2-klein-9b-Q4_0.gguf"
+  FLUX2_LLM="$FLUX2_DIR/qwen3-8b-Q4_K_M.gguf"
+  log "Using FLUX.2-klein-9B (best quality, ~105s)"
+elif [ -f "$FLUX2_DIR/flux-2-klein-4b-Q4_0.gguf" ] && \
    [ -f "$FLUX2_DIR/flux2-vae.safetensors" ] && \
    [ -f "$FLUX2_DIR/qwen3-4b-Q4_K_M.gguf" ]; then
   USE_FLUX2=true
-  log "Using FLUX.2-klein-4B (fastest, ~20s)"
+  FLUX2_DIFFUSION="$FLUX2_DIR/flux-2-klein-4b-Q4_0.gguf"
+  FLUX2_LLM="$FLUX2_DIR/qwen3-4b-Q4_K_M.gguf"
+  log "Using FLUX.2-klein-4B (fast fallback, ~20s)"
 elif [ -f "$FLUX_DIR/flux1-schnell-q4_k.gguf" ] && \
      [ -f "$FLUX_DIR/ae.safetensors" ] && \
      [ -f "$FLUX_DIR/clip_l.safetensors" ]; then
@@ -73,9 +84,9 @@ START=$(date +%s)
 
 if [ "$USE_FLUX2" = true ]; then
   "$SD_CLI" \
-    --diffusion-model "$FLUX2_DIR/flux-2-klein-4b-Q4_0.gguf" \
+    --diffusion-model "$FLUX2_DIFFUSION" \
     --vae "$FLUX2_DIR/flux2-vae.safetensors" \
-    --llm "$FLUX2_DIR/qwen3-4b-Q4_K_M.gguf" \
+    --llm "$FLUX2_LLM" \
     --offload-to-cpu --diffusion-fa --vae-tiling \
     -p "$PROMPT" -o "$OUTPUT" \
     --steps 4 -W 512 -H 512 --cfg-scale 1.0 \

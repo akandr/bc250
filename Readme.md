@@ -17,7 +17,7 @@
 
 > A complete guide to running a **35B-parameter MoE LLM**, **FLUX.2 image generation**, and 337 autonomous jobs on the AMD BC-250 — an obscure APU (Zen 2 CPU + Cyan Skillfish RDNA 1.5 GPU) found in Samsung's blockchain/distributed-ledger rack appliances. Not a "crypto mining GPU," not a PS5 prototype — it's a custom SoC that Samsung used for private DLT infrastructure, repurposed here as a headless AI server with a community-patched BIOS.
 >
-> **March 2026** · Qwen3.5-35B MoE at 38 tok/s, FLUX.2-klein-4B at 20s/image, hardware-specific driver workarounds, memory tuning discoveries, and real-world benchmarks that aren't documented anywhere else.
+> **March 2026** · Qwen3.5-35B MoE at 38 tok/s, FLUX.2-klein-9B at best quality, hardware-specific driver workarounds, memory tuning discoveries, and real-world benchmarks that aren't documented anywhere else.
 
 > **What makes this unique:** The BC-250's Cyan Skillfish GPU (`GFX1013`) is possibly the only RDNA 1.5 silicon running production LLM inference. ROCm doesn't support it. OpenCL doesn't expose it. The only viable compute path is **Vulkan** — and even that required discovering two hidden kernel memory bottlenecks (GTT cap + TTM pages_limit) before 14B models would run.
 
@@ -34,7 +34,7 @@
 | [4](#4-models--benchmarks) | Models & Benchmarks | LLM users | Model compatibility, speed, memory budget |
 | | **`PART II ─ AI STACK`** | | |
 | [5](#5-signal-chat-bot) | Signal Chat Bot | Bot builders | Direct Signal chat via queue-runner, LLM tool use |
-| [6](#6-image-generation) | Image Generation | Creative users | FLUX.2-klein-4B, synchronous pipeline |
+| [6](#6-image-generation) | Image Generation | Creative users | FLUX.2-klein-9B, synchronous pipeline |
 | | **`PART III ─ MONITORING & INTEL`** | | |
 | [7](#7-netscan-ecosystem) | Netscan Ecosystem | Home lab admins | 337 jobs, queue-runner v7, 130-page dashboard |
 | [8](#8-career-intelligence) | Career Intelligence | Job seekers | Two-phase scanner, salary, patents |
@@ -430,6 +430,10 @@ The path to running 14B models on this hardware was non-trivial. Here's the chro
              512×512: 20s vs 30s (1.5× faster, 40% less VRAM!)
              768×768: 30s vs 91s (3× faster!)
              1024×1024: 63s (never worked with schnell at all!)
+         ─── FLUX.2-klein-9B: quality upgrade ★
+             Upgraded to 9B (5.3 GB diffusion + 4.7 GB Qwen3-8B encoder).
+             Quality shootout vs 4B/schnell/Chroma — 9B wins on detail.
+             104s @512², 129s @768², 11.8 GB VRAM — stresses GPU properly.
              Set as new default for all Signal image generation.
 ```
 
@@ -662,7 +666,7 @@ Supported patterns: web search (`ddgr`), file reads (`cat`, `head`), system diag
 When the LLM detects an image request, it emits `EXEC(/opt/stable-diffusion.cpp/generate-and-send "prompt")`. queue-runner intercepts this pattern and handles it synchronously:
 
 1. Stop Ollama (free GPU VRAM)
-2. Run sd-cli with FLUX.2-klein-4B (4 steps, 512×512, ~20s)
+2. Run sd-cli with FLUX.2-klein-9B (4 steps, 512×512, ~105s)
 3. Send image as Signal attachment
 4. Restart Ollama
 
@@ -711,19 +715,32 @@ make -j$(nproc)
 
 ### 6.1 Models
 
-**FLUX.2-klein-4B** — recommended, fastest, Apache 2.0:
+**FLUX.2-klein-9B** — recommended, best quality, Apache 2.0:
 
 ```bash
 mkdir -p /opt/stable-diffusion.cpp/models/flux2 && cd /opt/stable-diffusion.cpp/models/flux2
-# Diffusion model (4B, Q4_0, 2.3 GB)
-curl -L -O "https://huggingface.co/leejet/FLUX.2-klein-4B-GGUF/resolve/main/flux-2-klein-4b-Q4_0.gguf"
-# Qwen3-4B text encoder (Q4_K_M, 2.4 GB)
-curl -L -o qwen3-4b-Q4_K_M.gguf "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf"
+# Diffusion model (9B, Q4_0, 5.3 GB)
+curl -L -O "https://huggingface.co/leejet/FLUX.2-klein-9B-GGUF/resolve/main/flux-2-klein-9b-Q4_0.gguf"
+# Qwen3-8B text encoder (Q4_K_M, 4.7 GB)
+curl -L -o qwen3-8b-Q4_K_M.gguf "https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf"
 # FLUX.2 VAE (321 MB) — different from FLUX.1 VAE!
 curl -L -o flux2-vae.safetensors "https://huggingface.co/Comfy-Org/vae-text-encorder-for-flux-klein-4b/resolve/main/split_files/vae/flux2-vae.safetensors"
 ```
 
-> Memory: 2.3 GB VRAM (diffusion) + 3.6 GB VRAM (Qwen3-4B encoder) + 95 MB (VAE) = ~6 GB total. Uses Qwen3-4B LLM as text encoder instead of CLIP+T5 — simpler setup, smaller footprint.
+> Memory: 5.3 GB VRAM (diffusion) + 6.2 GB VRAM (Qwen3-8B encoder) + 95 MB (VAE) = ~11.8 GB total. Stresses the 16.5 GB Vulkan pool properly. Best quality of all tested models.
+
+**FLUX.2-klein-4B** — fast alternative, Apache 2.0:
+
+```bash
+cd /opt/stable-diffusion.cpp/models/flux2
+# Diffusion model (4B, Q4_0, 2.3 GB)
+curl -L -O "https://huggingface.co/leejet/FLUX.2-klein-4B-GGUF/resolve/main/flux-2-klein-4b-Q4_0.gguf"
+# Qwen3-4B text encoder (Q4_K_M, 2.4 GB)
+curl -L -o qwen3-4b-Q4_K_M.gguf "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf"
+# Reuses same flux2-vae.safetensors from above
+```
+
+> Memory: 2.3 GB VRAM (diffusion) + 3.6 GB VRAM (Qwen3-4B encoder) + 95 MB (VAE) = ~6 GB total. 7× faster than 9B but lower quality. Good for quick previews.
 
 **FLUX.1-schnell** — previous default, Apache 2.0:
 
@@ -761,17 +778,26 @@ curl -L -o sd-turbo.safetensors \
 
 > **Important:** FLUX GGUF files must use `--diffusion-model` flag, not `-m`. The `-m` flag fails with "get sd version from file failed" because GGUF metadata is empty after tensor name conversion. This applies to all sd.cpp versions.
 
-**🏆 FLUX.2-klein-4B Q4_0 — new default (fastest, smallest):**
+**🏆 FLUX.2-klein-9B Q4_0 — new default (best quality):**
 
 | Resolution | Steps | Time | s/step | Notes |
 |:----------:|:-----:|:----:|:------:|-------|
-| 512×512 | 4 | **20s** | 3.95 | Default, ~6 GB VRAM total |
+| 512×512 | 4 | **104s** | 15.4 | Default, ~11.8 GB VRAM total |
+| 768×768 | 4 | **129s** | 21.3 | Best balance of quality vs time |
+
+> FLUX.2-klein-9B uses a Qwen3-8B LLM as text encoder — richer prompt understanding and finer detail than the 4B variant. Stresses the 16.5 GB Vulkan pool properly (11.8 GB used). The `--offload-to-cpu` flag is essential (manages UMA allocation pools).
+
+**FLUX.2-klein-4B Q4_0 — fast alternative:**
+
+| Resolution | Steps | Time | s/step | Notes |
+|:----------:|:-----:|:----:|:------:|-------|
+| 512×512 | 4 | **20s** | 3.95 | Fast preview, ~6 GB VRAM total |
 | 512×512 | 8 | **26s** | 2.66 | Better quality, GPU warm |
 | 768×768 | 4 | **30s** | 5.43 | Great quality, no tiling |
 | 1024×1024 | 4 | **63s** | 10.18 | VAE tiling required |
 | 1024×1024 | 4 | ❌ FAIL | — | Without `--vae-tiling` (VAE OOM) |
 
-> FLUX.2-klein uses a Qwen3-4B LLM as text encoder (instead of CLIP+T5), producing richer text understanding. At 4 steps it's 1.5× faster than FLUX.1-schnell and uses 40% less VRAM. The `--offload-to-cpu` flag is essential (manages UMA allocation pools).
+> 7× faster than 9B but noticeably less detailed. Good for quick previews or batch generation.
 
 **FLUX.1-schnell Q4_K — previous default:**
 
@@ -810,30 +836,44 @@ curl -L -o sd-turbo.safetensors \
 
 | Model | 512² @4s | 768² @4s | VRAM | Diffusion | Encoder |
 |-------|:--------:|:--------:|:----:|:---------:|:-------:|
-| **FLUX.2-klein-4B** | **20s** | **30s** | **6 GB** | 2.3 GB | Qwen3-4B (2.4 GB) |
+| **FLUX.2-klein-9B** | **104s** | **129s** | **11.8 GB** | 5.3 GB | Qwen3-8B (4.7 GB) |
+| FLUX.2-klein-4B | 20s | 30s | 6 GB | 2.3 GB | Qwen3-4B (2.4 GB) |
 | FLUX.1-schnell | 30s | 91s | 10 GB | 6.5 GB | CLIP+T5 (3.4 GB) |
 | Chroma flash | 85s | 240s⁸ | 8.4 GB | 5.1 GB | T5 (3.2 GB) |
 | FLUX.1-dev | 279s²⁰ | ❌ | 10 GB | 6.8 GB | CLIP+T5 (3.4 GB) |
 | SD-Turbo | 11s¹ | 21s | 2 GB | 2 GB | (built-in) |
 
-> FLUX.2-klein-4B is the clear winner: fastest at every resolution, smallest VRAM footprint, newest architecture. SD-Turbo remains the fastest option for previews but quality is significantly lower.
+> FLUX.2-klein-9B is the quality winner — more detail, better text understanding, and it actually stresses the 16.5 GB GPU properly (11.8 GB used vs 6 GB for 4B). The 4B version is 7× faster but leaves 10 GB unused.
+
+**🔬 Quality shootout — same prompt, same seed (42), 512×512 @4 steps:**
+
+All models tested back-to-back on the same prompt: *"a cyberpunk cityscape at sunset with neon lights reflecting on wet streets, highly detailed"*
+
+| Model | Time | s/step | VRAM | File Size | Quality |
+|-------|:----:|:------:|:----:|:---------:|:-------:|
+| **FLUX.2-klein-9B** | **104s** | 15.4 | 11.8 GB | 709 KB | **★★★★** — finest detail, best reflections |
+| FLUX.2-klein-4B | 15s | 2.7 | 6.0 GB | 704 KB | ★★★ — good but less detail |
+| FLUX.1-schnell | 31s | 6.5 | 10.1 GB | 609 KB | ★★ — decent, less coherent |
+| Chroma flash (8 steps) | 120s | 14.1 | 8.4 GB | 204 KB | ★★ — artistic but softer |
+
+> The 9B model produces visibly more detail in fine structures (neon reflections, wet streets, building facades). The 4B is the speed champion but sacrifices detail. Chroma has a distinctive artistic style but outputs smaller, softer images. FLUX.1-schnell sits in the middle.
 
 **Summary: recommended settings for production**
 
 | Use case | Model | Resolution | Steps | Time |
 |----------|-------|:----------:|:-----:|:----:|
-| **Default (Signal)** | **FLUX.2-klein-4B** | **512×512** | **4** | **~20s** |
-| **High quality** | **FLUX.2-klein-4B** | **768×768** | **4** | **~30s** |
-| **Poster/wallpaper** | **FLUX.2-klein-4B** | **1024×1024** | **4** | **~63s** |
-| Quick preview | SD-Turbo | 512×512 | 1 | ~11s |
+| **Default (Signal)** | **FLUX.2-klein-9B** | **512×512** | **4** | **~105s** |
+| **High quality** | **FLUX.2-klein-9B** | **768×768** | **4** | **~130s** |
+| Quick preview | FLUX.2-klein-4B | 512×512 | 4 | ~20s |
+| Poster/wallpaper | FLUX.2-klein-4B | 1024×1024 | 4 | ~63s |
 | Best quality (slow) | Chroma flash | 512×512 | 8 | ~130s |
 
 ```bash
-# FLUX.2-klein-4B — recommended production command:
+# FLUX.2-klein-9B — recommended production command:
 /opt/stable-diffusion.cpp/build/bin/sd-cli \
-  --diffusion-model models/flux2/flux-2-klein-4b-Q4_0.gguf \
+  --diffusion-model models/flux2/flux-2-klein-9b-Q4_0.gguf \
   --vae models/flux2/flux2-vae.safetensors \
-  --llm models/flux2/qwen3-4b-Q4_K_M.gguf \
+  --llm models/flux2/qwen3-8b-Q4_K_M.gguf \
   -p "your prompt here" \
   --cfg-scale 1.0 --steps 4 -H 512 -W 512 \
   --offload-to-cpu --diffusion-fa -v \
@@ -848,7 +888,8 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 | Model | Params | GGUF Size | Total RAM¹ | Steps | Quality | Status |
 |-------|:------:|:---------:|:----------:|:-----:|:-------:|--------|
-| **FLUX.2-klein-4B Q4_0** | **4B** | **2.3 GB** | **~6 GB** | **4** | **★★★** | **✅ Current default, 20s @512²** |
+| **FLUX.2-klein-9B Q4_0** | **9B** | **5.3 GB** | **~11.8 GB** | **4** | **★★★★** | **✅ Current default, 104s @512²** |
+| FLUX.2-klein-4B Q4_0 | 4B | 2.3 GB | ~6 GB | 4 | ★★★ | ✅ Fast alternative, 20s @512² |
 | FLUX.1-schnell Q4_K | 12B | 6.5 GB | ~10 GB | 4 | ★★ | ✅ Previous default, 30s @512² |
 | Chroma flash Q4_0 | 12B | 5.1 GB | ~8.4 GB | 4–8 | ★★★ | ✅ Tested — 85s @512², better quality |
 | FLUX.1-dev Q4_K_S | 12B | 6.8 GB | ~10 GB | 20 | ★★★★ | ✅ Tested — 279s @512², ❌768²+ |
@@ -860,7 +901,6 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 | Model | Params | GGUF Size | Total RAM¹ | Notes |
 |-------|:------:|:---------:|:----------:|-------|
-| FLUX.2-klein-9B Q4_0 | 9B | ~5.6 GB | ~11 GB | Needs Qwen3-8B encoder, borderline VRAM |
 | SD3.5-medium | 2.5B | ~2.5 GB | ~6 GB | Needs clip_g + T5 |
 
 **Video generation — future capability:**
@@ -874,13 +914,13 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 | Model | Notes |
 |-------|-------|
-| FLUX.2-klein-4B | Supports Kontext-style editing via `-r` reference image |
+| FLUX.2-klein-9B | Supports Kontext-style editing via `-r` reference image |
 
 > Kontext reuses the same FLUX.2 diffusion model + a reference image. No additional model downloads needed beyond what's already on disk.
 > ```bash
 > # Edit an existing image:
-> sd-cli --diffusion-model models/flux2/flux-2-klein-4b-Q4_0.gguf \
->   --vae models/flux2/flux2-vae.safetensors --llm models/flux2/qwen3-4b-Q4_K_M.gguf \
+> sd-cli --diffusion-model models/flux2/flux-2-klein-9b-Q4_0.gguf \
+>   --vae models/flux2/flux2-vae.safetensors --llm models/flux2/qwen3-8b-Q4_K_M.gguf \
 >   -r input.png -p "change the sky to sunset" --cfg-scale 1.0 --steps 4 \
 >   --sampling-method euler --offload-to-cpu --diffusion-fa -o output.png
 > ```
@@ -893,10 +933,10 @@ SD and Ollama can't run simultaneously (shared 16 GB VRAM). queue-runner handles
   "draw a cyberpunk cat"
     +-> queue-runner intercepts EXEC(generate-and-send "...")
          +-> stop Ollama -> run sd-cli -> send image via Signal -> restart Ollama
-              +-> image arrives (~25s total with FLUX.2-klein)
+              +-> image arrives (~2 min total with FLUX.2-klein-9B)
 ```
 
-The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD script path. queue-runner stops Ollama first (freeing ~12 GB VRAM), generates the image with FLUX.2-klein-4B, sends it as a Signal attachment, then restarts Ollama. Total downtime ~25–40s (vs ~60–90s with FLUX.1-schnell).
+The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD script path. queue-runner stops Ollama first (freeing ~12 GB VRAM), generates the image with FLUX.2-klein-9B, sends it as a Signal attachment, then restarts Ollama. Total downtime ~2–3 minutes (vs ~25s with FLUX.2-klein-4B fast mode).
 
 > ⚠️ **GFX1013 bug:** sd-cli hangs after writing the output image (Vulkan cleanup). queue-runner polls for the file, then kills the process.
 
