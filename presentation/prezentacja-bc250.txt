@@ -119,9 +119,9 @@ to sprytne omijanie ograniczeń sprzętu dzięki architekturze MoE.
 --- Konfiguracja produkcyjna ---
 
 Dual-model setup:
-• Primary: qwen3.5-35b-a3b-iq2m — 38 tok/s gen, 75 tok/s prefill, 16K kontekst
+• Primary: qwen3.5-35b-a3b-iq2m — 38 tok/s gen, 233 tok/s prefill, 16K kontekst
   35B wiedzy, 3B obliczeń, multimodal (vision + tools + thinking)
-• Fallback: qwen3.5:9b — 32 tok/s, 65K kontekst
+• Fallback: qwen3.5:9b — 32 tok/s gen, 230 tok/s prefill, 65K kontekst
   Gdy potrzeba długich dokumentów albo analizy obrazów
 
 OLLAMA_CONTEXT_LENGTH=16384 w systemd — cap dla MoE.
@@ -136,10 +136,26 @@ W codziennych zadaniach (streszczanie, JSON, narzędzia) — działa dobrze.
 Przy złożonym rozumowaniu matematycznym — jakość spada vs pełna precyzja.
 Dlatego mamy fallback na 9B (Q4_K_M, 4.5 bita) do trudniejszych zadań.
 
-Prefill (czas "czytania" promptu przez model): 75 tok/s dla MoE.
-System prompt 3K tokenów = ~40 sekund zanim model zacznie odpowiadać.
+Prefill (czas "czytania" promptu przez model): 53–233 tok/s dla MoE
+(zależnie od długości promptu — 53 tok/s @17 tokenów, 231 tok/s @384 tokeny).
+System prompt 3K tokenów = ~15–20 sekund na cold start, <2s gdy model jest warm.
 DDR4 ~51 GB/s to wąskie gardło — dedykowane GPU mają 300-900 GB/s.
 Nie ukrywam: to nie jest szybka maszyna. Jest wystarczająca — i za $100.
+
+--- Dla embedded engineerów: jak to działa? ---
+
+Jeśli jesteś embedded-owcem i nie wiesz co to LLM — krótka analogia:
+
+Inferencja LLM to dwie fazy — jak bootloader i main loop.
+"Prefill" to bootloader: model przetwarza cały prompt jednym burstem
+(równolegle, compute-bound — jak DMA-owanie firmware do SRAM).
+"Token generation" to main loop: model generuje tokeny jeden po drugim,
+sekwencyjnie (memory-bandwidth-bound — jak polling UART przy stałym baudrate).
+
+MoE (Mixture of Experts) to jak 35 wyspecjalizowanych ISR-ów,
+ale router kieruje do tylko 3 z nich na każde przerwanie —
+masz inteligencję routingu 35 handlerów, ale płacisz koszt wykonania 3.
+Dlatego 35B MoE jest szybszy niż 14B dense na GPU bez matrix cores.
 
 --- Kwantyzacja KV cache — bonus ---
 
@@ -317,8 +333,8 @@ PYTANIA DO KTÓRYCH SIĘ PRZYGOTOWAĆ:
 
 • "A co z przepustowością pamięci?"
   → DDR4-3200 daje ~51 GB/s. HBM2 w A100 daje 2 TB/s — 40× więcej.
-  To dlatego prefill jest 75 tok/s (vs 500+ na dedykowanym GPU),
-  a dense 14B robi zaledwie 27 tok/s. Bandwidth to prawdziwe wąskie gardło.
+  To dlatego prefill nasyca się przy ~230 tok/s (vs 500+ na dedykowanym GPU),
+  a dense 14B robi zaledwie 27 tok/s generacji. Bandwidth to prawdziwe wąskie gardło.
   MoE omija to przez mniej aktywnych parametrów na token.
 
 • "NVMe swap pod AI to samobójstwo dla dysku!"
@@ -327,11 +343,11 @@ PYTANIA DO KTÓRYCH SIĘ PRZYGOTOWAĆ:
   OOMScoreAdjust=-1000 chroni Ollamę — bo na single-purpose serwerze AI
   model MUSI przetrwać, nawet kosztem sshd czy crona.
 
-• "Prefill 75 tok/s to tragedia — 3K tokenów = 40 sekund ciszy!"
+• "Prefill 233 tok/s to nieźle, ale cold start 3K = 15 sekund ciszy!"
   → Tak, nie ukrywamy tego (jest w README §4.6). Na dedykowanym GPU: 2-3s.
-  Na BC-250: ~40s. To cena DDR4 bandwidth. Ale w Signal chat z 3K system
+  Na BC-250: ~15-20s. To cena DDR4 bandwidth. Ale w Signal chat z 3K system
   prompt model jest warm (prompt cached), więc odpowiada w <2s.
-  Pierwsze załadowanie po unload — wtedy są te 40s.
+  Pierwsze załadowanie po unload — wtedy są te 15-20s.
 
 • "Ile kosztuje prąd?"
   → 55-60W idle, ~100W średnio z 337 zadaniami. ~900 zł/rok.

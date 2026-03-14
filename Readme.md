@@ -281,31 +281,33 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 | Model | Params | Quant | tok/s | Prefill | Max Ctx | VRAM @4K | GPU | Status |
 |-------|:------:|:-----:|:-----:|:-------:|:-------:|:--------:|:---:|--------|
-| **qwen3.5-35b-a3b-iq2m** | **35B/3B** | **UD-IQ2_M** | **38** | **75** | **16K** | **12.3 GiB** | **100%** | **🏆 Smartest — MoE** |
-| **qwen3.5:9b** | **9.7B** | **Q4_K_M** | **32** | **111** | **65K** | **8.6 GiB** | **100%** | **🏆 Best context+vision** |
-| qwen2.5:3b | 3.1B | Q4_K_M | **104** | — | **64K** | 3.4 GiB | 100% | ✅ Fast, lightweight |
-| qwen2.5:7b | 7.6B | Q4_K_M | **56** | — | **64K** | 6.5 GiB | 100% | ✅ Great quality/speed |
-| qwen2.5-coder:7b | 7.6B | Q4_K_M | **56** | — | **64K** | 6.4 GiB | 100% | ✅ Code-focused |
-| llama3.1:8b | 8.0B | Q4_K_M | **52** | — | **48K** | 11.0 GiB | 100% | ✅ Fast 8B |
-| mannix/llama3.1-8b-lexi | 8.0B | Q4_0 | **51** | — | **48K** | 10.6 GiB | 100% | ✅ Uncensored 8B |
-| huihui_ai/seed-coder-abliterate | 8.3B | Q4_K_M | **52** | — | **64K** | 9.1 GiB | 100% | ✅ Code gen, uncensored |
-| qwen3:8b | 8.2B | Q4_K_M | **44** | — | **64K** | 9.8 GiB | 100% | ✅ Thinking mode |
-| huihui_ai/qwen3-abliterated:8b | 8.2B | Q4_K_M | **46** | — | **64K** | 9.7 GiB | 100% | ✅ Abliterated 8B |
-| gemma2:9b | 9.2B | Q4_0 | **38** | — | **48K** | 9.2 GiB | 100% | ✅ Fixed! (was 91%) |
-| mistral-nemo:12b | 12.2B | Q4_0 | **34** | — | **24K** | 10.8 GiB | 100% | ⚠️ 32K deadlocks |
-| qwen3:14b | 14.8B | Q4_K_M | **27** | **60** | **24K** | 13.5 GiB | 100% | ✅ Previous primary |
-| huihui_ai/qwen3-abliterated:14b | 14.8B | Q4_K_M | **28** | — | **24K** | 11.4 GiB | 100% | ✅ Abliterated |
-| phi4:14b | 14.7B | Q4_K_M | **29** | — | **40K** | 11.8 GiB | 100% | 🏆 Best 14B context |
+| **qwen3.5-35b-a3b-iq2m** | **35B/3B** | **UD-IQ2_M** | **38** | **233** | **16K** | **12.3 GiB** | **100%** | **🏆 Smartest — MoE** |
+| **qwen3.5:9b** | **9.7B** | **Q4_K_M** | **32** | **230** | **65K** | **8.6 GiB** | **100%** | **🏆 Best context+vision** |
+| qwen2.5:3b | 3.1B | Q4_K_M | **104** | **515** | **64K** | 3.4 GiB | 100% | ✅ Fast, lightweight |
+| qwen2.5:7b | 7.6B | Q4_K_M | **56** | **248** | **64K** | 6.5 GiB | 100% | ✅ Great quality/speed |
+| qwen2.5-coder:7b | 7.6B | Q4_K_M | **56** | **246** | **64K** | 6.4 GiB | 100% | ✅ Code-focused |
+| llama3.1:8b | 8.0B | Q4_K_M | **52** | **246** | **48K** | 11.0 GiB | 100% | ✅ Fast 8B |
+| mannix/llama3.1-8b-lexi | 8.0B | Q4_0 | **51** | **308** | **48K** | 10.6 GiB | 100% | ✅ Uncensored 8B |
+| huihui_ai/seed-coder-abliterate | 8.3B | Q4_K_M | **52** | **231** | **64K** | 9.1 GiB | 100% | ✅ Code gen, uncensored |
+| qwen3:8b | 8.2B | Q4_K_M | **44** | **251** | **64K** | 9.8 GiB | 100% | ✅ Thinking mode |
+| huihui_ai/qwen3-abliterated:8b | 8.2B | Q4_K_M | **46** | **250** | **64K** | 9.7 GiB | 100% | ✅ Abliterated 8B |
+| gemma2:9b | 9.2B | Q4_0 | **38** | **219** | **48K** | 9.2 GiB | 100% | ✅ Fixed! (was 91%) |
+| mistral-nemo:12b | 12.2B | Q4_0 | **34** | **137** | **24K** | 10.8 GiB | 100% | ⚠️ 32K deadlocks |
+| qwen3:14b | 14.8B | Q4_K_M | **27** | **131** | **24K** | 13.5 GiB | 100% | ✅ Previous primary |
+| huihui_ai/qwen3-abliterated:14b | 14.8B | Q4_K_M | **28** | **137** | **24K** | 11.4 GiB | 100% | ✅ Abliterated |
+| phi4:14b | 14.7B | Q4_K_M | **29** | **128** | **40K** | 11.8 GiB | 100% | 🏆 Best 14B context |
 | Qwen3-30B-A3B (Q2_K) | 30.5B | Q2_K | **61** | — | **16K** | 11.5 GiB | 100% | ⚠️ MoE fast, heavy quant |
 | qwen3.5-27b-iq2m | 26.9B | IQ2_M | **0** | — | — | 13.5 GiB | 100% | ❌ Non-functional¹ |
 
 > ¹ **Why 27B dense fails:** The dense architecture requires all 27B parameters in every forward pass. Without matrix cores (GFX1013 has none), each token requires ~27B multiplications through general-purpose shader cores. Result: 0 tokens generated in 5 minutes. The 35B MoE with only 3B active params per token avoids this entirely — compute is ~9× less per token despite having more total knowledge stored.
 
-> **March 14 — Qwen3.5 era:** Ollama upgraded 0.16.1→0.18.0 (required for Qwen3.5). The **qwen3.5-35b-a3b MoE** (35B total, 3B active per token) at IQ2_M quantization is now the smartest model on BC-250: 38 tok/s, 75 tok/s prefill, 16K context, multimodal (vision+tools+thinking). The **qwen3.5:9b** provides 65K context with vision when longer documents are needed. Both are Qwen3.5 architecture — dramatically newer than Qwen3.
+> **Prefill column:** Measured at ~400 tokens prompt size (warm model, FP16 KV). Prefill rate depends on prompt length — see §4.6 for detailed sweep. Smaller models (3B) saturate the GPU compute and achieve higher prefill. Larger models (14B) are memory-bandwidth-limited at ~128–137 tok/s. MoE and 9B land between at ~230 tok/s — the MoE benefits from only loading 3B active expert weights per token during prefill. Qwen3-30B-A3B and qwen3.5-27b not measured (deprecated/non-functional).
+
+> **March 14 — Qwen3.5 era:** Ollama upgraded 0.16.1→0.18.0 (required for Qwen3.5). The **qwen3.5-35b-a3b MoE** (35B total, 3B active per token) at IQ2_M quantization is now the smartest model on BC-250: 38 tok/s, 233 tok/s prefill, 16K context, multimodal (vision+tools+thinking). The **qwen3.5:9b** provides 65K context with vision when longer documents are needed. Both are Qwen3.5 architecture — dramatically newer than Qwen3.
 
 > **⚠️ IQ2_M quality tradeoff:** The extreme quantization (~2.5 bits per parameter) is a significant quality compromise — perplexity increases and complex mathematical reasoning degrades compared to higher-precision quantizations. For everyday tasks (summarization, JSON extraction, tool use, chat) the quality is adequate. For tasks requiring precise reasoning, the `qwen3.5:9b` fallback (Q4_K_M, ~4.5 bits) provides substantially better accuracy. This is an informed tradeoff: more knowledge at lower precision vs less knowledge at higher precision.
 
-> **Prefill latency (MoE):** DDR4-3200 bandwidth (~51 GB/s) is the primary bottleneck for prompt processing. The MoE model prefills at 75 tok/s — dramatically slower than dedicated GPUs (300–500+ tok/s). A 3K-token system prompt takes ~40 seconds on cold start. In practice, Ollama caches the model in RAM (`OLLAMA_KEEP_ALIVE=30m`), so subsequent requests within the window respond in <2 seconds. This is a genuine limitation of UMA architecture, not a hidden deficiency.
+> **Prefill latency (MoE):** DDR4-3200 bandwidth (~51 GB/s) is the primary bottleneck for prompt processing. The MoE model prefills at 53–233 tok/s depending on prompt size (see §4.6): tiny prompts are overhead-dominated (53 tok/s @17 tokens), medium prompts peak at ~230 tok/s, and longer prompts degrade due to O(n²) attention scaling. A 3K-token system prompt takes ~15–20 seconds on cold start — still dramatically slower than dedicated GPUs (500+ tok/s). In practice, Ollama caches the model in RAM (`OLLAMA_KEEP_ALIVE=30m`), so subsequent requests within the window respond in <2 seconds. This is a genuine limitation of UMA architecture, not a hidden deficiency.
 
 ### 4.2 Benchmark visualization
 
@@ -521,7 +523,32 @@ Environment=OLLAMA_KV_CACHE_TYPE=q4_0
 
 On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200). Prefill is the time the model spends "reading" the prompt before generating the first token.
 
-**Prefill rate vs prompt size (qwen3:14b Q4_K_M, FP16 KV cache, 24K context):**
+> **For embedded engineers:** Think of LLM inference as two phases — like a bootloader and a main loop. **Prefill** is the "bootloader": the model processes the entire input prompt in one burst (parallel, compute-bound — like DMA-ing a firmware image into SRAM). **Token generation** is the "main loop": the model produces output tokens one at a time, sequentially (memory-bandwidth-bound — like polling a UART at a fixed baud rate). MoE (Mixture of Experts) is like having 35 specialized ISRs but only routing to 3 of them per interrupt — you get the routing intelligence of knowing all 35, but only pay the execution cost of 3. That's why a 35B-parameter MoE runs faster than a 14B dense model on hardware without matrix cores.
+
+**Prefill rate vs prompt size — production models (FP16 KV cache, warm):**
+
+**qwen3.5-35b-a3b-iq2m (MoE 35B/3B active, UD-IQ2_M):**
+
+| Prompt Size | Tokens | Prefill | Gen tok/s | TTFT (warm) |
+|-------------|:------:|--------:|----------:|------------:|
+| Tiny | 17 | 53 tok/s | 39.3 | 0.3s |
+| Short | 42 | 68 tok/s | 39.6 | 0.6s |
+| Medium | 384 | 231 tok/s | 38.5 | 1.7s |
+| Long | 1,179 | 228 tok/s | 38.3 | 5.2s |
+
+**qwen3.5:9b (Q4_K_M, dense 9.7B):**
+
+| Prompt Size | Tokens | Prefill | Gen tok/s | TTFT (warm) |
+|-------------|:------:|--------:|----------:|------------:|
+| Tiny | 17 | 61 tok/s | 33.2 | 0.3s |
+| Short | 42 | 118 tok/s | 33.0 | 0.4s |
+| Medium | 384 | 229 tok/s | 33.0 | 1.7s |
+| Long | 1,179 | 225 tok/s | 32.5 | 5.2s |
+
+> **Observations:** Both production models converge to ~230 tok/s prefill at medium-to-long prompts — the DDR4 bandwidth ceiling. At tiny prompts (<50 tokens), GPU compute overhead dominates and prefill drops to 53–61 tok/s. Generation rate is remarkably stable: MoE holds 38–39 tok/s, 9B holds 32–33 tok/s regardless of prompt size. TTFT scales linearly: at 384 tokens it's ~1.7s, at 1.2K tokens it's ~5.2s. For real-world Signal chat (3K system prompt + conversation), expect TTFT of ~15–20s on cold start, <2s when the model is warm (prompt cached via `OLLAMA_KEEP_ALIVE=30m`).
+
+<details>
+<summary><b>Historical: qwen3:14b Q4_K_M (previous primary, 24K context)</b></summary>
 
 | Prompt Size | Tokens | Prefill | Gen tok/s | TTFT (warm) |
 |-------------|:------:|--------:|----------:|------------:|
@@ -532,7 +559,9 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 | XL | 6,686 | 88 tok/s | 22.5 | ~76s |
 | Massive | 10,014 | 70 tok/s | 20.7 | ~143s |
 
-> **Observations:** Prefill peaks at 128 tok/s for medium prompts, then degrades with context length — likely attention computation scaling (O(n²)) plus UMA bandwidth saturation. Generation rate also degrades: 27.2 tok/s with small context → 20.7 tok/s at 10K tokens. This means real-world Signal chat (3K system prompt + conversation) runs at ~24–25 tok/s, not the headline 27 tok/s.
+> Generation rate degrades with context: 27.2 tok/s @small → 20.7 tok/s @10K tokens.
+
+</details>
 
 ### 4.2 Memory budget
 
@@ -567,7 +596,7 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 
 > **Production dual-model config:** `qwen3.5-35b-a3b-iq2m` as primary with `OLLAMA_CONTEXT_LENGTH=16384`. For tasks needing >16K context or vision (image analysis), switch to `qwen3.5:9b` which handles 65K context and can process images.
 >
-> The MoE wins over the 9B dense model in generation speed (38 vs 32 tok/s) because only 3B parameters activate per token on hardware without matrix cores — fewer multiplications wins. The 9B wins in prefill speed (111 vs 75 tok/s) and context capacity (65K vs 16K) because its smaller total weight leaves more room for KV cache.
+> The MoE wins over the 9B dense model in generation speed (38 vs 32 tok/s) because only 3B parameters activate per token on hardware without matrix cores — fewer multiplications wins. Both models achieve similar prefill rates (~230 tok/s at ~400 tokens), but the 9B wins in context capacity (65K vs 16K) because its smaller total weight leaves more room for KV cache.
 
 ```bash
 # Primary model (smartest, 35B MoE) — custom GGUF via Modelfile
