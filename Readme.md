@@ -194,6 +194,8 @@ Ollama allocates KV cache based on the model's declared context window. Without 
 
 With the model consuming 11+ GB on a 14 GB system, disk swap is essential for surviving inference peaks.
 
+> **NVMe wear concern:** Swap is a *safety net*, not an active paging target. In steady state, swap usage is ~400 MB (OS buffers pushed out to make room for model weights). SMART data after months of 24/7 operation: **3% wear, 25.4 TB total written**. The model runs entirely in RAM — swap catches transient spikes during model load/unload transitions. Consumer NVMe drives rated for 300–600 TBW will last years at this rate.
+
 ```bash
 # Create 16 GB swap file (btrfs requires dd, not fallocate)
 sudo dd if=/dev/zero of=/swapfile bs=1M count=16384 status=progress
@@ -300,6 +302,10 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 > ¹ **Why 27B dense fails:** The dense architecture requires all 27B parameters in every forward pass. Without matrix cores (GFX1013 has none), each token requires ~27B multiplications through general-purpose shader cores. Result: 0 tokens generated in 5 minutes. The 35B MoE with only 3B active params per token avoids this entirely — compute is ~9× less per token despite having more total knowledge stored.
 
 > **March 14 — Qwen3.5 era:** Ollama upgraded 0.16.1→0.18.0 (required for Qwen3.5). The **qwen3.5-35b-a3b MoE** (35B total, 3B active per token) at IQ2_M quantization is now the smartest model on BC-250: 38 tok/s, 75 tok/s prefill, 16K context, multimodal (vision+tools+thinking). The **qwen3.5:9b** provides 65K context with vision when longer documents are needed. Both are Qwen3.5 architecture — dramatically newer than Qwen3.
+
+> **⚠️ IQ2_M quality tradeoff:** The extreme quantization (~2.5 bits per parameter) is a significant quality compromise — perplexity increases and complex mathematical reasoning degrades compared to higher-precision quantizations. For everyday tasks (summarization, JSON extraction, tool use, chat) the quality is adequate. For tasks requiring precise reasoning, the `qwen3.5:9b` fallback (Q4_K_M, ~4.5 bits) provides substantially better accuracy. This is an informed tradeoff: more knowledge at lower precision vs less knowledge at higher precision.
+
+> **Prefill latency (MoE):** DDR4-3200 bandwidth (~51 GB/s) is the primary bottleneck for prompt processing. The MoE model prefills at 75 tok/s — dramatically slower than dedicated GPUs (300–500+ tok/s). A 3K-token system prompt takes ~40 seconds on cold start. In practice, Ollama caches the model in RAM (`OLLAMA_KEEP_ALIVE=30m`), so subsequent requests within the window respond in <2 seconds. This is a genuine limitation of UMA architecture, not a hidden deficiency.
 
 ### 4.2 Benchmark visualization
 
