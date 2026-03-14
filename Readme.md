@@ -267,46 +267,74 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 ### 4.1 Compatibility table
 
-> Ollama 0.16.1 · Vulkan · RADV Mesa 25.3.4 · March 2026
+> Ollama 0.16.1 · Vulkan · RADV Mesa 25.3.4 · 16.5 GiB Vulkan · FP16 KV · March 14 2026
 
-| Model | Params | Quant | VRAM | GPU | tok/s | Status |
-|-------|:------:|:-----:|:----:|:---:|:-----:|--------|
-| qwen2.5:3b | 3B | Q4_K_M | 2.4 GB | 100% | **101** | ✅ Fast, lightweight |
-| qwen2.5:7b | 7B | Q4_K_M | 4.7 GB | 100% | **59** | ✅ Great quality/speed |
-| qwen2.5-coder:7b | 7B | Q4_K_M | 4.7 GB | 100% | **57** | ✅ Code-focused |
-| llama3.1:8b | 8B | Q4_K_M | 4.9 GB | 100% | **75** | ✅ Fastest 8B |
-| mannix/llama3.1-8b-lexi | 8B | Q4_K_M | 4.7 GB | 100% | **73** | ✅ Uncensored 8B |
-| huihui_ai/seed-coder-abliterate | 8B | Q4_K_M | 5.1 GB | 100% | **52** | ✅ Code gen, uncensored |
-| qwen3:8b | 8B | Q4_K_M | 5.2 GB | 100% | **44** | ✅ Thinking mode |
-| gemma2:9b | 9B | Q4_K_M | 5.4 GB | 91% | **26** | ⚠️ Spills to CPU |
-| mistral-nemo:12b | 12B | Q4_K_M | 7.1 GB | 100% | **34** | ✅ Good 12B alternative |
-| phi4:14b | 14B | Q4_K_M | 9.1 GB | 100% | **25** | ✅ Strong reasoning |
-| **qwen3:14b** | **14B** | **Q4_K_M** | **9.3 GB** | **100%** | **27** | **✅ Primary model** |
-| huihui_ai/qwen3-abliterated:14b | 14B | Q4_K_M | 9.0 GB | 100% | **27.5** | ✅ Uncensored variant |
-| Qwen3-30B-A3B (Q2_K) | 30B | Q2_K | 11 GB | 100% | **~12** | ⚠️ Fits but slow, heavy quant |
+| Model | Params | Quant | tok/s | Max Ctx | GTT @max | GPU | Status |
+|-------|:------:|:-----:|:-----:|:-------:|:--------:|:---:|--------|
+| qwen2.5:3b | 3.1B | Q4_K_M | **104** | **64K** | 3.4 GiB | 100% | ✅ Fast, lightweight |
+| qwen2.5:7b | 7.6B | Q4_K_M | **56** | **64K** | 6.5 GiB | 100% | ✅ Great quality/speed |
+| qwen2.5-coder:7b | 7.6B | Q4_K_M | **56** | **64K** | 6.4 GiB | 100% | ✅ Code-focused |
+| llama3.1:8b | 8.0B | Q4_K_M | **52** | **48K** | 11.0 GiB | 100% | ✅ Fast 8B |
+| mannix/llama3.1-8b-lexi | 8.0B | Q4_0 | **51** | **48K** | 10.6 GiB | 100% | ✅ Uncensored 8B |
+| huihui_ai/seed-coder-abliterate | 8.3B | Q4_K_M | **52** | **64K** | 9.1 GiB | 100% | ✅ Code gen, uncensored |
+| qwen3:8b | 8.2B | Q4_K_M | **44** | **64K** | 9.8 GiB | 100% | ✅ Thinking mode |
+| huihui_ai/qwen3-abliterated:8b | 8.2B | Q4_K_M | **46** | **64K** | 9.7 GiB | 100% | ✅ Abliterated 8B |
+| gemma2:9b | 9.2B | Q4_0 | **38** | **48K** | 9.2 GiB | 100% | ✅ Fixed! (was 91%) |
+| mistral-nemo:12b | 12.2B | Q4_0 | **34** | **24K** | 10.8 GiB | 100% | ⚠️ 32K deadlocks |
+| **qwen3:14b** | **14.8B** | **Q4_K_M** | **27** | **24K** | **11.7 GiB** | **100%** | **✅ Primary model** |
+| huihui_ai/qwen3-abliterated:14b | 14.8B | Q4_K_M | **28** | **24K** | 11.4 GiB | 100% | ✅ Abliterated primary |
+| **phi4:14b** | **14.7B** | **Q4_K_M** | **29** | **40K** | **11.8 GiB** | **100%** | **🏆 Best 14B context** |
+| Qwen3-30B-A3B (Q2_K) | 30.5B | Q2_K | **61** | **16K** | 11.5 GiB | 100% | ⚠️ MoE fast, heavy quant |
 
-> ⚠️ 14B models require both GTT (§3.2) and TTM (§3.3) tuning. 30B MoE fits only at Q2_K (heavy quality loss).
+> **March 14 update:** With 16.5 GiB Vulkan (GTT migration, §3.2), gemma2:9b now runs at 100% GPU (was 91%). phi4:14b reaches 40K context — highest of any 14B model. The 30B MoE is surprisingly fast (61 tok/s at 16K) thanks to Mixture-of-Experts sparse activation.
 
 ### 4.2 Benchmark visualization
 
-**Token generation speed (tok/s) — higher is better:**
+**Generation speed (tok/s) — higher is better:**
 
-| Model | tok/s | VRAM |
-|-------|------:|-----:|
-| qwen2.5:3b | 101 | 2.4 GB |
-| llama3.1:8b | 75 | 4.9 GB |
-| lexi-8b | 73 | 4.9 GB |
-| qwen2.5:7b | 59 | 4.7 GB |
-| qwen2.5-coder:7b | 57 | 4.7 GB |
-| seed-coder:8b | 52 | 5.0 GB |
-| qwen3:8b | 44 | 5.2 GB |
-| mistral-nemo:12b | 34 | 7.1 GB |
-| **qwen3:14b** ← prod | **27** | **9.3 GB** |
-| gemma2:9b | 26 | 5.4 GB |
-| phi4:14b | 25 | 9.1 GB |
-| Qwen3-30B-A3B Q2_K | 12 | 11.0 GB |
+```
+Model                    tok/s    Max Ctx   ██ = 10 tok/s
+─────────────────────────────────────────────────────────
+qwen2.5:3b               104      64K  ██████████▌
+Qwen3-30B-A3B Q2_K        61      16K  ██████▏
+qwen2.5:7b                56      64K  █████▌
+qwen2.5-coder:7b          56      64K  █████▌
+llama3.1:8b                52      48K  █████▏
+seed-coder-abl:8b          52      64K  █████▏
+lexi-8b (uncensored)      51      48K  █████
+qwen3-abl:8b              46      64K  ████▌
+qwen3:8b                  44      64K  ████▍
+gemma2:9b                 38      48K  ███▊
+mistral-nemo:12b          34      24K  ███▍
+phi4:14b                  29      40K  ██▉   ← best 14B context
+qwen3-abl:14b             28      24K  ██▊
+qwen3:14b ← prod         27      24K  ██▋
+```
 
-> Vulkan max: 14.5 GB. All 14B models with full GPU inference (UMA). 30B MoE barely fits at Q2_K (heavy quality loss).
+**Context ceiling per model (FP16 KV, all GPU):**
+
+```
+Model             4K   8K  16K  24K  32K  48K  64K
+────────────────────────────────────────────────────
+qwen2.5:3b        ✅   ✅   ✅   ✅   ✅   ✅   ✅
+qwen2.5:7b        ✅   ✅   ✅   ✅   ✅   ✅   ✅
+qwen2.5-coder:7b  ✅   ✅   ✅   ✅   ✅   ✅   ✅
+qwen3:8b          ✅   ✅   ✅   ✅   ✅   ✅   ✅
+qwen3-abl:8b      ✅   ✅   ✅   ✅   ✅   ✅   ✅
+seed-coder:8b     ✅   ✅   ✅   ✅   ✅   ✅   ✅
+llama3.1:8b       ✅   ✅   ✅   ✅   ✅   ✅   ❌
+lexi-8b           ✅   ✅   ✅   ✅   ✅   ✅   ❌
+gemma2:9b         ✅   ✅   ✅   ✅   ✅   ✅   —
+mistral-nemo:12b  ✅   ✅   ✅   ✅   ❌   —    —
+qwen3:14b         ✅   ✅   ✅   ✅   ❌   —    —
+qwen3-abl:14b     ✅   ✅   ✅   ✅   ❌   —    —
+phi4:14b          ✅   ✅   ✅   ✅   ✅   —    —
+30B-A3B Q2_K      ✅   ✅   ✅   ❌   —    —    —
+```
+
+> ✅ = works 100% GPU | ❌ = timeout/deadlock | — = not tested (too large)
+
+**Key insight:** Speed is constant across context sizes with FP16 KV (speed only degrades when the context is actually *filled* — see §4.5). The context ceiling is purely a memory constraint: weights + KV cache + compute graph must fit in 16.5 GiB.
 
 ### 4.3 Model testing journey
 
@@ -355,16 +383,29 @@ The path to running 14B models on this hardware was non-trivial. Here's the chro
   │          Decision: keep qwen3:14b as primary. ✅
   │
   Mar 10 ─── Context window re-test: 16K → 24K ✅
-             v7 freed 700 MB + 14 GB GTT = enough headroom for 24K.
-             Tested 16K–32K in 2K steps. 24K: full speed (26.7 t/s), 1.5 GB free.
-             26K: 10% slower. 28K+: deadlocks. Production bumped to 24K.
+  │          v7 freed 700 MB + 16 GB GTT = enough headroom for 24K.
+  │          Tested 16K–32K in 2K steps. 24K: full speed (26.7 t/s), 1.5 GB free.
+  │          26K: 10% slower. 28K+: deadlocks. Production bumped to 24K.
+  │
+  Mar 14 ─── COMPREHENSIVE BENCHMARK: 14 models × 7 context sizes
+             GTT migration (14→16 GiB) + Vulkan 14.0→16.5 GiB unlocked dramatically
+             higher context ceilings. Full automated benchmark of all models.
+             KEY FINDINGS:
+             • gemma2:9b: now 100% GPU at 38 tok/s (was 91% spill, 26 tok/s)
+             • phi4:14b: 29 tok/s at 40K context — best 14B for long context
+             • 30B MoE: actually 61 tok/s (not 12) at 16K — MoE sparse activation
+             • 7-8B models: 64K context on all qwen variants
+             • FLUX.1-schnell: 56s @512², 91s @768², 146s @1024² (with tiling)
+             • FLUX.1-dev: 279s @512² but fails at 768² (guidance model too large)
+             • SD-Turbo: 11s @512², 21s @768² (fast but low quality)
+             • sd-cli bug: must use --diffusion-model not -m for FLUX GGUF files
 ```
 
 ### 4.4 Context window experiments
 
 The context window directly controls KV cache size, and on 16 GB unified memory, every megabyte counts. After v7 (OpenClaw removal freed ~700 MB, GTT bumped to 14 GB), we re-tested all context sizes systematically:
 
-**Context window vs memory (qwen3:14b Q4_K_M, flash attention, 14 GB GTT)**
+**Context window vs memory (qwen3:14b Q4_K_M, flash attention, 16 GB GTT)**
 
 | Context | RAM Used | Free | Swap | Speed | Status |
 |--------:|---------:|-----:|-----:|------:|--------|
@@ -459,9 +500,22 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 
 > **Why NVMe swap matters:** During inference peaks, the kernel pages out inactive memory (signal-cli heap, queue-runner) to swap. With 16 GB NVMe swap at ~500 MB/s, this is transparent. Without it, the OOM killer terminates services. Removing OpenClaw freed ~700 MB of RAM — see [Appendix A](#appendix-a--openclaw-archive).
 
-### 4.3 Abliterated models
+### 4.3 Model recommendations
 
-"Abliterated" models have refusal mechanisms removed — identical intelligence, zero quality loss, no safety refusals. The abliterated 14B is the primary model for all tasks.
+**Abliterated models** have refusal mechanisms removed — identical intelligence, zero quality loss, no safety refusals.
+
+| Use Case | Recommended Model | tok/s | Max Ctx | Why |
+|----------|-------------------|:-----:|:-------:|-----|
+| **General AI assistant** | qwen3:14b (abliterated) | 28 | 24K | Best quality for the size, production-proven |
+| **Long context tasks** | phi4:14b | 29 | **40K** | Only 14B that reaches 40K context, slightly faster |
+| **Fast batch jobs** | qwen2.5:7b | 56 | 64K | 2× faster than 14B, 64K context, excellent quality |
+| **Code generation** | qwen2.5-coder:7b | 56 | 64K | Same speed as base, code-specialized |
+| **Uncensored code** | seed-coder-abliterate:8b | 52 | 64K | Abliterated, good for edgy code tasks |
+| **Speed-critical** | qwen2.5:3b | 104 | 64K | 4× faster, use for simple tasks |
+| **Uncensored chat** | qwen3-abliterated:8b | 46 | 64K | Good compromise quality/speed |
+| **MoE experiment** | Qwen3-30B-A3B Q2_K | 61 | 16K | Fast (sparse) but Q2_K hurts quality |
+
+> **Production config:** `qwen3:14b` with `OLLAMA_CONTEXT_LENGTH=24576` in systemd (§3.3). For tasks needing longer context, consider phi4:14b (40K) or switching to a 7B model (64K).
 
 ```bash
 ollama pull qwen3:14b
@@ -595,7 +649,7 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 |----------|:-------:|
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
-| Image generation (FLUX) | ~60s |
+| Image generation (FLUX schnell 512²) | ~56s |
 | Cold start (model reload) | 30–60s |
 
 ---
@@ -641,21 +695,60 @@ curl -L -o sd-turbo.safetensors \
 
 ### 6.2 Performance
 
-| Model | Res | Steps | Time | Quality |
-|-------|:---:|:-----:|:----:|:-------:|
-| **FLUX.1-schnell Q4_K** | 512² | 4 | **~48s** | ★★★★★ |
-| SD-Turbo | 512² | 1 | **~3s** | ★★☆☆☆ |
+*Benchmarked 2025-03-14, sd.cpp master-525-d6dd6d7, Vulkan GFX1013 (16.5 GiB), Ollama stopped.*
+
+> **Important:** FLUX GGUF files must use `--diffusion-model` flag, not `-m`. The `-m` flag fails with "get sd version from file failed" because GGUF metadata is empty after tensor name conversion. This applies to all sd.cpp versions.
+
+**FLUX.1-schnell Q4_K — primary model:**
+
+| Resolution | Steps | Time | Notes |
+|:----------:|:-----:|:----:|-------|
+| 512×512 | 4 | **56s** | Default, ~6.5 GB VRAM |
+| 768×768 | 4 | **91s** | VAE tiling kicks in |
+| 1024×1024 | 4 | **146s** | VAE tiling, good quality |
+| 512×512 | 8 | **77s** | More steps, marginal improvement |
+| 768×512 | 4 | **66s** | Landscape, no tiling needed |
+| 1024×576 | 4 | **86s** | Widescreen, VAE tiling |
+
+**FLUX.1-dev Q4_K_S — high-quality alternative (city96/FLUX.1-dev-gguf, 6.8 GB):**
+
+| Resolution | Steps | Time | Notes |
+|:----------:|:-----:|:----:|-------|
+| 512×512 | 20 | **279s** | Sampling 253s (12.65 s/step), ~6.6 GB VRAM |
+| 768×768 | 20 | ❌ FAIL | Guidance model compute graph exceeds VRAM |
+| 1024×1024 | 20 | ❌ FAIL | Same — too large for GFX1013 at this resolution |
+
+> FLUX.1-dev uses `guidance_embed` which increases VRAM for the compute graph. At 512² it barely fits; larger resolutions fail. Quality is noticeably better than schnell for the same prompt — worth the 5× time cost for special outputs.
+
+**SD-Turbo — fast fallback:**
+
+| Resolution | Steps | Time | Notes |
+|:----------:|:-----:|:----:|-------|
+| 512×512 | 1 | **11s** | Minimum viable, ~2 GB VRAM |
+| 512×512 | 4 | **11s** | Same speed (tiny model) |
+| 768×768 | 4 | **21s** | Decent for quick previews |
+
+**Summary: recommended settings for production**
+
+| Use case | Model | Resolution | Steps | Time |
+|----------|-------|:----------:|:-----:|:----:|
+| Default (Signal) | FLUX.1-schnell | 512×512 | 4 | ~56s |
+| High quality | FLUX.1-schnell | 768×768 | 4 | ~91s |
+| Poster/wallpaper | FLUX.1-schnell | 1024×1024 | 4 | ~146s |
+| Quick preview | SD-Turbo | 512×512 | 1 | ~11s |
+| Best quality | FLUX.1-dev | 512×512 | 20 | ~279s |
 
 ### 6.2.1 Upgrade roadmap — beyond FLUX.1-schnell
 
-sd.cpp (master-504+) supports significantly more models than what we currently run. The BC-250 has ~14 GB available with Ollama stopped, the constraint is UMA fragmentation (same as LLM §3.4). All advanced models use `--offload-to-cpu` (which on UMA just manages allocation pools, no PCIe penalty).
+sd.cpp (master-525+) supports significantly more models than what we currently run. The BC-250 has ~16.5 GB available with Ollama stopped (post-GTT migration). All advanced models use `--offload-to-cpu` (which on UMA just manages allocation pools, no PCIe penalty).
 
 **Image generation — potential upgrades:**
 
 | Model | Params | GGUF Size | Total RAM¹ | Steps | Quality vs schnell | Status |
 |-------|:------:|:---------:|:----------:|:-----:|:------------------:|--------|
-| FLUX.1-schnell Q4_K | 12B | 6.5 GB | ~10 GB | 4 | baseline | ✅ Current |
-| FLUX.1-dev Q4_K | 12B | 6.5 GB | ~10 GB | 20–50 | ★ better (same arch, more steps) | 🔬 Test needed |
+| FLUX.1-schnell Q4_K | 12B | 6.5 GB | ~10 GB | 4 | baseline | ✅ Current, 56s @512² |
+| FLUX.1-dev Q4_K_S | 12B | 6.8 GB | ~10 GB | 20 | ★ better (same arch, more steps) | ✅ Tested — 279s @512², ❌768²+ |
+| SD-Turbo | 1.1B | ~2 GB | ~2.5 GB | 1–4 | ★ lower quality, very fast | ✅ Current, 11s @512² |
 | FLUX.2-klein-4B Q4_K | 4B | ~2.5 GB | ~6 GB | 4 | similar, much faster | 🔬 Needs Qwen3-4B encoder |
 | FLUX.2-klein-9B Q4_K | 9B | ~5 GB | ~9 GB | 4 | ★ better (latest gen) | 🔬 Needs Qwen3-8B encoder |
 | Chroma Q4_K | 12B | ~6.5 GB | ~10 GB | 20+ | ★★ better (open, cfg guidance) | 🔬 Reuses our T5+VAE |
@@ -693,7 +786,7 @@ SD and Ollama can't run simultaneously (shared 16 GB VRAM). queue-runner handles
               +-> image arrives (~60s total)
 ```
 
-The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD script path. queue-runner stops Ollama first (freeing ~11 GB VRAM), generates the image, sends it as a Signal attachment, then restarts Ollama. Total downtime ~60s.
+The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD script path. queue-runner stops Ollama first (freeing ~11 GB VRAM), generates the image, sends it as a Signal attachment, then restarts Ollama. Total downtime ~60–90s.
 
 > ⚠️ **GFX1013 bug:** sd-cli hangs after writing the output image (Vulkan cleanup). queue-runner polls for the file, then kills the process.
 
@@ -707,7 +800,7 @@ A comprehensive research, monitoring, and intelligence system with **337 autonom
 
 ### 7.1 Architecture — queue-runner v7
 
-The BC-250 has 14 GB GTT shared with the CPU — only **one LLM job can run at a time**. `queue-runner.py` (systemd service) orchestrates all 337 jobs in a continuous loop, with Signal chat between every job:
+The BC-250 has 16 GB GTT shared with the CPU — only **one LLM job can run at a time**. `queue-runner.py` (systemd service) orchestrates all 337 jobs in a continuous loop, with Signal chat between every job:
 
 ```
 queue-runner v7 -- Continuous Loop + Signal Chat
@@ -1239,8 +1332,8 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 | Issue | Impact |
 |-------|--------|
-| Shared VRAM | Image gen requires stopping Ollama. Bot offline ~60s. |
-| 14B memory pressure | ~1.5–3.8 GB free when loaded. NVMe swap essential. |
+| Shared VRAM | Image gen requires stopping Ollama. Bot offline ~60–90s. |
+| 14B memory pressure | ~1.5–3.8 GB free when loaded at 24K ctx. NVMe swap essential. |
 | Signal latency | Messages queue during job execution (typical job 2–15 min). Chat checked between every job. |
 | sd-cli hangs on GFX1013 | Vulkan cleanup bug → poll + kill workaround. |
 | Cold start latency | 30–60s after Ollama restart (model loading). |
@@ -1270,7 +1363,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - [x] Signal notification dedup — sent-items tracker (career, book, news, radio), cooldown+hash (weather, ha-correlate), daily flag (city-watch)
 - [x] Extended health monitoring — automated hourly via bc250-health-check.sh
 - [x] report.sh midnight-crossing fallback — uses yesterday's scan if today's missing
-- [ ] Try FLUX at 768×768
+- [x] Try FLUX at 768×768 — **works with VAE tiling (91s schnell, dev fails at 768+)**
 - [ ] Weekly career summary digest via Signal
 - [ ] Migrate jobs.json away from ~/.openclaw/ path
 - [x] Evaluate zram — already effectively disabled (device exists but disksize=0, NVMe swap handles everything)
@@ -1288,7 +1381,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - [x] Update sd.cpp from master-504 to **master-525-d6dd6d7** (adds FLUX.2, Anima, Chroma-Radiance, spectrum caching)
 - [ ] Test Chroma Q4_K — reuses existing T5-XXL + FLUX VAE, potentially better quality with cfg guidance
 - [ ] Test FLUX.2-klein-4B — much smaller diffusion model (2.5 GB vs 6.5 GB), uses Qwen3-4B as text encoder, enabling faster generation
-- [ ] Test 768×768 resolution with FLUX.1-schnell (may need `--vae-tiling` for memory)
+- [x] Test 768×768 resolution with FLUX.1-schnell — **91s with VAE tiling, 1024² = 146s**
 - [ ] Test WAN 2.1 T2V 1.3B for short text-to-video clips (4s @ 8fps) — first video generation on BC-250
 - [x] Add `--fa`, `--vae-tiling`, `--offload-to-cpu` to generation pipeline — done, smoke tested (37.7s vs ~48s)
 - [x] Update `generate-and-send-worker.sh` with new flags
