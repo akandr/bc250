@@ -1,0 +1,297 @@
+35 MILIARDÓW PARAMETRÓW NA "ŚMIECIOWYM" UKŁADZIE Z KOPARKI
+– jak okiełznałem AMD BC-250
+
+Transkrypcja prezentacji (~10 minut)
+Przygotowane: 2026-03-14
+
+================================================================================
+
+SLAJD 1 — WSTĘP: CZYM JEST AMD BC-250? (1,5 minuty)
+================================================================================
+
+Dzień dobry. Chcę wam opowiedzieć o tym jak za 100 dolarów zbudowałem serwer AI,
+który ciągnie model z 35 miliardami parametrów — szybciej niż niejeden laptop
+z RTX 4060.
+
+AMD BC-250 — na pierwszy rzut oka wygląda jak płyta z koparki kryptowalut.
+I tak było — Samsung umieszczał ten układ w swoich serwerach blockchain
+dla operatorów 5G w Korei. Krążył mit, że to "prototyp PS5" — tak naprawdę
+to spokrewniony APU z PS5 — ta sama era, ta sama rodzina.
+
+Specyfikacja:
+• CPU: Zen 2, 6 rdzeni / 12 wątków @ 2.0 GHz
+• GPU: Cyan Skillfish — GFX1013, 24 CU (1536 shaderów)
+  "RDNA 1.5" — ma ray tracing (jak RDNA 2), ale brak matrix cores
+• 16 GB zunifikowanej pamięci (UMA) — CPU i GPU na tych samych kościach
+  Zero magistrali PCIe między nimi — latencja identyczna
+• BIOS: community-patched UEFI (dzięki Miyconst z YouTube)
+• Pobór: 55-60W między zadaniami, 140-155W pod LLM inference
+• System: Fedora 43, headless, kernel 6.18.9
+
+Za 100-150 dolarów dostajemy KOMPLETNY serwer AI:
+CPU + GPU + 16 GB + NVMe — w jednej płycie, gotowe do bootowania.
+Nie potrzeba hosta, nie potrzeba zasilacza 600W, nie potrzeba CUDA.
+
+[SLAJD: zdjęcie płyty BC-250, specyfikacja obok]
+
+
+================================================================================
+
+SLAJD 2 — DROGA DO VULKANA: ROCm POLEGŁ, KERNEL TRZEBA BYŁO ZHACKOWAĆ (2 min)
+================================================================================
+
+Dobra, mamy płytkę — odpalimy ROCm, PyTorch, pójdzie jak po maśle? Niestety nie.
+
+--- ROCm: ślepy zaułek ---
+
+GFX1013 jest w LLVM — daje nadzieję. Ale:
+  "rocblas_abort() — GFX1013 not in GPU list"
+AMD nie skompilowało bibliotek ROCm pod ten GPU. OpenCL też nie widzi. Cisza.
+
+--- Vulkan: jedyna droga ---
+
+Mesa 25.3.4, sterownik RADV, Ollama z OLLAMA_VULKAN=1.
+Model 3B odpala się — 101 tok/s. Sukces? Nie do końca.
+Model 14B: HTTP 500, 140 błędów z rzędu, deadlock.
+
+--- Dwa patche kernelowe: ---
+
+Problem 1: GTT (Graphics Translation Table) — kernel daje GPU domyślnie 7,4 GB.
+Model 14B potrzebuje 9,3 GB. Nie zmieści się.
+
+Problem 2: TTM pages_limit — niezależny limit menedżera pamięci. Nawet gdy GTT
+jest większy, TTM blokuje alokacje. Vulkan się zawiesza, HTTP 500.
+
+Rozwiązanie: jeden parametr w cmdline kernela:
+  ttm.pages_limit=4194304    (= 16 GB w stronach 4 KB)
+
+Po tym: 14B model — 27 tokenów na sekundę. A teraz 35B MoE — 38 tok/s.
+
+[SLAJD: diagram GTT/TTM, przed/po — liczby: 7.4 GB → 16 GB]
+[PUNKT KLUCZOWY: "Jeden parametr kernela — różnica między 'HTTP 500'
+a '38 tokenów na sekundę'."]
+
+
+================================================================================
+
+SLAJD 3 — MODELE LLM: OD 3B DO 35B MoE (2,5 minuty)
+================================================================================
+
+14B było naszym sufitem przez miesiące. Qwen3:14b, 27 tok/s, okno 24K.
+A potem wyszedł Qwen3.5 — i wszystko się zmieniło.
+
+--- Kluczowe odkrycie: MoE ---
+
+MoE = Mixture of Experts. Model ma 35 miliardów parametrów, ale przy każdym
+tokenie aktywuje TYLKO 3 miliardy. Reszta to "wiedza w rezerwie".
+
+Dlaczego to kluczowe na GFX1013? Bo ten GPU NIE MA matrix cores.
+Każde mnożenie macierzy idzie przez ogólne shader cores.
+• 27B dense: wszystkie 27B parametrów na token → 0 tokenów w 5 minut. Porażka.
+• 35B MoE (3B aktywnych): 9× mniej obliczeń na token → 38 tok/s. Sukces!
+
+[SLAJD: wizualizacja MoE — 35B z podświetlonymi 3B aktywnych]
+
+--- Benchmark — porównanie modeli ---
+
+[SLAJD: ASCII bar chart z README]
+  qwen2.5:3b              104 tok/s  ██████████▌
+  Qwen3-30B-A3B Q2_K       61 tok/s  ██████▏
+  qwen2.5:7b               56 tok/s  █████▌
+  llama3.1:8b               52 tok/s  █████▏
+  ★ qwen3.5-35b-a3b MoE    38 tok/s  ███▊  ← NAJINTELIGENTNIEJSZY
+  ★ qwen3.5:9b              32 tok/s  ███▏  ← najlepszy kontekst (65K)
+  phi4:14b                  29 tok/s  ██▉
+  qwen3:14b                 27 tok/s  ██▋   ← poprzedni primary
+  qwen3.5-27b (dense)        0 tok/s  ❌     ← brak matrix cores
+
+--- Konfiguracja produkcyjna ---
+
+Dual-model setup:
+• Primary: qwen3.5-35b-a3b-iq2m — 38 tok/s, 16K kontekst
+  35B wiedzy, 3B obliczeń, multimodal (vision + tools + thinking)
+• Fallback: qwen3.5:9b — 32 tok/s, 65K kontekst
+  Gdy potrzeba długich dokumentów albo analizy obrazów
+
+OLLAMA_CONTEXT_LENGTH=16384 w systemd — cap dla MoE.
+Requesty do 9b mogą prosić o 65K per-request override.
+
+Ollama 0.18 (upgrade z 0.16 był wymagany dla Qwen3.5).
+
+--- Kwantyzacja KV cache — bonus ---
+
+Odkrycie: KV cache quantization DZIAŁA na Vulkanie (wbrew dokumentacji).
+Q4_0: KV cache 1.1 GiB zamiast 3.8 GiB @24K — zero utraty prędkości.
+Przetestowane ale jeszcze nie wdrożone produkcyjnie — MoE i tak max 16K,
+więc KV nie jest wąskim gardłem. Przydatne dla 9B fallbacku przy 40K+.
+
+[PUNKT KLUCZOWY: "MoE to game-changer na sprzęcie bez matrix cores.
+35B parametrów wiedzy, 3B obliczeń — 38 tok/s na 100-dolarowym GPU."]
+
+
+================================================================================
+
+SLAJD 4 — GENEROWANIE OBRAZÓW: FLUX.2 NA VULKANIE (2,5 minuty)
+================================================================================
+
+OK, mamy LLM-a. A co z obrazkami?
+
+--- Stack: stable-diffusion.cpp + Vulkan ---
+
+Te samo Vulkan co LLM. Model FLUX.2-klein — najnowsza generacja,
+używa Qwen3 LLM jako kodera tekstu (zamiast klasycznego CLIP+T5).
+
+--- Porównanie jakości: shootout ---
+
+Przetestowaliśmy 4 modele na TYM SAMYM prompcie, TYM SAMYM seedzie (42):
+"a cyberpunk cityscape at sunset with neon lights reflecting on wet streets"
+
+[SLAJD: 4 obrazki obok siebie — 2×2 grid z images/shootout/]
+
+| Model               | Czas  | VRAM    | Jakość |
+|---------------------|------:|--------:|--------|
+| FLUX.2-klein-9B     | 104s  | 11.8 GB | ★★★★ — najlepsza szczegółowość |
+| FLUX.2-klein-4B     |  15s  |  6.0 GB | ★★★   — dobra, mniej detali |
+| FLUX.1-schnell      |  31s  | 10.1 GB | ★★    — przyzwoita |
+| Chroma flash (8st)  | 120s  |  8.4 GB | ★★    — artystyczna, miększa |
+
+Wybraliśmy 9B jako domyślny — 11.8 GB to prawie pełne 16.5 GB Vulkan.
+Stresuje GPU jak należy. 4B zostawiliśmy jako szybki preview.
+
+--- Problem: LLM + SD nie współistnieją ---
+
+LLM ~12.3 GB + SD ~11.8 GB = 24 GB. Mamy 16.
+Rozwiązanie: pipeline synchroniczny.
+
+  "narysuj cyberpunkowego kota"
+    → LLM emituje EXEC(generate-and-send "...")
+      → stop Ollama → sd-cli → wyślij obraz Signalem → start Ollama
+
+Całość: ~2 minuty z 9B, ~25 sekund z 4B.
+Bot jest offline przez ten czas — akceptowalne.
+
+--- Bug GFX1013 ---
+
+sd-cli na tym GPU zawiesza się po wygenerowaniu obrazu (cleanup Vulkan).
+Obraz jest na dysku, ale proces wisi. Rozwiązanie: poll plik + kill -9.
+Brzydkie, ale niezawodne od tygodni.
+
+[SLAJD: diagram pipeline: Signal → LLM → stop Ollama → sd-cli → Signal]
+[PUNKT KLUCZOWY: "16 GB to za mało na oba jednocześnie, ale wystarczy
+jak parking — jedno auto wyjeżdża, drugie wjeżdża. 2 minuty i obraz
+ląduje na telefonie."]
+
+
+================================================================================
+
+SLAJD 5 — SIGNAL BOT + SYSTEM AUTOMATYZACJI (1 minuta)
+================================================================================
+
+Wszystko to nie jest akademickie demo — to działa produkcyjnie 24/7.
+
+--- Architektura (po refactorze v7, marzec 2026) ---
+
+  Signal → signal-cli (JSON-RPC :8080) → queue-runner.py → Ollama → GPU
+
+Zero middleware. Poprzednio: bramka OpenClaw (Node.js) — 700 MB RAM, 15s narzutu
+na każde zadanie, 9.6K tokenów system prompt. Zabita — te 700 MB pozwoliło
+zwiększyć kontekst z 16K do 24K, a potem przejść na 35B MoE.
+
+Teraz queue-runner rozmawia z Ollamą bezpośrednio. 337 zadań w cyklu:
+monitorowanie repozytoriów, skanowanie wiadomości, analiza pogody,
+śledzenie rynku, automatyka domowa (Home Assistant), i więcej.
+
+Bot odpowiada na Signal z dostępem do narzędzi:
+web search, shell, generowanie obrazów, integracja z HA.
+
+[SLAJD: diagram architektury — Signal → queue-runner → Ollama → GPU]
+[Nie wchodź w szczegóły skryptów — pokaż listę 337 zadań jako "tło"]
+
+
+================================================================================
+
+SLAJD 6 — PODSUMOWANIE (0,5 minuty)
+================================================================================
+
+Za 100-150 dolarów — kompletny serwer AI:
+
+• 35B MoE — 38 tok/s, inteligentniejszy niż qwen3:14b
+• FLUX.2-klein-9B — obrazy w 2 minuty prosto na telefon
+• 337 autonomicznych zadań w cyklu dobowym
+• Odpowiada przez Signal z narzędziami: web, shell, HA, SD
+• Wszystko na Vulkanie — bo ROCm nie działa i nigdy nie będzie
+
+Trzy lekcje:
+
+1. Kernel hacking otwiera możliwości niedostępne z user-space.
+   Jeden parametr TTM — różnica między "HTTP 500" a "38 tok/s".
+
+2. MoE to game-changer na sprzęcie bez matrix cores.
+   35B wiedzy, 3B obliczeń — szybciej niż 14B dense.
+
+3. Na ograniczonym sprzęcie każda warstwa abstrakcji kosztuje kontekst.
+   700 MB mniej middleware = 8K tokenów więcej dla modelu.
+
+Dziękuję. Pytania?
+
+
+================================================================================
+
+NOTATKI DLA PREZENTERA
+================================================================================
+
+TEMPO:
+• Slajd 1 (intro BC-250):        ~90 sekund — szybko, energetycznie
+• Slajd 2 (ROCm/Vulkan/kernel):  ~120 sekund — mięso techniczne
+• Slajd 3 (modele LLM/MoE):      ~150 sekund — główny highlight sesji
+• Slajd 4 (Image gen/shootout):   ~150 sekund — obrazki przyciągają uwagę
+• Slajd 5 (Signal bot/system):    ~60 sekund — szybko, nie nudzić
+• Slajd 6 (podsumowanie):         ~30 sekund — konkluzja
+RAZEM: ~10 minut
+
+KLUCZOWE ZMIANY VS STARA PREZENTACJA:
+• 14B → 35B MoE (nowy primary model, zupełnie inna narracja)
+• FLUX.1-schnell → FLUX.2-klein-9B (z quality shootout i obrazkami)
+• Dual-model setup (MoE + 9B fallback)
+• Kontekst 24K → 16K (MoE limit, ale 65K na 9B fallback)
+• Ollama 0.16 → 0.18
+• OpenClaw sekcja skrócona do 1 slajdu z 2
+• Scraping skrócony do wzmianki "337 zadań" — nie omawiamy detali
+
+CO POKAZAĆ NA SLAJDACH:
+• Slajd 1: zdjęcie płyty BC-250, spec obok
+• Slajd 2: diagram before/after (GTT 7.4→16 GB, HTTP 500→38 tok/s)
+• Slajd 3: bar chart modeli (z README), MoE diagram
+• Slajd 4: 4 obrazki shootout (2×2 grid) — to jest wow moment
+• Slajd 5: diagram architektury (uproszczony)
+• Slajd 6: 3 lekcje + "Pytania?"
+
+DEMO (jeśli czas pozwoli, w Q&A):
+• Wysłać wiadomość do bota na Signal — odpowiedź na żywo
+• Poprosić o wygenerowanie obrazka (2 min z 9B — idealnie w czasie Q&A)
+• Pokazać dashboard na http://<LAN_IP>:8888
+
+PYTANIA DO KTÓRYCH SIĘ PRZYGOTOWAĆ:
+• "To RDNA 1 czy RDNA 2?"
+  → "RDNA 1.5" — w kernelu GFX10 (RDNA 1), ale ma ray tracing (RDNA 2).
+  Brak matrix cores, brak Infinity Cache. Pochodna PS5.
+
+• "Dlaczego nie Tesla P40?"
+  → P40 szybsza 2-3×, ale potrzeba hosta ($150-250 extra), zasilacza 600W+,
+  razem $300-450. BC-250 to all-in za $100-150, 55W idle.
+
+• "Dlaczego MoE jest szybsze niż mniejszy model dense?"
+  → Brak matrix cores. Dense 27B = 27B mnożeń na token = za dużo dla shaderów.
+  MoE 35B/3B = 3B mnożeń na token = szybciej niż dense 14B.
+
+• "Jakość Q4_0 KV cache?"
+  → Przetestowane, zero utraty prędkości. Nie wdrożone bo MoE max 16K,
+  więc KV nie jest wąskim gardłem. Przydatne dla 9B przy 40K+.
+
+• "Ile kosztuje prąd?"
+  → 55-60W idle, ~100W średnio z 337 zadaniami. ~900 zł/rok.
+  Ale za $150 masz kompletny serwer AI z 16 GB.
+
+• "A co z nowszymi modelami?"
+  → FLUX.2-klein-9B jest już wdrożony (najnowsza generacja).
+  Roadmap: WAN 2.1 text-to-video (1.3B, 4s klipy), Kontext image editing.
