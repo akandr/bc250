@@ -65,7 +65,8 @@ START=$(date +%s)
   --vae "$FLUX_DIR/ae.safetensors" \
   --clip_l "$FLUX_DIR/clip_l.safetensors" \
   --t5xxl "$T5XXL" \
-  --clip-on-cpu $EXTRA_FLAGS \
+  --clip-on-cpu --offload-to-cpu --fa --vae-tiling \
+  $EXTRA_FLAGS \
   -p "$PROMPT" -o "$OUTPUT" \
   --steps 4 -W 512 -H 512 --cfg-scale 1.0 \
   --sampling-method euler 2>&1 &

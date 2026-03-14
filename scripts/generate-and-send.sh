@@ -18,6 +18,7 @@ done
 # Step 2: generate image
 echo "Generating image for: $PROMPT"
 "$SD_CLI" -m "$MODEL" -p "$PROMPT" -o "$OUTPUT" \
+  --offload-to-cpu --fa --vae-tiling \
   --steps 4 -W 512 -H 512 --cfg-scale 1.0 2>&1 | tail -5
 
 if [ ! -f "$OUTPUT" ]; then

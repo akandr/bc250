@@ -64,8 +64,8 @@ The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/dist
 | **GPU** | Cyan Skillfish — RDNA 1.5, `GFX1013`, 24 CUs (1536 SPs), ray tracing capable |
 | **Memory** | **16 GB unified** (16 × 1 GB on-package), shared CPU/GPU |
 | **VRAM** | 512 MB BIOS-carved framebuffer (same physical UMA pool — see note below) |
-| **GTT** | **14 GiB** (tuned, default 7.4 GiB) — `amdgpu.gttsize=14336` |
-| **Vulkan total** | **14.5 GiB** after tuning |
+| **GTT** | **16 GiB** (tuned via `ttm.pages_limit=4194304`, default 7.4 GiB) |
+| **Vulkan total** | **16.5 GiB** after tuning |
 | **Storage** | 475 GB NVMe |
 | **OS** | Fedora 43, kernel 6.18.9, headless |
 | **TDP** | 220W board (between jobs: 55–60W measured, true idle w/o model: ~35W) |
@@ -80,12 +80,12 @@ CPU and GPU share the same 16 GB physical pool (UMA — Unified Memory Architect
 
 **Two bottlenecks must be fixed:**
 
-1. **GTT cap** — `amdgpu` driver defaults to 50% of RAM (~7.4 GiB). Fix: `amdgpu.gttsize=14336` in kernel cmdline → GPU gets 14 GiB GTT.
-2. **TTM pages_limit** — kernel TTM memory manager independently caps allocations at ~7.4 GiB. Fix: `ttm.pages_limit=4194304` (16 GiB in 4K pages).
+1. **GTT cap** — `amdgpu` driver defaults to 50% of RAM (~7.4 GiB). The legacy fix was `amdgpu.gttsize=14336` in kernel cmdline, but this is no longer needed.
+2. **TTM pages_limit** — kernel TTM memory manager independently caps allocations at ~7.4 GiB. Fix: `ttm.pages_limit=4194304` (16 GiB in 4K pages). **This is the only tuning needed.**
 
-> ⚠️ **GTT deprecation (kernel 6.12+):** The `amdgpu.gttsize` module parameter is deprecated since kernel 6.12. On kernel 6.18+, dmesg warns: *"Configuring gttsize via module parameter is deprecated, please use ttm.pages_limit."* The parameter still works for now, but will be removed in a future kernel. The TTM `pages_limit` fix (item 2) is the forward-compatible solution.
+> ✅ **GTT migration complete (March 2026):** `amdgpu.gttsize` was removed from kernel cmdline. With `ttm.pages_limit=4194304` alone, GTT grew from 14→16 GiB and Vulkan available from 14.0→16.5 GiB. The deprecated parameter was actually *limiting* the allocation.
 
-After both fixes: Vulkan sees **14.5 GiB** — enough for **14B parameter models at 24K context, with all inference on GPU**.
+After tuning: Vulkan sees **16.5 GiB** — enough for **14B parameter models at 40K context with Q4_0 KV cache, all inference on GPU**.
 
 ---
 
@@ -146,12 +146,12 @@ sudo systemctl daemon-reload && sudo systemctl restart ollama
 
 ### 3.2 Tune GTT size
 
-> ⚠️ `amdgpu.gttsize` is deprecated since kernel 6.12 (see §1 note). It still works on 6.18 but will be removed. The TTM fix below (§3.3) is the primary memory tuning going forward.
+> ✅ **No longer needed.** The `amdgpu.gttsize` parameter was removed in March 2026. With `ttm.pages_limit=4194304` alone, GTT allocates 16 GiB (more than the old 14 GiB). Verify:
 
 ```bash
-sudo grubby --update-kernel=ALL --args="amdgpu.gttsize=14336"
-# Reboot required. Verify:
-cat /sys/class/drm/card1/device/mem_info_gtt_total  # → 15032385536 (14 GiB)
+cat /sys/class/drm/card1/device/mem_info_gtt_total  # → 17179869184 (16 GiB)
+# If you still have amdgpu.gttsize in cmdline, remove it:
+sudo grubby --update-kernel=ALL --remove-args="amdgpu.gttsize=14336"
 ```
 
 ### 3.3 Tune TTM pages_limit ← *unlocks 14B models*
@@ -241,23 +241,25 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 | Region | Size | Notes |
 |--------|------|-------|
 | VRAM carveout | 512 MB | BIOS-reserved from UMA pool (not separate memory) |
-| GTT | **14 GiB** | Tuned ▲ (default 7.4 GiB) — `amdgpu.gttsize=14336` (deprecated, see §1) |
-| TTM pages_limit | **16 GiB** | Tuned ▲ (default ~7.4 GiB) — `ttm.pages_limit=4194304` |
+| GTT | **16 GiB** | Tuned via `ttm.pages_limit=4194304` (default 7.4 GiB). `amdgpu.gttsize` removed — no longer needed. |
+| TTM pages_limit | **16 GiB** | `ttm.pages_limit=4194304` — the only memory tuning parameter needed |
 
 | Vulkan heap | Size |
 |-------------|------|
 | Device-local | 8.33 GiB |
-| Host-visible | 4.17 GiB |
-| **Total** | **12.5 GiB** → 14B models fit, all inference on GPU (UMA — same physical pool) |
+| Host-visible | 8.17 GiB |
+| **Total** | **16.5 GiB** → 14B models fit, all inference on GPU (UMA — same physical pool) |
 
 | Consumer | Usage | Notes |
 |----------|-------|-------|
-| Model (qwen3:14b @ 24K) | ~12.3 GiB | GPU memory (GTT) |
+| Model weights (qwen3:14b) | 8.2 GiB GPU + 0.4 GiB CPU | Q4_K_M quantization |
+| KV cache (FP16 @ 24K) | 3.8 GiB | With Q4_0: only 1.8 GiB for 40K context |
+| Compute graph | 0.17 GiB | GPU-side |
 | signal-cli + queue-runner | ~1.0 GiB | System RAM |
-| OS + services | ~1.5 GiB | System RAM |
-| NVMe swap | 16 GiB | Safety net |
-| zram | 2 GiB | Boot-limited ▼ |
-| **Status** | **Stable** | 24K context, ~1.5 GB free RAM |
+| OS + services | ~0.9 GiB | Headless Fedora 43 |
+| NVMe swap | 16 GiB (374 MB used) | Safety net |
+| zram | 0 B (allocated, not active) | Device exists but disksize=0 |
+| **Total loaded** | **12.5 GiB** (FP16) / **10.6 GiB** (Q4_0) | **3.9–5.9 GiB free** |
 
 ---
 
@@ -441,19 +443,19 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 
 ### 4.2 Memory budget
 
-**qwen3:14b @ 24K context · headless server**
+**qwen3:14b Q4_K_M · headless server (from Ollama logs)**
 
-| Component | Memory | Notes |
-|-----------|--------|-------|
-| OS + system | ~0.9 GB | Headless Fedora 43 |
-| Ollama + model (GPU) | ~12.3 GB | GTT allocation (24K ctx) |
-| signal-cli | ~0.1 GB | JSON-RPC daemon |
-| queue-runner | ~0.05 GB | Python process |
-| **Free RAM** | **~1.0–2.5 GB** | Fluctuates with inference |
-| NVMe swap | 16 GB (~0.9 used) | Safety net |
-| zram | 2 GB | Boot limit |
-| GTT (VRAM) | 14 GB | See §3.2 |
-| **Status** | **Stable ✓** | OOM protection: Ollama=-1000 |
+| Component | FP16 KV @24K | Q4_0 KV @40K | Notes |
+|-----------|:------------:|:------------:|-------|
+| Model weights (GPU) | 8.2 GiB | 8.2 GiB | 40/41 layers on Vulkan0 |
+| Model weights (CPU) | 0.4 GiB | 0.4 GiB | Layer 0 + embeddings |
+| KV cache (GPU) | **3.8 GiB** | **1.8 GiB** | `OLLAMA_KV_CACHE_TYPE=q4_0` halves this |
+| Compute graph | 0.17 GiB | 0.17 GiB | GPU-side |
+| **Ollama total** | **12.5 GiB** | **10.6 GiB** | `device.go` "total memory" |
+| OS + services | ~0.9 GiB | ~0.9 GiB | Headless Fedora 43 |
+| signal-cli + queue-runner | ~0.15 GiB | ~0.15 GiB | |
+| **Free (of 16.5 Vulkan)** | **~4.0 GiB** | **~5.9 GiB** | |
+| NVMe swap | 16 GiB (374 MB used) | | Safety net |
 
 > **Why NVMe swap matters:** During inference peaks, the kernel pages out inactive memory (signal-cli heap, queue-runner) to swap. With 16 GB NVMe swap at ~500 MB/s, this is transparent. Without it, the OOM killer terminates services. Removing OpenClaw freed ~700 MB of RAM — see [Appendix A](#appendix-a--openclaw-archive).
 
@@ -1271,35 +1273,35 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - [ ] Try FLUX at 768×768
 - [ ] Weekly career summary digest via Signal
 - [ ] Migrate jobs.json away from ~/.openclaw/ path
-- [ ] Evaluate if zram can be fully disabled (currently 2 GB boot limit)
+- [x] Evaluate zram — already effectively disabled (device exists but disksize=0, NVMe swap handles everything)
 
 ### ☐ Action points — verified corrections & upgrades
 
 **Memory tuning — GTT deprecation (kernel 6.12+):**
 
-- [ ] Test removing `amdgpu.gttsize=14336` from kernel cmdline and relying solely on `ttm.pages_limit=4194304`
-- [ ] Verify Vulkan heap sizes remain the same with TTM-only tuning
-- [ ] If confirmed working, remove gttsize from grubby and documentation
+- [x] Test removing `amdgpu.gttsize=14336` — **done (March 14).** GTT grew 14→16 GiB, Vulkan 14.0→16.5 GiB. The deprecated param was limiting allocation.
+- [x] Verify Vulkan heap sizes — host-visible grew from 4.17→8.17 GiB, device-local unchanged
+- [x] Remove gttsize from grubby and documentation — removed, docs updated
 
 **Image generation — model upgrades:**
 
-- [ ] Update sd.cpp from master-504 to latest (master-525+, adds FLUX.2, Anima, Chroma-Radiance, spectrum caching)
+- [x] Update sd.cpp from master-504 to **master-525-d6dd6d7** (adds FLUX.2, Anima, Chroma-Radiance, spectrum caching)
 - [ ] Test Chroma Q4_K — reuses existing T5-XXL + FLUX VAE, potentially better quality with cfg guidance
 - [ ] Test FLUX.2-klein-4B — much smaller diffusion model (2.5 GB vs 6.5 GB), uses Qwen3-4B as text encoder, enabling faster generation
 - [ ] Test 768×768 resolution with FLUX.1-schnell (may need `--vae-tiling` for memory)
 - [ ] Test WAN 2.1 T2V 1.3B for short text-to-video clips (4s @ 8fps) — first video generation on BC-250
-- [ ] Add `--fa` (flash attention) and `--vae-tiling` to generation pipeline for memory efficiency
-- [ ] Update `generate-and-send-worker.sh` to support model selection via env var or argument
+- [x] Add `--fa`, `--vae-tiling`, `--offload-to-cpu` to generation pipeline — done, smoke tested (37.7s vs ~48s)
+- [x] Update `generate-and-send-worker.sh` with new flags
 
 **Image generation — pipeline improvements:**
 
-- [ ] Add `--offload-to-cpu` to sd-cli command (explicit UMA management, required for newer models)
+- [x] Add `--offload-to-cpu` to sd-cli command — done (queue-runner + worker script)
 - [ ] Implement video generation path in queue-runner (vid_gen mode, mp4 → Signal attachment)
 - [ ] Add ESRGAN upscale option in pipeline (512→1024 or 768→1536) using sd-cli `--upscale-model`
 
 **Power monitoring:**
 
-- [ ] Add accurate power state labels to `gpu-monitor.sh` — distinguish "model loaded idle" (55-60W) from "true idle" (35W) from "inference" (140-155W)
+- [x] Add `power_w` column to `gpu-monitor.sh` TSV — reads `/sys/class/drm/card1/device/hwmon/hwmon2/power1_average`. Values: inference 130-155W, model-loaded 55-65W, true-idle 30-40W
 
 ---
 
