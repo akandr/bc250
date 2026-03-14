@@ -866,6 +866,18 @@ All models tested back-to-back on the same prompt: *"a cyberpunk cityscape at su
 | FLUX.1-schnell | 31s | 6.5 | 10.1 GB | 609 KB | ★★ — decent, less coherent |
 | Chroma flash (8 steps) | 120s | 14.1 | 8.4 GB | 204 KB | ★★ — artistic but softer |
 
+**Example outputs** (same prompt, same seed 42, 512×512):
+
+| FLUX.2-klein-9B (★★★★) | FLUX.2-klein-4B (★★★) |
+|:-:|:-:|
+| ![9B](images/shootout/shootout-9b-512.png) | ![4B](images/shootout/shootout-4b-512.png) |
+| **104s**, 11.8 GB VRAM | **15s**, 6.0 GB VRAM |
+
+| FLUX.1-schnell (★★) | Chroma flash (★★) |
+|:-:|:-:|
+| ![schnell](images/shootout/shootout-schnell-512.png) | ![chroma](images/shootout/shootout-chroma-512.png) |
+| **31s**, 10.1 GB VRAM | **120s**, 8.4 GB VRAM |
+
 > The 9B model produces visibly more detail in fine structures (neon reflections, wet streets, building facades). The 4B is the speed champion but sacrifices detail. Chroma has a distinctive artistic style but outputs smaller, softer images. FLUX.1-schnell sits in the middle.
 
 **Summary: recommended settings for production**
