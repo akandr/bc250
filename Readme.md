@@ -363,6 +363,14 @@ qwen3.5-27b iq2m  ❌   —    —    —    —    —    —
 
 **Key insight:** Speed is constant across context sizes with FP16 KV (speed only degrades when the context is actually *filled* — see §4.5). The context ceiling is purely a memory constraint: weights + KV cache + compute graph must fit in 16.5 GiB.
 
+**Graphical benchmarks:**
+
+| Generation Speed | Prefill Speed |
+|:---:|:---:|
+| ![Generation speed](images/charts/generation-speed.png) | ![Prefill speed](images/charts/prefill-speed.png) |
+
+![Generation vs Prefill — all models side by side](images/charts/gen-vs-prefill-all.png)
+
 ### 4.3 Model testing journey
 
 The path to running 14B models on this hardware was non-trivial. Here's the chronological evolution, documented through git history and trial-and-error:
@@ -562,6 +570,14 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 > Generation rate degrades with context: 27.2 tok/s @small → 20.7 tok/s @10K tokens.
 
 </details>
+
+**Graphical: prefill rate and generation rate vs prompt size:**
+
+![Prefill and generation rate vs prompt size](images/charts/prefill-vs-prompt-size.png)
+
+**3D Model Landscape** — generation speed × prefill speed × max context (bubble size = parameter count):
+
+![3D model landscape](images/charts/model-landscape-3d.png)
 
 ### 4.2 Memory budget
 
