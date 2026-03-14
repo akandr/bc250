@@ -577,7 +577,9 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 
 **3D Model Landscape** — generation speed × prefill speed × max context (bubble size = parameter count):
 
-![3D model landscape](images/charts/model-landscape-3d.png)
+![3D model landscape — numbered](images/charts/model-landscape-3d.png)
+
+![3D model landscape — labeled](images/charts/model-landscape-3d-labeled.png)
 
 ### 4.2 Memory budget
 
