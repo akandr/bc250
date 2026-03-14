@@ -388,26 +388,39 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 
 **UPDATE (March 2026):** KV cache quantization **WORKS on Vulkan**. Our README previously stated it was a no-op — that was wrong. Tested on Ollama 0.16.1 + RADV Mesa 25.3.4:
 
-| KV Type | 24K ctx | 32K ctx | 48K ctx | KV Cache Size | Gen tok/s | Notes |
-|---------|:-------:|:-------:|:-------:|:-------------:|:---------:|-------|
-| **FP16** (default) | ✅ | ⚠️ 10% slow | ❌ deadlock | ~3.0 GiB | 27.2 | Current production |
-| **Q8_0** | ✅ | ✅ | ✅ | **2.0 GiB** | 27.3 | ← recommended upgrade |
-| **Q4_0** | ✅ | ✅ | ✅ | **1.1 GiB** | 27.3 | Aggressive, quality TBD |
+| KV Type | 24K ctx | 32K ctx | 48K ctx | KV Cache Size @24K | Gen tok/s | Notes |
+|---------|:-------:|:-------:|:-------:|:------------------:|:---------:|-------|
+| **FP16** (default) | ✅ | ⚠️ 10% slow | ❌ deadlock | ~3.8 GiB | 27.2 | Current production |
+| **Q8_0** | ✅ | ✅ | ✅ | **2.0 GiB** | 27.3 | Conservative upgrade |
+| **Q4_0** | ✅ | ✅ | ✅ | **1.1 GiB** | 27.3 | ← recommended |
 
-**Key findings:**
-- **Zero performance penalty** — Q8_0 and Q4_0 both match FP16 generation speed (27.2–27.3 tok/s)
-- **Q8_0 saves ~1 GiB** KV cache → 32K and 48K context now run at full speed
-- **Q4_0 saves ~2 GiB** KV cache → even more headroom, but needs quality validation
-- **48K context at Q8_0** is the breakthrough: 2× the current 24K production limit, zero speed loss
+**KV cache scaling (Q4_0): ~45 MiB per 1K tokens** (16K=720M, 24K=1.1G, 40K=1.8G).
 
-**To enable:**
+**Extreme context tests (Q4_0):** Ollama's scheduler auto-sizes KV to what fits in VRAM. With 14.5 GiB available, model weights 8.2 GiB, the maximum KV allocation is **~40K tokens** (1.8 GiB). Requesting larger `num_ctx` is accepted but the runner silently caps and truncates prompts to the actual KV limit.
+
+**Generation speed degrades with context fill (Q4_0, all layers on GPU):**
+
+| Tokens in context | Gen tok/s | Prefill tok/s | Notes |
+|:-----------------:|:---------:|:-------------:|-------|
+| ~100 (empty) | 27.2 | 58 | Headline number |
+| 3,300 | 24.6 | 113 | Typical Signal chat |
+| 10,000 | 20.7 | 70 | Long job output |
+| 30,000 | **13.4** | 53 | Heavy document analysis |
+| 40,960 (max fill) | **~10*** | ~42 | Theoretical, near KV limit |
+
+\* *Estimated from degradation curve. One test at 41K showed 1.2 tok/s, but that was caused by model partial offload (21/41 layers spilled to CPU), not normal operation.*
+
+**Q8_0 ceiling:** Fits up to ~64K context on GPU. At 80K, KV cache spills to CPU (7 tok/s — unusable). Non-deterministic — depends on memory state at load time.
+
+**To enable (recommended production config):**
 ```bash
 # Add to /etc/systemd/system/ollama.service.d/override.conf:
-Environment=OLLAMA_KV_CACHE_TYPE=q8_0
+Environment=OLLAMA_KV_CACHE_TYPE=q4_0
 # Then: sudo systemctl daemon-reload && sudo systemctl restart ollama
+# Ollama will auto-size KV to ~40K tokens (1.8 GiB)
 ```
 
-> **Quality note:** Q8_0 is virtually lossless for KV cache (negligible precision loss on attention weights). Q4_0 may degrade output quality on complex reasoning tasks — needs separate quality evaluation before production use.
+> **Quality note:** Q8_0 is virtually lossless for KV cache. Q4_0 may degrade output quality on complex reasoning — needs quality evaluation. For production, Q4_0's 40K context with 13 tok/s at 30K fill is the practical sweet spot.
 
 ### 4.6 Prefill (prompt evaluation) benchmarks
 
@@ -1231,6 +1244,8 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Cold start latency | 30–60s after Ollama restart (model loading). |
 | Chinese thinking leak | Qwen3 occasionally outputs Chinese reasoning. Cosmetic. |
 | Prefill rate degrades with context | 128 tok/s at 1.3K → 70 tok/s at 10K tokens (UMA bandwidth + attention scaling). |
+| Gen speed degrades with context fill | 27 tok/s empty → 13 tok/s at 30K tokens. Partial model offload at KV limit causes cliff drop. |
+| Ollama caps KV auto-size at ~40K (Q4_0) | `num_ctx` > 40960 accepted but silently truncated. Actual limit = VRAM ÷ per-token KV size. |
 
 ### ☐ TODO
 
