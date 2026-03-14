@@ -129,12 +129,12 @@ sudo mkdir -p /etc/systemd/system/ollama.service.d
 cat <<EOF | sudo tee /etc/systemd/system/ollama.service.d/override.conf
 [Service]
 Environment=OLLAMA_VULKAN=1
-Environment=OLLAMA_HOST=0.0.0.0:11434
 Environment=OLLAMA_KEEP_ALIVE=30m
 Environment=OLLAMA_MAX_LOADED_MODELS=1
 Environment=OLLAMA_FLASH_ATTENTION=1
 Environment=OLLAMA_GPU_OVERHEAD=0
-Environment=OLLAMA_CONTEXT_LENGTH=24576
+Environment=OLLAMA_CONTEXT_LENGTH=16384
+Environment=OLLAMA_MAX_QUEUE=4
 OOMScoreAdjust=-1000
 EOF
 sudo systemctl daemon-reload && sudo systemctl restart ollama
@@ -174,13 +174,21 @@ sudo dracut -f
 
 ### 3.4 Context window — the silent killer
 
-Ollama allocates KV cache based on the model's declared context window. The default `qwen3-abliterated:14b` declares `num_ctx 40960` — that's **~16 GB** of KV cache + weights. While the raw numbers fit in 16 GB RAM, **TTM fragmentation** prevents the kernel from allocating contiguous pages for the KV cache, causing OOM kills or deadlocks.
+Ollama allocates KV cache based on the model's declared context window. Without a cap, large models request more KV cache than the BC-250 can handle, causing TTM fragmentation, OOM kills, or deadlocks on this UMA system.
 
-**Fix:** Set `OLLAMA_CONTEXT_LENGTH=24576` in the Ollama systemd override (see §3.3). This caps all inference to 24K context regardless of model defaults.
+**Fix:** Set `OLLAMA_CONTEXT_LENGTH=16384` in the Ollama systemd override (see §3.3). This caps all inference to 16K context by default — matching the MoE primary model's limit.
 
-This reduces total memory from **~16 GB** (40960 ctx) to **~12.3 GB** (24576 ctx). The standard `qwen3:14b` model is used directly — no custom Modelfile needed.
+> Individual requests can override with `{"options": {"num_ctx": 65536}}` when using `qwen3.5:9b` (which handles 65K). The cap only affects the default allocation.
 
-> **Why 24K?** Systematic testing (see §4.4) showed 24K is the maximum context that runs at full speed (~27 tok/s) with adequate headroom. 26K works but is 10% slower due to swap pressure. 28K+ deadlocks.
+**History of context tuning:**
+
+| Date | Context Cap | Primary Model | Why |
+|------|:-----------:|---------------|-----|
+| Feb 2026 | 40960 | qwen3:14b | Default — caused deadlocks (TTM fragmentation) |
+| Feb 25 | **24576** | qwen3:14b | Sweet spot: ~27 tok/s, 26K was 10% slower, 28K+ deadlocked |
+| Mar 14 | **16384** | qwen3.5-35b-a3b MoE | MoE maxes at 16K (KV cache exceeds VRAM at 24K+). 9B fallback can go to 65K per-request. |
+
+> **Why 24K → 16K?** The 35B MoE's total weight (11 GB GGUF) is larger than qwen3:14b (9.3 GB). At 24K+ context the KV cache can't fit alongside the MoE weights. 16K is the maximum stable context for the MoE with all layers on GPU. See §4.4 for detailed KV cache scaling.
 
 ### 3.5 Swap — NVMe-backed safety net
 
@@ -451,7 +459,7 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 | 18432 | ~13.2 GB | 2.7 GB | 0.9 GB | 26.8 t/s | ✅ Works |
 | 20480 | ~13.7 GB | 2.3 GB | 0.9 GB | 26.8 t/s | ✅ Works |
 | 22528 | ~14.0 GB | 2.0 GB | 0.9 GB | 26.7 t/s | ✅ Works |
-| **24576** | **~14.4 GB** | **1.5 GB** | **0.9 GB** | **26.7 t/s** | **✅ Production** |
+| **24576** | **~14.4 GB** | **1.5 GB** | **0.9 GB** | **26.7 t/s** | **✅ Max for qwen3:14b** |
 | 26624 | ~14.6 GB | 1.3 GB | 1.0 GB | 23.9 t/s | ⚠️ 10% slower |
 | 28672 | ~14.2 GB | — | 1.7 GB | timeout | ❌ Deadlocks |
 | 32768 | ~15.7 GB | 0.2 GB | 2.1 GB | timeout | ❌ Deadlocks |
@@ -491,7 +499,7 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 
 **Q8_0 ceiling:** Fits up to ~64K context on GPU. At 80K, KV cache spills to CPU (7 tok/s — unusable). Non-deterministic — depends on memory state at load time.
 
-**To enable (recommended production config):**
+**To enable (tested, not yet in production):**
 ```bash
 # Add to /etc/systemd/system/ollama.service.d/override.conf:
 Environment=OLLAMA_KV_CACHE_TYPE=q4_0
@@ -499,7 +507,9 @@ Environment=OLLAMA_KV_CACHE_TYPE=q4_0
 # Ollama will auto-size KV to ~40K tokens (1.8 GiB)
 ```
 
-> **Quality note:** Q8_0 is virtually lossless for KV cache. Q4_0 may degrade output quality on complex reasoning — needs quality evaluation. For production, Q4_0's 40K context with 13 tok/s at 30K fill is the practical sweet spot.
+> **Quality note:** Q8_0 is virtually lossless for KV cache. Q4_0 may degrade output quality on complex reasoning — needs quality evaluation before deploying to production. For the MoE model (16K context limit), KV quantization provides no benefit — the bottleneck is weight size not KV. It's most useful for the 9B fallback model when running at 40K+ context.
+>
+> **Current production:** FP16 KV (Ollama default). Context capped at 16K for MoE via `OLLAMA_CONTEXT_LENGTH=16384`.
 
 ### 4.6 Prefill (prompt evaluation) benchmarks
 
@@ -577,7 +587,7 @@ The BC-250 runs a personal AI assistant accessible via Signal messenger — no g
   Signal --> signal-cli (JSON-RPC :8080) --> queue-runner --> Ollama --> GPU (Vulkan)
 ```
 
-> **Software:** signal-cli v0.13.24 (native binary) · Ollama 0.16+ · queue-runner v7
+> **Software:** signal-cli v0.13.24 (native binary) · Ollama 0.18+ · queue-runner v7
 
 ### 5.1 Why not OpenClaw
 
