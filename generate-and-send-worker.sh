@@ -34,42 +34,64 @@ sudo systemctl stop ollama
 sleep 3
 log "Ollama stopped."
 
-# Step 3: Auto-detect model
-T5XXL=""
-EXTRA_FLAGS=""
-if [ -f "$FLUX_DIR/flux1-schnell-q4_k.gguf" ] && \
-   [ -f "$FLUX_DIR/ae.safetensors" ] && \
-   [ -f "$FLUX_DIR/clip_l.safetensors" ]; then
+# Step 3: Auto-detect model — prefer FLUX.2-klein-4B, fall back to FLUX.1-schnell
+FLUX2_DIR="$MODELS_DIR/flux2"
+USE_FLUX2=false
+
+if [ -f "$FLUX2_DIR/flux-2-klein-4b-Q4_0.gguf" ] && \
+   [ -f "$FLUX2_DIR/flux2-vae.safetensors" ] && \
+   [ -f "$FLUX2_DIR/qwen3-4b-Q4_K_M.gguf" ]; then
+  USE_FLUX2=true
+  log "Using FLUX.2-klein-4B (fastest, ~20s)"
+elif [ -f "$FLUX_DIR/flux1-schnell-q4_k.gguf" ] && \
+     [ -f "$FLUX_DIR/ae.safetensors" ] && \
+     [ -f "$FLUX_DIR/clip_l.safetensors" ]; then
+  T5XXL=""
+  EXTRA_FLAGS=""
   if [ -f "$FLUX_DIR/t5-v1_1-xxl-encoder-Q4_K_M.gguf" ]; then
     T5XXL="$FLUX_DIR/t5-v1_1-xxl-encoder-Q4_K_M.gguf"
   elif [ -f "$FLUX_DIR/t5-v1_1-xxl-encoder-Q8_0.gguf" ]; then
     T5XXL="$FLUX_DIR/t5-v1_1-xxl-encoder-Q8_0.gguf"
     EXTRA_FLAGS="--mmap"
   fi
-fi
-
-if [ -z "$T5XXL" ]; then
+  if [ -z "$T5XXL" ]; then
+    log "ERROR: No FLUX model found"
+    sudo systemctl start ollama
+    exit 1
+  fi
+  log "Using FLUX.1-schnell with $(basename "$T5XXL") (fallback)"
+else
   log "ERROR: No FLUX model found"
   sudo systemctl start ollama
   exit 1
 fi
-log "Using FLUX.1-schnell with $(basename "$T5XXL")"
 
 # Step 4: Generate image
 log "Generating image..."
 rm -f "$OUTPUT"
 START=$(date +%s)
 
-"$SD_CLI" \
-  --diffusion-model "$FLUX_DIR/flux1-schnell-q4_k.gguf" \
-  --vae "$FLUX_DIR/ae.safetensors" \
-  --clip_l "$FLUX_DIR/clip_l.safetensors" \
-  --t5xxl "$T5XXL" \
-  --clip-on-cpu --offload-to-cpu --fa --vae-tiling \
-  $EXTRA_FLAGS \
-  -p "$PROMPT" -o "$OUTPUT" \
-  --steps 4 -W 512 -H 512 --cfg-scale 1.0 \
-  --sampling-method euler 2>&1 &
+if [ "$USE_FLUX2" = true ]; then
+  "$SD_CLI" \
+    --diffusion-model "$FLUX2_DIR/flux-2-klein-4b-Q4_0.gguf" \
+    --vae "$FLUX2_DIR/flux2-vae.safetensors" \
+    --llm "$FLUX2_DIR/qwen3-4b-Q4_K_M.gguf" \
+    --offload-to-cpu --diffusion-fa --vae-tiling \
+    -p "$PROMPT" -o "$OUTPUT" \
+    --steps 4 -W 512 -H 512 --cfg-scale 1.0 \
+    -v 2>&1 &
+else
+  "$SD_CLI" \
+    --diffusion-model "$FLUX_DIR/flux1-schnell-q4_k.gguf" \
+    --vae "$FLUX_DIR/ae.safetensors" \
+    --clip_l "$FLUX_DIR/clip_l.safetensors" \
+    --t5xxl "$T5XXL" \
+    --clip-on-cpu --offload-to-cpu --fa --vae-tiling \
+    $EXTRA_FLAGS \
+    -p "$PROMPT" -o "$OUTPUT" \
+    --steps 4 -W 512 -H 512 --cfg-scale 1.0 \
+    --sampling-method euler 2>&1 &
+fi
 SD_PID=$!
 
 # Wait for image file to appear (max 5 min)

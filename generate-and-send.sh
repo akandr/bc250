@@ -10,5 +10,5 @@ nohup /opt/stable-diffusion.cpp/generate-and-send-worker.sh "$PROMPT" &>/tmp/sd-
 WORKER_PID=$!
 
 echo "Image generation started (pid $WORKER_PID)."
-echo "The image will be sent via Signal in about 60 seconds."
+echo "The image will be sent via Signal in about 30 seconds."
 echo "Prompt: $PROMPT"
