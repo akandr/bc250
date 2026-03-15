@@ -279,25 +279,27 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 > Ollama 0.18.0 · Vulkan · RADV Mesa 25.3.4 · 16.5 GiB Vulkan · FP16 KV · March 14 2026
 
-| Model | Params | Quant | tok/s | Prefill | Max Ctx | VRAM @4K | GPU | Status |
-|-------|:------:|:-----:|:-----:|:-------:|:-------:|:--------:|:---:|--------|
-| **qwen3.5-35b-a3b-iq2m** | **35B/3B** | **UD-IQ2_M** | **38** | **233** | **16K** | **12.3 GiB** | **100%** | **🏆 Smartest — MoE** |
-| **qwen3.5:9b** | **9.7B** | **Q4_K_M** | **32** | **230** | **65K** | **8.6 GiB** | **100%** | **🏆 Best context+vision** |
-| qwen2.5:3b | 3.1B | Q4_K_M | **104** | **515** | **64K** | 3.4 GiB | 100% | ✅ Fast, lightweight |
-| qwen2.5:7b | 7.6B | Q4_K_M | **56** | **248** | **64K** | 6.5 GiB | 100% | ✅ Great quality/speed |
-| qwen2.5-coder:7b | 7.6B | Q4_K_M | **56** | **246** | **64K** | 6.4 GiB | 100% | ✅ Code-focused |
-| llama3.1:8b | 8.0B | Q4_K_M | **52** | **246** | **48K** | 11.0 GiB | 100% | ✅ Fast 8B |
-| mannix/llama3.1-8b-lexi | 8.0B | Q4_0 | **51** | **308** | **48K** | 10.6 GiB | 100% | ✅ Uncensored 8B |
-| huihui_ai/seed-coder-abliterate | 8.3B | Q4_K_M | **52** | **231** | **64K** | 9.1 GiB | 100% | ✅ Code gen, uncensored |
-| qwen3:8b | 8.2B | Q4_K_M | **44** | **251** | **64K** | 9.8 GiB | 100% | ✅ Thinking mode |
-| huihui_ai/qwen3-abliterated:8b | 8.2B | Q4_K_M | **46** | **250** | **64K** | 9.7 GiB | 100% | ✅ Abliterated 8B |
-| gemma2:9b | 9.2B | Q4_0 | **38** | **219** | **48K** | 9.2 GiB | 100% | ✅ Fixed! (was 91%) |
-| mistral-nemo:12b | 12.2B | Q4_0 | **34** | **137** | **24K** | 10.8 GiB | 100% | ⚠️ 32K deadlocks |
-| qwen3:14b | 14.8B | Q4_K_M | **27** | **131** | **24K** | 13.5 GiB | 100% | ✅ Previous primary |
-| huihui_ai/qwen3-abliterated:14b | 14.8B | Q4_K_M | **28** | **137** | **24K** | 11.4 GiB | 100% | ✅ Abliterated |
-| phi4:14b | 14.7B | Q4_K_M | **29** | **128** | **40K** | 11.8 GiB | 100% | 🏆 Best 14B context |
-| Qwen3-30B-A3B (Q2_K) | 30.5B | Q2_K | **61** | — | **16K** | 11.5 GiB | 100% | ⚠️ MoE fast, heavy quant |
-| qwen3.5-27b-iq2m | 26.9B | IQ2_M | **0** | — | — | 13.5 GiB | 100% | ❌ Non-functional¹ |
+| Model | Params | Quant | tok/s | Prefill | Max Ctx | VRAM @4K | Status |
+|-------|:------:|:-----:|:-----:|:-------:|:-------:|:--------:|--------|
+| **qwen3.5-35b-a3b-iq2m** | **35B/3B** | **UD-IQ2_M** | **38** | **233** | **16K** | **12.3 GiB** | **🏆 Smartest — MoE** |
+| **qwen3.5:9b** | **9.7B** | **Q4_K_M** | **32** | **230** | **65K** | **8.6 GiB** | **🏆 Best context+vision** |
+| qwen2.5:3b | 3.1B | Q4_K_M | **104** | **515** | **64K** | 3.4 GiB | ✅ Fast, lightweight |
+| qwen2.5:7b | 7.6B | Q4_K_M | **56** | **248** | **64K** | 6.5 GiB | ✅ Great quality/speed |
+| qwen2.5-coder:7b | 7.6B | Q4_K_M | **56** | **246** | **64K** | 6.4 GiB | ✅ Code-focused |
+| llama3.1:8b | 8.0B | Q4_K_M | **52** | **246** | **48K** | 11.0 GiB | ✅ Fast 8B |
+| mannix/llama3.1-8b-lexi | 8.0B | Q4_0 | **51** | **308** | **48K** | 10.6 GiB | ✅ Uncensored 8B |
+| huihui_ai/seed-coder-abliterate | 8.3B | Q4_K_M | **52** | **231** | **64K** | 9.1 GiB | ✅ Code gen, uncensored |
+| qwen3:8b | 8.2B | Q4_K_M | **44** | **251** | **64K** | 9.8 GiB | ✅ Thinking mode |
+| huihui_ai/qwen3-abliterated:8b | 8.2B | Q4_K_M | **46** | **250** | **64K** | 9.7 GiB | ✅ Abliterated 8B |
+| gemma2:9b | 9.2B | Q4_0 | **38** | **219** | **48K** | 9.2 GiB | ✅ Fixed! (was 91% before GTT fix) |
+| mistral-nemo:12b | 12.2B | Q4_0 | **34** | **137** | **24K** | 10.8 GiB | ⚠️ 32K deadlocks |
+| qwen3:14b | 14.8B | Q4_K_M | **27** | **131** | **24K** | 13.5 GiB | ✅ Previous primary |
+| huihui_ai/qwen3-abliterated:14b | 14.8B | Q4_K_M | **28** | **137** | **24K** | 11.4 GiB | ✅ Abliterated |
+| phi4:14b | 14.7B | Q4_K_M | **29** | **128** | **40K** | 11.8 GiB | 🏆 Best 14B context |
+| Qwen3-30B-A3B (Q2_K) | 30.5B | Q2_K | **61** | — | **16K** | 11.5 GiB | ⚠️ MoE fast, heavy quant |
+| qwen3.5-27b-iq2m | 26.9B | IQ2_M | **0** | — | — | 13.5 GiB | ❌ Non-functional¹ |
+
+> **All models run 100% on GPU** after GTT tuning (16 GiB). Before the fix, gemma2:9b was only 91% GPU-offloaded (26 tok/s → 38 tok/s after fix).
 
 > ¹ **Why 27B dense fails:** The dense architecture requires all 27B parameters in every forward pass. Without matrix cores (GFX1013 has none), each token requires ~27B multiplications through general-purpose shader cores. Result: 0 tokens generated in 5 minutes. The 35B MoE with only 3B active params per token avoids this entirely — compute is ~9× less per token despite having more total knowledge stored.
 
