@@ -56,7 +56,7 @@ The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/dist
 >
 > **Why "RDNA 1.5"?** GFX1013 doesn't fit cleanly into AMD's public RDNA generations. It has the RDNA 1 (GFX10.1) ISA and shader compiler target, but includes hardware ray tracing — a feature AMD only shipped publicly with RDNA 2 (GFX10.3). This makes Cyan Skillfish a transitional/custom design, likely built for Samsung's specific workload requirements. We call it "RDNA 1.5" as a practical label.
 
-> **BIOS and CPU governor are not stock.** The board ships with a minimal Samsung BIOS meant for rack operation. A community-patched BIOS (from [Miyconst's YouTube tutorial](https://www.youtube.com/watch?v=YLO3fYyCo2s)) enables standard UEFI features (boot menu, NVMe boot, fan control). The CPU `performance` governor is set explicitly — the stock `schedutil` governor causes latency spikes during LLM inference.
+> **BIOS and CPU governor are not stock.** The board ships with a minimal Samsung BIOS meant for rack operation. A community-patched BIOS (from [AMD BC-250 docs](https://elektricm.github.io/amd-bc250-docs/)) enables standard UEFI features (boot menu, NVMe boot, fan control). The CPU `performance` governor is set explicitly — the stock `schedutil` governor causes latency spikes during LLM inference.
 
 | Component | Details |
 |-----------|---------|
@@ -69,7 +69,7 @@ The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/dist
 | **Storage** | 475 GB NVMe |
 | **OS** | Fedora 43, kernel 6.18.9, headless |
 | **TDP** | 220W board (between jobs: 55–60W measured, true idle w/o model: ~35W) |
-| **BIOS** | Community-patched UEFI (not Samsung stock) — [Miyconst tutorial](https://www.youtube.com/watch?v=YLO3fYyCo2s) |
+| **BIOS** | Community-patched UEFI (not Samsung stock) — [AMD BC-250 docs](https://elektricm.github.io/amd-bc250-docs/) |
 | **CPU governor** | `performance` (stock `schedutil` causes LLM latency spikes) |
 
 ### Unified memory is your friend (but needs tuning)
