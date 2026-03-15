@@ -490,7 +490,7 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 
 ![Model landscape — bubble chart](images/charts/model-landscape-3d-labeled.png)
 
-### 4.2 Memory budget
+### 4.6 Memory budget
 
 **qwen3.5-35b-a3b-iq2m · headless server (from Ollama logs)**
 
@@ -507,7 +507,7 @@ On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200).
 
 > **MoE memory dynamics:** As context grows, Ollama intelligently spills weight layers from GPU to CPU to maintain a ~12.5 GiB total. The MoE's total weight (11 GB GGUF) is larger than qwen3:14b (9.3 GB), but only 3B params activate per token — so CPU-spilled layers that aren't selected experts cause zero compute penalty. At 24K+ context, the KV cache exceeds what can fit alongside the weights, causing OOM or timeout.
 
-### 4.3 Model recommendations
+### 4.7 Model recommendations
 
 **Qwen3.5** is the latest generation — multimodal (vision + tools + thinking), Apache 2.0.
 
@@ -669,7 +669,7 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 |----------|:-------:|
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
-| Image generation (FLUX.2-klein 512²) | ~20s |
+| Image generation (FLUX.2-klein-9B 512²) | ~105s |
 | Image editing (Kontext 1024²) | ~20 min |
 | Video generation (WAN 2.1 480×320) | ~38 min |
 | ESRGAN 4× upscale | ~30s |
@@ -901,17 +901,17 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 > WAN requires umt5-xxl text encoder (3.5 GB Q4_K_M) + WAN VAE (243 MB). Outputs raw AVI (MJPEG). No matrix cores = slow but works.
 
-**Video generation — untested:**
+**Video generation — tested (OOM):**
 
 | Model | Params | GGUF Size | Total RAM¹ | Notes |
 |-------|:------:|:---------:|:----------:|-------|
-| WAN 2.2 TI2V 5B Q4_0 | 5B | 2.9 GB | **~9 GB** | **OOM crash at Q4_0.** Model (2.9G) + VAE (1.4G) + T5 (4.7G) = 9 GB — exceeds UMA budget during video denoising. May work with Q2_K model + Q2_K T5 (~6 GB) but untested. |
+| WAN 2.2 TI2V 5B Q4_0 | 5B | 2.9 GB | **~9 GB** | **❌ OOM crash at Q4_0.** Model (2.9G) + VAE (1.4G) + T5 (4.7G) = 9 GB — exceeds UMA budget during video denoising. May work with Q2_K model + Q2_K T5 (~6 GB) but untested. |
 
 **Image editing — FLUX.1-Kontext-dev:**
 
 | Model | Params | GGUF Size | Total RAM¹ | Status |
 |-------|:------:|:---------:|:----------:|--------|
-| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | Downloading — uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
+| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | ✅ Tested — 316s @512², ~20 min @1024². Uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
 
 > Kontext is a dedicated image editing model by Black Forest Labs. It takes a reference image via `-r` and a text instruction to produce an edited version. Uses existing FLUX.1 encoders (T5-XXL, CLIP_L) and VAE (ae.safetensors) from `/opt/stable-diffusion.cpp/models/flux/`.
 > ```bash
@@ -1279,7 +1279,7 @@ Per-minute sampling via `pp_dpm_sclk`:
 | `repo-feeds.json` | Repository API endpoints |
 | `sensor-watchlist.json` | CSI camera sensor tracking list |
 | `queue-runner-state.json` | Cycle count, resume index *(in data/)* |
-| `~/.openclaw/cron/jobs.json` | All 337 job definitions *(legacy path, may be migrated)* |
+| `/opt/netscan/data/jobs.json` | All 337 job definitions |
 
 ### 7.9 Resilience
 
@@ -1455,7 +1455,7 @@ Expected — Ollama tries ROCm, it crashes on GFX1013, falls back to Vulkan. No 
 <details>
 <summary><b>▸ Only 7.9 GiB GPU memory instead of 14 GiB</b></summary>
 
-GTT tuning not applied. Check: `cat /proc/cmdline | grep gttsize`
+GTT tuning not applied. Check: `cat /sys/module/ttm/parameters/pages_limit` (should be 4194304). See §3.3.
 
 </details>
 
