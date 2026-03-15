@@ -1125,22 +1125,82 @@ def generate_and_send_image(prompt):
     elapsed = int(time.time() - start_t)
     log(f"  SD: Image generated in {elapsed}s")
 
+    # Auto-upscale with ESRGAN (Ollama is already stopped — no extra swap cost)
+    upscaled_path = None
+    if os.path.exists(SD_ESRGAN_MODEL):
+        base, ext = os.path.splitext(SD_OUTPUT_PATH)
+        upscaled_path = f"{base}-4x{ext}"
+        try:
+            os.remove(upscaled_path)
+        except FileNotFoundError:
+            pass
+        upscale_cmd = [
+            SD_CLI, "-M", "upscale",
+            "--upscale-model", SD_ESRGAN_MODEL,
+            "-i", SD_OUTPUT_PATH,
+            "-o", upscaled_path,
+        ]
+        log("  SD: Auto-upscaling with ESRGAN 4×...")
+        up_start = time.time()
+        try:
+            proc = subprocess.Popen(upscale_cmd, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+            while time.time() - up_start < SD_UPSCALE_TIMEOUT_S:
+                if (os.path.exists(upscaled_path) and
+                        os.path.getsize(upscaled_path) > 1000):
+                    time.sleep(2)
+                    proc.kill()
+                    try:
+                        proc.wait(timeout=5)
+                    except Exception:
+                        pass
+                    subprocess.run(["killall", "-9", "sd-cli"],
+                                   capture_output=True, timeout=5)
+                    break
+                time.sleep(3)
+                sd_watchdog_ping()
+            else:
+                proc.kill()
+                subprocess.run(["killall", "-9", "sd-cli"],
+                               capture_output=True, timeout=5)
+                log("  SD: ESRGAN upscale timed out, skipping")
+                upscaled_path = None
+            if upscaled_path and os.path.exists(upscaled_path):
+                up_elapsed = int(time.time() - up_start)
+                up_kb = os.path.getsize(upscaled_path) // 1024
+                log(f"  SD: Upscaled in {up_elapsed}s ({up_kb}KB)")
+            else:
+                upscaled_path = None
+        except Exception as e:
+            log(f"  SD: ESRGAN error (skipping): {e}")
+            upscaled_path = None
+
     # Restart Ollama (start loading model while we send)
     log("  SD: Restarting Ollama...")
     subprocess.run(["sudo", "systemctl", "start", "ollama"],
                    timeout=30, capture_output=True)
 
-    # Send image via Signal
+    # Send original image via Signal
     log("  SD: Sending image via Signal...")
     if signal_send_attachment(prompt, SD_OUTPUT_PATH):
         log("  SD: Image sent successfully")
     else:
         log("  SD: WARNING: Failed to send image via Signal")
 
+    # Send upscaled version if available
+    if upscaled_path:
+        up_kb = os.path.getsize(upscaled_path) // 1024
+        caption = f"⬆️ 4× upscale ({up_kb}KB)"
+        if signal_send_attachment(caption, upscaled_path):
+            log("  SD: Upscaled image sent")
+        else:
+            log("  SD: WARNING: Failed to send upscaled image")
+
     # Wait for Ollama health before returning to job queue
     wait_for_ollama()
     sd_status('SD: complete, resuming jobs')
-    return f"\U0001f3a8 Image generated and sent! ({elapsed}s)"
+    extra = f" + 4× upscale" if upscaled_path else ""
+    return f"\U0001f3a8 Image generated and sent! ({elapsed}s{extra})"
 
 
 def generate_and_send_video(prompt):
