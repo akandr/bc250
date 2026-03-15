@@ -1112,6 +1112,7 @@ In continuous loop mode (default), GPU detection is only used for pre-flight hea
 | `life-think.py` | Cross-domain life advisor | 2 |
 | `system-think.py` | GPU/security/health system intelligence | 3 |
 | `radio-scan.py` | SDR spectrum monitoring | 1 |
+| `career-digest.py` | Weekly career digest → Signal (Sunday) | 1 |
 | `daily-summary.py` | End-of-cycle summary → Signal | 1 |
 
 **CPU jobs** (system crontab — independent of queue-runner):
@@ -1373,6 +1374,7 @@ bc250/
 │   ├── market-think.py             # Market sector analysis
 │   ├── life-think.py               # Cross-domain life advisor
 │   ├── system-think.py             # GPU/security/health system intelligence
+│   ├── career-digest.py            # Weekly career digest → Signal (Sunday)
 │   ├── daily-summary.py            # End-of-cycle Signal summary
 │   ├── repo-think.py               # LLM analysis of repo changes
 │   ├── academic-watch.py           # Academic publication monitor
@@ -1419,8 +1421,8 @@ bc250/
 ├── scripts/
 │   ├── generate-and-send.sh        # SD image generation pipeline
 │   └── generate.sh                 # SD generation wrapper
-├── generate-and-send.sh            → /opt/stable-diffusion.cpp/
-└── generate-and-send-worker.sh     → /opt/stable-diffusion.cpp/
+├── generate-and-send.sh            → /opt/stable-diffusion.cpp/ (legacy EXEC pattern, intercepted by queue-runner)
+└── generate-and-send-worker.sh     → legacy async worker (unused in v7, kept for EXEC pattern match)
 ```
 
 </details>
