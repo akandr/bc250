@@ -14,9 +14,16 @@ który ciągnie model MoE z 35 miliardami parametrów wiedzy — aktywując tylk
 miliardy na token — szybciej niż niejeden laptop z RTX 4060.
 
 AMD BC-250 — na pierwszy rzut oka wygląda jak płyta z koparki kryptowalut.
-I tak było — Samsung umieszczał ten układ w swoich serwerach blockchain
-dla operatorów 5G w Korei. Krążył mit, że to "prototyp PS5" — tak naprawdę
-to spokrewniony APU z PS5 — ta sama era, ta sama rodzina.
+Samsung zamówił te układy od AMD i umieścił je w serwerach rack (produkowanych
+przez ASRock Rack) do prywatnej infrastruktury DLT (blockchain) dla operatorów
+5G w Korei Południowej — m.in. SK Telecom. Prywatny blockchain obsługiwał
+mikrotransakcje IoT, tożsamość cyfrową i rozliczenia między operatorami.
+Po wycofaniu z eksploatacji, serwery trafiły do chińskich centrów recyklingu
+(okolice Shenzhen), gdzie rozebrano je na części — i tak płyty BC-250 wylądowały
+na AliExpress za 100-150 dolarów.
+
+Krążył mit, że to "prototyp PS5" — w rzeczywistości to inna architektura:
+RDNA 1.5 (GFX10.1) vs PS5 RDNA 2 (GFX10.3). Ta sama era Zen 2, ale inny GPU.
 
 Specyfikacja:
 • CPU: Zen 2, 6 rdzeni / 12 wątków @ 2.0 GHz
@@ -26,7 +33,7 @@ Specyfikacja:
   Zero magistrali PCIe — latencja identyczna, ale przepustowość DDR4 ~51 GB/s
   (vs HBM2 ~900 GB/s w dedykowanych akceleratorach — to nasze wąskie gardło)
 • BIOS: community-patched UEFI (dzięki Miyconst z YouTube)
-• Pobór: 55-60W między zadaniami, 140-155W pod LLM inference
+• Pobór: 55-60W między zadaniami, 130-155W pod LLM inference
   (uczciwie: to NIE jest energooszczędne — ARM SBC pobiera 3-5W w idle,
   ale ARM nie ciągnie 35B MoE. Roczny koszt prądu: ~900 zł przy ~100W średnio)
 • System: Fedora 43, headless, kernel 6.18.9
@@ -54,7 +61,7 @@ AMD nie skompilowało bibliotek ROCm pod ten GPU. OpenCL też nie widzi. Cisza.
 --- Vulkan: jedyna droga ---
 
 Mesa 25.3.4, sterownik RADV, Ollama z OLLAMA_VULKAN=1.
-Model 3B odpala się — 101 tok/s. Sukces? Nie do końca.
+Model 3B odpala się — 104 tok/s. Sukces? Nie do końca.
 Model 14B: HTTP 500, 140 błędów z rzędu, deadlock.
 
 --- Dwa patche kernelowe: ---
@@ -65,7 +72,8 @@ Model 14B potrzebuje 9,3 GB. Nie zmieści się.
 Problem 2: TTM pages_limit — niezależny limit menedżera pamięci. Nawet gdy GTT
 jest większy, TTM blokuje alokacje. Vulkan się zawiesza, HTTP 500.
 
-Rozwiązanie: jeden parametr w cmdline kernela:
+Historycznie fixów było dwa (GTT + TTM), ale po marcowym uproszczeniu:
+jeden parametr w cmdline kernela załatwia wszystko:
   ttm.pages_limit=4194304    (= 16 GB w stronach 4 KB)
 
 Po tym: 14B model — 27 tokenów na sekundę. A teraz 35B MoE — 38 tok/s.
@@ -215,7 +223,7 @@ Rozwiązanie: pipeline synchroniczny.
     → LLM emituje EXEC(generate-and-send "...")
       → stop Ollama → sd-cli → wyślij obraz Signalem → start Ollama
 
-Całość: ~2 minuty z 9B, ~25 sekund z 4B.
+Całość: ~2–3 minuty z 9B, ~1 minutę z 4B (w tym stop/start Ollama + reload modelu).
 Bot jest offline przez ten czas — akceptowalne.
 
 --- Bug GFX1013 ---
@@ -224,9 +232,26 @@ sd-cli na tym GPU zawiesza się po wygenerowaniu obrazu (cleanup Vulkan).
 Obraz jest na dysku, ale proces wisi. Rozwiązanie: poll plik + kill -9.
 Brzydkie, ale niezawodne od tygodni.
 
+--- Nie tylko generowanie — pełny pipeline multimedialny ---
+
+Image editing (Kontext): wyślij zdjęcie do Signal + instrukcja ("zrób cyberpunk")
+→ FLUX.1-Kontext-dev przetwarza z referencją → ~5 min @512². Działa!
+
+Video generation (WAN 2.1): "nagraj kota idącego przez ogród"
+→ 17 klatek @480×320, ~38 minut. Wolne, ale to PIERWSZY film
+wygenerowany na tym hardware. Bez matrix cores, czysty Vulkan.
+
+Upscale (ESRGAN): "powiększ ostatni obraz" → RealESRGAN 4× w ~30 sekund.
+512×512 → 2048×2048. Radykalnie lepsza jakość za minimalny czas.
+
+Wszystko dostępne z Signal — wyślij wiadomość, dostaniesz wynik.
+Jeśli GPU jest zajęty zadaniem — request trafia do kolejki
+i zostanie wykonany między zadaniami (nie jest odrzucany).
+
 [SLAJD: diagram pipeline: Signal → LLM → stop Ollama → sd-cli → Signal]
+[SLAJD: przykłady: oryginalny obraz → Kontext edit → ESRGAN upscale]
 [PUNKT KLUCZOWY: "16 GB to za mało na oba jednocześnie, ale wystarczy
-jak parking — jedno auto wyjeżdża, drugie wjeżdża. 2 minuty i obraz
+jak parking — jedno auto wyjeżdża, drugie wjeżdża. 2-3 minuty i obraz
 ląduje na telefonie."]
 
 
@@ -264,7 +289,8 @@ SLAJD 6 — PODSUMOWANIE (0,5 minuty)
 Za 100-150 dolarów — kompletny serwer AI:
 
 • 35B MoE (3B aktywne) — 38 tok/s, inteligentniejszy niż qwen3:14b
-• FLUX.2-klein-9B — obrazy w 2 minuty prosto na telefon
+• FLUX.2-klein-9B — obrazy w 2-3 minuty prosto na telefon
+• Kontext image editing, WAN video, ESRGAN 4× upscale — pełny pipeline
 • 337 autonomicznych zadań w cyklu dobowym
 • Wszystko na Vulkanie — bo ROCm nie działa i nigdy nie będzie
 
@@ -292,7 +318,7 @@ TEMPO:
 • Slajd 1 (intro BC-250):        ~90 sekund — szybko, energetycznie
 • Slajd 2 (ROCm/Vulkan/kernel):  ~120 sekund — mięso techniczne
 • Slajd 3 (modele LLM/MoE):      ~150 sekund — główny highlight sesji
-• Slajd 4 (Image gen/shootout):   ~150 sekund — obrazki przyciągają uwagę
+• Slajd 4 (Image/video/edit):    ~150 sekund — obrazki + multimedia
 • Slajd 5 (Signal bot/system):    ~60 sekund — szybko, nie nudzić
 • Slajd 6 (podsumowanie):         ~30 sekund — konkluzja
 RAZEM: ~10 minut
@@ -307,22 +333,24 @@ KLUCZOWE ZMIANY VS STARA PREZENTACJA:
 • Scraping skrócony do wzmianki "337 zadań" — nie omawiamy detali
 
 CO POKAZAĆ NA SLAJDACH:
-• Slajd 1: zdjęcie płyty BC-250, spec obok
+• Slajd 1: zdjęcie płyty BC-250, spec obok, origin story (Samsung/5G/AliExpress)
 • Slajd 2: diagram before/after (GTT 7.4→16 GB, HTTP 500→38 tok/s)
-• Slajd 3: bar chart modeli (z README), MoE diagram
-• Slajd 4: 4 obrazki shootout (2×2 grid) — to jest wow moment
+• Slajd 3: bar chart modeli (z README), MoE diagram, "dlaczego nie większe MoE"
+• Slajd 4: 4 obrazki shootout (2×2 grid) + przykład Kontext edit + ESRGAN upscale
 • Slajd 5: diagram architektury (uproszczony)
 • Slajd 6: 3 lekcje + "Pytania?"
 
 DEMO (jeśli czas pozwoli, w Q&A):
 • Wysłać wiadomość do bota na Signal — odpowiedź na żywo
-• Poprosić o wygenerowanie obrazka (2 min z 9B — idealnie w czasie Q&A)
+• Poprosić o wygenerowanie obrazka (2-3 min z 9B — idealnie w czasie Q&A)
+• Wysłać zdjęcie z instrukcją edycji (Kontext ~5 min — wynik przed końcem Q&A)
 • Pokazać dashboard na http://<LAN_IP>:8888
 
 PYTANIA DO KTÓRYCH SIĘ PRZYGOTOWAĆ:
 • "To RDNA 1 czy RDNA 2?"
-  → "RDNA 1.5" — w kernelu GFX10 (RDNA 1), ale ma ray tracing (RDNA 2).
-  Brak matrix cores, brak Infinity Cache. Pochodna PS5.
+  → "RDNA 1.5" — w kernelu GFX10.1 (RDNA 1), ale ma ray tracing (RDNA 2).
+  Brak matrix cores, brak Infinity Cache. NIE pochodna PS5 —
+  GFX10.1 vs PS5 GFX10.3, inna generacja ISA.
 
 • "Dlaczego nie Tesla P40?"
   → P40 szybsza 2-3×, ale potrzeba hosta ($150-250 extra), zasilacza 600W+,
@@ -348,16 +376,14 @@ PYTANIA DO KTÓRYCH SIĘ PRZYGOTOWAĆ:
 
 • "NVMe swap pod AI to samobójstwo dla dysku!"
   → Swap to safety net, nie aktywny paging. Aktualne zużycie: 423 MB z 16 GB.
-  SMART: 3% wear po 25.4 TB written. Model działa W RAM-ie, nie w swapie.
-  OOMScoreAdjust=-1000 chroni Ollamę — bo na single-purpose serwerze AI
+  SMART: 3% wear po 25.4 TB written. Model działa W RAM-ie, nie w swapie.  OOMScoreAdjust=-1000 chroni Ollamę — bo na single-purpose serwerze AI
   model MUSI przetrwać, nawet kosztem sshd czy crona.
 
 • "Prefill 233 tok/s to nieźle, ale cold start 3K = 15 sekund ciszy!"
-  → Tak, nie ukrywamy tego (jest w README §4.6). Na dedykowanym GPU: 2-3s.
+  → Tak, nie ukrywamy tego (jest w README §4.5). Na dedykowanym GPU: 2-3s.
   Na BC-250: ~15-20s. To cena DDR4 bandwidth. Ale w Signal chat z 3K system
   prompt model jest warm (prompt cached), więc odpowiada w <2s.
   Pierwsze załadowanie po unload — wtedy są te 15-20s.
-
 • "Ile kosztuje prąd?"
   → 55-60W idle, ~100W średnio z 337 zadaniami. ~900 zł/rok.
   ARM SBC (RPi 5): 3-5W idle, ale nie ciągnie 35B MoE. Porównanie jest
@@ -366,5 +392,17 @@ PYTANIA DO KTÓRYCH SIĘ PRZYGOTOWAĆ:
   Nie twierdzimy, że to efektywne energetycznie — twierdzimy, że za $100.
 
 • "A co z nowszymi modelami?"
-  → FLUX.2-klein-9B jest już wdrożony (najnowsza generacja).
-  Roadmap: WAN 2.1 text-to-video (1.3B, 4s klipy), Kontext image editing.
+  → FLUX.2-klein-9B jest już wdrożony (najnowsza generacja image gen).
+  WAN 2.1 text-to-video: DZIAŁA — 17 klatek @480×320, ~38 min na BC-250.
+  Kontext image editing: DZIAŁA — wyślij zdjęcie + instrukcję, ~5 min @512².
+  ESRGAN 4× upscale: DZIAŁA — 512²→2048² w ~30 sekund.
+  Roadmap: analiza obrazów (vision) przez Signal, auto-upscale pipeline,
+  speculative decoding (3B draft + 35B MoE verifier).
+
+• "Dlaczego nie większe MoE? Skoro aktywne jest 3B, może załadować 200B?"
+  → Nawet w MoE WSZYSTKIE wagi muszą być w pamięci — router decyduje
+  per-token których ekspertów użyć, więc każdy parametr musi być załadowany.
+  Przy IQ2_M (~2.5 bita): 35B = 11 GB. Następny w górę — Qwen3-235B-A22B —
+  to ~44 GB @ IQ2_M (2.7× za dużo). Mixtral 8×22B = ~35 GB. DeepSeek-V3 = ~130 GB.
+  IQ1_S (~1.5 bita) istnieje ale jakość się załamuje.
+  qwen3.5-35b-a3b @ IQ2_M to GRANICA — najlepszy MoE który się mieści.

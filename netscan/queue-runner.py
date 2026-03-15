@@ -101,8 +101,8 @@ SD_NOTIFY = 'NOTIFY_SOCKET' in os.environ  # systemd watchdog support
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
 SIGNAL_ACCOUNT = os.environ.get('SIGNAL_ACCOUNT', '+<BOT_PHONE>')
 SIGNAL_OWNER = os.environ.get('SIGNAL_OWNER', '+<OWNER_PHONE>')
-SIGNAL_CHAT_MODEL = "qwen3:14b"
-SIGNAL_CHAT_CTX = 24576             # Context window for chat responses (matches OLLAMA_CONTEXT_LENGTH)
+SIGNAL_CHAT_MODEL = "qwen3.5-35b-a3b-iq2m"
+SIGNAL_CHAT_CTX = 16384             # Context window for chat responses (matches OLLAMA_CONTEXT_LENGTH)
 SIGNAL_CHAT_MAX_EXEC = 3            # Max shell commands per message (search+fetch+verify)
 SIGNAL_EXEC_TIMEOUT_S = 30          # Timeout for shell commands
 SIGNAL_MAX_REPLY = 1800             # Signal message char limit
@@ -128,7 +128,8 @@ SD_UPSCALE_TIMEOUT_S = 120
 
 # ─── Kontext Image Editing ──────────────────────────────────────────────────
 SD_KONTEXT_MODEL = f"{SD_FLUX_DIR}/flux1-kontext-dev-Q4_0.gguf"
-SD_KONTEXT_TIMEOUT_S = 600          # Max 10 min for Kontext editing (~5 min typical @512²)
+SD_KONTEXT_TIMEOUT_S = 900          # Max 15 min for Kontext editing (~5 min typical @512²)
+SD_KONTEXT_STALL_S = 180            # Kill if no stdout progress for 3 min
 SD_EDIT_SCRIPT_PREFIX = "/opt/stable-diffusion.cpp/edit-image"  # EXEC edit intercept
 SIGNAL_ATTACHMENTS_DIR = os.path.expanduser("~/.local/share/signal-cli/attachments")
 
@@ -153,6 +154,11 @@ WEEKLY_JOBS = {
 
 # ─── Globals ────────────────────────────────────────────────────────────────
 running = True
+
+# Deferred SD queue: when image/edit/video/upscale is requested during a GPU job
+# (allow_sd=False), save the request here instead of rejecting it.
+# Processed at the next between-jobs chat window.
+_deferred_sd_queue = []  # List of (action, args) tuples
 
 
 def signal_handler(sig, frame):
@@ -1375,6 +1381,20 @@ def edit_and_send_image(source_path, prompt):
     log(f"  EDIT: Kontext edit requested: {prompt[:80]}")
     sd_status('EDIT: editing image with Kontext')
 
+    # Resize input image to 512×512 — Kontext processes the full reference image
+    # through the model. A 1200×1600 input takes 3-4× longer than 512×512.
+    resized_path = "/tmp/sd-edit-input-resized.png"
+    try:
+        from PIL import Image
+        with Image.open(source_path) as img:
+            orig_size = img.size
+            img_resized = img.resize((512, 512), Image.LANCZOS)
+            img_resized.save(resized_path)
+        log(f"  EDIT: Resized input {orig_size[0]}×{orig_size[1]} → 512×512")
+    except Exception as e:
+        log(f"  EDIT: PIL resize failed ({e}), using original")
+        resized_path = source_path
+
     signal_reply(f"\u270f\ufe0f Editing your image with Kontext... ~5 min. Instruction: {prompt[:200]}")
 
     # Stop Ollama to free VRAM
@@ -1414,7 +1434,7 @@ def edit_and_send_image(source_path, prompt):
         "--clip_l", clip_l,
         "--t5xxl", t5xxl,
         "--clip-on-cpu",
-        "-r", source_path,
+        "-r", resized_path,
         "-p", prompt,
         "-o", edit_output,
         "--steps", "28",
@@ -1426,10 +1446,45 @@ def edit_and_send_image(source_path, prompt):
 
     log("  EDIT: Running sd-cli Kontext...")
     start_t = time.time()
+    last_output_t = start_t  # Track last stdout activity for stall detection
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
+        import fcntl
+        fd = proc.stdout.fileno()
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
         while time.time() - start_t < SD_KONTEXT_TIMEOUT_S:
+            # Check for stdout activity (progress)
+            try:
+                chunk = proc.stdout.read(4096)
+                if chunk:
+                    last_output_t = time.time()
+                    last_line = chunk.decode('utf-8', errors='replace').strip().split('\n')[-1]
+                    if 'step' in last_line.lower() or 'it/s' in last_line.lower():
+                        log(f"  EDIT: progress: {last_line[:120]}")
+            except (BlockingIOError, OSError):
+                pass
+
+            # Check for stall (no output for SD_KONTEXT_STALL_S)
+            stall_s = int(time.time() - last_output_t)
+            if stall_s > SD_KONTEXT_STALL_S and time.time() - start_t > 60:
+                proc.kill()
+                try:
+                    proc.wait(timeout=10)
+                except Exception:
+                    pass
+                subprocess.run(["killall", "-9", "sd-cli"],
+                               capture_output=True, timeout=5)
+                elapsed = int(time.time() - start_t)
+                log(f"  EDIT: sd-cli stalled (no output for {stall_s}s), killed after {elapsed}s")
+                subprocess.run(["sudo", "systemctl", "start", "ollama"],
+                               timeout=30, capture_output=True)
+                wait_for_ollama()
+                return f"Image editing stalled after {elapsed // 60} min (sd-cli stopped responding). Sorry!"
+
+            # Check if output file appeared (success)
             if (os.path.exists(edit_output) and
                     os.path.getsize(edit_output) > 1000):
                 time.sleep(2)
@@ -1766,42 +1821,42 @@ def chat_with_llm(user_text, allow_sd=True, attachment_path=None):
 
             # Intercept image generation — handle synchronously
             if cmd.startswith(SD_SCRIPT_PREFIX):
-                if not allow_sd:
-                    return ("🦞 Can't generate images right now — GPU is busy "
-                            "with a background job. Ask me again in a few minutes "
-                            "when I'm between jobs.")
                 sd_prompt = re.sub(
                     r'^/opt/stable-diffusion\.cpp/generate-and-send\.sh\s*',
                     '', cmd).strip()
                 if not sd_prompt:
                     return "No image prompt provided. What should I draw?"
+                if not allow_sd:
+                    _deferred_sd_queue.append(('generate', sd_prompt))
+                    log(f"    SD deferred: generate '{sd_prompt[:60]}'")
+                    return "🦞 GPU is busy — queued your image request. I'll generate it between jobs (a few minutes)."
                 return generate_and_send_image(sd_prompt)
 
             # Intercept video generation — WAN 2.1 T2V
             if cmd.startswith(SD_VIDEO_SCRIPT_PREFIX):
-                if not allow_sd:
-                    return ("🦞 Can't generate video right now — GPU is busy. "
-                            "Ask me again in a few minutes.")
                 vid_prompt = re.sub(
                     r'^/opt/stable-diffusion\.cpp/generate-video\s*',
                     '', cmd).strip()
                 if not vid_prompt:
                     return "No video prompt provided. What should I animate?"
+                if not allow_sd:
+                    _deferred_sd_queue.append(('video', vid_prompt))
+                    log(f"    SD deferred: video '{vid_prompt[:60]}'")
+                    return "🦞 GPU is busy — queued your video request. I'll generate it between jobs."
                 return generate_and_send_video(vid_prompt)
 
             # Intercept ESRGAN upscale
             if cmd.startswith("/opt/stable-diffusion.cpp/upscale"):
-                if not allow_sd:
-                    return ("🦞 Can't upscale right now — GPU is busy.")
                 parts = cmd.split(None, 1)
                 img_path = parts[1].strip() if len(parts) > 1 else SD_OUTPUT_PATH
+                if not allow_sd:
+                    _deferred_sd_queue.append(('upscale', img_path))
+                    log(f"    SD deferred: upscale '{img_path}'")
+                    return "🦞 GPU is busy — queued your upscale request. I'll process it between jobs."
                 return upscale_and_send(img_path)
 
             # Intercept Kontext image editing
             if cmd.startswith(SD_EDIT_SCRIPT_PREFIX):
-                if not allow_sd:
-                    return ("🦞 Can't edit images right now — GPU is busy. "
-                            "Ask me again in a few minutes.")
                 edit_prompt = re.sub(
                     r'^/opt/stable-diffusion\.cpp/edit-image\s*',
                     '', cmd).strip()
@@ -1810,6 +1865,10 @@ def chat_with_llm(user_text, allow_sd=True, attachment_path=None):
                 if not attachment_path:
                     return ("No image attached. Send a photo with your edit "
                             "instruction and I'll modify it with Kontext.")
+                if not allow_sd:
+                    _deferred_sd_queue.append(('edit', (attachment_path, edit_prompt)))
+                    log(f"    SD deferred: edit '{edit_prompt[:60]}'")
+                    return "🦞 GPU is busy — queued your image edit. I'll process it between jobs (a few minutes)."
                 return edit_and_send_image(attachment_path, edit_prompt)
 
             exec_count += 1
@@ -1852,13 +1911,32 @@ def process_signal_chat(tag=None):
     when tag='parallel'. Each message gets an LLM response with optional shell
     tool use.
 
-    When tag='parallel', image generation is blocked (would stop Ollama and
-    interfere with the next LLM job) — the user gets a "try again between jobs"
-    message instead.
+    When tag='parallel', SD requests are deferred to the next between-jobs
+    window instead of being rejected.
 
     Returns the number of messages processed.
     """
     messages = check_signal_inbox()
+
+    # Between jobs (tag=None, allow_sd=True): drain any deferred SD requests first
+    if tag is None and _deferred_sd_queue:
+        n_deferred = len(_deferred_sd_queue)
+        log(f"  📱 Processing {n_deferred} deferred SD request(s)")
+        while _deferred_sd_queue:
+            action, args = _deferred_sd_queue.pop(0)
+            if action == 'generate':
+                result = generate_and_send_image(args)
+            elif action == 'video':
+                result = generate_and_send_video(args)
+            elif action == 'upscale':
+                result = upscale_and_send(args)
+            elif action == 'edit':
+                result = edit_and_send_image(args[0], args[1])
+            else:
+                result = f"Unknown deferred action: {action}"
+            log(f"    Deferred {action}: {str(result)[:80]}")
+            sd_watchdog_ping()
+
     if not messages:
         return 0
 

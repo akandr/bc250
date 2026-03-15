@@ -52,11 +52,26 @@
 
 The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/distributed-ledger rack appliances (not a traditional "mining GPU"). It's a full SoC — Zen 2 CPU and Cyan Skillfish RDNA 1.5 GPU on a single package, with 16 GB of on-package unified memory. Samsung deployed these in rack-mount enclosures for private DLT workloads; decommissioned boards now sell for ~$100–150 on the secondhand market, making them possibly the cheapest way to run 14B LLMs on dedicated hardware.
 
+<details>
+<summary><b>▸ Origin story — Samsung, 5G operators, and AliExpress</b></summary>
+
+**What it was built for:** Samsung commissioned these custom AMD SoCs to build rack-mount servers for **private DLT (Distributed Ledger Technology) infrastructure** — not public cryptocurrency mining. The target customers were **South Korean 5G operators** (SK Telecom and others), who were global pioneers in 5G deployment. Private blockchain solved several real problems for 5G telcos:
+
+- **IoT microtransactions:** 5G networks connect millions of smart devices. DLT enables cheap, instant machine-to-machine contract settlement without overloading central databases.
+- **Digital identity & security:** Operators used DLT registries for cryptographic customer authentication and digital identity wallets (e.g. Samsung Pay integration).
+- **Inter-operator settlement:** Blockchain streamlined real-time roaming fee reconciliation and data exchange between telecom partners.
+
+**Who made the hardware:** The SoC was designed by **AMD** (Zen 2 CPU + RDNA 1.5 GPU). Samsung designed the overall system and wrote the factory BIOS. The physical boards were manufactured by **ASRock Rack** (ASRock's server division) as an OEM contractor — Samsung rack enclosures typically held 12 BC-250 boards each. ASRock Rack is known for producing highly custom designs for large tech companies.
+
+**How they ended up on AliExpress:** Classic corporate e-waste cycle. As 5G infrastructure evolved, entire Korean server racks were decommissioned. Specialized recycling centers (mostly near Shenzhen, China) buy pallets of retired servers in bulk — often by weight. Workers disassemble the racks, test individual boards, and list working BC-250 modules on AliExpress as all-in-one SBC platforms for $100–150.
+
+</details>
+
 > **Not a PlayStation 5.** Despite superficial similarities (both use Zen 2 + 16 GB memory), the BC-250 has nothing to do with the PS5. The PS5's Oberon SoC is **RDNA 2** (GFX10.3, gfx1030+); the BC-250's Cyan Skillfish is **RDNA 1.5** (GFX10.1, gfx1013) — a hybrid architecture: GFX10.1 instruction set (RDNA 1) but with **hardware ray tracing support** (full `VK_KHR_ray_tracing_pipeline`, `VK_KHR_acceleration_structure`, `VK_KHR_ray_query`). LLVM's AMDGPU processor table lists GFX1013 as product "TBA" under GFX10.1, confirming it was never a retail part. Samsung also licensed RDNA 2 for mobile (Exynos 2200 / Xclipse 920) — that's a completely separate deal.
 >
 > **Why "RDNA 1.5"?** GFX1013 doesn't fit cleanly into AMD's public RDNA generations. It has the RDNA 1 (GFX10.1) ISA and shader compiler target, but includes hardware ray tracing — a feature AMD only shipped publicly with RDNA 2 (GFX10.3). This makes Cyan Skillfish a transitional/custom design, likely built for Samsung's specific workload requirements. We call it "RDNA 1.5" as a practical label.
 
-> **BIOS and CPU governor are not stock.** The board ships with a minimal Samsung BIOS meant for rack operation. A community-patched BIOS (from [AMD BC-250 docs](https://elektricm.github.io/amd-bc250-docs/)) enables standard UEFI features (boot menu, NVMe boot, fan control). The CPU `performance` governor is set explicitly — the stock `schedutil` governor causes latency spikes during LLM inference.
+> **BIOS is not stock.** The board ships with a minimal Samsung BIOS meant for rack operation. A community-patched BIOS (from [AMD BC-250 docs](https://elektricm.github.io/amd-bc250-docs/)) enables standard UEFI features (boot menu, NVMe boot, fan control).
 
 | Component | Details |
 |-----------|---------|
@@ -309,8 +324,6 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 > **⚠️ IQ2_M quality tradeoff:** The extreme quantization (~2.5 bits per parameter) is a significant quality compromise — perplexity increases and complex mathematical reasoning degrades compared to higher-precision quantizations. For everyday tasks (summarization, JSON extraction, tool use, chat) the quality is adequate. For tasks requiring precise reasoning, the `qwen3.5:9b` fallback (Q4_K_M, ~4.5 bits) provides substantially better accuracy. This is an informed tradeoff: more knowledge at lower precision vs less knowledge at higher precision.
 
-> **Prefill latency (MoE):** DDR4-3200 bandwidth (~51 GB/s) is the primary bottleneck for prompt processing. The MoE model prefills at 53–233 tok/s depending on prompt size (see §4.5): tiny prompts are overhead-dominated (53 tok/s @17 tokens), medium prompts peak at ~230 tok/s, and longer prompts degrade due to O(n²) attention scaling. A 3K-token system prompt takes ~15–20 seconds on cold start — still dramatically slower than dedicated GPUs (500+ tok/s). In practice, Ollama caches the model in RAM (`OLLAMA_KEEP_ALIVE=30m`), so subsequent requests within the window respond in <2 seconds. This is a genuine limitation of UMA architecture, not a hidden deficiency.
-
 ### 4.2 Benchmark visualization
 
 **Generation speed (tok/s) — higher is better:**
@@ -340,26 +353,28 @@ qwen3.5-27b (dense)        0       —   ❌ non-functional
 **Context ceiling per model (FP16 KV, all GPU):**
 
 ```
-Model             4K   8K  16K  24K  32K  48K  64K
-────────────────────────────────────────────────────
-qwen2.5:3b        ✅   ✅   ✅   ✅   ✅   ✅   ✅
-qwen2.5:7b        ✅   ✅   ✅   ✅   ✅   ✅   ✅
-qwen2.5-coder:7b  ✅   ✅   ✅   ✅   ✅   ✅   ✅
-qwen3:8b          ✅   ✅   ✅   ✅   ✅   ✅   ✅
-qwen3-abl:8b      ✅   ✅   ✅   ✅   ✅   ✅   ✅
-seed-coder:8b     ✅   ✅   ✅   ✅   ✅   ✅   ✅
-★ qwen3.5:9b      ✅   ✅   ✅   ✅   ✅   ✅   ✅
-llama3.1:8b       ✅   ✅   ✅   ✅   ✅   ✅   ❌
-lexi-8b           ✅   ✅   ✅   ✅   ✅   ✅   ❌
-gemma2:9b         ✅   ✅   ✅   ✅   ✅   ✅   —
-mistral-nemo:12b  ✅   ✅   ✅   ✅   ❌   —    —
-qwen3:14b         ✅   ✅   ✅   ✅   ❌   —    —
-qwen3-abl:14b     ✅   ✅   ✅   ✅   ❌   —    —
-phi4:14b          ✅   ✅   ✅   ✅   ✅   —    —
-★ 35B-A3B iq2m    ✅   ✅   ✅   ❌   —    —    —
-30B-A3B Q2_K      ✅   ✅   ✅   ❌   —    —    —
-qwen3.5-27b iq2m  ❌   —    —    —    —    —    —
+Model            16K  24K  32K  48K  64K
+──────────────────────────────────────────
+qwen2.5:3b        ✅   ✅   ✅   ✅   ✅
+qwen2.5:7b        ✅   ✅   ✅   ✅   ✅
+qwen2.5-coder:7b  ✅   ✅   ✅   ✅   ✅
+qwen3:8b          ✅   ✅   ✅   ✅   ✅
+qwen3-abl:8b      ✅   ✅   ✅   ✅   ✅
+seed-coder:8b     ✅   ✅   ✅   ✅   ✅
+★ qwen3.5:9b      ✅   ✅   ✅   ✅   ✅
+llama3.1:8b       ✅   ✅   ✅   ✅   ❌
+lexi-8b           ✅   ✅   ✅   ✅   ❌
+gemma2:9b         ✅   ✅   ✅   ✅   —
+mistral-nemo:12b  ✅   ✅   ❌   —    —
+qwen3:14b         ✅   ✅   ❌   —    —
+qwen3-abl:14b     ✅   ✅   ❌   —    —
+phi4:14b          ✅   ✅   ✅   —    —
+★ 35B-A3B iq2m    ✅   ❌   —    —    —
+30B-A3B Q2_K      ✅   ❌   —    —    —
+qwen3.5-27b iq2m  ❌   —    —    —    —
 ```
+
+> 4K and 8K columns omitted — every model passes at those sizes.
 
 > ✅ = works 100% GPU | ❌ = timeout/deadlock | — = not tested (too large)
 
@@ -434,8 +449,6 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 # in /etc/systemd/system/ollama.service.d/override.conf
 ```
 
-> **Quality note:** Q8_0 is virtually lossless for KV cache. Q4_0 may degrade output quality on complex reasoning — needs quality evaluation before deploying to production. For the MoE model (16K context limit), KV quantization provides no benefit — the bottleneck is weight size not KV. It's most useful for the 9B fallback model when running at 40K+ context.
->
 > **Current production:** FP16 KV (Ollama default). Context capped at 16K for MoE via `OLLAMA_CONTEXT_LENGTH=16384`.
 
 ### 4.5 Prefill (prompt evaluation) benchmarks
@@ -538,6 +551,8 @@ ollama pull qwen3.5:9b
 # Context is capped via OLLAMA_CONTEXT_LENGTH=16384 in systemd (see §3.3, §3.4)
 # Individual requests can override with {"options": {"num_ctx": 65536}} when using 9b
 ```
+
+> **Why not a bigger MoE?** Even though only 3B params activate per token, **all 35B params must reside in memory** — the router decides per-token which experts to fire, so every weight must be loaded. At IQ2_M (~2.5 bits per parameter), 35B = 11 GB GGUF. The next MoE up — Qwen3-235B-A22B — would be ~44 GB at IQ2_M (2.7× too large). Mixtral 8×22B (141B) would be ~35 GB. Going below IQ2_M (e.g. IQ1_S at ~1.5 bits) causes quality collapse. The qwen3.5-35b-a3b at IQ2_M is the **largest MoE that fits 16 GB with usable quantization** — the Pareto frontier for this hardware.
 
 ---
 
@@ -644,9 +659,9 @@ When the LLM detects an image request, it emits `EXEC(/opt/stable-diffusion.cpp/
 3. Send image as Signal attachment
 4. Restart Ollama
 
-Bot is offline during generation (~25–40s total including model reload).
+Bot is offline during generation (~2–3 minutes total including model reload).
 
-**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~5 min @512²).
+**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~5–10 min @512²). Input images are automatically resized to 512×512. See §6.2 for a demo (Sonic → Shadow the Hedgehog).
 
 **Video generation:** Ask for a video/animation. Uses WAN 2.1 T2V 1.3B (~38 min for 17 frames @480×320).
 
@@ -893,7 +908,7 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 > ¹ Total RAM includes diffusion model + text encoder(s) + VAE.
 >
-> ³ SD3.5 ships with a BF16 VAE which produces garbage on GFX1013 (no BF16 Vulkan support). Convert to F16 first: `python3 convert_vae_bf16_to_f16.py input.safetensors output.safetensors`
+> ³ BF16 VAE gotcha — see SD3.5 section below.
 
 **Video generation — tested models:**
 
@@ -924,6 +939,12 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 >   -r input.png -p "change the sky to sunset" --cfg-scale 3.5 --steps 28 \
 >   --sampling-method euler --offload-to-cpu --diffusion-fa -o output.png
 > ```
+
+**Kontext demo — "turn Sonic into Shadow the Hedgehog":**
+
+| Input (1200×1600 → resized to 512×512) | Output (512×512, 647s) |
+|:---:|:---:|
+| ![Kontext input](images/kontext/kontext-input.jpg) | ![Kontext output](images/kontext/kontext-output.png) |
 
 #### SD3.5-medium benchmark details
 
@@ -996,21 +1017,6 @@ sd-cli -M vid_gen \
 >
 > **Why so slow?** Each video frame is a full diffusion pass through the 1.3B model. With 17 frames × 50 steps × no matrix cores, every multiply is scalar. A GPU with tensor/matrix units (RDNA3+, Turing+) would be 5–10× faster.
 
-### 6.3 Signal integration — synchronous pipeline
-
-SD and Ollama can't run simultaneously (shared 16 GB VRAM). queue-runner handles this synchronously — no worker scripts, no delays:
-
-```
-  "draw a cyberpunk cat"
-    +-> queue-runner intercepts EXEC(generate-and-send "...")
-         +-> stop Ollama -> run sd-cli -> send image via Signal -> restart Ollama
-              +-> image arrives (~2 min total with FLUX.2-klein-9B)
-```
-
-The pipeline is triggered when the LLM emits an `EXEC()` call matching the SD script path. queue-runner stops Ollama first (freeing ~12 GB VRAM), generates the image with FLUX.2-klein-9B, sends it as a Signal attachment, then restarts Ollama. Total downtime ~2–3 minutes (vs ~25s with FLUX.2-klein-4B fast mode).
-
-> ⚠️ **GFX1013 bug:** sd-cli hangs after writing the output image (Vulkan cleanup). queue-runner polls for the file, then kills the process.
-
 ---
 
 # `PART III` — Monitoring & Intelligence
@@ -1056,24 +1062,7 @@ Cycle N+1:
 
 ### 7.1.1 Queue ordering
 
-The queue prioritizes **data diversity** — all dashboard tabs get fresh data even if the cycle is interrupted:
-
-```
- SCRAPE (data gathering, no LLM) ----------- career-scan, salary, patents, events, repos, lore
- INFRA (6 jobs, ~0.6h) --------------------- leak-monitor, netscan, watchdog
- LORE-ANALYSIS (12 jobs) ------------------- lkml, soc, jetson, libcamera, dri, usb, riscv, dt
- ACADEMIC (17 jobs) ------------------------ publications, dissertations, patents
- REPO-THINK (22 jobs) ---------------------- LLM analysis of repo changes
- OTHER (11 jobs) --------------------------- car-tracker, city-watch, csi-sensor
- COMPANY (46 jobs) ------------------------- company-think per entity
- CAREER (49 jobs) -------------------------- career-think per domain
- THINK (37 jobs, ~2.2h) -------------------- research, trends, crawl, crossfeed
- META (5 jobs) ----------------------------- life-advisor, system-think
- MARKET (21 jobs) -------------------------- market-watch + sector analysis
- REPORT (1 job) ---------------------------- daily-summary -> Signal
-   + HA observations interleaved every 50 jobs (ha-correlate, ha-journal)
-   + Signal chat checked between EVERY job
-```
+The queue prioritizes **data diversity** — all dashboard tabs get fresh data even if the cycle is interrupted. See §7.3 for the full category breakdown with GPU times. HA observations are interleaved every 50 jobs, and Signal chat is checked between every job.
 
 ### 7.1.2 GPU idle detection
 
@@ -1134,8 +1123,6 @@ In continuous loop mode (default), GPU detection is only used for pre-flight hea
 
 ### 7.3 Job scheduling — queue-runner v7
 
-All 337 jobs are defined in `~/.openclaw/cron/jobs.json` and scheduled dynamically by `queue-runner.py` (systemd service, `WatchdogSec=14400`). There are **no fixed cron times** — jobs run sequentially as fast as the GPU allows, in a continuous loop.
-
 **Job categories** (auto-classified by name pattern):
 
 | Category | Jobs | Typical GPU time | Examples |
@@ -1177,23 +1164,7 @@ queue-runner.py
   +-- Signal alerts (career matches, leaks, events, daily summary)
 ```
 
-### 7.4 System crontab — non-GPU
-
-| Freq | Script |
-|------|--------|
-| 1 min | `gpu-monitor.sh` + `gpu-monitor.py collect` |
-| 5 min | `presence.sh` + `syslog.sh` |
-| 30 min | `watchdog.py --live-only` |
-| 04:00 | `scan.sh` (nmap) |
-| 04:30 | `enumerate.sh` |
-| Sun 05:30 | `vulnscan.sh` |
-| 06:00 | `watchdog.py` (full) |
-| 08:00, 14:00 | `repo-watch.sh --all` |
-| 08:30 | `report.sh` |
-| 18:00 | `repo-watch.sh --all --notify` |
-| 22:55 | `gpu-monitor.py chart` |
-
-### 7.5 Data flow & locations
+### 7.4 Data flow & locations
 
 All paths relative to `/opt/netscan/`:
 
@@ -1222,7 +1193,7 @@ All paths relative to `/opt/netscan/`:
 | Radio | `data/radio/` | radio-scan.py |
 | Queue state | `data/queue-runner-state.json` | queue-runner.py |
 
-### 7.6 Dashboard — 29 main pages + 101 host detail pages
+### 7.5 Dashboard — 29 main pages + 101 host detail pages
 
 Served by nginx at `:8888`, generated by `generate-html.py` (6900+ lines):
 
@@ -1261,7 +1232,7 @@ Served by nginx at `:8888`, generated by `generate-html.py` (6900+ lines):
 
 > **Mailing list feeds** are configured in `digest-feeds.json` — 8 feeds from `lore.kernel.org`, each with relevance scoring keywords.
 
-### 7.7 GPU monitoring — 3-state
+### 7.6 GPU monitoring — 3-state
 
 Per-minute sampling via `pp_dpm_sclk`:
 
@@ -1271,7 +1242,7 @@ Per-minute sampling via `pp_dpm_sclk`:
 | `loaded` | 1000 MHz | ~56°C | Model in VRAM, idle |
 | `idle` | 1000 MHz | <50°C | No model loaded |
 
-### 7.8 Configuration & state files
+### 7.7 Configuration & state files
 
 | File | Purpose |
 |------|---------|
@@ -1284,7 +1255,7 @@ Per-minute sampling via `pp_dpm_sclk`:
 | `queue-runner-state.json` | Cycle count, resume index *(in data/)* |
 | `/opt/netscan/data/jobs.json` | All 337 job definitions |
 
-### 7.9 Resilience
+### 7.8 Resilience
 
 | Mechanism | Details |
 |-----------|---------|
@@ -1555,7 +1526,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 | Issue | Impact |
 |-------|--------|
-| Shared VRAM | Image gen requires stopping Ollama. Bot offline ~25–40s (FLUX.2-klein) or ~60–90s (FLUX.1-schnell). |
+| Shared VRAM | Image gen requires stopping Ollama. Bot offline ~2–3 min (FLUX.2-klein-9B) or ~1 min (FLUX.2-klein-4B). |
 | MoE context limit | 35B-A3B MoE tops out at 16K context (weights = 10.3 GiB, KV fills rest). Use 9B for >16K. |
 | Signal latency | Messages queue during job execution (typical job 2–15 min). Chat checked between every job. |
 | sd-cli hangs on GFX1013 | Vulkan cleanup bug → poll + kill workaround. |
@@ -1592,12 +1563,7 @@ OpenClaw v2026.2.26 was used as the Signal ↔ Ollama gateway from project incep
 - signal-cli children survived gateway OOM kills, holding port 8080 as orphans
 - 9.6K system prompt that couldn't be reduced below ~4K without breaking tools
 
-**What replaced it:**
-- signal-cli runs as standalone systemd service (JSON-RPC on :8080)
-- queue-runner.py talks to Ollama `/api/chat` directly
-- System prompt is a Python string in queue-runner.py (~3K tokens)
-- All 337 jobs run as `subprocess.Popen` — no agent routing
-- SD image generation handled synchronously by queue-runner
+**What replaced it:** See §5 for the current architecture.
 
 ### A.1 Installation (historical)
 
