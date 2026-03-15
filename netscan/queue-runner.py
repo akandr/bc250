@@ -124,6 +124,7 @@ SD_VIDEO_SCRIPT_PREFIX = "/opt/stable-diffusion.cpp/generate-video"  # EXEC vide
 
 # ─── ESRGAN Upscale ────────────────────────────────────────────────────────
 SD_ESRGAN_MODEL = "/opt/stable-diffusion.cpp/models/esrgan/RealESRGAN_x4plus.pth"
+SD_UPSCALE_TILE_SIZE = 192       # Larger tiles = better seam quality. 128→15s, 192→25s, 256→41s @512²
 SD_UPSCALE_TIMEOUT_S = 120
 
 # ─── Kontext Image Editing ──────────────────────────────────────────────────
@@ -1137,10 +1138,11 @@ def generate_and_send_image(prompt):
         upscale_cmd = [
             SD_CLI, "-M", "upscale",
             "--upscale-model", SD_ESRGAN_MODEL,
+            "--upscale-tile-size", str(SD_UPSCALE_TILE_SIZE),
             "-i", SD_OUTPUT_PATH,
             "-o", upscaled_path,
         ]
-        log("  SD: Auto-upscaling with ESRGAN 4×...")
+        log(f"  SD: Auto-upscaling with ESRGAN 4× (tile {SD_UPSCALE_TILE_SIZE})...")
         up_start = time.time()
         try:
             proc = subprocess.Popen(upscale_cmd, stdout=subprocess.PIPE,
@@ -1364,11 +1366,12 @@ def upscale_and_send(image_path, prompt=""):
     cmd = [
         SD_CLI, "-M", "upscale",
         "--upscale-model", SD_ESRGAN_MODEL,
+        "--upscale-tile-size", str(SD_UPSCALE_TILE_SIZE),
         "-i", image_path,
         "-o", upscaled_path,
     ]
 
-    log("  ESRGAN: Running sd-cli upscale...")
+    log(f"  ESRGAN: Running sd-cli upscale (tile {SD_UPSCALE_TILE_SIZE})...")
     start_t = time.time()
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,

@@ -665,7 +665,7 @@ Bot is offline during generation (~2–3 minutes total including model reload).
 
 **Video generation:** Ask for a video/animation. Uses WAN 2.1 T2V 1.3B (~38 min for 17 frames @480×320).
 
-**ESRGAN upscale:** Ask to upscale the last generated image. 4× upscale via RealESRGAN_x4plus (~30s).
+**ESRGAN upscale:** Every generated image is automatically upscaled 4× with RealESRGAN_x4plus (512²→2048² in ~25s). Both versions sent via Signal — thumbnail + full-res. Also available on-demand via chat.
 
 > ⚠️ **GFX1013 bug:** sd-cli hangs after writing the output image (Vulkan cleanup). queue-runner polls for the file and kills the process.
 
@@ -687,9 +687,10 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
 | Image generation (FLUX.2-klein-9B 512²) | ~105s |
+| Image generation + auto-upscale 4× | ~130s |
 | Image editing (Kontext 512²) | ~5 min |
 | Video generation (WAN 2.1 480×320) | ~38 min |
-| ESRGAN 4× upscale | ~30s |
+| ESRGAN 4× upscale (on-demand) | ~25s |
 | Cold start (model reload) | 30–60s |
 
 ---
@@ -942,9 +943,11 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 **Kontext demo — "turn Sonic into Shadow the Hedgehog":**
 
-| Input (1200×1600 → resized to 512×512) | Output (512×512, 647s) |
-|:---:|:---:|
-| ![Kontext input](images/kontext/kontext-input.jpg) | ![Kontext output](images/kontext/kontext-output.png) |
+| Input (1200×1600 → resized to 512×512) | Output (512×512, 647s) | Output + ESRGAN 4× (2048×2048, +25s) |
+|:---:|:---:|:---:|
+| ![Kontext input](images/kontext/kontext-input.jpg) | ![Kontext output](images/kontext/kontext-output.png) | ![Kontext 4×](images/kontext/kontext-output-4x.png) |
+
+> The 4× upscaled version (right) is generated automatically by the ESRGAN auto-upscale pipeline — every generated/edited image gets a 2048×2048 version sent alongside the 512×512 original. Total overhead: ~25s with tile 192. See ESRGAN benchmarks below.
 
 #### SD3.5-medium benchmark details
 
@@ -1024,6 +1027,37 @@ sd-cli -M vid_gen \
 </p>
 
 > 17 frames @480×320, 50 steps, Q4_0 quantization, EUR scheduler, cfg-scale 6.0. Generated in **~38 minutes** on GFX1013 scalar Vulkan — no matrix/tensor cores. The BC-250 rendered every frame through pure ALU compute. Noisy but recognizable — a real video from a 1.3B parameter model on a $70 ex-telecom board.
+
+#### ESRGAN 4× upscale benchmarks
+
+All generated images are automatically upscaled with RealESRGAN_x4plus (64 MB model, 4× scaling). Runs immediately after generation while Ollama is still stopped — zero extra GPU-swap cost.
+
+**ESRGAN tile size benchmark (512² input → 2048² output):**
+
+| Tile Size | Time | Output | Notes |
+|:---------:|:----:|:------:|-------|
+| 128 (default) | **15s** | 2048×2048, 5.1 MB | Fastest, visible seams possible |
+| **192 (production)** | **25s** | 2048×2048, 5.1 MB | **Best quality/speed tradeoff** |
+| 256 | **41s** | 2048×2048, 5.1 MB | Smoothest seams, 2.7× slower |
+| 128 ×2 passes (16×!) | **4m 50s** | **8192×8192, 67 MB** | 512²→8192² in under 5 min |
+
+> Production uses tile 192: larger tiles mean fewer seam boundaries → cleaner upscale. The 16× mode (two ESRGAN passes) produces **67-megapixel images from 512² input** — available on-demand via `EXEC(upscale ...)` but not automatic (too large for Signal).
+
+![ESRGAN upscale benchmark](images/charts/esrgan-upscale-bench.png)
+
+#### Image/video pipeline timing
+
+End-to-end timing for all generation modes on BC-250:
+
+![SD pipeline timing](images/charts/sd-pipeline-timing.png)
+
+**Phase breakdown** — where the time goes in each pipeline:
+
+![SD pipeline breakdown](images/charts/sd-pipeline-breakdown.png)
+
+**FLUX.1-schnell resolution scaling** — time vs pixel count:
+
+![FLUX resolution scaling](images/charts/flux-resolution-scaling.png)
 
 ---
 
