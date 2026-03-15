@@ -644,7 +644,7 @@ When the LLM detects an image request, it emits `EXEC(/opt/stable-diffusion.cpp/
 
 Bot is offline during generation (~25–40s total including model reload).
 
-**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~5–7 min).
+**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~20 min @1024²).
 
 **Video generation:** Ask for a video/animation. Uses WAN 2.1 T2V 1.3B (~38 min for 17 frames @480×320).
 
@@ -670,7 +670,7 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
 | Image generation (FLUX.2-klein 512²) | ~20s |
-| Image editing (Kontext 512²) | ~5–7 min |
+| Image editing (Kontext 1024²) | ~20 min |
 | Video generation (WAN 2.1 480×320) | ~38 min |
 | ESRGAN 4× upscale | ~30s |
 | Cold start (model reload) | 30–60s |
