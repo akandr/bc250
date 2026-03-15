@@ -267,9 +267,9 @@ def chart_breakdown():
 
 def chart_resolution():
     """Line chart: FLUX.1-schnell time vs resolution."""
-    resolutions = ["512²", "768×512", "768²", "1024×576", "1024²"]
+    resolutions = ["512²", "768×512", "1024×576", "768²", "1024²"]
     pixels_k = [262, 393, 590, 590, 1049]  # in thousands
-    times = [56, 66, 91, 86, 146]
+    times = [56, 66, 86, 91, 146]
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -277,11 +277,22 @@ def chart_resolution():
             markersize=10, markeredgecolor='white', markeredgewidth=1.5,
             zorder=5)
 
+    # Custom offsets to avoid overlapping labels at same x (768² and 1024×576)
+    offsets = {
+        "512²":     (0, 18),
+        "768×512":  (0, 18),
+        "1024×576": (-70, -25),   # below-left
+        "768²":     (60, 18),     # above-right
+        "1024²":    (0, 18),
+    }
     for px, t, res in zip(pixels_k, times, resolutions):
+        ox, oy = offsets[res]
         ax.annotate(f"{res}\n{t}s", (px, t),
-                    textcoords="offset points", xytext=(0, 15),
+                    textcoords="offset points", xytext=(ox, oy),
                     ha='center', fontsize=9, fontweight='bold',
-                    color='#c9d1d9')
+                    color='#c9d1d9',
+                    arrowprops=dict(arrowstyle='-', color='#8b949e',
+                                    lw=0.8, alpha=0.5) if abs(ox) > 20 else None)
 
     # Trend line
     z = np.polyfit(pixels_k, times, 1)
