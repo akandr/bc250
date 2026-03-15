@@ -969,9 +969,11 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 | Chroma flash Q4_0 | 12B | 5.1 GB | ~8.4 GB | 4–8 | ★★★ | ✅ Tested — 85s @512², better quality |
 | FLUX.1-dev Q4_K_S | 12B | 6.8 GB | ~10 GB | 20 | ★★★★ | ✅ Tested — 279s @512², ❌768²+ |
 | SD-Turbo | 1.1B | ~2 GB | ~2.5 GB | 1–4 | ★ | ✅ Fast preview, 11s @512² |
-| SD3.5-medium Q4_0 | 2.5B | 1.7 GB | ~6 GB | 28 | ★★★ | ✅ Tested — 57s @512², needs clip_g+clip_l+T5 |
+| SD3.5-medium Q4_0 | 2.5B | 1.7 GB | ~6 GB | 28 | ★★★ | ✅ Tested — 49s @512², needs clip_g+clip_l+T5+F16 VAE² |
 
 > ¹ Total RAM includes diffusion model + text encoder(s) + VAE.
+>
+> ² SD3.5 ships with a BF16 VAE which produces garbage on GFX1013 (no BF16 Vulkan support). Convert to F16 first: `python3 convert_vae_bf16_to_f16.py input.safetensors output.safetensors`
 
 **Video generation — tested models:**
 
@@ -1610,7 +1612,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - [x] Test FLUX.2-klein-4B — **20s @512², 30s @768², 63s @1024². Replaced FLUX.1-schnell as default. Uses Qwen3-4B encoder, 40% less VRAM.**
 - [x] Test 768×768 resolution with FLUX.1-schnell — **91s with VAE tiling, 1024² = 146s**
 - [x] Test WAN 2.1 T2V 1.3B for short text-to-video clips — **WORKS! 17 frames @480×320 in ~38 min. First video generation on BC-250.**
-- [x] Test SD3.5-medium Q4_0 — **57s @512² (28 steps, SLG 2.5). Needs clip_g+clip_l+T5. Good quality, fast.**
+- [x] Test SD3.5-medium Q4_0 — **49s @512² (28 steps). Needs clip_g+clip_l+T5. BF16 VAE broken on GFX1013 — converted to F16, then works.**
 - [x] Add `--fa`, `--vae-tiling`, `--offload-to-cpu` to generation pipeline — done, smoke tested (37.7s vs ~48s)
 - [x] Update `generate-and-send-worker.sh` with new flags
 
