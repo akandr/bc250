@@ -281,8 +281,8 @@ def chart_resolution():
     offsets = {
         "512²":     (0, 18),
         "768×512":  (0, 18),
-        "1024×576": (-70, -25),   # below-left
-        "768²":     (60, 18),     # above-right
+        "1024×576": (-100, -40),  # well below-left
+        "768²":     (90, 30),     # well above-right
         "1024²":    (0, 18),
     }
     for px, t, res in zip(pixels_k, times, resolutions):

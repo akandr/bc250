@@ -1578,13 +1578,6 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Gen speed degrades with context fill | 27 tok/s empty → 13 tok/s at 30K tokens. Partial model offload at KV limit causes cliff drop. |
 | Ollama caps KV auto-size at ~40K (Q4_0) | `num_ctx` > 40960 accepted but silently truncated. Actual limit = VRAM ÷ per-token KV size. |
 
-### ✅ Tested Ideas — experiment results
-
-| Idea | Result | Details |
-|------|--------|---------|
-| **80K+ context on $100 hardware** | **Debunked — Ollama caps at ~40K.** | KV Q4_0 halves cache (3.8→1.1 GiB @24K) with zero speed loss (27.3 tok/s). But Ollama's scheduler auto-sizes KV to what fits: 9B weights (8.2 GiB) + max KV (1.8 GiB) = ~40K real ceiling. Requesting `num_ctx=128K` is accepted but silently truncated. Q8_0 spills to CPU at 80K (7 tok/s — unusable). Full data in §4.4. |
-| **ESRGAN upscale via Signal** | **Done — on-demand + auto-upscale.** | Every generated image is automatically 4× upscaled with RealESRGAN_x4plus before Ollama restarts (zero extra GPU-swap cost). User receives both 512² thumbnail and 2048² full-res via Signal. ~30s extra per generation. Also available on-demand via `EXEC(upscale ...)`. |
-
 ### 💡 Ideas — untested frontiers
 
 | Idea | What | Why it might work on BC-250 |
