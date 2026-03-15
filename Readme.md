@@ -1004,6 +1004,77 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 >   --sampling-method euler --offload-to-cpu --diffusion-fa -o output.png
 > ```
 
+#### SD3.5-medium benchmark details
+
+**Timing breakdown (512×512, 28 steps, seed 42):**
+
+| Phase | Time | Notes |
+|-------|:----:|-------|
+| CLIP + T5 encoding | 3.5s | clip_l + clip_g + t5-v1_1-xxl Q4_K_M |
+| Diffusion sampling | 43s | 28 steps × 1.5s/it (mmdit 2.1 GB on Vulkan) |
+| VAE decode | 2.3s | F16-converted VAE (94.6 MB) |
+| **Total** | **49s** | |
+
+**Model stack on disk:**
+
+| Component | File | Size |
+|-----------|------|:----:|
+| Diffusion | sd3.5_medium-q4_0.gguf | 1.7 GB |
+| CLIP-L | clip_l.safetensors (shared with FLUX) | 246 MB |
+| CLIP-G | clip_g.safetensors | 1.3 GB |
+| T5-XXL | t5-v1_1-xxl-encoder-Q4_K_M.gguf (shared with FLUX) | 2.9 GB |
+| VAE | sd3_vae_f16.safetensors (converted from BF16) | 160 MB |
+| **Total on disk** | | **~6.3 GB** |
+
+```bash
+# SD3.5-medium generation command:
+sd-cli --diffusion-model models/sd3/sd3.5_medium-q4_0.gguf \
+  --vae models/sd3/sd3_vae_f16.safetensors \
+  --clip_l models/flux/clip_l.safetensors \
+  --clip_g models/sd3/clip_g.safetensors \
+  --t5xxl models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf \
+  -p "prompt" --cfg-scale 4.5 --sampling-method euler --steps 28 \
+  -W 512 -H 512 --diffusion-fa --offload-to-cpu -o output.png
+```
+
+> **⚠ BF16 VAE gotcha:** The upstream SD3 VAE (`diffusion_pytorch_model.safetensors`) uses BF16 tensors. GFX1013 Vulkan has no BF16 support — the output is a solid blue/yellow rectangle. Fix: convert to F16 with `python3 convert_vae_bf16_to_f16.py input.safetensors output.safetensors` (script in `/tmp/`).
+
+#### WAN 2.1 T2V 1.3B benchmark details — first video generation on BC-250
+
+**Timing breakdown (480×320, 17 frames, 50 steps, seed 42):**
+
+| Phase | Time | Notes |
+|-------|:----:|-------|
+| umt5-xxl encoding | ~4s | 3.5 GB Q4_K_M text encoder |
+| Diffusion sampling | ~35 min | 17 frames × 50 steps. No matrix cores → pure scalar Vulkan |
+| VAE decode | ~30s | WAN VAE (243 MB), decodes all 17 frames |
+| **Total** | **~38 min** | |
+
+**Model stack on disk:**
+
+| Component | File | Size |
+|-----------|------|:----:|
+| Diffusion | Wan2.1-T2V-1.3B-Q4_0.gguf | 826 MB |
+| Text encoder | umt5-xxl-encoder-Q4_K_M.gguf | 3.5 GB |
+| VAE | wan_2.1_vae.safetensors | 243 MB |
+| **Total on disk** | | **~4.5 GB** |
+
+```bash
+# WAN 2.1 text-to-video generation:
+sd-cli -M vid_gen \
+  --diffusion-model models/wan/Wan2.1-T2V-1.3B-Q4_0.gguf \
+  --vae models/wan/wan_2.1_vae.safetensors \
+  --t5xxl models/wan/umt5-xxl-encoder-Q4_K_M.gguf \
+  -p "A cat walking across a sunny garden" \
+  --cfg-scale 6.0 --sampling-method euler \
+  -W 480 -H 320 --diffusion-fa --offload-to-cpu \
+  --video-frames 17 --flow-shift 3.0 -o output.mp4
+```
+
+> **Output format:** sd.cpp produces raw AVI (MJPEG) regardless of the `-o` extension. The 17-frame clip plays at 16 fps (~1 second). Quality is recognizable but noisy — expected at Q4_0 with scalar-only Vulkan compute.
+>
+> **Why so slow?** Each video frame is a full diffusion pass through the 1.3B model. With 17 frames × 50 steps × no matrix cores, every multiply is scalar. A GPU with tensor/matrix units (RDNA3+, Turing+) would be 5–10× faster.
+
 ### 6.3 Signal integration — synchronous pipeline
 
 SD and Ollama can't run simultaneously (shared 16 GB VRAM). queue-runner handles this synchronously — no worker scripts, no delays:
@@ -1593,7 +1664,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 - [x] Extended health monitoring — automated hourly via bc250-health-check.sh
 - [x] report.sh midnight-crossing fallback — uses yesterday's scan if today's missing
 - [x] Try FLUX at 768×768 — **works with VAE tiling (91s schnell, dev fails at 768+)**
-- [ ] Weekly career summary digest via Signal
+- [x] Weekly career summary digest via Signal — **career-digest.py runs Sundays, aggregates 7 days of scans, sends hot/warm matches + stats via Signal**
 - [ ] Migrate jobs.json away from ~/.openclaw/ path
 - [x] Evaluate zram — already effectively disabled (device exists but disksize=0, NVMe swap handles everything)
 
@@ -1628,8 +1699,8 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 **Image generation — pipeline improvements:**
 
 - [x] Add `--offload-to-cpu` to sd-cli command — done (queue-runner + worker script)
-- [ ] Implement video generation path in queue-runner (vid_gen mode, mp4 → Signal attachment)
-- [ ] Add ESRGAN upscale option in pipeline (512→1024 or 768→1536) using sd-cli `--upscale-model`
+- [x] Implement video generation path in queue-runner — **generate_and_send_video() with WAN 2.1 T2V, EXEC intercept, ~38min for 17 frames @480×320**
+- [x] Add ESRGAN upscale option in pipeline — **upscale_and_send() with sd-cli -M upscale, 4× via RealESRGAN_x4plus, EXEC intercept from Signal chat**
 
 **Power monitoring:**
 
