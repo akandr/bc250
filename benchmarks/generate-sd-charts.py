@@ -268,8 +268,7 @@ def chart_breakdown():
 def chart_resolution():
     """Line chart: FLUX.1-schnell time vs resolution."""
     resolutions = ["512²", "768×512", "1024×576", "768²", "1024²"]
-    # Nudge the two 590K points apart so labels don't collide
-    pixels_k = [262, 393, 545, 635, 1049]  # real: 590 & 590, display: 545 & 635
+    pixels_k = [262, 393, 590, 590, 1049]  # in thousands (real values)
     times = [56, 66, 86, 91, 146]
 
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -278,11 +277,24 @@ def chart_resolution():
             markersize=10, markeredgecolor='white', markeredgewidth=1.5,
             zorder=5)
 
-    # Every label directly above its point, no offsets needed
+    # Labels: above the dot by default.
+    # For the two points sharing x=590K, one goes above and one below.
+    label_cfg = {
+        "512²":     (0,  16),   # above
+        "768×512":  (0,  16),   # above
+        "1024×576": (0, -42),   # BELOW (2-line label height clearance)
+        "768²":     (0,  16),   # above
+        "1024²":    (0,  16),   # above
+    }
+    va_cfg = {
+        "1024×576": "top",      # text top aligns near the dot (text hangs down)
+    }
     for px, t, res in zip(pixels_k, times, resolutions):
+        ox, oy = label_cfg[res]
         ax.annotate(f"{res}\n{t}s", (px, t),
-                    textcoords="offset points", xytext=(0, 18),
-                    ha='center', fontsize=9, fontweight='bold',
+                    textcoords="offset points", xytext=(ox, oy),
+                    ha='center', va=va_cfg.get(res, 'bottom'),
+                    fontsize=9, fontweight='bold',
                     color='#c9d1d9')
 
     # Trend line
@@ -297,7 +309,7 @@ def chart_resolution():
                  "4 steps, Q4_K, --offload-to-cpu --fa, vae-tiling where needed",
                  fontsize=13, fontweight='bold', pad=15)
     ax.grid(alpha=0.3)
-    ax.set_ylim(30, 180)
+    ax.set_ylim(20, 185)
 
     plt.tight_layout()
     fig.savefig(f"{OUT_DIR}/flux-resolution-scaling.png", dpi=150,
