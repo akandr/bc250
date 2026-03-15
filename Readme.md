@@ -1017,6 +1017,14 @@ sd-cli -M vid_gen \
 >
 > **Why so slow?** Each video frame is a full diffusion pass through the 1.3B model. With 17 frames × 50 steps × no matrix cores, every multiply is scalar. A GPU with tensor/matrix units (RDNA3+, Turing+) would be 5–10× faster.
 
+**WAN 2.1 demo — "A cat walking across a sunny garden":**
+
+<p align="center">
+  <img src="images/wan-test.gif" alt="WAN 2.1 T2V — cat in garden" width="480">
+</p>
+
+> 17 frames @480×320, 50 steps, Q4_0 quantization, EUR scheduler, cfg-scale 6.0. Generated in **~38 minutes** on GFX1013 scalar Vulkan — no matrix/tensor cores. The BC-250 rendered every frame through pure ALU compute. Noisy but recognizable — a real video from a 1.3B parameter model on a $70 ex-telecom board.
+
 ---
 
 # `PART III` — Monitoring & Intelligence
