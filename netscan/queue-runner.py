@@ -128,7 +128,7 @@ SD_UPSCALE_TIMEOUT_S = 120
 
 # ─── Kontext Image Editing ──────────────────────────────────────────────────
 SD_KONTEXT_MODEL = f"{SD_FLUX_DIR}/flux1-kontext-dev-Q4_0.gguf"
-SD_KONTEXT_TIMEOUT_S = 2400         # Max 40 min for Kontext editing (~20 min typical @1024²)
+SD_KONTEXT_TIMEOUT_S = 3600         # Max 60 min for Kontext editing (~40 min typical @1024² with swap)
 SD_EDIT_SCRIPT_PREFIX = "/opt/stable-diffusion.cpp/edit-image"  # EXEC edit intercept
 SIGNAL_ATTACHMENTS_DIR = os.path.expanduser("~/.local/share/signal-cli/attachments")
 
@@ -1375,7 +1375,7 @@ def edit_and_send_image(source_path, prompt):
     log(f"  EDIT: Kontext edit requested: {prompt[:80]}")
     sd_status('EDIT: editing image with Kontext')
 
-    signal_reply(f"\u270f\ufe0f Editing your image with Kontext... ~20 min @1024². Instruction: {prompt[:200]}")
+    signal_reply(f"\u270f\ufe0f Editing your image with Kontext... ~40 min @1024². Instruction: {prompt[:200]}")
 
     # Stop Ollama to free VRAM
     log("  EDIT: Stopping Ollama...")
@@ -1445,13 +1445,18 @@ def edit_and_send_image(source_path, prompt):
             sd_watchdog_ping()
         else:
             proc.kill()
+            try:
+                proc.wait(timeout=10)
+            except Exception:
+                pass
             subprocess.run(["killall", "-9", "sd-cli"],
                            capture_output=True, timeout=5)
-            log("  EDIT: Generation timed out")
+            elapsed = int(time.time() - start_t)
+            log(f"  EDIT: Generation timed out after {elapsed}s")
             subprocess.run(["sudo", "systemctl", "start", "ollama"],
                            timeout=30, capture_output=True)
             wait_for_ollama()
-            return "Image editing timed out (10 min limit). Sorry!"
+            return f"Image editing timed out ({elapsed // 60} min). Sorry!"
     except Exception as e:
         log(f"  EDIT: sd-cli error: {e}")
         subprocess.run(["sudo", "systemctl", "start", "ollama"],

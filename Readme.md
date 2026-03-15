@@ -68,7 +68,7 @@ The AMD BC-250 is a custom APU originally designed for Samsung's blockchain/dist
 | **Vulkan total** | **16.5 GiB** after tuning |
 | **Storage** | 475 GB NVMe |
 | **OS** | Fedora 43, kernel 6.18.9, headless |
-| **TDP** | 220W board (between jobs: 55–60W measured, true idle w/o model: ~35W) |
+| **TDP** | 220W board (inference: 130–155W, between jobs: 55–60W, true idle w/o model: ~35W) |
 | **BIOS** | Community-patched UEFI (not Samsung stock) — [AMD BC-250 docs](https://elektricm.github.io/amd-bc250-docs/) |
 | **CPU governor** | `performance` (stock `schedutil` causes LLM latency spikes) |
 
@@ -644,7 +644,7 @@ When the LLM detects an image request, it emits `EXEC(/opt/stable-diffusion.cpp/
 
 Bot is offline during generation (~25–40s total including model reload).
 
-**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~20 min @1024²).
+**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~40 min @1024²).
 
 **Video generation:** Ask for a video/animation. Uses WAN 2.1 T2V 1.3B (~38 min for 17 frames @480×320).
 
@@ -670,7 +670,7 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
 | Image generation (FLUX.2-klein-9B 512²) | ~105s |
-| Image editing (Kontext 1024²) | ~20 min |
+| Image editing (Kontext 1024²) | ~40 min |
 | Video generation (WAN 2.1 480×320) | ~38 min |
 | ESRGAN 4× upscale | ~30s |
 | Cold start (model reload) | 30–60s |
@@ -911,7 +911,7 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 | Model | Params | GGUF Size | Total RAM¹ | Status |
 |-------|:------:|:---------:|:----------:|--------|
-| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | ✅ Tested — 316s @512², ~20 min @1024². Uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
+| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | ✅ Tested — 316s @512², ~40 min @1024² (swap pressure). Uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
 
 > Kontext is a dedicated image editing model by Black Forest Labs. It takes a reference image via `-r` and a text instruction to produce an edited version. Uses existing FLUX.1 encoders (T5-XXL, CLIP_L) and VAE (ae.safetensors) from `/opt/stable-diffusion.cpp/models/flux/`.
 > ```bash
@@ -1547,7 +1547,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 ---
 
-## 11. Known Limitations & TODO
+## 11. Known Limitations & Ideas
 
 ### ⚠ Limitations
 
@@ -1562,6 +1562,16 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Prefill rate degrades with context | 128 tok/s at 1.3K → 70 tok/s at 10K tokens (UMA bandwidth + attention scaling). |
 | Gen speed degrades with context fill | 27 tok/s empty → 13 tok/s at 30K tokens. Partial model offload at KV limit causes cliff drop. |
 | Ollama caps KV auto-size at ~40K (Q4_0) | `num_ctx` > 40960 accepted but silently truncated. Actual limit = VRAM ÷ per-token KV size. |
+
+### 💡 Ideas — untested frontiers
+
+| Idea | What | Why it might work on BC-250 |
+|------|------|----------------------------|
+| **80K+ context on $100 hardware** | KV Q4_0 + qwen3.5:9b → push context beyond 64K | §4.4 proved Q4_0 KV works on Vulkan (45 MiB/1K tokens). 9B weights = 6.5 GiB, leaving ~10 GiB for KV → ~220K tokens theoretical. Real limit is TTM fragmentation + attention O(n²) scaling, but 80K should be reachable. |
+| **Speculative decoding** | 3B draft model + 35B MoE verifier | qwen2.5:3b runs at 104 tok/s, MoE at 38 tok/s. Draft proposes N tokens, MoE verifies in one pass. Ollama supports `--draft-model`. Could push effective throughput above 50 tok/s if draft acceptance rate is >60%. MoE's sparse activation makes verification cheap. |
+| **Vision analysis via Signal** | Send photo → qwen3.5:9b describes/analyzes it (no sd-cli) | 9B model has native vision (multimodal). No GPU swap needed — just pass the image via Ollama's `/api/chat` with base64 image. Different from Kontext (edit) — this is understanding. "What's in this photo?", "Read this receipt", "Identify this plant." |
+| **Auto-upscale pipeline** | Every generated image automatically gets 4× ESRGAN | RealESRGAN_x4plus takes ~30s on BC-250. 512² → 2048², 768² → 3072². Send both versions via Signal — thumbnail for quick view, full-res for saving. Minimal extra time for dramatically better output. |
+| **Smart model routing** | Auto-switch between MoE and 9B based on task | If prompt >8K tokens or contains an image → use 9B (65K context, vision). Otherwise → MoE (faster, smarter). queue-runner already manages both models. Could count tokens before sending and route automatically. |
 
 ---
 
