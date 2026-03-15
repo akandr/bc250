@@ -188,7 +188,7 @@ Ollama allocates KV cache based on the model's declared context window. Without 
 | Feb 25 | **24576** | qwen3:14b | Sweet spot: ~27 tok/s, 26K was 10% slower, 28K+ deadlocked |
 | Mar 14 | **16384** | qwen3.5-35b-a3b MoE | MoE maxes at 16K (KV cache exceeds VRAM at 24K+). 9B fallback can go to 65K per-request. |
 
-> **Why 24K → 16K?** The 35B MoE's total weight (11 GB GGUF) is larger than qwen3:14b (9.3 GB). At 24K+ context the KV cache can't fit alongside the MoE weights. 16K is the maximum stable context for the MoE with all layers on GPU. See §4.4 for detailed KV cache scaling.
+> **Why 24K → 16K?** The 35B MoE's total weight (11 GB GGUF) is larger than qwen3:14b (9.3 GB). At 24K+ context the KV cache can't fit alongside the MoE weights. 16K is the maximum stable context for the MoE with all layers on GPU. See §4.3 for detailed KV cache scaling.
 
 ### 3.5 Swap — NVMe-backed safety net
 
@@ -301,13 +301,13 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 > ¹ **Why 27B dense fails:** The dense architecture requires all 27B parameters in every forward pass. Without matrix cores (GFX1013 has none), each token requires ~27B multiplications through general-purpose shader cores. Result: 0 tokens generated in 5 minutes. The 35B MoE with only 3B active params per token avoids this entirely — compute is ~9× less per token despite having more total knowledge stored.
 
-> **Prefill column:** Measured at ~400 tokens prompt size (warm model, FP16 KV). Prefill rate depends on prompt length — see §4.6 for detailed sweep. Smaller models (3B) saturate the GPU compute and achieve higher prefill. Larger models (14B) are memory-bandwidth-limited at ~128–137 tok/s. MoE and 9B land between at ~230 tok/s — the MoE benefits from only loading 3B active expert weights per token during prefill. Qwen3-30B-A3B and qwen3.5-27b not measured (deprecated/non-functional).
+> **Prefill column:** Measured at ~400 tokens prompt size (warm model, FP16 KV). Prefill rate depends on prompt length — see §4.5 for detailed sweep. Smaller models (3B) saturate the GPU compute and achieve higher prefill. Larger models (14B) are memory-bandwidth-limited at ~128–137 tok/s. MoE and 9B land between at ~230 tok/s — the MoE benefits from only loading 3B active expert weights per token during prefill. Qwen3-30B-A3B and qwen3.5-27b not measured (deprecated/non-functional).
 
 > **March 14 — Qwen3.5 era:** Ollama upgraded 0.16.1→0.18.0 (required for Qwen3.5). The **qwen3.5-35b-a3b MoE** (35B total, 3B active per token) at IQ2_M quantization is now the smartest model on BC-250: 38 tok/s, 233 tok/s prefill, 16K context, multimodal (vision+tools+thinking). The **qwen3.5:9b** provides 65K context with vision when longer documents are needed. Both are Qwen3.5 architecture — dramatically newer than Qwen3.
 
 > **⚠️ IQ2_M quality tradeoff:** The extreme quantization (~2.5 bits per parameter) is a significant quality compromise — perplexity increases and complex mathematical reasoning degrades compared to higher-precision quantizations. For everyday tasks (summarization, JSON extraction, tool use, chat) the quality is adequate. For tasks requiring precise reasoning, the `qwen3.5:9b` fallback (Q4_K_M, ~4.5 bits) provides substantially better accuracy. This is an informed tradeoff: more knowledge at lower precision vs less knowledge at higher precision.
 
-> **Prefill latency (MoE):** DDR4-3200 bandwidth (~51 GB/s) is the primary bottleneck for prompt processing. The MoE model prefills at 53–233 tok/s depending on prompt size (see §4.6): tiny prompts are overhead-dominated (53 tok/s @17 tokens), medium prompts peak at ~230 tok/s, and longer prompts degrade due to O(n²) attention scaling. A 3K-token system prompt takes ~15–20 seconds on cold start — still dramatically slower than dedicated GPUs (500+ tok/s). In practice, Ollama caches the model in RAM (`OLLAMA_KEEP_ALIVE=30m`), so subsequent requests within the window respond in <2 seconds. This is a genuine limitation of UMA architecture, not a hidden deficiency.
+> **Prefill latency (MoE):** DDR4-3200 bandwidth (~51 GB/s) is the primary bottleneck for prompt processing. The MoE model prefills at 53–233 tok/s depending on prompt size (see §4.5): tiny prompts are overhead-dominated (53 tok/s @17 tokens), medium prompts peak at ~230 tok/s, and longer prompts degrade due to O(n²) attention scaling. A 3K-token system prompt takes ~15–20 seconds on cold start — still dramatically slower than dedicated GPUs (500+ tok/s). In practice, Ollama caches the model in RAM (`OLLAMA_KEEP_ALIVE=30m`), so subsequent requests within the window respond in <2 seconds. This is a genuine limitation of UMA architecture, not a hidden deficiency.
 
 ### 4.2 Benchmark visualization
 
@@ -361,7 +361,7 @@ qwen3.5-27b iq2m  ❌   —    —    —    —    —    —
 
 > ✅ = works 100% GPU | ❌ = timeout/deadlock | — = not tested (too large)
 
-**Key insight:** Speed is constant across context sizes with FP16 KV (speed only degrades when the context is actually *filled* — see §4.5). The context ceiling is purely a memory constraint: weights + KV cache + compute graph must fit in 16.5 GiB.
+**Key insight:** Speed is constant across context sizes with FP16 KV (speed only degrades when the context is actually *filled* — see §4.4). The context ceiling is purely a memory constraint: weights + KV cache + compute graph must fit in 16.5 GiB.
 
 **Graphical benchmarks:**
 
@@ -371,97 +371,7 @@ qwen3.5-27b iq2m  ❌   —    —    —    —    —    —
 
 ![Generation vs Prefill — all models side by side](images/charts/gen-vs-prefill-all.png)
 
-### 4.3 Model testing journey
-
-The path to running 14B models on this hardware was non-trivial. Here's the chronological evolution, documented through git history and trial-and-error:
-
-```
-  Feb 17 ─── Initial setup: Ollama + Vulkan on BC-250
-  │          Only 7–8B models worked. 14B loaded but hung during inference.
-  │          → Committed: dfc9179 "BC-250 setup: Ollama+Vulkan, OpenClaw+Signal"
-  │
-  Feb 18 ─── THE BREAKTHROUGH: TTM pages_limit discovery
-  │          Found kernel TTM memory manager secretly caps GPU allocs at 50% RAM.
-  │          Fix: ttm.pages_limit=3145728 (12 GiB) → 14B models compute!
-  │          → Committed: bbe052f "unlock 14B models via TTM fix"
-  │          Results: qwen3-14b-abl-nothink 27.5 tok/s, mistral-nemo:12b 34.4 tok/s
-  │
-  Feb 18 ─── Image generation: FLUX.1-schnell via sd.cpp + Vulkan
-  │          512×512 in 48s, 4 steps. GFX1013 bug: hangs after write → poll+kill.
-  │          → Committed: 339a936 "FLUX.1-schnell image gen"
-  │
-  Feb 22 ─── Single model decision: qwen3-abliterated:14b only
-  │          Eliminated fallback chains (caused timeout doom loops).
-  │          → Committed: c4a2599 "Single model, no fallbacks"
-  │
-  Feb 25 ─── Context window experiment: 16K → 24K
-  │          Enabled flash attention. KV cache 3.8 GB, weights 8 GB = 12.3 GB.
-  │          → Committed: 4c01574 "enable flash attention, bump context 16384→24576"
-  │
-  Feb 26 ─── REVERT: 24K context causes deadlock ❌
-  │          12.3 GB total exceeded headroom. Weights spilled to CPU (417 MB),
-  │          Vulkan inference hung. 140 consecutive HTTP 500 errors over 8 hours.
-  │          → Committed: 4b6836f "revert num_ctx 24576→16384"
-  │
-  Feb 26 ─── Conservative: drop to 12K context
-  │          Saves 640 MiB KV cache. Extra safety margin.
-  │          → Committed: d85a823 "num_ctx 16384→12288"
-  │
-  Mar 5 ──── v7: Remove OpenClaw gateway, free 700 MB RAM
-  │          Bumped GTT 12→14 GiB, TTM 3M→4M pages. Context back to 16K.
-  │          → Committed: 4f41926 "v7: Replace OpenClaw with standalone Signal"
-  │
-  Mar 7 ──── Tested phi4:14b, Qwen3-30B-A3B (Q2_K), seed-coder
-  │          phi4: 25 tok/s, good reasoning but slower than qwen3.
-  │          30B MoE: fits at Q2_K (11 GB) but ~12 tok/s, heavy quality loss.
-  │          seed-coder: decent for code, 52 tok/s, but not general-purpose.
-  │          Decision: keep qwen3:14b as primary. ✅
-  │
-  Mar 10 ─── Context window re-test: 16K → 24K ✅
-  │          v7 freed 700 MB + 16 GB GTT = enough headroom for 24K.
-  │          Tested 16K–32K in 2K steps. 24K: full speed (26.7 t/s), 1.5 GB free.
-  │          26K: 10% slower. 28K+: deadlocks. Production bumped to 24K.
-  │
-  Mar 14 ─── COMPREHENSIVE BENCHMARK: 14 models × 7 context sizes
-             GTT migration (14→16 GiB) + Vulkan 14.0→16.5 GiB unlocked dramatically
-             higher context ceilings. Full automated benchmark of all models.
-             KEY FINDINGS:
-             • gemma2:9b: now 100% GPU at 38 tok/s (was 91% spill, 26 tok/s)
-             • phi4:14b: 29 tok/s at 40K context — best 14B for long context
-             • 30B MoE: actually 61 tok/s (not 12) at 16K — MoE sparse activation
-             • 7-8B models: 64K context on all qwen variants
-             • FLUX.1-schnell: 56s @512², 91s @768², 146s @1024² (with tiling)
-             • FLUX.1-dev: 279s @512² but fails at 768² (guidance model too large)
-             • SD-Turbo: 11s @512², 21s @768² (fast but low quality)
-             • sd-cli bug: must use --diffusion-model not -m for FLUX GGUF files
-  │
-  Mar 14 ─── QWEN3.5 ERA: smartest model found ★
-             Upgraded Ollama 0.16.1→0.18.0 (required for Qwen3.5).
-             Tested 4 Qwen3.5 variants:
-             ✅ qwen3.5:9b: 32 tok/s, 65K context, multimodal (vision+tools+thinking)
-             ✅ qwen3.5-35b-a3b-iq2m (MoE): 38 tok/s, 16K ctx — SMARTEST MODEL
-                35B total params, only 3B active per token. MoE wins on GFX1013
-                because no matrix cores means fewer active params = faster inference.
-             ❌ qwen3.5-27b-iq2m (dense): 0 tok/s — completely non-functional
-                27B dense params × no matrix cores = 0 tokens in 5 minutes
-             Switched production from qwen3:14b (27 tok/s, 24K) to dual-model:
-                Primary: 35B-A3B MoE (38 tok/s, 16K) — intelligence king
-                Fallback: qwen3.5:9b (32 tok/s, 65K) — when context > 16K needed
-  │
-  Mar 14 ─── FLUX.2-klein-4B: fastest image gen ever ★
-             Downloaded FLUX.2-klein-4B (2.3 GB diffusion + 2.4 GB Qwen3-4B encoder
-             + 321 MB FLUX.2 VAE). Results vs FLUX.1-schnell at same prompt:
-             512×512: 20s vs 30s (1.5× faster, 40% less VRAM!)
-             768×768: 30s vs 91s (3× faster!)
-             1024×1024: 63s (never worked with schnell at all!)
-         ─── FLUX.2-klein-9B: quality upgrade ★
-             Upgraded to 9B (5.3 GB diffusion + 4.7 GB Qwen3-8B encoder).
-             Quality shootout vs 4B/schnell/Chroma — 9B wins on detail.
-             104s @512², 129s @768², 11.8 GB VRAM — stresses GPU properly.
-             Set as new default for all Signal image generation.
-```
-
-### 4.4 Context window experiments
+### 4.3 Context window experiments
 
 The context window directly controls KV cache size, and on 16 GB unified memory, every megabyte counts. After v7 (OpenClaw removal freed ~700 MB, GTT bumped to 14 GB), we re-tested all context sizes systematically:
 
@@ -487,7 +397,7 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 
 > **History:** The original 24K experiment (Feb 25) deadlocked because OpenClaw gateway consumed ~700 MB. After v7 removed OpenClaw and bumped GTT to 14 GB (Mar 5), 24K became stable. Flash attention (`OLLAMA_FLASH_ATTENTION=1`) is essential — without it, 24K would not fit.
 
-### 4.5 KV cache quantization — breaking the context ceiling
+### 4.4 KV cache quantization — breaking the context ceiling
 
 **UPDATE (March 2026):** KV cache quantization **WORKS on Vulkan**. Our README previously stated it was a no-op — that was wrong. Tested on Ollama 0.16.1 + RADV Mesa 25.3.4:
 
@@ -526,7 +436,7 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 >
 > **Current production:** FP16 KV (Ollama default). Context capped at 16K for MoE via `OLLAMA_CONTEXT_LENGTH=16384`.
 
-### 4.6 Prefill (prompt evaluation) benchmarks
+### 4.5 Prefill (prompt evaluation) benchmarks
 
 On UMA, both prefill and generation share memory bandwidth (~51 GB/s DDR4-3200). Prefill is the time the model spends "reading" the prompt before generating the first token.
 
