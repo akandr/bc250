@@ -1549,6 +1549,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Idea | Result | Details |
 |------|--------|---------|
 | **80K+ context on $100 hardware** | **Debunked — Ollama caps at ~40K.** | KV Q4_0 halves cache (3.8→1.1 GiB @24K) with zero speed loss (27.3 tok/s). But Ollama's scheduler auto-sizes KV to what fits: 9B weights (8.2 GiB) + max KV (1.8 GiB) = ~40K real ceiling. Requesting `num_ctx=128K` is accepted but silently truncated. Q8_0 spills to CPU at 80K (7 tok/s — unusable). Full data in §4.4. |
+| **ESRGAN upscale via Signal** | **Done — on-demand upscale works.** | `EXEC(upscale /path/to/image)` → sd-cli 4× RealESRGAN_x4plus → sends upscaled image via Signal. ~30s for 512²→2048². Deployed in queue-runner, GPU-swap managed (stop Ollama → upscale → restart). |
 
 ### 💡 Ideas — untested frontiers
 
@@ -1556,7 +1557,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 |------|------|----------------------------|
 | **Speculative decoding** | 3B draft model + 35B MoE verifier | qwen2.5:3b runs at 104 tok/s, MoE at 38 tok/s. Draft proposes N tokens, MoE verifies in one pass. Ollama supports `--draft-model`. Could push effective throughput above 50 tok/s if draft acceptance rate is >60%. MoE's sparse activation makes verification cheap. |
 | **Vision analysis via Signal** | Send photo → qwen3.5:9b describes/analyzes it (no sd-cli) | 9B model has native vision (multimodal). No GPU swap needed — just pass the image via Ollama's `/api/chat` with base64 image. Different from Kontext (edit) — this is understanding. "What's in this photo?", "Read this receipt", "Identify this plant." |
-| **Auto-upscale pipeline** | Every generated image automatically gets 4× ESRGAN | RealESRGAN_x4plus takes ~30s on BC-250. 512² → 2048², 768² → 3072². Send both versions via Signal — thumbnail for quick view, full-res for saving. Minimal extra time for dramatically better output. |
+| **Auto-upscale pipeline** | Automatically ESRGAN every generated image | On-demand ESRGAN already works (see Tested above). This would chain it after every `generate_and_send_image()` — send both 512² thumbnail and 2048² full-res via Signal. ~30s extra per image. |
 | **Smart model routing** | Auto-switch between MoE and 9B based on task | If prompt >8K tokens or contains an image → use 9B (65K context, vision). Otherwise → MoE (faster, smarter). queue-runner already manages both models. Could count tokens before sending and route automatically. |
 
 ---
