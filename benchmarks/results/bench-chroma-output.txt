@@ -1,0 +1,16 @@
+--- Chroma flash tests ---
+  chroma-512-s8: 130s
+  chroma-512-s4: 85s
+  chroma-768-s8: 240s
+  schnell-512-s4: 116s
+
+All tests complete.
+TEST: chroma-512-s8
+TIME: 130s
+TEST: chroma-512-s4
+TIME: 85s
+TEST: chroma-768-s8
+TIME: 240s
+TEST: schnell-512-s4
+TIME: 116s
+DONE: sob, 14 mar 2026, 11:50:48 CET

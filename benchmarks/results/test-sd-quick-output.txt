@@ -1,0 +1,17 @@
++ cd /opt/stable-diffusion.cpp
++ build/bin/sd-cli -m models/flux/flux1-schnell-q4_k.gguf --vae models/flux/ae.safetensors --clip_l models/flux/clip_l.safetensors --t5xxl models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf --cfg-scale 1.0 --sampling-method euler --clip-on-cpu -p 'a cat' -W 512 -H 512 --steps 4 --seed 42 -o /tmp/test-sd.png
++ tail -40
+[INFO ] stable-diffusion.cpp:202  - Vulkan: Using device 0
+[INFO ] stable-diffusion.cpp:260  - loading model from 'models/flux/flux1-schnell-q4_k.gguf'
+[INFO ] model.cpp:366  - load models/flux/flux1-schnell-q4_k.gguf using gguf format
+[INFO ] stable-diffusion.cpp:283  - loading clip_l from 'models/flux/clip_l.safetensors'
+[INFO ] model.cpp:369  - load models/flux/clip_l.safetensors using safetensors format
+[INFO ] stable-diffusion.cpp:307  - loading t5xxl from 'models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] model.cpp:366  - load models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf using gguf format
+[INFO ] stable-diffusion.cpp:328  - loading vae from 'models/flux/ae.safetensors'
+[INFO ] model.cpp:369  - load models/flux/ae.safetensors using safetensors format
+[ERROR] stable-diffusion.cpp:339  - get sd version from file failed: 'models/flux/flux1-schnell-q4_k.gguf'
+[INFO ] main.cpp:709  - new_sd_ctx_t failed
++ echo 'EXIT: 0'
+EXIT: 0
++ ls -la /tmp/test-sd.png

@@ -1,0 +1,202 @@
+======================================================================
+EXTREME CONTEXT LIMIT TEST — Finding the ceiling
+======================================================================
+Model: qwen3:14b
+Date: 2026-03-13 23:20:32
+
+======================================================================
+PHASE 1: Q4_0 KV Cache — Finding the ceiling
+  Previous: 48K confirmed at 27.3 tok/s with 1.1 GiB KV
+  Theory: ~130K max before OOM
+======================================================================
+
+──────────────────────────────────────────────────
+  Q4_0 @ 48K (num_ctx=49152)
+──────────────────────────────────────────────────
+
+  Testing q4_0 @ 48K...
+  q4_0 @ 48K:
+    Prompt: 22 tok in 0.38s = 57.9 tok/s
+    Gen:    50 tok in 1.84s = 27.2 tok/s
+    Load: 120.7s  Total: 123.0s  Wall: 123.0s
+    Response: ...
+    log: -03-13T23:22:30.701+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.8 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1612343]: time=2026-03-13T23:22:31.952+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.8 GiB"
+    log: -03-13T23:22:45.811+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.7 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+
+──────────────────────────────────────────────────
+  Q4_0 @ 64K (num_ctx=65536)
+──────────────────────────────────────────────────
+
+  Testing q4_0 @ 64K...
+  q4_0 @ 64K:
+    Prompt: 22 tok in 0.39s = 57.0 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 113.0s  Total: 115.3s  Wall: 115.3s
+    Response: ...
+    log: ollama[1612343]: time=2026-03-13T23:22:46.731+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="720.0 MiB"
+    log: -03-13T23:24:28.389+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.7 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1612343]: time=2026-03-13T23:24:29.665+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.8 GiB"
+
+──────────────────────────────────────────────────
+  Q4_0 @ 80K (num_ctx=81920)
+──────────────────────────────────────────────────
+
+  Testing q4_0 @ 80K...
+  q4_0 @ 80K:
+    Prompt: 22 tok in 0.38s = 58.5 tok/s
+    Gen:    50 tok in 1.84s = 27.2 tok/s
+    Load: 113.7s  Total: 116.0s  Wall: 116.0s
+    Response: ...
+    log: ollama[1612343]: time=2026-03-13T23:24:44.472+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="720.0 MiB"
+    log: -03-13T23:26:26.459+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.8 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1612343]: time=2026-03-13T23:26:27.749+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.8 GiB"
+
+──────────────────────────────────────────────────
+  Q4_0 @ 96K (num_ctx=98304)
+──────────────────────────────────────────────────
+
+  Testing q4_0 @ 96K...
+  q4_0 @ 96K:
+    Prompt: 22 tok in 0.36s = 60.4 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 97.9s  Total: 100.2s  Wall: 100.2s
+    Response: ...
+    log: ollama[1612343]: time=2026-03-13T23:26:42.522+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="720.0 MiB"
+    log: -03-13T23:28:08.824+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.8 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1612343]: time=2026-03-13T23:28:10.043+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.8 GiB"
+
+──────────────────────────────────────────────────
+  Q4_0 @ 112K (num_ctx=114688)
+──────────────────────────────────────────────────
+
+  Testing q4_0 @ 112K...
+  q4_0 @ 112K:
+    Prompt: 22 tok in 0.38s = 58.6 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 111.3s  Total: 113.6s  Wall: 113.6s
+    Response: ...
+    log: ollama[1612343]: time=2026-03-13T23:28:24.829+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="720.0 MiB"
+    log: -03-13T23:30:04.432+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.8 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1612343]: time=2026-03-13T23:30:05.743+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.8 GiB"
+
+──────────────────────────────────────────────────
+  Q4_0 @ 128K (num_ctx=131072)
+──────────────────────────────────────────────────
+
+  Testing q4_0 @ 128K...
+  q4_0 @ 128K:
+    Prompt: 22 tok in 0.37s = 60.2 tok/s
+    Gen:    50 tok in 1.83s = 27.4 tok/s
+    Load: 118.0s  Total: 120.3s  Wall: 120.3s
+    Response: ...
+    log: -03-13T23:32:06.842+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.7 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1612343]: time=2026-03-13T23:32:08.086+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.8 GiB"
+
+======================================================================
+PHASE 2: Q8_0 KV Cache — Finding the ceiling
+  Previous: 48K confirmed at 27.2 tok/s with 2.0 GiB KV
+  Theory: ~72K max before OOM
+======================================================================
+
+──────────────────────────────────────────────────
+  Q8_0 @ 48K (num_ctx=49152)
+──────────────────────────────────────────────────
+
+  Testing q8_0 @ 48K...
+  q8_0 @ 48K:
+    Prompt: 22 tok in 0.37s = 59.4 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 116.8s  Total: 119.1s  Wall: 119.1s
+    Response: ...
+    log: 0 ollama[1614438]: time=2026-03-13T23:32:27.245+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.3 GiB"
+    log: -03-13T23:34:12.772+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.7 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1614438]: time=2026-03-13T23:34:14.412+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="3.3 GiB"
+
+──────────────────────────────────────────────────
+  Q8_0 @ 64K (num_ctx=65536)
+──────────────────────────────────────────────────
+
+  Testing q8_0 @ 64K...
+  q8_0 @ 64K:
+    Prompt: 22 tok in 0.38s = 58.0 tok/s
+    Gen:    50 tok in 1.84s = 27.2 tok/s
+    Load: 268.2s  Total: 270.6s  Wall: 270.6s
+    Response: ...
+    log: -03-13T23:38:46.064+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.7 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1614438]: time=2026-03-13T23:38:47.575+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="3.3 GiB"
+    log: -03-13T23:39:01.248+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.6 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+
+──────────────────────────────────────────────────
+  Q8_0 @ 80K (num_ctx=81920)
+──────────────────────────────────────────────────
+
+  Testing q8_0 @ 80K...
+  q8_0 @ 80K:
+    Prompt: 22 tok in 1.77s = 12.4 tok/s
+    Gen:    50 tok in 7.12s = 7.0 tok/s
+    Load: 54.3s  Total: 63.3s  Wall: 63.3s
+    Response: ...
+    log: 6-03-13T23:39:44.967+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="4.7 GiB" free_swap="15.1 GiB"
+    log: mory" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="4.5 GiB" free="5.0 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1614438]: time=2026-03-13T23:39:46.621+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.2 GiB"
+    log: bc250 ollama[1614438]: time=2026-03-13T23:39:46.621+01:00 level=INFO source=device.go:256 msg="kv cache" device=CPU size="2.1 GiB"
+
+──────────────────────────────────────────────────
+  Q8_0 @ 96K (num_ctx=98304)
+──────────────────────────────────────────────────
+
+  Testing q8_0 @ 96K...
+  q8_0 @ 96K:
+    Prompt: 22 tok in 0.36s = 60.8 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 123.5s  Total: 125.8s  Wall: 125.8s
+    Response: ...
+    log: -03-13T23:41:59.819+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.8 GiB" free_swap="15.1 GiB"
+    log: ry" id=00000000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: 0 ollama[1614438]: time=2026-03-13T23:42:01.414+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="3.3 GiB"
+
+======================================================================
+PHASE 3: Stress test — Fill largest working Q4_0 context with real data
+======================================================================
+
+  Stress testing Q4_0 @ 128K with ~96K tokens of prompt
+  Generated prompt (~98304 target tokens)...
+
+  Testing q4_0 @ 128K...
+    FAILED q4_0 @ 128K: timed out
+
+  ✗ Stress test FAILED at 128K
+
+======================================================================
+CLEANUP: Restoring FP16 KV cache (production default)
+======================================================================
+  Done. Ollama restored to FP16 KV cache.
+
+======================================================================
+SUMMARY — Extreme Context Test Results
+======================================================================
+KV Type      Context    Gen tok/s    Prefill tok/s   Load (s)   Status
+──────────────────────────────────────────────────────────────────────
+q4_0         48K        27.2         57.9            120.7      OK
+q4_0         64K        27.3         57.0            113.0      OK
+q4_0         80K        27.2         58.5            113.7      OK
+q4_0         96K        27.3         60.4            97.9       OK
+q4_0         112K       27.3         58.6            111.3      OK
+q4_0         128K       27.4         60.2            118.0      OK
+q8_0         48K        27.3         59.4            116.8      OK
+q8_0         64K        27.2         58.0            268.2      OK
+q8_0         80K        7.0          12.4            54.3       OK
+q8_0         96K        27.3         60.8            123.5      OK
+
+Done!

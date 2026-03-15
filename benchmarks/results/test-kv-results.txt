@@ -1,0 +1,89 @@
+======================================================================
+EXPERIMENT 1: KV Cache Quantization Test
+======================================================================
+
+Checking Ollama environment...
+  Ollama env: Environment="PATH=/home/\$USER/.local/bin:/home/\$USER/bin:/usr/local/bin:/usr/bin" OLLAMA_KEEP_ALIVE=30m OLLAMA_MAX_LOADED_MODELS=1 OLLAMA_VULKAN=1 OLLAMA_FLASH_ATTENTION=1 OLLAMA_GPU_OVERHEAD=0 OLLA
+
+[1a] Baseline: FP16 KV cache, 24K context
+  FP16 @ 24K:
+    Prompt: 22 tok in 0.38s = 57.6 tok/s
+    Gen:    50 tok in 1.84s = 27.2 tok/s
+    Load: 67.8s  Total: 70.1s  Wall: 70.1s
+    Response: ...
+
+
+[1b] Testing KV cache type: q8_0
+  Setting OLLAMA_KV_CACHE_TYPE=q8_0 and restarting Ollama...
+  Testing q8_0 @ 24K context...
+  q8_0 @ 24K:
+    Prompt: 22 tok in 0.37s = 58.9 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 119.1s  Total: 121.4s  Wall: 121.4s
+    Response: ...
+    Delta vs FP16: +0.1 tok/s (+0.3%)
+    log: [ID:00000000-0100-0000-0000-000000000000 Layers:41(0..40)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+    log: [ID:00000000-0100-0000-0000-000000000000 Layers:41(0..40)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+    log: [ID:00000000-0100-0000-0000-000000000000 Layers:41(0..40)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+    log: 604214]: time=2026-03-13T22:22:44.956+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="2.0 GiB"
+
+  Testing q8_0 @ 32K context...
+  q8_0 @ 32K:
+    Prompt: 22 tok in 0.37s = 59.6 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 145.2s  Total: 147.9s  Wall: 147.9s
+    Response: ...
+
+  Testing q8_0 @ 48K context...
+  q8_0 @ 48K:
+    Prompt: 22 tok in 0.37s = 59.9 tok/s
+    Gen:    50 tok in 1.84s = 27.2 tok/s
+    Load: 118.2s  Total: 120.6s  Wall: 120.6s
+    Response: ...
+
+
+[1b] Testing KV cache type: q4_0
+  Setting OLLAMA_KV_CACHE_TYPE=q4_0 and restarting Ollama...
+  Testing q4_0 @ 24K context...
+  q4_0 @ 24K:
+    Prompt: 22 tok in 0.37s = 58.7 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 101.3s  Total: 103.7s  Wall: 103.7s
+    Response: ...
+    Delta vs FP16: +0.1 tok/s (+0.3%)
+    log: 605285]: time=2026-03-13T22:29:02.967+01:00 level=INFO source=device.go:251 msg="kv cache" device=Vulkan0 size="1.1 GiB"
+    log: 29:16.842+01:00 level=INFO source=sched.go:463 msg="system memory" total="14.8 GiB" free="13.7 GiB" free_swap="15.1 GiB"
+    log: 00000-0100-0000-0000-000000000000 library=Vulkan available="14.0 GiB" free="14.5 GiB" minimum="457.0 MiB" overhead="0 B"
+    log: [ID:00000000-0100-0000-0000-000000000000 Layers:41(0..40)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+    log: [ID:00000000-0100-0000-0000-000000000000 Layers:41(0..40)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+
+  Testing q4_0 @ 32K context...
+  q4_0 @ 32K:
+    Prompt: 22 tok in 0.37s = 59.7 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 126.2s  Total: 128.6s  Wall: 128.6s
+    Response: ...
+
+  Testing q4_0 @ 48K context...
+  q4_0 @ 48K:
+    Prompt: 22 tok in 0.37s = 59.4 tok/s
+    Gen:    50 tok in 1.83s = 27.3 tok/s
+    Load: 107.8s  Total: 110.1s  Wall: 110.1s
+    Response: ...
+
+[1c] Restoring FP16 KV cache (removing OLLAMA_KV_CACHE_TYPE)...
+
+======================================================================
+EXPERIMENT 2: Prefill Rate / TTFT Measurement
+======================================================================
+
+     Label | Target | Actual |    Prefill |     TTFT |      Gen |    Total
+--------------------------------------------------------------------------------
+      tiny |    100 |     86 |     88.0 t/s | 136.17s |   27.2 t/s |  138.1s
+     short |    500 |    353 |     67.2 t/s |   5.41s |   27.2 t/s |  182.5s
+    medium |   2000 |   1351 |    128.0 t/s | 154.39s |   26.1 t/s |  156.4s
+      long |   5000 |   3354 |    113.2 t/s | 163.76s |   24.6 t/s |  166.0s
+    xlarge |  10000 |   6686 |     88.1 t/s | 218.42s |   22.5 t/s |  220.8s
+   massive |  15000 |  10014 |     70.3 t/s | 274.05s |   20.7 t/s |  276.6s
+
+Done! All experiments complete.

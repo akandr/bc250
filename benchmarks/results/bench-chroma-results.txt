@@ -1,0 +1,712 @@
+Chroma vs FLUX.1-schnell Benchmark — sob, 14 mar 2026, 11:41:09 CET
+==========================================
+
+=== CHROMA FLASH ===
+
+TEST: chroma-512-s8
+[DEBUG] main.cpp:515  - version: stable-diffusion.cpp version master-525-d6dd6d7, commit d6dd6d7
+[DEBUG] main.cpp:516  - System Info: 
+    SSE3 = 1 |     AVX = 1 |     AVX2 = 1 |     AVX512 = 0 |     AVX512_VBMI = 0 |     AVX512_VNNI = 0 |     FMA = 1 |     NEON = 0 |     ARM_FMA = 0 |     F16C = 1 |     FP16_VA = 0 |     WASM_SIMD = 0 |     VSX = 0 | 
+[DEBUG] main.cpp:517  - SDCliParams {
+  mode: img_gen,
+  output_path: "/opt/netscan/tmp/bench-chroma-images/chroma-512-s8.png",
+  verbose: true,
+  color: false,
+  canny_preprocess: false,
+  convert_name: false,
+  preview_method: none,
+  preview_interval: 1,
+  preview_path: "preview.png",
+  preview_fps: 16,
+  taesd_preview: false,
+  preview_noisy: false
+}
+[DEBUG] main.cpp:518  - SDContextParams {
+  n_threads: 6,
+  model_path: "",
+  clip_l_path: "",
+  clip_g_path: "",
+  clip_vision_path: "",
+  t5xxl_path: "/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+  llm_path: "",
+  llm_vision_path: "",
+  diffusion_model_path: "/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf",
+  high_noise_diffusion_model_path: "",
+  vae_path: "/opt/stable-diffusion.cpp/models/flux/ae.safetensors",
+  taesd_path: "",
+  esrgan_path: "",
+  control_net_path: "",
+  embedding_dir: "",
+  embeddings: {
+  }
+  wtype: NONE,
+  tensor_type_rules: "",
+  lora_model_dir: ".",
+  photo_maker_path: "",
+  rng_type: cuda,
+  sampler_rng_type: NONE,
+  offload_params_to_cpu: true,
+  enable_mmap: false,
+  control_net_cpu: false,
+  clip_on_cpu: true,
+  vae_on_cpu: false,
+  flash_attn: false,
+  diffusion_flash_attn: true,
+  diffusion_conv_direct: false,
+  vae_conv_direct: false,
+  circular: false,
+  circular_x: false,
+  circular_y: false,
+  chroma_use_dit_mask: false,
+  qwen_image_zero_cond_t: false,
+  chroma_use_t5_mask: false,
+  chroma_t5_mask_pad: 1,
+  prediction: NONE,
+  lora_apply_mode: auto,
+  vae_tiling_params: { 1, 0, 0, 0.5, 0, 0 },
+  force_sdxl_vae_conv_scale: false
+}
+[DEBUG] main.cpp:519  - SDGenerationParams {
+  loras: "{
+  }",
+  high_noise_loras: "{
+  }",
+  prompt: "a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed",
+  negative_prompt: "",
+  clip_skip: -1,
+  width: 512,
+  height: 512,
+  batch_count: 1,
+  init_image_path: "",
+  end_image_path: "",
+  mask_image_path: "",
+  control_image_path: "",
+  ref_image_paths: [],
+  control_video_path: "",
+  auto_resize_ref_image: true,
+  increase_ref_index: false,
+  pm_id_images_dir: "",
+  pm_id_embed_path: "",
+  pm_style_strength: 20,
+  skip_layers: [7, 8, 9],
+  sample_params: (txt_cfg: 1.00, img_cfg: 1.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: heun, sample_steps: 8, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  high_noise_skip_layers: [7, 8, 9],
+  high_noise_sample_params: (txt_cfg: 7.00, img_cfg: 7.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: NONE, sample_steps: 20, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  custom_sigmas: [],
+  cache_mode: "",
+  cache_option: "",
+  cache: disabled (threshold=1, start=0.15, end=0.95),
+  moe_boundary: 0.875,
+  video_frames: 1,
+  fps: 16,
+  vace_strength: 1,
+  strength: 0.75,
+  control_strength: 0.9,
+  seed: 42,
+  upscale_repeats: 1,
+  upscale_tile_size: 128,
+}
+[DEBUG] stable-diffusion.cpp:181  - Using Vulkan backend
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: Found 1 Vulkan devices:
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: 0 = AMD BC-250 (RADV GFX1013) (radv) | uma: 1 | fp16: 1 | bf16: 0 | warp size: 32 | shared memory: 65536 | int dot: 0 | matrix cores: none
+[INFO ] stable-diffusion.cpp:202  - Vulkan: Using device 0
+[INFO ] stable-diffusion.cpp:267  - loading diffusion model from '/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf'
+[INFO ] stable-diffusion.cpp:307  - loading t5xxl from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] stable-diffusion.cpp:328  - loading vae from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors'
+[INFO ] model.cpp:369  - load /opt/stable-diffusion.cpp/models/flux/ae.safetensors using safetensors format
+[DEBUG] model.cpp:503  - init from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors', prefix = 'vae.'
+[INFO ] stable-diffusion.cpp:345  - Version: Flux 
+[INFO ] stable-diffusion.cpp:373  - Weight type stat:                      f32: 694  |    q4_0: 228  |    q4_K: 144  |    q6_K: 25   |    bf16: 15   
+[INFO ] stable-diffusion.cpp:374  - Conditioner weight type stat:          f32: 50   |    q4_K: 144  |    q6_K: 25   
+[INFO ] stable-diffusion.cpp:375  - Diffusion model weight type stat:      f32: 400  |    q4_0: 228  |    bf16: 15   
+[INFO ] stable-diffusion.cpp:376  - VAE weight type stat:                  f32: 244  
+[DEBUG] stable-diffusion.cpp:378  - ggml tensor size = 400 bytes
+[INFO ] stable-diffusion.cpp:438  - CLIP: Using CPU backend
+[INFO ] flux.hpp:1282 - flux: depth = 19, depth_single_blocks = 38, guidance_embed = false, context_in_dim = 4096, hidden_size = 3072, num_heads = 24
+[INFO ] flux.hpp:1291 - Using pruned modulation (Chroma)
+[DEBUG] ggml_extend.hpp:1990 - t5 params backend buffer size =  3160.02 MB(RAM) (219 tensors)
+[DEBUG] ggml_extend.hpp:1990 - flux params backend buffer size =  5180.37 MB(RAM) (643 tensors)
+[DEBUG] ggml_extend.hpp:1990 - vae params backend buffer size =  94.57 MB(RAM) (138 tensors)
+[INFO ] stable-diffusion.cpp:752  - Using flash attention in the diffusion model
+[DEBUG] stable-diffusion.cpp:781  - loading weights
+[DEBUG] model.cpp:1350 - using 6 threads for model loading
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf
+  |>                                                 | 3/1106 - 0.00s/it[K  |================>                                 | 363/1106 - 1815.00it/s[K  |=========================>                        | 573/1106 - 1428.93it/s[K  |=============================>                    | 643/1106 - 1069.88it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+  |=============================>                    | 647/1106 - 1076.54it/s[K  |=============================>                    | 663/1106 - 827.72it/s[K  |==============================>                   | 674/1106 - 673.33it/s[K  |===============================>                  | 687/1106 - 572.02it/s[K  |===============================>                  | 701/1106 - 500.00it/s[K  |================================>                 | 709/1106 - 442.57it/s[K  |================================>                 | 721/1106 - 400.11it/s[K  |=================================>                | 731/1106 - 365.13it/s[K  |=================================>                | 747/1106 - 339.24it/s[K  |==================================>               | 760/1106 - 316.40it/s[K  |==================================>               | 774/1106 - 297.46it/s[K  |===================================>              | 784/1106 - 279.80it/s[K  |====================================>             | 801/1106 - 266.82it/s[K  |====================================>             | 810/1106 - 252.89it/s[K  |=====================================>            | 826/1106 - 242.73it/s[K  |=====================================>            | 837/1106 - 232.31it/s[K  |======================================>           | 847/1106 - 222.72it/s[K  |======================================>           | 861/1106 - 215.09it/s[K  |======================================>           | 862/1106 - 205.09it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/ae.safetensors
+  |=======================================>          | 866/1106 - 206.04it/s[K  |============================================>     | 990/1106 - 224.80it/s[K  |==================================================| 1106/1106 - 240.23it/s[K
+[INFO ] model.cpp:1592 - loading tensors completed, taking 4.61s (process: 0.00s, read: 4.09s, memcpy: 0.00s, convert: 0.07s, copy_to_backend: 0.00s)
+[DEBUG] stable-diffusion.cpp:816  - finished loaded file
+[INFO ] stable-diffusion.cpp:874  - total params memory size = 8434.96MB (VRAM 5274.94MB, RAM 3160.02MB): text_encoders 3160.02MB(RAM), diffusion_model 5180.37MB(VRAM), vae 94.57MB(VRAM), controlnet 0.00MB(VRAM), pmid 0.00MB(RAM)
+[INFO ] stable-diffusion.cpp:960  - running in Flux FLOW mode
+[DEBUG] stable-diffusion.cpp:3639 - generate_image 512x512
+[INFO ] stable-diffusion.cpp:3675 - sampling using Heun method
+[INFO ] denoiser.hpp:494  - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:3802 - TXT2IMG
+[DEBUG] conditioner.hpp:1501 - parse 'a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed' to [['a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed', 1], ]
+[DEBUG] t5.hpp:403  - token length: 512
+[DEBUG] ggml_extend.hpp:1803 - t5 compute buffer size: 233.00 MB(RAM)
+[DEBUG] conditioner.hpp:1601 - computing condition graph completed, taking 22445 ms
+[INFO ] stable-diffusion.cpp:3381 - get_learned_condition completed, taking 22451 ms
+[INFO ] stable-diffusion.cpp:3492 - generating image: 1/1 - seed 42
+[INFO ] ggml_extend.hpp:1901 - flux offload params (5180.37 MB, 643 tensors) to runtime backend (Vulkan0), taking 0.98s
+[DEBUG] ggml_extend.hpp:1803 - flux compute buffer size: 272.50 MB(VRAM)
+  |======>                                           | 1/8 - 13.76s/it[K  |============>                                     | 2/8 - 13.20s/it[K  |==================>                               | 3/8 - 13.02s/it[K  |=========================>                        | 4/8 - 12.93s/it[K  |===============================>                  | 5/8 - 12.87s/it[K  |=====================================>            | 6/8 - 12.84s/it[K  |===========================================>      | 7/8 - 12.81s/it[K  |==================================================| 8/8 - 12.00s/it[K
+[INFO ] stable-diffusion.cpp:3534 - sampling completed, taking 96.03s
+[INFO ] stable-diffusion.cpp:3545 - generating 1 latent images completed, taking 96.36s
+[INFO ] stable-diffusion.cpp:3548 - decoding 1 latents
+[DEBUG] stable-diffusion.cpp:2757 - VAE Tile size: 32x32
+[DEBUG] ggml_extend.hpp:867  - num tiles : 3, 3 
+[DEBUG] ggml_extend.hpp:868  - optimal overlap : 0.500000, 0.500000 (targeting 0.500000)
+[DEBUG] ggml_extend.hpp:899  - tile work buffer size: 0.81 MB
+[DEBUG] ggml_extend.hpp:912  - processing 9 tiles
+[INFO ] ggml_extend.hpp:1901 - vae offload params ( 94.57 MB, 138 tensors) to runtime backend (Vulkan0), taking 0.01s
+[DEBUG] ggml_extend.hpp:1803 - vae compute buffer size: 416.06 MB(VRAM)
+  |=====>                                            | 1/9 - 2.23it/s[K  |===========>                                      | 2/9 - 2.53it/s[K  |================>                                 | 3/9 - 2.52it/s[K  |======================>                           | 4/9 - 2.51it/s[K  |===========================>                      | 5/9 - 2.50it/s[K  |=================================>                | 6/9 - 2.52it/s[K  |======================================>           | 7/9 - 2.50it/s[K  |============================================>     | 8/9 - 2.51it/s[K  |==================================================| 9/9 - 2.52it/s[K
+[DEBUG] stable-diffusion.cpp:2791 - computing vae decode graph completed, taking 3.63s
+[INFO ] stable-diffusion.cpp:3558 - latent 1 decoded, taking 3.64s
+[INFO ] stable-diffusion.cpp:3562 - decode_first_stage completed, taking 3.64s
+[INFO ] stable-diffusion.cpp:3914 - generate_image completed in 122.46s
+[INFO ] main.cpp:424  - save result image 0 to '/opt/netscan/tmp/bench-chroma-images/chroma-512-s8.png' (success)
+[INFO ] main.cpp:473  - 1/1 images saved
+TIME: 130s
+
+TEST: chroma-512-s4
+[DEBUG] main.cpp:515  - version: stable-diffusion.cpp version master-525-d6dd6d7, commit d6dd6d7
+[DEBUG] main.cpp:516  - System Info: 
+    SSE3 = 1 |     AVX = 1 |     AVX2 = 1 |     AVX512 = 0 |     AVX512_VBMI = 0 |     AVX512_VNNI = 0 |     FMA = 1 |     NEON = 0 |     ARM_FMA = 0 |     F16C = 1 |     FP16_VA = 0 |     WASM_SIMD = 0 |     VSX = 0 | 
+[DEBUG] main.cpp:517  - SDCliParams {
+  mode: img_gen,
+  output_path: "/opt/netscan/tmp/bench-chroma-images/chroma-512-s4.png",
+  verbose: true,
+  color: false,
+  canny_preprocess: false,
+  convert_name: false,
+  preview_method: none,
+  preview_interval: 1,
+  preview_path: "preview.png",
+  preview_fps: 16,
+  taesd_preview: false,
+  preview_noisy: false
+}
+[DEBUG] main.cpp:518  - SDContextParams {
+  n_threads: 6,
+  model_path: "",
+  clip_l_path: "",
+  clip_g_path: "",
+  clip_vision_path: "",
+  t5xxl_path: "/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+  llm_path: "",
+  llm_vision_path: "",
+  diffusion_model_path: "/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf",
+  high_noise_diffusion_model_path: "",
+  vae_path: "/opt/stable-diffusion.cpp/models/flux/ae.safetensors",
+  taesd_path: "",
+  esrgan_path: "",
+  control_net_path: "",
+  embedding_dir: "",
+  embeddings: {
+  }
+  wtype: NONE,
+  tensor_type_rules: "",
+  lora_model_dir: ".",
+  photo_maker_path: "",
+  rng_type: cuda,
+  sampler_rng_type: NONE,
+  offload_params_to_cpu: true,
+  enable_mmap: false,
+  control_net_cpu: false,
+  clip_on_cpu: true,
+  vae_on_cpu: false,
+  flash_attn: false,
+  diffusion_flash_attn: true,
+  diffusion_conv_direct: false,
+  vae_conv_direct: false,
+  circular: false,
+  circular_x: false,
+  circular_y: false,
+  chroma_use_dit_mask: false,
+  qwen_image_zero_cond_t: false,
+  chroma_use_t5_mask: false,
+  chroma_t5_mask_pad: 1,
+  prediction: NONE,
+  lora_apply_mode: auto,
+  vae_tiling_params: { 1, 0, 0, 0.5, 0, 0 },
+  force_sdxl_vae_conv_scale: false
+}
+[DEBUG] main.cpp:519  - SDGenerationParams {
+  loras: "{
+  }",
+  high_noise_loras: "{
+  }",
+  prompt: "a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed",
+  negative_prompt: "",
+  clip_skip: -1,
+  width: 512,
+  height: 512,
+  batch_count: 1,
+  init_image_path: "",
+  end_image_path: "",
+  mask_image_path: "",
+  control_image_path: "",
+  ref_image_paths: [],
+  control_video_path: "",
+  auto_resize_ref_image: true,
+  increase_ref_index: false,
+  pm_id_images_dir: "",
+  pm_id_embed_path: "",
+  pm_style_strength: 20,
+  skip_layers: [7, 8, 9],
+  sample_params: (txt_cfg: 1.00, img_cfg: 1.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: heun, sample_steps: 4, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  high_noise_skip_layers: [7, 8, 9],
+  high_noise_sample_params: (txt_cfg: 7.00, img_cfg: 7.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: NONE, sample_steps: 20, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  custom_sigmas: [],
+  cache_mode: "",
+  cache_option: "",
+  cache: disabled (threshold=1, start=0.15, end=0.95),
+  moe_boundary: 0.875,
+  video_frames: 1,
+  fps: 16,
+  vace_strength: 1,
+  strength: 0.75,
+  control_strength: 0.9,
+  seed: 42,
+  upscale_repeats: 1,
+  upscale_tile_size: 128,
+}
+[DEBUG] stable-diffusion.cpp:181  - Using Vulkan backend
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: Found 1 Vulkan devices:
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: 0 = AMD BC-250 (RADV GFX1013) (radv) | uma: 1 | fp16: 1 | bf16: 0 | warp size: 32 | shared memory: 65536 | int dot: 0 | matrix cores: none
+[INFO ] stable-diffusion.cpp:202  - Vulkan: Using device 0
+[INFO ] stable-diffusion.cpp:267  - loading diffusion model from '/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf'
+[INFO ] stable-diffusion.cpp:307  - loading t5xxl from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] stable-diffusion.cpp:328  - loading vae from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors'
+[INFO ] model.cpp:369  - load /opt/stable-diffusion.cpp/models/flux/ae.safetensors using safetensors format
+[DEBUG] model.cpp:503  - init from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors', prefix = 'vae.'
+[INFO ] stable-diffusion.cpp:345  - Version: Flux 
+[INFO ] stable-diffusion.cpp:373  - Weight type stat:                      f32: 694  |    q4_0: 228  |    q4_K: 144  |    q6_K: 25   |    bf16: 15   
+[INFO ] stable-diffusion.cpp:374  - Conditioner weight type stat:          f32: 50   |    q4_K: 144  |    q6_K: 25   
+[INFO ] stable-diffusion.cpp:375  - Diffusion model weight type stat:      f32: 400  |    q4_0: 228  |    bf16: 15   
+[INFO ] stable-diffusion.cpp:376  - VAE weight type stat:                  f32: 244  
+[DEBUG] stable-diffusion.cpp:378  - ggml tensor size = 400 bytes
+[INFO ] stable-diffusion.cpp:438  - CLIP: Using CPU backend
+[INFO ] flux.hpp:1282 - flux: depth = 19, depth_single_blocks = 38, guidance_embed = false, context_in_dim = 4096, hidden_size = 3072, num_heads = 24
+[INFO ] flux.hpp:1291 - Using pruned modulation (Chroma)
+[DEBUG] ggml_extend.hpp:1990 - t5 params backend buffer size =  3160.02 MB(RAM) (219 tensors)
+[DEBUG] ggml_extend.hpp:1990 - flux params backend buffer size =  5180.37 MB(RAM) (643 tensors)
+[DEBUG] ggml_extend.hpp:1990 - vae params backend buffer size =  94.57 MB(RAM) (138 tensors)
+[INFO ] stable-diffusion.cpp:752  - Using flash attention in the diffusion model
+[DEBUG] stable-diffusion.cpp:781  - loading weights
+[DEBUG] model.cpp:1350 - using 6 threads for model loading
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf
+  |>                                                 | 14/1106 - 70.00it/s[K  |=>                                                | 35/1106 - 87.28it/s[K  |==>                                               | 50/1106 - 83.19it/s[K  |===>                                              | 77/1106 - 96.13it/s[K  |====>                                             | 105/1106 - 104.90it/s[K  |=====>                                            | 128/1106 - 106.58it/s[K  |=======>                                          | 158/1106 - 112.78it/s[K  |========>                                         | 181/1106 - 113.05it/s[K  |=========>                                        | 210/1106 - 116.60it/s[K  |==========>                                       | 233/1106 - 116.44it/s[K  |===========>                                      | 258/1106 - 117.22it/s[K  |============>                                     | 287/1106 - 119.48it/s[K  |==============>                                   | 315/1106 - 121.06it/s[K  |===============>                                  | 340/1106 - 121.34it/s[K  |================>                                 | 367/1106 - 122.25it/s[K  |=================>                                | 393/1106 - 122.74it/s[K  |===================>                              | 421/1106 - 123.75it/s[K  |===================>                              | 436/1106 - 121.04it/s[K  |====================>                             | 453/1106 - 119.15it/s[K  |=====================>                            | 471/1106 - 117.69it/s[K  |======================>                           | 487/1106 - 115.87it/s[K  |======================>                           | 498/1106 - 113.10it/s[K  |=======================>                          | 515/1106 - 111.88it/s[K  |=======================>                          | 530/1106 - 110.35it/s[K  |========================>                         | 548/1106 - 109.53it/s[K  |=========================>                        | 557/1106 - 107.05it/s[K  |==========================>                       | 576/1106 - 106.61it/s[K  |=============================>                    | 643/1106 - 114.76it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+  |=============================>                    | 647/1106 - 115.45it/s[K  |==============================>                   | 665/1106 - 114.58it/s[K  |==============================>                   | 678/1106 - 112.92it/s[K  |===============================>                  | 692/1106 - 111.54it/s[K  |===============================>                  | 705/1106 - 110.09it/s[K  |================================>                 | 714/1106 - 108.12it/s[K  |================================>                 | 724/1106 - 106.41it/s[K  |=================================>                | 737/1106 - 105.21it/s[K  |=================================>                | 750/1106 - 104.09it/s[K  |==================================>               | 761/1106 - 102.77it/s[K  |===================================>              | 776/1106 - 102.04it/s[K  |===================================>              | 792/1106 - 101.47it/s[K  |====================================>             | 801/1106 - 100.06it/s[K  |====================================>             | 816/1106 - 99.45it/s[K  |=====================================>            | 828/1106 - 98.51it/s[K  |======================================>           | 843/1106 - 97.95it/s[K  |======================================>           | 855/1106 - 97.09it/s[K  |======================================>           | 862/1106 - 95.70it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/ae.safetensors
+  |=======================================>          | 866/1106 - 96.15it/s[K  |=============================================>    | 999/1106 - 108.50it/s[K  |==================================================| 1106/1106 - 117.57it/s[K
+[INFO ] model.cpp:1592 - loading tensors completed, taking 9.41s (process: 0.00s, read: 9.02s, memcpy: 0.00s, convert: 0.07s, copy_to_backend: 0.00s)
+[DEBUG] stable-diffusion.cpp:816  - finished loaded file
+[INFO ] stable-diffusion.cpp:874  - total params memory size = 8434.96MB (VRAM 5274.94MB, RAM 3160.02MB): text_encoders 3160.02MB(RAM), diffusion_model 5180.37MB(VRAM), vae 94.57MB(VRAM), controlnet 0.00MB(VRAM), pmid 0.00MB(RAM)
+[INFO ] stable-diffusion.cpp:960  - running in Flux FLOW mode
+[DEBUG] stable-diffusion.cpp:3639 - generate_image 512x512
+[INFO ] stable-diffusion.cpp:3675 - sampling using Heun method
+[INFO ] denoiser.hpp:494  - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:3802 - TXT2IMG
+[DEBUG] conditioner.hpp:1501 - parse 'a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed' to [['a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed', 1], ]
+[DEBUG] t5.hpp:403  - token length: 512
+[DEBUG] ggml_extend.hpp:1803 - t5 compute buffer size: 233.00 MB(RAM)
+[DEBUG] conditioner.hpp:1601 - computing condition graph completed, taking 22420 ms
+[INFO ] stable-diffusion.cpp:3381 - get_learned_condition completed, taking 22426 ms
+[INFO ] stable-diffusion.cpp:3492 - generating image: 1/1 - seed 42
+[INFO ] ggml_extend.hpp:1901 - flux offload params (5180.37 MB, 643 tensors) to runtime backend (Vulkan0), taking 1.19s
+[DEBUG] ggml_extend.hpp:1803 - flux compute buffer size: 272.50 MB(VRAM)
+  |============>                                     | 1/4 - 13.88s/it[K  |=========================>                        | 2/4 - 13.26s/it[K  |=====================================>            | 3/4 - 13.06s/it[K  |==================================================| 4/4 - 11.38s/it[K
+[INFO ] stable-diffusion.cpp:3534 - sampling completed, taking 45.54s
+[INFO ] stable-diffusion.cpp:3545 - generating 1 latent images completed, taking 45.88s
+[INFO ] stable-diffusion.cpp:3548 - decoding 1 latents
+[DEBUG] stable-diffusion.cpp:2757 - VAE Tile size: 32x32
+[DEBUG] ggml_extend.hpp:867  - num tiles : 3, 3 
+[DEBUG] ggml_extend.hpp:868  - optimal overlap : 0.500000, 0.500000 (targeting 0.500000)
+[DEBUG] ggml_extend.hpp:899  - tile work buffer size: 0.81 MB
+[DEBUG] ggml_extend.hpp:912  - processing 9 tiles
+[INFO ] ggml_extend.hpp:1901 - vae offload params ( 94.57 MB, 138 tensors) to runtime backend (Vulkan0), taking 0.01s
+[DEBUG] ggml_extend.hpp:1803 - vae compute buffer size: 416.06 MB(VRAM)
+  |=====>                                            | 1/9 - 2.24it/s[K  |===========>                                      | 2/9 - 2.51it/s[K  |================>                                 | 3/9 - 2.51it/s[K  |======================>                           | 4/9 - 2.53it/s[K  |===========================>                      | 5/9 - 2.52it/s[K  |=================================>                | 6/9 - 2.51it/s[K  |======================================>           | 7/9 - 2.53it/s[K  |============================================>     | 8/9 - 2.51it/s[K  |==================================================| 9/9 - 2.53it/s[K
+[DEBUG] stable-diffusion.cpp:2791 - computing vae decode graph completed, taking 3.63s
+[INFO ] stable-diffusion.cpp:3558 - latent 1 decoded, taking 3.63s
+[INFO ] stable-diffusion.cpp:3562 - decode_first_stage completed, taking 3.63s
+[INFO ] stable-diffusion.cpp:3914 - generate_image completed in 71.94s
+[INFO ] main.cpp:424  - save result image 0 to '/opt/netscan/tmp/bench-chroma-images/chroma-512-s4.png' (success)
+[INFO ] main.cpp:473  - 1/1 images saved
+TIME: 85s
+
+TEST: chroma-768-s8
+[DEBUG] main.cpp:515  - version: stable-diffusion.cpp version master-525-d6dd6d7, commit d6dd6d7
+[DEBUG] main.cpp:516  - System Info: 
+    SSE3 = 1 |     AVX = 1 |     AVX2 = 1 |     AVX512 = 0 |     AVX512_VBMI = 0 |     AVX512_VNNI = 0 |     FMA = 1 |     NEON = 0 |     ARM_FMA = 0 |     F16C = 1 |     FP16_VA = 0 |     WASM_SIMD = 0 |     VSX = 0 | 
+[DEBUG] main.cpp:517  - SDCliParams {
+  mode: img_gen,
+  output_path: "/opt/netscan/tmp/bench-chroma-images/chroma-768-s8.png",
+  verbose: true,
+  color: false,
+  canny_preprocess: false,
+  convert_name: false,
+  preview_method: none,
+  preview_interval: 1,
+  preview_path: "preview.png",
+  preview_fps: 16,
+  taesd_preview: false,
+  preview_noisy: false
+}
+[DEBUG] main.cpp:518  - SDContextParams {
+  n_threads: 6,
+  model_path: "",
+  clip_l_path: "",
+  clip_g_path: "",
+  clip_vision_path: "",
+  t5xxl_path: "/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+  llm_path: "",
+  llm_vision_path: "",
+  diffusion_model_path: "/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf",
+  high_noise_diffusion_model_path: "",
+  vae_path: "/opt/stable-diffusion.cpp/models/flux/ae.safetensors",
+  taesd_path: "",
+  esrgan_path: "",
+  control_net_path: "",
+  embedding_dir: "",
+  embeddings: {
+  }
+  wtype: NONE,
+  tensor_type_rules: "",
+  lora_model_dir: ".",
+  photo_maker_path: "",
+  rng_type: cuda,
+  sampler_rng_type: NONE,
+  offload_params_to_cpu: true,
+  enable_mmap: false,
+  control_net_cpu: false,
+  clip_on_cpu: true,
+  vae_on_cpu: false,
+  flash_attn: false,
+  diffusion_flash_attn: true,
+  diffusion_conv_direct: false,
+  vae_conv_direct: false,
+  circular: false,
+  circular_x: false,
+  circular_y: false,
+  chroma_use_dit_mask: false,
+  qwen_image_zero_cond_t: false,
+  chroma_use_t5_mask: false,
+  chroma_t5_mask_pad: 1,
+  prediction: NONE,
+  lora_apply_mode: auto,
+  vae_tiling_params: { 1, 0, 0, 0.5, 0, 0 },
+  force_sdxl_vae_conv_scale: false
+}
+[DEBUG] main.cpp:519  - SDGenerationParams {
+  loras: "{
+  }",
+  high_noise_loras: "{
+  }",
+  prompt: "a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed",
+  negative_prompt: "",
+  clip_skip: -1,
+  width: 768,
+  height: 768,
+  batch_count: 1,
+  init_image_path: "",
+  end_image_path: "",
+  mask_image_path: "",
+  control_image_path: "",
+  ref_image_paths: [],
+  control_video_path: "",
+  auto_resize_ref_image: true,
+  increase_ref_index: false,
+  pm_id_images_dir: "",
+  pm_id_embed_path: "",
+  pm_style_strength: 20,
+  skip_layers: [7, 8, 9],
+  sample_params: (txt_cfg: 1.00, img_cfg: 1.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: heun, sample_steps: 8, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  high_noise_skip_layers: [7, 8, 9],
+  high_noise_sample_params: (txt_cfg: 7.00, img_cfg: 7.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: NONE, sample_steps: 20, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  custom_sigmas: [],
+  cache_mode: "",
+  cache_option: "",
+  cache: disabled (threshold=1, start=0.15, end=0.95),
+  moe_boundary: 0.875,
+  video_frames: 1,
+  fps: 16,
+  vace_strength: 1,
+  strength: 0.75,
+  control_strength: 0.9,
+  seed: 42,
+  upscale_repeats: 1,
+  upscale_tile_size: 128,
+}
+[DEBUG] stable-diffusion.cpp:181  - Using Vulkan backend
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: Found 1 Vulkan devices:
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: 0 = AMD BC-250 (RADV GFX1013) (radv) | uma: 1 | fp16: 1 | bf16: 0 | warp size: 32 | shared memory: 65536 | int dot: 0 | matrix cores: none
+[INFO ] stable-diffusion.cpp:202  - Vulkan: Using device 0
+[INFO ] stable-diffusion.cpp:267  - loading diffusion model from '/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf'
+[INFO ] stable-diffusion.cpp:307  - loading t5xxl from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] stable-diffusion.cpp:328  - loading vae from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors'
+[INFO ] model.cpp:369  - load /opt/stable-diffusion.cpp/models/flux/ae.safetensors using safetensors format
+[DEBUG] model.cpp:503  - init from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors', prefix = 'vae.'
+[INFO ] stable-diffusion.cpp:345  - Version: Flux 
+[INFO ] stable-diffusion.cpp:373  - Weight type stat:                      f32: 694  |    q4_0: 228  |    q4_K: 144  |    q6_K: 25   |    bf16: 15   
+[INFO ] stable-diffusion.cpp:374  - Conditioner weight type stat:          f32: 50   |    q4_K: 144  |    q6_K: 25   
+[INFO ] stable-diffusion.cpp:375  - Diffusion model weight type stat:      f32: 400  |    q4_0: 228  |    bf16: 15   
+[INFO ] stable-diffusion.cpp:376  - VAE weight type stat:                  f32: 244  
+[DEBUG] stable-diffusion.cpp:378  - ggml tensor size = 400 bytes
+[INFO ] stable-diffusion.cpp:438  - CLIP: Using CPU backend
+[INFO ] flux.hpp:1282 - flux: depth = 19, depth_single_blocks = 38, guidance_embed = false, context_in_dim = 4096, hidden_size = 3072, num_heads = 24
+[INFO ] flux.hpp:1291 - Using pruned modulation (Chroma)
+[DEBUG] ggml_extend.hpp:1990 - t5 params backend buffer size =  3160.02 MB(RAM) (219 tensors)
+[DEBUG] ggml_extend.hpp:1990 - flux params backend buffer size =  5180.37 MB(RAM) (643 tensors)
+[DEBUG] ggml_extend.hpp:1990 - vae params backend buffer size =  94.57 MB(RAM) (138 tensors)
+[INFO ] stable-diffusion.cpp:752  - Using flash attention in the diffusion model
+[DEBUG] stable-diffusion.cpp:781  - loading weights
+[DEBUG] model.cpp:1350 - using 6 threads for model loading
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/chroma-unlocked-v47-flash-Q4_0.gguf
+  |>                                                 | 2/1106 - 0.00s/it[K  |>                                                 | 15/1106 - 75.00it/s[K  |=>                                                | 29/1106 - 72.50it/s[K  |==>                                               | 54/1106 - 90.00it/s[K  |===>                                              | 78/1106 - 97.50it/s[K  |====>                                             | 103/1106 - 103.00it/s[K  |=====>                                            | 132/1106 - 109.91it/s[K  |=======>                                          | 157/1106 - 112.06it/s[K  |========>                                         | 183/1106 - 114.30it/s[K  |=========>                                        | 208/1106 - 115.49it/s[K  |==========>                                       | 233/1106 - 116.44it/s[K  |===========>                                      | 262/1106 - 119.04it/s[K  |=============>                                    | 289/1106 - 120.37it/s[K  |==============>                                   | 313/1106 - 120.34it/s[K  |===============>                                  | 339/1106 - 121.03it/s[K  |================>                                 | 365/1106 - 121.59it/s[K  |=================>                                | 392/1106 - 122.42it/s[K  |==================>                               | 417/1106 - 122.57it/s[K  |===================>                              | 435/1106 - 120.77it/s[K  |====================>                             | 453/1106 - 119.15it/s[K  |=====================>                            | 465/1106 - 116.19it/s[K  |=====================>                            | 483/1106 - 114.95it/s[K  |======================>                           | 501/1106 - 113.81it/s[K  |=======================>                          | 513/1106 - 111.47it/s[K  |========================>                         | 531/1106 - 110.56it/s[K  |========================>                         | 549/1106 - 109.73it/s[K  |=========================>                        | 565/1106 - 108.59it/s[K  |==========================>                       | 581/1106 - 107.53it/s[K  |==========================>                       | 597/1106 - 106.55it/s[K  |===========================>                      | 615/1106 - 105.98it/s[K  |============================>                     | 632/1106 - 105.28it/s[K  |=============================>                    | 643/1106 - 103.49it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+  |=============================>                    | 648/1106 - 104.28it/s[K  |===============================>                  | 700/1106 - 109.14it/s[K  |================================>                 | 709/1106 - 107.20it/s[K  |================================>                 | 717/1106 - 105.22it/s[K  |=================================>                | 731/1106 - 104.22it/s[K  |=================================>                | 749/1106 - 103.83it/s[K  |==================================>               | 761/1106 - 102.64it/s[K  |==================================>               | 774/1106 - 101.65it/s[K  |===================================>              | 784/1106 - 100.33it/s[K  |====================================>             | 801/1106 - 99.94it/s[K  |====================================>             | 813/1106 - 98.97it/s[K  |=====================================>            | 828/1106 - 98.40it/s[K  |=====================================>            | 839/1106 - 97.39it/s[K  |======================================>           | 852/1106 - 96.65it/s[K  |======================================>           | 862/1106 - 94.97it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/ae.safetensors
+  |======================================>           | 862/1106 - 94.97it/s[K  |============================================>     | 995/1106 - 107.25it/s[K  |==================================================| 1106/1106 - 116.70it/s[K
+[INFO ] model.cpp:1592 - loading tensors completed, taking 9.48s (process: 0.00s, read: 9.13s, memcpy: 0.00s, convert: 0.08s, copy_to_backend: 0.00s)
+[DEBUG] stable-diffusion.cpp:816  - finished loaded file
+[INFO ] stable-diffusion.cpp:874  - total params memory size = 8434.96MB (VRAM 5274.94MB, RAM 3160.02MB): text_encoders 3160.02MB(RAM), diffusion_model 5180.37MB(VRAM), vae 94.57MB(VRAM), controlnet 0.00MB(VRAM), pmid 0.00MB(RAM)
+[INFO ] stable-diffusion.cpp:960  - running in Flux FLOW mode
+[DEBUG] stable-diffusion.cpp:3639 - generate_image 768x768
+[INFO ] stable-diffusion.cpp:3675 - sampling using Heun method
+[INFO ] denoiser.hpp:494  - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:3802 - TXT2IMG
+[DEBUG] conditioner.hpp:1501 - parse 'a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed' to [['a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed', 1], ]
+[DEBUG] t5.hpp:403  - token length: 512
+[DEBUG] ggml_extend.hpp:1803 - t5 compute buffer size: 233.00 MB(RAM)
+[DEBUG] conditioner.hpp:1601 - computing condition graph completed, taking 22466 ms
+[INFO ] stable-diffusion.cpp:3381 - get_learned_condition completed, taking 22471 ms
+[INFO ] stable-diffusion.cpp:3492 - generating image: 1/1 - seed 42
+[INFO ] ggml_extend.hpp:1901 - flux offload params (5180.37 MB, 643 tensors) to runtime backend (Vulkan0), taking 1.06s
+[DEBUG] ggml_extend.hpp:1803 - flux compute buffer size: 523.06 MB(VRAM)
+  |======>                                           | 1/8 - 25.73s/it[K  |============>                                     | 2/8 - 25.15s/it[K  |==================>                               | 3/8 - 24.95s/it[K  |=========================>                        | 4/8 - 24.85s/it[K  |===============================>                  | 5/8 - 25.26s/it[K  |=====================================>            | 6/8 - 25.65s/it[K  |===========================================>      | 7/8 - 25.78s/it[K  |==================================================| 8/8 - 24.34s/it[K
+[INFO ] stable-diffusion.cpp:3534 - sampling completed, taking 194.75s
+[INFO ] stable-diffusion.cpp:3545 - generating 1 latent images completed, taking 195.10s
+[INFO ] stable-diffusion.cpp:3548 - decoding 1 latents
+[DEBUG] stable-diffusion.cpp:2757 - VAE Tile size: 32x32
+[DEBUG] ggml_extend.hpp:867  - num tiles : 5, 5 
+[DEBUG] ggml_extend.hpp:868  - optimal overlap : 0.500000, 0.500000 (targeting 0.500000)
+[DEBUG] ggml_extend.hpp:899  - tile work buffer size: 0.81 MB
+[DEBUG] ggml_extend.hpp:912  - processing 25 tiles
+[INFO ] ggml_extend.hpp:1901 - vae offload params ( 94.57 MB, 138 tensors) to runtime backend (Vulkan0), taking 0.02s
+[DEBUG] ggml_extend.hpp:1803 - vae compute buffer size: 416.06 MB(VRAM)
+  |==>                                               | 1/25 - 2.21it/s[K  |====>                                             | 2/25 - 2.52it/s[K  |======>                                           | 3/25 - 2.51it/s[K  |========>                                         | 4/25 - 2.53it/s[K  |==========>                                       | 5/25 - 2.53it/s[K  |============>                                     | 6/25 - 2.53it/s[K  |==============>                                   | 7/25 - 2.52it/s[K  |================>                                 | 8/25 - 2.53it/s[K  |==================>                               | 9/25 - 2.52it/s[K  |====================>                             | 10/25 - 2.53it/s[K  |======================>                           | 11/25 - 2.53it/s[K  |========================>                         | 12/25 - 2.51it/s[K  |==========================>                       | 13/25 - 2.53it/s[K  |============================>                     | 14/25 - 2.53it/s[K  |==============================>                   | 15/25 - 2.52it/s[K  |================================>                 | 16/25 - 2.51it/s[K  |==================================>               | 17/25 - 2.53it/s[K  |====================================>             | 18/25 - 2.51it/s[K  |======================================>           | 19/25 - 2.52it/s[K  |========================================>         | 20/25 - 2.53it/s[K  |==========================================>       | 21/25 - 2.52it/s[K  |============================================>     | 22/25 - 2.51it/s[K  |==============================================>   | 23/25 - 2.53it/s[K  |================================================> | 24/25 - 2.53it/s[K  |==================================================| 25/25 - 2.51it/s[K
+[DEBUG] stable-diffusion.cpp:2791 - computing vae decode graph completed, taking 9.98s
+[INFO ] stable-diffusion.cpp:3558 - latent 1 decoded, taking 9.98s
+[INFO ] stable-diffusion.cpp:3562 - decode_first_stage completed, taking 9.98s
+[INFO ] stable-diffusion.cpp:3914 - generate_image completed in 227.56s
+[INFO ] main.cpp:424  - save result image 0 to '/opt/netscan/tmp/bench-chroma-images/chroma-768-s8.png' (success)
+[INFO ] main.cpp:473  - 1/1 images saved
+TIME: 240s
+
+=== FLUX.1-SCHNELL ===
+
+TEST: schnell-512-s4
+[DEBUG] main.cpp:515  - version: stable-diffusion.cpp version master-525-d6dd6d7, commit d6dd6d7
+[DEBUG] main.cpp:516  - System Info: 
+    SSE3 = 1 |     AVX = 1 |     AVX2 = 1 |     AVX512 = 0 |     AVX512_VBMI = 0 |     AVX512_VNNI = 0 |     FMA = 1 |     NEON = 0 |     ARM_FMA = 0 |     F16C = 1 |     FP16_VA = 0 |     WASM_SIMD = 0 |     VSX = 0 | 
+[DEBUG] main.cpp:517  - SDCliParams {
+  mode: img_gen,
+  output_path: "/opt/netscan/tmp/bench-chroma-images/schnell-512-s4.png",
+  verbose: true,
+  color: false,
+  canny_preprocess: false,
+  convert_name: false,
+  preview_method: none,
+  preview_interval: 1,
+  preview_path: "preview.png",
+  preview_fps: 16,
+  taesd_preview: false,
+  preview_noisy: false
+}
+[DEBUG] main.cpp:518  - SDContextParams {
+  n_threads: 6,
+  model_path: "",
+  clip_l_path: "/opt/stable-diffusion.cpp/models/flux/clip_l.safetensors",
+  clip_g_path: "",
+  clip_vision_path: "",
+  t5xxl_path: "/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+  llm_path: "",
+  llm_vision_path: "",
+  diffusion_model_path: "/opt/stable-diffusion.cpp/models/flux/flux1-schnell-q4_k.gguf",
+  high_noise_diffusion_model_path: "",
+  vae_path: "/opt/stable-diffusion.cpp/models/flux/ae.safetensors",
+  taesd_path: "",
+  esrgan_path: "",
+  control_net_path: "",
+  embedding_dir: "",
+  embeddings: {
+  }
+  wtype: NONE,
+  tensor_type_rules: "",
+  lora_model_dir: ".",
+  photo_maker_path: "",
+  rng_type: cuda,
+  sampler_rng_type: NONE,
+  offload_params_to_cpu: true,
+  enable_mmap: false,
+  control_net_cpu: false,
+  clip_on_cpu: true,
+  vae_on_cpu: false,
+  flash_attn: false,
+  diffusion_flash_attn: true,
+  diffusion_conv_direct: false,
+  vae_conv_direct: false,
+  circular: false,
+  circular_x: false,
+  circular_y: false,
+  chroma_use_dit_mask: true,
+  qwen_image_zero_cond_t: false,
+  chroma_use_t5_mask: false,
+  chroma_t5_mask_pad: 1,
+  prediction: NONE,
+  lora_apply_mode: auto,
+  vae_tiling_params: { 1, 0, 0, 0.5, 0, 0 },
+  force_sdxl_vae_conv_scale: false
+}
+[DEBUG] main.cpp:519  - SDGenerationParams {
+  loras: "{
+  }",
+  high_noise_loras: "{
+  }",
+  prompt: "a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed",
+  negative_prompt: "",
+  clip_skip: -1,
+  width: 512,
+  height: 512,
+  batch_count: 1,
+  init_image_path: "",
+  end_image_path: "",
+  mask_image_path: "",
+  control_image_path: "",
+  ref_image_paths: [],
+  control_video_path: "",
+  auto_resize_ref_image: true,
+  increase_ref_index: false,
+  pm_id_images_dir: "",
+  pm_id_embed_path: "",
+  pm_style_strength: 20,
+  skip_layers: [7, 8, 9],
+  sample_params: (txt_cfg: 1.00, img_cfg: 1.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: NONE, sample_steps: 4, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  high_noise_skip_layers: [7, 8, 9],
+  high_noise_sample_params: (txt_cfg: 7.00, img_cfg: 7.00, distilled_guidance: 3.50, slg.layer_count: 3, slg.layer_start: 0.01, slg.layer_end: 0.20, slg.scale: 0.00, scheduler: NONE, sample_method: NONE, sample_steps: 20, eta: 0.00, shifted_timestep: 0, flow_shift: inf),
+  custom_sigmas: [],
+  cache_mode: "",
+  cache_option: "",
+  cache: disabled (threshold=1, start=0.15, end=0.95),
+  moe_boundary: 0.875,
+  video_frames: 1,
+  fps: 16,
+  vace_strength: 1,
+  strength: 0.75,
+  control_strength: 0.9,
+  seed: 42,
+  upscale_repeats: 1,
+  upscale_tile_size: 128,
+}
+[DEBUG] stable-diffusion.cpp:181  - Using Vulkan backend
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: Found 1 Vulkan devices:
+[DEBUG] ggml_extend.hpp:75   - ggml_vulkan: 0 = AMD BC-250 (RADV GFX1013) (radv) | uma: 1 | fp16: 1 | bf16: 0 | warp size: 32 | shared memory: 65536 | int dot: 0 | matrix cores: none
+[INFO ] stable-diffusion.cpp:202  - Vulkan: Using device 0
+[INFO ] stable-diffusion.cpp:267  - loading diffusion model from '/opt/stable-diffusion.cpp/models/flux/flux1-schnell-q4_k.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/flux1-schnell-q4_k.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/flux1-schnell-q4_k.gguf'
+[INFO ] stable-diffusion.cpp:283  - loading clip_l from '/opt/stable-diffusion.cpp/models/flux/clip_l.safetensors'
+[INFO ] model.cpp:369  - load /opt/stable-diffusion.cpp/models/flux/clip_l.safetensors using safetensors format
+[DEBUG] model.cpp:503  - init from '/opt/stable-diffusion.cpp/models/flux/clip_l.safetensors', prefix = 'text_encoders.clip_l.transformer.'
+[INFO ] stable-diffusion.cpp:307  - loading t5xxl from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] model.cpp:366  - load /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf using gguf format
+[DEBUG] model.cpp:412  - init from '/opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf'
+[INFO ] stable-diffusion.cpp:328  - loading vae from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors'
+[INFO ] model.cpp:369  - load /opt/stable-diffusion.cpp/models/flux/ae.safetensors using safetensors format
+[DEBUG] model.cpp:503  - init from '/opt/stable-diffusion.cpp/models/flux/ae.safetensors', prefix = 'vae.'
+[INFO ] stable-diffusion.cpp:345  - Version: Flux 
+[INFO ] stable-diffusion.cpp:373  - Weight type stat:                      f32: 766  |     f16: 196  |    q4_K: 448  |    q6_K: 25   
+[INFO ] stable-diffusion.cpp:374  - Conditioner weight type stat:          f32: 50   |     f16: 196  |    q4_K: 144  |    q6_K: 25   
+[INFO ] stable-diffusion.cpp:375  - Diffusion model weight type stat:      f32: 472  |    q4_K: 304  
+[INFO ] stable-diffusion.cpp:376  - VAE weight type stat:                  f32: 244  
+[DEBUG] stable-diffusion.cpp:378  - ggml tensor size = 400 bytes
+[INFO ] stable-diffusion.cpp:438  - CLIP: Using CPU backend
+[DEBUG] clip.hpp:161  - vocab size: 49408
+[DEBUG] clip.hpp:172  - trigger word img already in vocab
+[INFO ] flux.hpp:1282 - flux: depth = 19, depth_single_blocks = 38, guidance_embed = false, context_in_dim = 4096, hidden_size = 3072, num_heads = 24
+[DEBUG] ggml_extend.hpp:1990 - clip params backend buffer size =  235.06 MB(RAM) (196 tensors)
+[DEBUG] ggml_extend.hpp:1990 - t5 params backend buffer size =  3160.02 MB(RAM) (219 tensors)
+[DEBUG] ggml_extend.hpp:1990 - flux params backend buffer size =  6565.62 MB(RAM) (776 tensors)
+[DEBUG] ggml_extend.hpp:1990 - vae params backend buffer size =  94.57 MB(RAM) (138 tensors)
+[INFO ] stable-diffusion.cpp:752  - Using flash attention in the diffusion model
+[DEBUG] stable-diffusion.cpp:781  - loading weights
+[DEBUG] model.cpp:1350 - using 6 threads for model loading
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/flux1-schnell-q4_k.gguf
+  |>                                                 | 1/1435 - 1000.00it/s[K  |=>                                                | 32/1435 - 159.20it/s[K  |=>                                                | 54/1435 - 134.66it/s[K  |==>                                               | 74/1435 - 123.13it/s[K  |===>                                              | 96/1435 - 119.85it/s[K  |====>                                             | 116/1435 - 115.88it/s[K  |====>                                             | 136/1435 - 113.24it/s[K  |=====>                                            | 157/1435 - 112.06it/s[K  |======>                                           | 176/1435 - 109.93it/s[K  |======>                                           | 200/1435 - 110.99it/s[K  |=======>                                          | 218/1435 - 108.89it/s[K  |========>                                         | 241/1435 - 109.45it/s[K  |=========>                                        | 262/1435 - 109.08it/s[K  |=========>                                        | 282/1435 - 108.38it/s[K  |==========>                                       | 304/1435 - 108.49it/s[K  |===========>                                      | 325/1435 - 108.26it/s[K  |============>                                     | 346/1435 - 108.06it/s[K  |============>                                     | 369/1435 - 108.47it/s[K  |=============>                                    | 385/1435 - 106.86it/s[K  |==============>                                   | 408/1435 - 107.28it/s[K  |==============>                                   | 430/1435 - 107.42it/s[K  |===============>                                  | 450/1435 - 107.07it/s[K  |================>                                 | 469/1435 - 106.52it/s[K  |================>                                 | 483/1435 - 104.93it/s[K  |=================>                                | 500/1435 - 104.10it/s[K  |=================>                                | 515/1435 - 102.94it/s[K  |==================>                               | 533/1435 - 102.44it/s[K  |===================>                              | 550/1435 - 101.80it/s[K  |===================>                              | 567/1435 - 101.18it/s[K  |====================>                             | 585/1435 - 100.79it/s[K  |=====================>                            | 603/1435 - 100.43it/s[K  |=====================>                            | 618/1435 - 99.61it/s[K  |======================>                           | 635/1435 - 99.16it/s[K  |======================>                           | 652/1435 - 98.73it/s[K  |=======================>                          | 669/1435 - 98.32it/s[K  |=======================>                          | 688/1435 - 98.23it/s[K  |========================>                         | 703/1435 - 97.58it/s[K  |=========================>                        | 721/1435 - 97.37it/s[K  |=========================>                        | 737/1435 - 96.91it/s[K  |==========================>                       | 754/1435 - 96.60it/s[K  |==========================>                       | 771/1435 - 96.31it/s[K  |===========================>                      | 776/1435 - 94.58it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/clip_l.safetensors
+  |===========================>                      | 781/1435 - 95.19it/s[K  |==============================>                   | 886/1435 - 105.41it/s[K  |=================================>                | 972/1435 - 112.94it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf
+  |==================================>               | 976/1435 - 113.41it/s[K  |==================================>               | 988/1435 - 112.20it/s[K  |==================================>               | 990/1435 - 109.93it/s[K  |==================================>               | 994/1435 - 107.97it/s[K  |==================================>               | 995/1435 - 105.78it/s[K  |==================================>               | 999/1435 - 103.99it/s[K  |==================================>               | 1002/1435 - 102.17it/s[K  |===================================>              | 1007/1435 - 100.63it/s[K  |===================================>              | 1010/1435 - 98.95it/s[K  |===================================>              | 1011/1435 - 97.15it/s[K  |===================================>              | 1013/1435 - 95.50it/s[K  |===================================>              | 1021/1435 - 94.48it/s[K  |===================================>              | 1021/1435 - 92.76it/s[K  |===================================>              | 1025/1435 - 91.45it/s[K  |===================================>              | 1028/1435 - 90.11it/s[K  |===================================>              | 1031/1435 - 88.82it/s[K  |====================================>             | 1034/1435 - 87.57it/s[K  |====================================>             | 1037/1435 - 86.36it/s[K  |====================================>             | 1039/1435 - 85.11it/s[K  |====================================>             | 1045/1435 - 84.21it/s[K  |====================================>             | 1045/1435 - 82.87it/s[K  |====================================>             | 1047/1435 - 81.73it/s[K  |====================================>             | 1051/1435 - 80.78it/s[K  |====================================>             | 1055/1435 - 79.86it/s[K  |====================================>             | 1057/1435 - 78.82it/s[K  |====================================>             | 1060/1435 - 77.88it/s[K  |====================================>             | 1061/1435 - 76.83it/s[K  |=====================================>            | 1064/1435 - 75.95it/s[K  |=====================================>            | 1068/1435 - 75.15it/s[K  |=====================================>            | 1069/1435 - 74.18it/s[K  |=====================================>            | 1071/1435 - 73.30it/s[K  |=====================================>            | 1075/1435 - 72.58it/s[K  |=====================================>            | 1078/1435 - 71.81it/s[K  |=====================================>            | 1082/1435 - 71.13it/s[K  |=====================================>            | 1085/1435 - 70.40it/s[K  |=====================================>            | 1088/1435 - 69.69it/s[K  |=====================================>            | 1089/1435 - 68.87it/s[K  |======================================>           | 1092/1435 - 68.20it/s[K  |======================================>           | 1093/1435 - 67.42it/s[K  |======================================>           | 1097/1435 - 66.84it/s[K  |======================================>           | 1101/1435 - 66.28it/s[K  |======================================>           | 1102/1435 - 65.55it/s[K  |======================================>           | 1104/1435 - 64.90it/s[K  |======================================>           | 1110/1435 - 64.49it/s[K  |======================================>           | 1112/1435 - 63.86it/s[K  |======================================>           | 1115/1435 - 63.31it/s[K  |======================================>           | 1119/1435 - 62.82it/s[K  |======================================>           | 1119/1435 - 62.12it/s[K  |=======================================>          | 1120/1435 - 61.49it/s[K  |=======================================>          | 1126/1435 - 61.15it/s[K  |=======================================>          | 1129/1435 - 60.66it/s[K  |=======================================>          | 1130/1435 - 60.06it/s[K  |=======================================>          | 1134/1435 - 59.64it/s[K  |=======================================>          | 1137/1435 - 59.18it/s[K  |=======================================>          | 1139/1435 - 58.67it/s[K  |=======================================>          | 1142/1435 - 58.22it/s[K  |=======================================>          | 1146/1435 - 57.74it/s[K  |=======================================>          | 1147/1435 - 57.21it/s[K  |========================================>         | 1151/1435 - 56.84it/s[K  |========================================>         | 1155/1435 - 56.48it/s[K  |========================================>         | 1157/1435 - 56.03it/s[K  |========================================>         | 1161/1435 - 55.69it/s[K  |========================================>         | 1164/1435 - 55.30it/s[K  |========================================>         | 1165/1435 - 54.83it/s[K  |========================================>         | 1167/1435 - 54.41it/s[K  |========================================>         | 1171/1435 - 54.09it/s[K  |========================================>         | 1173/1435 - 53.68it/s[K  |========================================>         | 1174/1435 - 53.24it/s[K  |=========================================>        | 1179/1435 - 52.99it/s[K  |=========================================>        | 1180/1435 - 52.56it/s[K  |=========================================>        | 1183/1435 - 52.23it/s[K  |=========================================>        | 1185/1435 - 51.86it/s[K  |=========================================>        | 1189/1435 - 51.58it/s[K  |=========================================>        | 1191/1435 - 50.37it/s[K
+[DEBUG] model.cpp:1372 - loading tensors from /opt/stable-diffusion.cpp/models/flux/ae.safetensors
+  |=========================================>        | 1195/1435 - 50.54it/s[K  |============================================>     | 1288/1435 - 54.01it/s[K  |=============================================>    | 1302/1435 - 54.15it/s[K  |=============================================>    | 1315/1435 - 54.24it/s[K  |==================================================| 1435/1435 - 58.70it/s[K
+[INFO ] model.cpp:1592 - loading tensors completed, taking 24.45s (process: 0.00s, read: 21.69s, memcpy: 0.00s, convert: 1.81s, copy_to_backend: 0.00s)
+[DEBUG] stable-diffusion.cpp:816  - finished loaded file
+[INFO ] stable-diffusion.cpp:874  - total params memory size = 10055.28MB (VRAM 6660.19MB, RAM 3395.09MB): text_encoders 3395.09MB(RAM), diffusion_model 6565.62MB(VRAM), vae 94.57MB(VRAM), controlnet 0.00MB(VRAM), pmid 0.00MB(RAM)
+[INFO ] stable-diffusion.cpp:960  - running in Flux FLOW mode
+[DEBUG] stable-diffusion.cpp:3639 - generate_image 512x512
+[INFO ] stable-diffusion.cpp:3675 - sampling using Euler method
+[INFO ] denoiser.hpp:494  - get_sigmas with discrete scheduler
+[INFO ] stable-diffusion.cpp:3802 - TXT2IMG
+[DEBUG] conditioner.hpp:1249 - parse 'a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed' to [['a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed', 1], ]
+[DEBUG] clip.hpp:402  - token a cyberpunk city at night with neon signs reflecting in rain puddles, highly detailed
+[DEBUG] clip.hpp:305  - token length: 77
+[DEBUG] t5.hpp:403  - token length: 256
+[DEBUG] clip.hpp:766  - identity projection
+[DEBUG] ggml_extend.hpp:1803 - clip compute buffer size: 1.42 MB(RAM)
+[DEBUG] clip.hpp:766  - identity projection
+[DEBUG] ggml_extend.hpp:1803 - t5 compute buffer size: 68.25 MB(RAM)
+[DEBUG] conditioner.hpp:1379 - computing condition graph completed, taking 11081 ms
+[INFO ] stable-diffusion.cpp:3381 - get_learned_condition completed, taking 11145 ms
+[INFO ] stable-diffusion.cpp:3492 - generating image: 1/1 - seed 42
+[INFO ] ggml_extend.hpp:1901 - flux offload params (6565.62 MB, 776 tensors) to runtime backend (Vulkan0), taking 50.17s
+[DEBUG] ggml_extend.hpp:1803 - flux compute buffer size: 230.50 MB(VRAM)
+  |============>                                     | 1/4 - 55.46s/it[K  |=========================>                        | 2/4 - 30.31s/it[K  |=====================================>            | 3/4 - 21.92s/it[K  |==================================================| 4/4 - 17.73s/it[K
+[INFO ] stable-diffusion.cpp:3534 - sampling completed, taking 70.94s
+[INFO ] stable-diffusion.cpp:3545 - generating 1 latent images completed, taking 71.65s
+[INFO ] stable-diffusion.cpp:3548 - decoding 1 latents
+[DEBUG] stable-diffusion.cpp:2757 - VAE Tile size: 32x32
+[DEBUG] ggml_extend.hpp:867  - num tiles : 3, 3 
+[DEBUG] ggml_extend.hpp:868  - optimal overlap : 0.500000, 0.500000 (targeting 0.500000)
+[DEBUG] ggml_extend.hpp:899  - tile work buffer size: 0.81 MB
+[DEBUG] ggml_extend.hpp:912  - processing 9 tiles
+[INFO ] ggml_extend.hpp:1901 - vae offload params ( 94.57 MB, 138 tensors) to runtime backend (Vulkan0), taking 0.02s
+[DEBUG] ggml_extend.hpp:1803 - vae compute buffer size: 416.06 MB(VRAM)
+  |=====>                                            | 1/9 - 2.23it/s[K  |===========>                                      | 2/9 - 2.51it/s[K  |================>                                 | 3/9 - 2.53it/s[K  |======================>                           | 4/9 - 2.51it/s[K  |===========================>                      | 5/9 - 2.52it/s[K  |=================================>                | 6/9 - 2.52it/s[K  |======================================>           | 7/9 - 2.52it/s[K  |============================================>     | 8/9 - 2.53it/s[K  |==================================================| 9/9 - 2.53it/s[K
+[DEBUG] stable-diffusion.cpp:2791 - computing vae decode graph completed, taking 3.63s
+[INFO ] stable-diffusion.cpp:3558 - latent 1 decoded, taking 3.63s
+[INFO ] stable-diffusion.cpp:3562 - decode_first_stage completed, taking 3.63s
+[INFO ] stable-diffusion.cpp:3914 - generate_image completed in 86.43s
+[INFO ] main.cpp:424  - save result image 0 to '/opt/netscan/tmp/bench-chroma-images/schnell-512-s4.png' (success)
+[INFO ] main.cpp:473  - 1/1 images saved
+TIME: 116s
+
+DONE: sob, 14 mar 2026, 11:50:48 CET

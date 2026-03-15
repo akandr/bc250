@@ -1,0 +1,57 @@
+
+============================================================
+BENCHMARKING: qwen3.5:9b
+============================================================
+
+  ctx=4,096... gen=31.3 tok/s, prefill=90.7 tok/s, GPU=100%, VRAM=8.6G, load=77.6s
+
+  ctx=8,192... gen=31.7 tok/s, prefill=113.0 tok/s, GPU=100%, VRAM=8.8G, load=126.0s
+
+  ctx=16,384... gen=31.6 tok/s, prefill=111.8 tok/s, GPU=100%, VRAM=9.1G, load=105.2s
+
+  ctx=24,576... gen=31.6 tok/s, prefill=110.0 tok/s, GPU=100%, VRAM=9.4G, load=103.5s
+
+  ctx=32,768... gen=31.6 tok/s, prefill=111.4 tok/s, GPU=100%, VRAM=9.8G, load=109.6s
+
+  ctx=40,960... gen=31.7 tok/s, prefill=110.0 tok/s, GPU=100%, VRAM=10.1G, load=102.2s
+
+  ctx=48,000... gen=31.7 tok/s, prefill=108.5 tok/s, GPU=100%, VRAM=10.4G, load=104.7s
+
+  ctx=65,536... gen=31.7 tok/s, prefill=111.4 tok/s, GPU=100%, VRAM=11.4G, load=110.1s
+
+============================================================
+BENCHMARKING: qwen3:14b
+============================================================
+
+  ctx=4,096... gen=26.8 tok/s, prefill=60.4 tok/s, GPU=100%, VRAM=10.1G, load=88.3s
+
+  ctx=8,192... gen=26.9 tok/s, prefill=61.4 tok/s, GPU=100%, VRAM=10.8G, load=105.4s
+
+  ctx=16,384... gen=26.8 tok/s, prefill=60.4 tok/s, GPU=100%, VRAM=12.1G, load=101.5s
+
+  ctx=24,576... gen=26.8 tok/s, prefill=60.5 tok/s, GPU=100%, VRAM=13.5G, load=7.5s
+
+  ctx=32,768... FAILED: FAIL: timed out
+  Skipping remaining context sizes for qwen3:14b
+
+
+Results saved to /opt/netscan/tmp/bench-qwen35-results.json
+
+================================================================================
+SUMMARY
+================================================================================
+Model                     Ctx  Gen tok/s    Prefill  GPU%     VRAM Status
+--------------------------------------------------------------------------------
+qwen3.5:9b              4,096       31.3       90.7   100     8.6G
+qwen3.5:9b              8,192       31.7      113.0   100     8.8G
+qwen3.5:9b             16,384       31.6      111.8   100     9.1G
+qwen3.5:9b             24,576       31.6      110.0   100     9.4G
+qwen3.5:9b             32,768       31.6      111.4   100     9.8G
+qwen3.5:9b             40,960       31.7      110.0   100    10.1G
+qwen3.5:9b             48,000       31.7      108.5   100    10.4G
+qwen3.5:9b             65,536       31.7      111.4   100    11.4G
+qwen3:14b               4,096       26.8       60.4   100    10.1G
+qwen3:14b               8,192       26.9       61.4   100    10.8G
+qwen3:14b              16,384       26.8       60.4   100    12.1G
+qwen3:14b              24,576       26.8       60.5   100    13.5G
+qwen3:14b              32,768                                      FAIL: timed out

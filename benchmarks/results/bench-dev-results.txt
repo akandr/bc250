@@ -1,0 +1,4 @@
+FLUX.1-dev Q4_K_S Benchmark — sob, 14 mar 2026, 10:40:13 CET
+dev 768x768 s20: FAIL
+dev 1024x1024 s20: FAIL
+DONE

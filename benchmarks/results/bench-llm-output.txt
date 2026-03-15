@@ -1,0 +1,268 @@
+================================================================================
+BC-250 LLM Benchmark Suite — March 2026
+Vulkan 16.5 GiB · Ollama 0.16.1 · 2026-03-14 08:22
+================================================================================
+
+────────────────────────────────────────────────────────────
+MODEL: qwen2.5:3b (3.1B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 104.2 tok/s gen, 193.6 tok/s prefill, GPU: 100%, GTT: 2.3 GiB, Load: 5.8s
+  Testing 8K context... ✅ 104.2 tok/s gen, 204.0 tok/s prefill, GPU: 100%, GTT: 2.6 GiB, Load: 2.2s
+  Testing 16K context... ✅ 103.7 tok/s gen, 208.7 tok/s prefill, GPU: 100%, GTT: 2.9 GiB, Load: 2.4s
+  Testing 24K context... ✅ 103.6 tok/s gen, 193.6 tok/s prefill, GPU: 100%, GTT: 3.2 GiB, Load: 66.3s
+  Testing 32K context... ✅ 103.8 tok/s gen, 209.4 tok/s prefill, GPU: 100%, GTT: 3.4 GiB, Load: 2.4s
+  Testing 48K context... ✅ 103.5 tok/s gen, 188.2 tok/s prefill, GPU: 100%, GTT: 3.4 GiB, Load: 2.4s
+  Testing 64K context... ✅ 103.8 tok/s gen, 199.0 tok/s prefill, GPU: 100%, GTT: 3.4 GiB, Load: 2.4s
+
+────────────────────────────────────────────────────────────
+MODEL: qwen3:8b (8.2B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 43.9 tok/s gen, 79.0 tok/s prefill, GPU: 100%, GTT: 4.7 GiB, Load: 7.1s
+  Testing 8K context... ✅ 43.8 tok/s gen, 98.7 tok/s prefill, GPU: 100%, GTT: 5.3 GiB, Load: 3.2s
+  Testing 16K context... ✅ 43.9 tok/s gen, 76.9 tok/s prefill, GPU: 100%, GTT: 6.4 GiB, Load: 140.5s
+  Testing 24K context... ✅ 43.9 tok/s gen, 99.1 tok/s prefill, GPU: 100%, GTT: 7.6 GiB, Load: 3.6s
+  Testing 32K context... ✅ 43.8 tok/s gen, 98.4 tok/s prefill, GPU: 100%, GTT: 8.8 GiB, Load: 4.7s
+  Testing 48K context... ✅ 44.0 tok/s gen, 95.0 tok/s prefill, GPU: 100%, GTT: 9.8 GiB, Load: 5.8s
+  Testing 64K context... ✅ 43.7 tok/s gen, 98.8 tok/s prefill, GPU: 100%, GTT: 9.8 GiB, Load: 6.4s
+
+────────────────────────────────────────────────────────────
+MODEL: huihui_ai/qwen3-abliterated:8b (8.2B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 46.2 tok/s gen, 82.0 tok/s prefill, GPU: 100%, GTT: 4.5 GiB, Load: 6.9s
+  Testing 8K context... ✅ 46.2 tok/s gen, 97.9 tok/s prefill, GPU: 100%, GTT: 5.1 GiB, Load: 3.0s
+  Testing 16K context... ✅ 47.7 tok/s gen, 77.3 tok/s prefill, GPU: 100%, GTT: 6.3 GiB, Load: 97.8s
+  Testing 24K context... ✅ 47.9 tok/s gen, 96.3 tok/s prefill, GPU: 100%, GTT: 7.4 GiB, Load: 4.5s
+  Testing 32K context... ✅ 47.0 tok/s gen, 80.5 tok/s prefill, GPU: 100%, GTT: 8.6 GiB, Load: 4.5s
+  Testing 48K context... ✅ 46.6 tok/s gen, 96.7 tok/s prefill, GPU: 100%, GTT: 9.7 GiB, Load: 5.9s
+  Testing 64K context... ✅ 45.8 tok/s gen, 78.6 tok/s prefill, GPU: 100%, GTT: 9.7 GiB, Load: 5.8s
+
+────────────────────────────────────────────────────────────
+MODEL: qwen2.5:7b (7.6B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 55.8 tok/s gen, 115.2 tok/s prefill, GPU: 100%, GTT: 5.0 GiB, Load: 8.5s
+  Testing 8K context... ✅ 55.4 tok/s gen, 119.8 tok/s prefill, GPU: 100%, GTT: 5.1 GiB, Load: 3.8s
+  Testing 16K context... ✅ 55.5 tok/s gen, 120.8 tok/s prefill, GPU: 100%, GTT: 5.6 GiB, Load: 3.4s
+  Testing 24K context... ✅ 55.8 tok/s gen, 118.2 tok/s prefill, GPU: 100%, GTT: 6.0 GiB, Load: 3.5s
+  Testing 32K context... ✅ 55.7 tok/s gen, 120.0 tok/s prefill, GPU: 100%, GTT: 6.5 GiB, Load: 3.9s
+  Testing 48K context... ✅ 55.6 tok/s gen, 118.9 tok/s prefill, GPU: 100%, GTT: 6.5 GiB, Load: 4.3s
+  Testing 64K context... ✅ 55.6 tok/s gen, 115.3 tok/s prefill, GPU: 100%, GTT: 6.5 GiB, Load: 3.9s
+
+────────────────────────────────────────────────────────────
+MODEL: qwen2.5-coder:7b (7.6B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 55.5 tok/s gen, 115.5 tok/s prefill, GPU: 100%, GTT: 4.9 GiB, Load: 83.8s
+  Testing 8K context... ✅ 55.5 tok/s gen, 112.7 tok/s prefill, GPU: 100%, GTT: 5.1 GiB, Load: 3.4s
+  Testing 16K context... ✅ 55.4 tok/s gen, 113.6 tok/s prefill, GPU: 100%, GTT: 5.5 GiB, Load: 3.7s
+  Testing 24K context... ✅ 55.5 tok/s gen, 119.5 tok/s prefill, GPU: 100%, GTT: 6.0 GiB, Load: 3.4s
+  Testing 32K context... ✅ 55.5 tok/s gen, 114.6 tok/s prefill, GPU: 100%, GTT: 6.4 GiB, Load: 3.8s
+  Testing 48K context... ✅ 55.6 tok/s gen, 117.2 tok/s prefill, GPU: 100%, GTT: 6.4 GiB, Load: 3.4s
+  Testing 64K context... ✅ 55.7 tok/s gen, 117.5 tok/s prefill, GPU: 100%, GTT: 6.4 GiB, Load: 3.8s
+
+────────────────────────────────────────────────────────────
+MODEL: llama3.1:8b (8.0B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 52.1 tok/s gen, 81.1 tok/s prefill, GPU: 100%, GTT: 5.4 GiB, Load: 9.1s
+  Testing 8K context... ✅ 52.0 tok/s gen, 82.6 tok/s prefill, GPU: 100%, GTT: 5.9 GiB, Load: 7.6s
+  Testing 16K context... ✅ 52.1 tok/s gen, 75.7 tok/s prefill, GPU: 100%, GTT: 6.9 GiB, Load: 66.9s
+  Testing 24K context... ✅ 52.2 tok/s gen, 84.3 tok/s prefill, GPU: 100%, GTT: 7.9 GiB, Load: 4.1s
+  Testing 32K context... ✅ 52.1 tok/s gen, 80.7 tok/s prefill, GPU: 100%, GTT: 8.9 GiB, Load: 4.3s
+  Testing 48K context... ✅ 52.1 tok/s gen, 83.1 tok/s prefill, GPU: 100%, GTT: 11.0 GiB, Load: 57.9s
+  Testing 64K context...   FAIL: timed out
+❌ FAIL: timed out
+  Skipping remaining context sizes for llama3.1:8b
+
+────────────────────────────────────────────────────────────
+MODEL: mannix/llama3.1-8b-lexi:latest (8.0B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 50.7 tok/s gen, 277.4 tok/s prefill, GPU: 100%, GTT: 5.2 GiB, Load: 55.6s
+  Testing 8K context... ✅ 50.6 tok/s gen, 280.4 tok/s prefill, GPU: 100%, GTT: 5.7 GiB, Load: 3.9s
+  Testing 16K context... ✅ 50.7 tok/s gen, 279.0 tok/s prefill, GPU: 100%, GTT: 6.7 GiB, Load: 4.2s
+  Testing 24K context... ✅ 50.7 tok/s gen, 280.0 tok/s prefill, GPU: 100%, GTT: 7.7 GiB, Load: 52.4s
+  Testing 32K context... ✅ 50.6 tok/s gen, 280.1 tok/s prefill, GPU: 100%, GTT: 8.7 GiB, Load: 4.4s
+  Testing 48K context... ✅ 50.7 tok/s gen, 280.8 tok/s prefill, GPU: 100%, GTT: 10.6 GiB, Load: 5.4s
+  Testing 64K context...   FAIL: timed out
+❌ FAIL: timed out
+  Skipping remaining context sizes for mannix/llama3.1-8b-lexi:latest
+
+────────────────────────────────────────────────────────────
+MODEL: huihui_ai/seed-coder-abliterate:latest (8.3B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152, 65536]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 51.4 tok/s gen, 125.6 tok/s prefill, GPU: 100%, GTT: 5.6 GiB, Load: 52.3s
+  Testing 8K context... ✅ 51.7 tok/s gen, 127.5 tok/s prefill, GPU: 100%, GTT: 6.1 GiB, Load: 4.0s
+  Testing 16K context... ✅ 51.5 tok/s gen, 130.9 tok/s prefill, GPU: 100%, GTT: 7.1 GiB, Load: 4.3s
+  Testing 24K context... ✅ 51.3 tok/s gen, 126.0 tok/s prefill, GPU: 100%, GTT: 8.1 GiB, Load: 64.6s
+  Testing 32K context... ✅ 51.4 tok/s gen, 130.9 tok/s prefill, GPU: 100%, GTT: 9.1 GiB, Load: 4.5s
+  Testing 48K context... ✅ 51.4 tok/s gen, 130.7 tok/s prefill, GPU: 100%, GTT: 9.1 GiB, Load: 67.3s
+  Testing 64K context... ✅ 51.5 tok/s gen, 118.7 tok/s prefill, GPU: 100%, GTT: 9.1 GiB, Load: 5.9s
+
+────────────────────────────────────────────────────────────
+MODEL: gemma2:9b (9.2B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 38.3 tok/s gen, 66.7 tok/s prefill, GPU: 100%, GTT: 8.2 GiB, Load: 62.4s
+  Testing 8K context... ✅ 38.4 tok/s gen, 77.0 tok/s prefill, GPU: 100%, GTT: 9.2 GiB, Load: 5.7s
+  Testing 16K context... ✅ 38.3 tok/s gen, 76.7 tok/s prefill, GPU: 100%, GTT: 9.2 GiB, Load: 7.7s
+  Testing 24K context... ✅ 38.4 tok/s gen, 76.4 tok/s prefill, GPU: 100%, GTT: 9.2 GiB, Load: 57.8s
+  Testing 32K context... ✅ 38.2 tok/s gen, 80.2 tok/s prefill, GPU: 100%, GTT: 9.2 GiB, Load: 7.7s
+  Testing 48K context... ✅ 38.3 tok/s gen, 81.5 tok/s prefill, GPU: 100%, GTT: 9.2 GiB, Load: 61.4s
+
+────────────────────────────────────────────────────────────
+MODEL: mistral-nemo:12b (12.2B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 49152]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 34.4 tok/s gen, 47.4 tok/s prefill, GPU: 100%, GTT: 7.7 GiB, Load: 13.0s
+  Testing 8K context... ✅ 34.4 tok/s gen, 45.8 tok/s prefill, GPU: 100%, GTT: 8.3 GiB, Load: 12.4s
+  Testing 16K context... ✅ 34.4 tok/s gen, 50.8 tok/s prefill, GPU: 100%, GTT: 9.6 GiB, Load: 12.9s
+  Testing 24K context... ✅ 34.4 tok/s gen, 46.8 tok/s prefill, GPU: 100%, GTT: 10.8 GiB, Load: 107.0s
+  Testing 32K context...   FAIL: timed out
+❌ FAIL: timed out
+  Skipping remaining context sizes for mistral-nemo:12b
+
+────────────────────────────────────────────────────────────
+MODEL: qwen3:14b (14.8B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 40960]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 27.2 tok/s gen, 48.8 tok/s prefill, GPU: 100%, GTT: 8.5 GiB, Load: 104.8s
+  Testing 8K context... ✅ 27.1 tok/s gen, 50.0 tok/s prefill, GPU: 100%, GTT: 9.2 GiB, Load: 83.0s
+  Testing 16K context... ✅ 27.1 tok/s gen, 48.0 tok/s prefill, GPU: 100%, GTT: 10.4 GiB, Load: 159.1s
+  Testing 24K context... ✅ 27.0 tok/s gen, 47.9 tok/s prefill, GPU: 100%, GTT: 11.7 GiB, Load: 12.7s
+  Testing 32K context...   FAIL: timed out
+❌ FAIL: timed out
+  Skipping remaining context sizes for qwen3:14b
+
+────────────────────────────────────────────────────────────
+MODEL: huihui_ai/qwen3-abliterated:14b (14.8B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 40960]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 27.7 tok/s gen, 46.9 tok/s prefill, GPU: 100%, GTT: 8.3 GiB, Load: 72.7s
+  Testing 8K context... ✅ 27.7 tok/s gen, 49.5 tok/s prefill, GPU: 100%, GTT: 8.9 GiB, Load: 64.0s
+  Testing 16K context... ✅ 27.6 tok/s gen, 47.2 tok/s prefill, GPU: 100%, GTT: 10.2 GiB, Load: 74.3s
+  Testing 24K context... ✅ 27.7 tok/s gen, 48.8 tok/s prefill, GPU: 100%, GTT: 11.4 GiB, Load: 71.0s
+  Testing 32K context...   FAIL: timed out
+❌ FAIL: timed out
+  Skipping remaining context sizes for huihui_ai/qwen3-abliterated:14b
+
+────────────────────────────────────────────────────────────
+MODEL: phi4:14b (14.7B)
+Context sizes to test: [4096, 8192, 16384, 24576, 32768, 40960]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 28.7 tok/s gen, 45.8 tok/s prefill, GPU: 100%, GTT: 9.6 GiB, Load: 84.2s
+  Testing 8K context... ✅ 28.7 tok/s gen, 45.9 tok/s prefill, GPU: 100%, GTT: 10.4 GiB, Load: 81.8s
+  Testing 16K context... ✅ 28.8 tok/s gen, 46.0 tok/s prefill, GPU: 100%, GTT: 11.8 GiB, Load: 13.5s
+  Testing 24K context... ✅ 28.7 tok/s gen, 46.8 tok/s prefill, GPU: 100%, GTT: 11.8 GiB, Load: 13.7s
+  Testing 32K context... ✅ 28.7 tok/s gen, 45.9 tok/s prefill, GPU: 100%, GTT: 11.8 GiB, Load: 13.7s
+  Testing 40K context... ✅ 28.7 tok/s gen, 46.4 tok/s prefill, GPU: 100%, GTT: 11.8 GiB, Load: 13.7s
+
+────────────────────────────────────────────────────────────
+MODEL: hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K (30.5B)
+Context sizes to test: [4096, 8192, 16384, 24576]
+────────────────────────────────────────────────────────────
+  Testing 4K context... ✅ 60.2 tok/s gen, 44.7 tok/s prefill, GPU: 100%, GTT: 10.4 GiB, Load: 14.9s
+  Testing 8K context... ✅ 60.4 tok/s gen, 44.9 tok/s prefill, GPU: 100%, GTT: 10.8 GiB, Load: 15.0s
+  Testing 16K context... ✅ 60.9 tok/s gen, 43.4 tok/s prefill, GPU: 100%, GTT: 11.5 GiB, Load: 15.7s
+  Testing 24K context...   FAIL: timed out
+❌ FAIL: timed out
+  Skipping remaining context sizes for hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K
+
+Results saved to /opt/netscan/tmp/bench-llm-results.json
+
+====================================================================================================
+SUMMARY TABLE
+====================================================================================================
+Model                                           Ctx  Gen t/s  Pre t/s   GPU  GTT GiB   Status
+----------------------------------------------------------------------------------------------------
+qwen2.5:3b                                       4K    104.2    193.6  100%      2.3       OK
+qwen2.5:3b                                       8K    104.2    204.0  100%      2.6       OK
+qwen2.5:3b                                      16K    103.7    208.7  100%      2.9       OK
+qwen2.5:3b                                      24K    103.6    193.6  100%      3.2       OK
+qwen2.5:3b                                      32K    103.8    209.4  100%      3.4       OK
+qwen2.5:3b                                      48K    103.5    188.2  100%      3.4       OK
+qwen2.5:3b                                      64K    103.8    199.0  100%      3.4       OK
+qwen3:8b                                         4K     43.9     79.0  100%      4.7       OK
+qwen3:8b                                         8K     43.8     98.7  100%      5.3       OK
+qwen3:8b                                        16K     43.9     76.9  100%      6.4       OK
+qwen3:8b                                        24K     43.9     99.1  100%      7.6       OK
+qwen3:8b                                        32K     43.8     98.4  100%      8.8       OK
+qwen3:8b                                        48K     44.0     95.0  100%      9.8       OK
+qwen3:8b                                        64K     43.7     98.8  100%      9.8       OK
+huihui_ai/qwen3-abliterated:8b                   4K     46.2     82.0  100%      4.5       OK
+huihui_ai/qwen3-abliterated:8b                   8K     46.2     97.9  100%      5.1       OK
+huihui_ai/qwen3-abliterated:8b                  16K     47.7     77.3  100%      6.3       OK
+huihui_ai/qwen3-abliterated:8b                  24K     47.9     96.3  100%      7.4       OK
+huihui_ai/qwen3-abliterated:8b                  32K     47.0     80.5  100%      8.6       OK
+huihui_ai/qwen3-abliterated:8b                  48K     46.6     96.7  100%      9.7       OK
+huihui_ai/qwen3-abliterated:8b                  64K     45.8     78.6  100%      9.7       OK
+qwen2.5:7b                                       4K     55.8    115.2  100%      5.0       OK
+qwen2.5:7b                                       8K     55.4    119.8  100%      5.1       OK
+qwen2.5:7b                                      16K     55.5    120.8  100%      5.6       OK
+qwen2.5:7b                                      24K     55.8    118.2  100%      6.0       OK
+qwen2.5:7b                                      32K     55.7    120.0  100%      6.5       OK
+qwen2.5:7b                                      48K     55.6    118.9  100%      6.5       OK
+qwen2.5:7b                                      64K     55.6    115.3  100%      6.5       OK
+qwen2.5-coder:7b                                 4K     55.5    115.5  100%      4.9       OK
+qwen2.5-coder:7b                                 8K     55.5    112.7  100%      5.1       OK
+qwen2.5-coder:7b                                16K     55.4    113.6  100%      5.5       OK
+qwen2.5-coder:7b                                24K     55.5    119.5  100%      6.0       OK
+qwen2.5-coder:7b                                32K     55.5    114.6  100%      6.4       OK
+qwen2.5-coder:7b                                48K     55.6    117.2  100%      6.4       OK
+qwen2.5-coder:7b                                64K     55.7    117.5  100%      6.4       OK
+llama3.1:8b                                      4K     52.1     81.1  100%      5.4       OK
+llama3.1:8b                                      8K     52.0     82.6  100%      5.9       OK
+llama3.1:8b                                     16K     52.1     75.7  100%      6.9       OK
+llama3.1:8b                                     24K     52.2     84.3  100%      7.9       OK
+llama3.1:8b                                     32K     52.1     80.7  100%      8.9       OK
+llama3.1:8b                                     48K     52.1     83.1  100%     11.0       OK
+llama3.1:8b                                     64K        —        —     —        —     FAIL
+mannix/llama3.1-8b-lexi:latest                   4K     50.7    277.4  100%      5.2       OK
+mannix/llama3.1-8b-lexi:latest                   8K     50.6    280.4  100%      5.7       OK
+mannix/llama3.1-8b-lexi:latest                  16K     50.7    279.0  100%      6.7       OK
+mannix/llama3.1-8b-lexi:latest                  24K     50.7    280.0  100%      7.7       OK
+mannix/llama3.1-8b-lexi:latest                  32K     50.6    280.1  100%      8.7       OK
+mannix/llama3.1-8b-lexi:latest                  48K     50.7    280.8  100%     10.6       OK
+mannix/llama3.1-8b-lexi:latest                  64K        —        —     —        —     FAIL
+huihui_ai/seed-coder-abliterate:latest           4K     51.4    125.6  100%      5.6       OK
+huihui_ai/seed-coder-abliterate:latest           8K     51.7    127.5  100%      6.1       OK
+huihui_ai/seed-coder-abliterate:latest          16K     51.5    130.9  100%      7.1       OK
+huihui_ai/seed-coder-abliterate:latest          24K     51.3    126.0  100%      8.1       OK
+huihui_ai/seed-coder-abliterate:latest          32K     51.4    130.9  100%      9.1       OK
+huihui_ai/seed-coder-abliterate:latest          48K     51.4    130.7  100%      9.1       OK
+huihui_ai/seed-coder-abliterate:latest          64K     51.5    118.7  100%      9.1       OK
+gemma2:9b                                        4K     38.3     66.7  100%      8.2       OK
+gemma2:9b                                        8K     38.4     77.0  100%      9.2       OK
+gemma2:9b                                       16K     38.3     76.7  100%      9.2       OK
+gemma2:9b                                       24K     38.4     76.4  100%      9.2       OK
+gemma2:9b                                       32K     38.2     80.2  100%      9.2       OK
+gemma2:9b                                       48K     38.3     81.5  100%      9.2       OK
+mistral-nemo:12b                                 4K     34.4     47.4  100%      7.7       OK
+mistral-nemo:12b                                 8K     34.4     45.8  100%      8.3       OK
+mistral-nemo:12b                                16K     34.4     50.8  100%      9.6       OK
+mistral-nemo:12b                                24K     34.4     46.8  100%     10.8       OK
+mistral-nemo:12b                                32K        —        —     —        —     FAIL
+qwen3:14b                                        4K     27.2     48.8  100%      8.5       OK
+qwen3:14b                                        8K     27.1     50.0  100%      9.2       OK
+qwen3:14b                                       16K     27.1     48.0  100%     10.4       OK
+qwen3:14b                                       24K     27.0     47.9  100%     11.7       OK
+qwen3:14b                                       32K        —        —     —        —     FAIL
+huihui_ai/qwen3-abliterated:14b                  4K     27.7     46.9  100%      8.3       OK
+huihui_ai/qwen3-abliterated:14b                  8K     27.7     49.5  100%      8.9       OK
+huihui_ai/qwen3-abliterated:14b                 16K     27.6     47.2  100%     10.2       OK
+huihui_ai/qwen3-abliterated:14b                 24K     27.7     48.8  100%     11.4       OK
+huihui_ai/qwen3-abliterated:14b                 32K        —        —     —        —     FAIL
+phi4:14b                                         4K     28.7     45.8  100%      9.6       OK
+phi4:14b                                         8K     28.7     45.9  100%     10.4       OK
+phi4:14b                                        16K     28.8     46.0  100%     11.8       OK
+phi4:14b                                        24K     28.7     46.8  100%     11.8       OK
+phi4:14b                                        32K     28.7     45.9  100%     11.8       OK
+phi4:14b                                        40K     28.7     46.4  100%     11.8       OK
+hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K            4K     60.2     44.7  100%     10.4       OK
+hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K            8K     60.4     44.9  100%     10.8       OK
+hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K           16K     60.9     43.4  100%     11.5       OK
+hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K           24K        —        —     —        —     FAIL

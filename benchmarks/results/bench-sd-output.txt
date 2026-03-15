@@ -1,0 +1,38 @@
+
+--- FLUX.1-schnell Q4_K (production) ---
+schnell_512x512_s4                            OK  56s  636K
+schnell_768x768_s4_tiling                     OK  91s  1,4M
+schnell_1024x1024_s4_tiling                   OK  146s  2,4M
+schnell_512x512_s8                            OK  77s  620K
+schnell_768x512_s4                            OK  66s  932K
+schnell_1024x576_s4_tiling                    OK  86s  1,4M
+
+--- SD-Turbo (fast baseline) ---
+sdturbo_512x512_s1                            OK  11s  400K
+sdturbo_512x512_s4                            OK  11s  328K
+sdturbo_768x768_s4                            OK  21s  736K
+
+--- FLUX.1-dev Q4_K (download if needed) ---
+Downloading flux1-dev-q4_k.gguf (6.5 GB)...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    15  100    15    0     0     61      0 --:--:-- --:--:-- --:--:--    61
+dev_512x512_s20                               FAIL
+dev_768x768_s20_tiling                        FAIL
+dev_1024x1024_s20_tiling                      FAIL
+dev_512x512_s50                               FAIL
+
+=== ALL DONE ===
+Ollama restarted.
+Results: /opt/netscan/tmp/bench-sd-results.txt
+razem 9,3M
+-rw-r--r--. 1 akandr akandr 634K 03-14 09:58 flux-schnell-q4k_512x512_s4.png
+-rw-r--r--. 1 akandr akandr 2,4M 03-14 10:08 schnell_1024x1024_s4_tiling.png
+-rw-r--r--. 1 akandr akandr 1,4M 03-14 10:12 schnell_1024x576_s4_tiling.png
+-rw-r--r--. 1 akandr akandr 634K 03-14 10:04 schnell_512x512_s4.png
+-rw-r--r--. 1 akandr akandr 619K 03-14 10:10 schnell_512x512_s8.png
+-rw-r--r--. 1 akandr akandr 929K 03-14 10:11 schnell_768x512_s4.png
+-rw-r--r--. 1 akandr akandr 1,4M 03-14 10:06 schnell_768x768_s4_tiling.png
+-rw-r--r--. 1 akandr akandr 398K 03-14 10:13 sdturbo_512x512_s1.png
+-rw-r--r--. 1 akandr akandr 325K 03-14 10:13 sdturbo_512x512_s4.png
+-rw-r--r--. 1 akandr akandr 736K 03-14 10:13 sdturbo_768x768_s4.png
