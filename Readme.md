@@ -670,7 +670,7 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
 | Image generation (FLUX.2-klein 512²) | ~20s |
-| Image editing (Kontext 1024²) | ~5–7 min |
+| Image editing (Kontext 512²) | ~5–7 min |
 | Video generation (WAN 2.1 480×320) | ~38 min |
 | ESRGAN 4× upscale | ~30s |
 | Cold start (model reload) | 30–60s |
@@ -1560,14 +1560,6 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Prefill rate degrades with context | 128 tok/s at 1.3K → 70 tok/s at 10K tokens (UMA bandwidth + attention scaling). |
 | Gen speed degrades with context fill | 27 tok/s empty → 13 tok/s at 30K tokens. Partial model offload at KV limit causes cliff drop. |
 | Ollama caps KV auto-size at ~40K (Q4_0) | `num_ctx` > 40960 accepted but silently truncated. Actual limit = VRAM ÷ per-token KV size. |
-
-### ☐ TODO
-
-*22 infrastructure items + 18 action points completed — see git log for details.*
-
-- [x] Migrate jobs.json away from ~/.openclaw/ path — **moved to /opt/netscan/data/jobs.json, updated 5 files**
-- [x] Test WAN 2.2 TI2V 5B for text+image-to-video — **OOM crash. Model (2.9G) + VAE (1.4G) + T5 (4.7G) = 9 GB model, exceeds 16 GB UMA budget for video gen. Needs Q2_K model + Q2_K T5 (~6 GB) — untested.**
-- [x] Implement FLUX Kontext image editing via Signal — **send photo + instruction → Kontext edits → sends back. Model: flux1-kontext-dev-Q4_0 (6.8 GB), reuses FLUX.1 T5/CLIP/VAE**
 
 ---
 
