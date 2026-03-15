@@ -128,7 +128,7 @@ SD_UPSCALE_TIMEOUT_S = 120
 
 # ─── Kontext Image Editing ──────────────────────────────────────────────────
 SD_KONTEXT_MODEL = f"{SD_FLUX_DIR}/flux1-kontext-dev-Q4_0.gguf"
-SD_KONTEXT_TIMEOUT_S = 3600         # Max 60 min for Kontext editing (~40 min typical @1024² with swap)
+SD_KONTEXT_TIMEOUT_S = 600          # Max 10 min for Kontext editing (~5 min typical @512²)
 SD_EDIT_SCRIPT_PREFIX = "/opt/stable-diffusion.cpp/edit-image"  # EXEC edit intercept
 SIGNAL_ATTACHMENTS_DIR = os.path.expanduser("~/.local/share/signal-cli/attachments")
 
@@ -1375,7 +1375,7 @@ def edit_and_send_image(source_path, prompt):
     log(f"  EDIT: Kontext edit requested: {prompt[:80]}")
     sd_status('EDIT: editing image with Kontext')
 
-    signal_reply(f"\u270f\ufe0f Editing your image with Kontext... ~40 min @1024². Instruction: {prompt[:200]}")
+    signal_reply(f"\u270f\ufe0f Editing your image with Kontext... ~5 min. Instruction: {prompt[:200]}")
 
     # Stop Ollama to free VRAM
     log("  EDIT: Stopping Ollama...")
@@ -1418,7 +1418,7 @@ def edit_and_send_image(source_path, prompt):
         "-p", prompt,
         "-o", edit_output,
         "--steps", "28",
-        "-W", "1024", "-H", "1024",
+        "-W", "512", "-H", "512",
         "--cfg-scale", "3.5",
         "--sampling-method", "euler",
         "--offload-to-cpu", "--diffusion-fa",

@@ -644,7 +644,7 @@ When the LLM detects an image request, it emits `EXEC(/opt/stable-diffusion.cpp/
 
 Bot is offline during generation (~25–40s total including model reload).
 
-**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~40 min @1024²).
+**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~5 min @512²).
 
 **Video generation:** Ask for a video/animation. Uses WAN 2.1 T2V 1.3B (~38 min for 17 frames @480×320).
 
@@ -670,7 +670,7 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
 | Image generation (FLUX.2-klein-9B 512²) | ~105s |
-| Image editing (Kontext 1024²) | ~40 min |
+| Image editing (Kontext 512²) | ~5 min |
 | Video generation (WAN 2.1 480×320) | ~38 min |
 | ESRGAN 4× upscale | ~30s |
 | Cold start (model reload) | 30–60s |
@@ -911,7 +911,7 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 | Model | Params | GGUF Size | Total RAM¹ | Status |
 |-------|:------:|:---------:|:----------:|--------|
-| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | ✅ Tested — 316s @512², ~40 min @1024² (swap pressure). Uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
+| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | ✅ Tested — 316s @512² (no swap). 1024² causes swap pressure (40+ min). Uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
 
 > Kontext is a dedicated image editing model by Black Forest Labs. It takes a reference image via `-r` and a text instruction to produce an edited version. Uses existing FLUX.1 encoders (T5-XXL, CLIP_L) and VAE (ae.safetensors) from `/opt/stable-diffusion.cpp/models/flux/`.
 > ```bash
