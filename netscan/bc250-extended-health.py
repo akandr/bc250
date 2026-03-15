@@ -239,8 +239,8 @@ def check_queue_runner_jobs():
     """Check job execution stats from queue-runner."""
     log("\n═══ Queue Runner Job Assessment ═══")
 
-    # jobs.json is at ~/.openclaw/cron/jobs.json with {"version": N, "jobs": [...]}
-    jobs_file = Path.home() / ".openclaw/cron/jobs.json"
+    # jobs.json is at /opt/netscan/data/jobs.json with {"version": N, "jobs": [...]}
+    jobs_file = Path("/opt/netscan/data/jobs.json")
     state_file = DATA_DIR / "queue-runner-state.json"
 
     # Queue runner state

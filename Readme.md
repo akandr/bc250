@@ -515,12 +515,11 @@ The context window directly controls KV cache size, and on 16 GB unified memory,
 
 **Q8_0 ceiling:** Fits up to ~64K context on GPU. At 80K, KV cache spills to CPU (7 tok/s — unusable). Non-deterministic — depends on memory state at load time.
 
-**To enable (tested, not yet in production):**
+**Not deploying to production.** MoE model (primary) is capped at 16K context — KV quantization provides no benefit (bottleneck is weight size, not KV). Potentially useful for the 9B fallback model at 40K+ context, but not worth the quality risk.
 ```bash
-# Add to /etc/systemd/system/ollama.service.d/override.conf:
-Environment=OLLAMA_KV_CACHE_TYPE=q4_0
-# Then: sudo systemctl daemon-reload && sudo systemctl restart ollama
-# Ollama will auto-size KV to ~40K tokens (1.8 GiB)
+# If ever needed for 9B model at extreme context:
+# Environment=OLLAMA_KV_CACHE_TYPE=q4_0
+# in /etc/systemd/system/ollama.service.d/override.conf
 ```
 
 > **Quality note:** Q8_0 is virtually lossless for KV cache. Q4_0 may degrade output quality on complex reasoning — needs quality evaluation before deploying to production. For the MoE model (16K context limit), KV quantization provides no benefit — the bottleneck is weight size not KV. It's most useful for the 9B fallback model when running at 40K+ context.
@@ -735,6 +734,12 @@ When the LLM detects an image request, it emits `EXEC(/opt/stable-diffusion.cpp/
 
 Bot is offline during generation (~25–40s total including model reload).
 
+**Image editing (Kontext):** Send a photo to Signal with an edit instruction ("make it cyberpunk", "add a hat"). The LLM emits `EXEC(/opt/stable-diffusion.cpp/edit-image "instruction")`, queue-runner runs FLUX.1-Kontext-dev with the photo as reference, and sends back the edited image (~5–7 min).
+
+**Video generation:** Ask for a video/animation. Uses WAN 2.1 T2V 1.3B (~38 min for 17 frames @480×320).
+
+**ESRGAN upscale:** Ask to upscale the last generated image. 4× upscale via RealESRGAN_x4plus (~30s).
+
 > ⚠️ **GFX1013 bug:** sd-cli hangs after writing the output image (Vulkan cleanup). queue-runner polls for the file and kills the process.
 
 ### 5.6 Personality — "Clawd"
@@ -755,6 +760,9 @@ The personality is baked into `queue-runner.py`'s `SYSTEM_PROMPT` — no externa
 | Text reply (warm) | 10–30s |
 | Complex reasoning with tool use | 30–90s |
 | Image generation (FLUX.2-klein 512²) | ~20s |
+| Image editing (Kontext 1024²) | ~5–7 min |
+| Video generation (WAN 2.1 480×320) | ~38 min |
+| ESRGAN 4× upscale | ~30s |
 | Cold start (model reload) | 30–60s |
 
 ---
@@ -969,11 +977,11 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 | Chroma flash Q4_0 | 12B | 5.1 GB | ~8.4 GB | 4–8 | ★★★ | ✅ Tested — 85s @512², better quality |
 | FLUX.1-dev Q4_K_S | 12B | 6.8 GB | ~10 GB | 20 | ★★★★ | ✅ Tested — 279s @512², ❌768²+ |
 | SD-Turbo | 1.1B | ~2 GB | ~2.5 GB | 1–4 | ★ | ✅ Fast preview, 11s @512² |
-| SD3.5-medium Q4_0 | 2.5B | 1.7 GB | ~6 GB | 28 | ★★★ | ✅ Tested — 49s @512², needs clip_g+clip_l+T5+F16 VAE² |
+| SD3.5-medium Q4_0 | 2.5B | 1.7 GB | ~6 GB | 28 | ★★★ | ✅ Tested — 49s @512², needs clip_g+clip_l+T5+F16 VAE³ |
 
 > ¹ Total RAM includes diffusion model + text encoder(s) + VAE.
 >
-> ² SD3.5 ships with a BF16 VAE which produces garbage on GFX1013 (no BF16 Vulkan support). Convert to F16 first: `python3 convert_vae_bf16_to_f16.py input.safetensors output.safetensors`
+> ³ SD3.5 ships with a BF16 VAE which produces garbage on GFX1013 (no BF16 Vulkan support). Convert to F16 first: `python3 convert_vae_bf16_to_f16.py input.safetensors output.safetensors`
 
 **Video generation — tested models:**
 
@@ -987,20 +995,21 @@ sd.cpp (master-525+) supports more models. The BC-250 has ~16.5 GB with Ollama s
 
 | Model | Params | GGUF Size | Total RAM¹ | Notes |
 |-------|:------:|:---------:|:----------:|-------|
-| WAN 2.2 TI2V 5B | 5B | ~5 GB | ~9 GB | Text/image→video. Borderline — might work with tiling |
+| WAN 2.2 TI2V 5B Q4_0 | 5B | 2.9 GB | **~9 GB** | **OOM crash at Q4_0.** Model (2.9G) + VAE (1.4G) + T5 (4.7G) = 9 GB — exceeds UMA budget during video denoising. May work with Q2_K model + Q2_K T5 (~6 GB) but untested. |
 
-**Image editing — Kontext:**
+**Image editing — FLUX.1-Kontext-dev:**
 
-| Model | Notes |
-|-------|-------|
-| FLUX.2-klein-9B | Supports Kontext-style editing via `-r` reference image |
+| Model | Params | GGUF Size | Total RAM¹ | Status |
+|-------|:------:|:---------:|:----------:|--------|
+| FLUX.1-Kontext-dev Q4_0 | 12B | 6.8 GB | ~10 GB | Downloading — uses `-r` flag, reuses FLUX.1 T5/CLIP/VAE |
 
-> Kontext reuses the same FLUX.2 diffusion model + a reference image. No additional model downloads needed beyond what's already on disk.
+> Kontext is a dedicated image editing model by Black Forest Labs. It takes a reference image via `-r` and a text instruction to produce an edited version. Uses existing FLUX.1 encoders (T5-XXL, CLIP_L) and VAE (ae.safetensors) from `/opt/stable-diffusion.cpp/models/flux/`.
 > ```bash
-> # Edit an existing image:
-> sd-cli --diffusion-model models/flux2/flux-2-klein-9b-Q4_0.gguf \
->   --vae models/flux2/flux2-vae.safetensors --llm models/flux2/qwen3-8b-Q4_K_M.gguf \
->   -r input.png -p "change the sky to sunset" --cfg-scale 1.0 --steps 4 \
+> # Edit an existing image with Kontext:
+> sd-cli --diffusion-model models/flux/flux1-kontext-dev-Q4_0.gguf \
+>   --vae models/flux/ae.safetensors --clip_l models/flux/clip_l.safetensors \
+>   --t5xxl models/flux/t5-v1_1-xxl-encoder-Q4_K_M.gguf --clip-on-cpu \
+>   -r input.png -p "change the sky to sunset" --cfg-scale 3.5 --steps 28 \
 >   --sampling-method euler --offload-to-cpu --diffusion-fa -o output.png
 > ```
 
@@ -1644,67 +1653,11 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 
 ### ☐ TODO
 
-- [x] Fix OOM kills — custom 16K context model + NVMe swap + OOM score protection
-- [x] Fix gateway orphan processes — KillMode=control-group
-- [x] Scale from 38 → 56 → 58 → 354 → 309 → **337** jobs/cycle (deduped, +frost-guard)
-- [x] Add best-effort-deliver to all announce jobs
-- [x] Queue-runner v2 → v3 → v4 → v5 → v6 → **v7** — continuous loop, Signal chat, synchronous SD
-- [x] Fix nightly resume across midnight (batch_date accepts today or yesterday)
-- [x] Dense daytime GPU mode → replaced by continuous loop (v7)
-- [x] Leak-monitor: added Ahmia dark web, GitHub dorks, Hudson Rock retry, model fix
-- [x] Dashboard audit — XSS fixes, dead code removal, queue-runner references
-- [x] 29 main + 101 host detail dashboard pages including 8 mailing list feeds, academic, market, advisor, radio, car, weather, news, health
-- [x] Replace OpenClaw gateway with standalone signal-cli + direct Ollama API calls
-- [x] Signal chat between every job (no separate gateway process)
-- [x] Synchronous SD image generation in queue-runner (no async worker scripts)
-- [x] Bump GTT from 12 → 14 GiB, TTM pages_limit 3M → 4M
-- [x] Disable 7 unnecessary services (~113 MB freed)
-- [x] System prompt with cynical personality + full data directory map
-- [x] Signal notification dedup — sent-items tracker (career, book, news, radio), cooldown+hash (weather, ha-correlate), daily flag (city-watch)
-- [x] Extended health monitoring — automated hourly via bc250-health-check.sh
-- [x] report.sh midnight-crossing fallback — uses yesterday's scan if today's missing
-- [x] Try FLUX at 768×768 — **works with VAE tiling (91s schnell, dev fails at 768+)**
-- [x] Weekly career summary digest via Signal — **career-digest.py runs Sundays, aggregates 7 days of scans, sends hot/warm matches + stats via Signal**
-- [ ] Migrate jobs.json away from ~/.openclaw/ path
-- [x] Evaluate zram — already effectively disabled (device exists but disksize=0, NVMe swap handles everything)
+*22 infrastructure items + 18 action points completed — see git log for details.*
 
-### ☐ Action points — verified corrections & upgrades
-
-**Memory tuning — GTT deprecation (kernel 6.12+):**
-
-- [x] Test removing `amdgpu.gttsize=14336` — **done (March 14).** GTT grew 14→16 GiB, Vulkan 14.0→16.5 GiB. The deprecated param was limiting allocation.
-- [x] Verify Vulkan heap sizes — host-visible grew from 4.17→8.17 GiB, device-local unchanged
-- [x] Remove gttsize from grubby and documentation — removed, docs updated
-
-**Image generation — model upgrades:**
-
-- [x] Update sd.cpp from master-504 to **master-525-d6dd6d7** (adds FLUX.2, Anima, Chroma-Radiance, spectrum caching)
-- [x] Test Chroma Q4_0 — **85s @512² (4 steps), 130s (8 steps). Reuses T5+VAE. Good quality but slower than FLUX.2-klein.**
-- [x] Test FLUX.2-klein-4B — **20s @512², 30s @768², 63s @1024². Replaced FLUX.1-schnell as default. Uses Qwen3-4B encoder, 40% less VRAM.**
-- [x] Test 768×768 resolution with FLUX.1-schnell — **91s with VAE tiling, 1024² = 146s**
-- [x] Test WAN 2.1 T2V 1.3B for short text-to-video clips — **WORKS! 17 frames @480×320 in ~38 min. First video generation on BC-250.**
-- [x] Test SD3.5-medium Q4_0 — **49s @512² (28 steps). Needs clip_g+clip_l+T5. BF16 VAE broken on GFX1013 — converted to F16, then works.**
-- [x] Add `--fa`, `--vae-tiling`, `--offload-to-cpu` to generation pipeline — done, smoke tested (37.7s vs ~48s)
-- [x] Update `generate-and-send-worker.sh` with new flags
-
-**LLM model upgrades (March 14 — Qwen3.5 era):**
-
-- [x] Upgrade Ollama 0.16.1 → 0.18.0 (required for Qwen3.5 architecture)
-- [x] Test qwen3.5:9b — **32 tok/s, 65K context, multimodal (vision+tools+thinking)**
-- [x] Test qwen3.5-35b-a3b MoE at IQ2_M — **38 tok/s, 16K context. SMARTEST MODEL ON BC-250.**
-- [x] Test qwen3.5-27b dense at IQ2_M — **FAILED. 0 tokens in 5 min. No matrix cores kills dense 27B.**
-- [x] Switch production from qwen3:14b to qwen3.5-35b-a3b-iq2m as primary
-- [x] Update OLLAMA_CONTEXT_LENGTH from 24576 to 16384 (MoE limit)
-
-**Image generation — pipeline improvements:**
-
-- [x] Add `--offload-to-cpu` to sd-cli command — done (queue-runner + worker script)
-- [x] Implement video generation path in queue-runner — **generate_and_send_video() with WAN 2.1 T2V, EXEC intercept, ~38min for 17 frames @480×320**
-- [x] Add ESRGAN upscale option in pipeline — **upscale_and_send() with sd-cli -M upscale, 4× via RealESRGAN_x4plus, EXEC intercept from Signal chat**
-
-**Power monitoring:**
-
-- [x] Add `power_w` column to `gpu-monitor.sh` TSV — reads `/sys/class/drm/card1/device/hwmon/hwmon2/power1_average`. Values: inference 130-155W, model-loaded 55-65W, true-idle 30-40W
+- [x] Migrate jobs.json away from ~/.openclaw/ path — **moved to /opt/netscan/data/jobs.json, updated 5 files**
+- [x] Test WAN 2.2 TI2V 5B for text+image-to-video — **OOM crash. Model (2.9G) + VAE (1.4G) + T5 (4.7G) = 9 GB model, exceeds 16 GB UMA budget for video gen. Needs Q2_K model + Q2_K T5 (~6 GB) — untested.**
+- [x] Implement FLUX Kontext image editing via Signal — **send photo + instruction → Kontext edits → sends back. Model: flux1-kontext-dev-Q4_0 (6.8 GB), reuses FLUX.1 T5/CLIP/VAE**
 
 ---
 

@@ -106,15 +106,24 @@ to sprytne omijanie ograniczeń sprzętu dzięki architekturze MoE.
 --- Benchmark — porównanie modeli ---
 
 [SLAJD: ASCII bar chart z README]
-  qwen2.5:3b              104 tok/s  ██████████▌
-  Qwen3-30B-A3B Q2_K       61 tok/s  ██████▏
-  qwen2.5:7b               56 tok/s  █████▌
-  llama3.1:8b               52 tok/s  █████▏
-  ★ qwen3.5-35b-a3b MoE    38 tok/s  ███▊  ← NAJINTELIGENTNIEJSZY
-  ★ qwen3.5:9b              32 tok/s  ███▏  ← najlepszy kontekst (65K)
-  phi4:14b                  29 tok/s  ██▉
-  qwen3:14b                 27 tok/s  ██▋   ← poprzedni primary
-  qwen3.5-27b (dense)        0 tok/s  ❌     ← brak matrix cores
+                            Gen tok/s                         Prefill tok/s
+  qwen2.5:3b              104 tok/s  ██████████▌              515 tok/s
+  Qwen3-30B-A3B Q2_K       61 tok/s  ██████▏                  —
+  qwen2.5:7b               56 tok/s  █████▌                   248 tok/s
+  qwen2.5-coder:7b         56 tok/s  █████▌                   246 tok/s
+  llama3.1:8b               52 tok/s  █████▏                   246 tok/s
+  mannix/llama3.1-8b-lexi   51 tok/s  █████                    308 tok/s
+  huihui_ai/seed-coder      52 tok/s  █████▏                   231 tok/s
+  qwen3:8b                  44 tok/s  ████▍                    251 tok/s
+  huihui_ai/qwen3-abl:8b    46 tok/s  ████▌                    250 tok/s
+  gemma2:9b                 38 tok/s  ███▊                     219 tok/s
+  mistral-nemo:12b          34 tok/s  ███▍                     137 tok/s
+  qwen3:14b                 27 tok/s  ██▋                      131 tok/s
+  huihui_ai/qwen3-abl:14b   28 tok/s  ██▊                      137 tok/s
+  phi4:14b                  29 tok/s  ██▉                      128 tok/s
+  ★ qwen3.5-35b-a3b MoE    38 tok/s  ███▊  ← NAJINTELIGENTNIEJSZY  233 tok/s
+  ★ qwen3.5:9b              32 tok/s  ███▏  ← najlepszy kontekst    230 tok/s
+  qwen3.5-27b (dense)        0 tok/s  ❌     ← brak matrix cores     —
 
 --- Konfiguracja produkcyjna ---
 

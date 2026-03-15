@@ -273,8 +273,8 @@ def load_latest_watchdog():
 
 
 def load_job_status():
-    """Load all job states from openclaw jobs.json."""
-    jobs_path = Path("/home/akandr/.openclaw/cron/jobs.json")
+    """Load all job states from jobs.json."""
+    jobs_path = Path("/opt/netscan/data/jobs.json")
     data = load_json(jobs_path)
     if not data:
         return {}

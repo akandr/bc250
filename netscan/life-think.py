@@ -642,7 +642,7 @@ def run_advisor():
     system_info["disk"] = shell_exec("df -h /opt/netscan | tail -1")
     system_info["uptime"] = shell_exec("uptime")
     system_info["gpu_mem"] = shell_exec("cat /sys/class/drm/card1/device/mem_info_vram_used 2>/dev/null || echo 'N/A'")
-    system_info["cron_jobs"] = shell_exec("python3 -c \"import json; d=json.load(open('/home/akandr/.openclaw/cron/jobs.json')); print(len([j for j in d['jobs'] if j.get('enabled',True)]))\" 2>/dev/null")
+    system_info["cron_jobs"] = shell_exec("python3 -c \"import json; d=json.load(open('/opt/netscan/data/jobs.json')); print(len([j for j in d['jobs'] if j.get('enabled',True)]))\" 2>/dev/null")
 
     # ── Phase 4: Build mega-prompt and run LLM ──
     log("\nPhase 4: Building life advisor prompt...")

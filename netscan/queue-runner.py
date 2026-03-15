@@ -47,7 +47,7 @@ from datetime import datetime, date, timedelta, timezone
 from pathlib import Path
 
 # ─── Configuration ──────────────────────────────────────────────────────────
-JOBS_JSON = Path.home() / ".openclaw/cron/jobs.json"
+JOBS_JSON = Path("/opt/netscan/data/jobs.json")
 STATE_FILE = Path("/opt/netscan/data/queue-runner-state.json")
 LOG_FILE = Path("/tmp/queue-runner.log")
 
@@ -125,6 +125,12 @@ SD_VIDEO_SCRIPT_PREFIX = "/opt/stable-diffusion.cpp/generate-video"  # EXEC vide
 # ─── ESRGAN Upscale ────────────────────────────────────────────────────────
 SD_ESRGAN_MODEL = "/opt/stable-diffusion.cpp/models/esrgan/RealESRGAN_x4plus.pth"
 SD_UPSCALE_TIMEOUT_S = 120
+
+# ─── Kontext Image Editing ──────────────────────────────────────────────────
+SD_KONTEXT_MODEL = f"{SD_FLUX_DIR}/flux1-kontext-dev-Q4_0.gguf"
+SD_KONTEXT_TIMEOUT_S = 600          # Max 10 min for Kontext editing (~5-7 min typical)
+SD_EDIT_SCRIPT_PREFIX = "/opt/stable-diffusion.cpp/edit-image"  # EXEC edit intercept
+SIGNAL_ATTACHMENTS_DIR = os.path.expanduser("~/.local/share/signal-cli/attachments")
 
 # ─── Job name sets ──────────────────────────────────────────────────────────
 # HA jobs: run opportunistically when GPU is idle (2-3 times/day)
@@ -949,8 +955,21 @@ def check_signal_inbox():
                 dm = envelope.get('dataMessage', {})
                 text = dm.get('message', '')
                 ts = envelope.get('timestamp', 0)
-                if source == SIGNAL_OWNER and text:
-                    messages.append({'text': text, 'timestamp': ts})
+                # Extract attachments (images sent by user)
+                attachments = []
+                for att in dm.get('attachments', []):
+                    att_id = att.get('id', '')
+                    content_type = att.get('contentType', '')
+                    if att_id and content_type.startswith('image/'):
+                        att_path = os.path.join(SIGNAL_ATTACHMENTS_DIR, att_id)
+                        if os.path.exists(att_path):
+                            attachments.append(att_path)
+                if source == SIGNAL_OWNER and (text or attachments):
+                    messages.append({
+                        'text': text or '',
+                        'timestamp': ts,
+                        'attachments': attachments,
+                    })
             except (json.JSONDecodeError, KeyError, TypeError):
                 # Not a JSON message line (signal-cli log noise) — skip
                 continue
@@ -1341,6 +1360,125 @@ def upscale_and_send(image_path, prompt=""):
     return f"⬆️ Image upscaled 4× and sent! ({elapsed}s, {size_kb}KB)"
 
 
+def edit_and_send_image(source_path, prompt):
+    """Edit an image using FLUX.1-Kontext-dev: stop Ollama, run sd-cli with -r, send, restart.
+
+    Uses the Kontext model which understands reference images and can edit them
+    based on text instructions. Flow mirrors generate_and_send_image().
+    """
+    if not os.path.exists(SD_KONTEXT_MODEL):
+        return "Kontext model not found. Download flux1-kontext-dev-Q4_0.gguf first."
+
+    if not os.path.exists(source_path):
+        return f"Source image not found: {source_path}"
+
+    log(f"  EDIT: Kontext edit requested: {prompt[:80]}")
+    sd_status('EDIT: editing image with Kontext')
+
+    signal_reply(f"\u270f\ufe0f Editing your image with Kontext... ~5-7 min. Instruction: {prompt[:200]}")
+
+    # Stop Ollama to free VRAM
+    log("  EDIT: Stopping Ollama...")
+    try:
+        subprocess.run(["sudo", "systemctl", "stop", "ollama"],
+                       timeout=30, capture_output=True)
+        time.sleep(3)
+    except Exception as e:
+        log(f"  EDIT: Failed to stop Ollama: {e}")
+        return f"Failed to stop Ollama for image editing: {e}"
+
+    # Reuse FLUX1 text encoders and VAE (same architecture as Kontext)
+    t5xxl = f"{SD_FLUX_DIR}/t5-v1_1-xxl-encoder-Q4_K_M.gguf"
+    clip_l = f"{SD_FLUX_DIR}/clip_l.safetensors"
+    vae = f"{SD_FLUX_DIR}/ae.safetensors"
+
+    for model_f in (t5xxl, clip_l, vae):
+        if not os.path.exists(model_f):
+            log(f"  EDIT: Model not found: {model_f}")
+            subprocess.run(["sudo", "systemctl", "start", "ollama"],
+                           timeout=30, capture_output=True)
+            wait_for_ollama()
+            return f"FLUX model file missing: {os.path.basename(model_f)}"
+
+    # Remove stale output
+    edit_output = "/tmp/sd-edit-output.png"
+    try:
+        os.remove(edit_output)
+    except FileNotFoundError:
+        pass
+
+    cmd = [
+        SD_CLI,
+        "--diffusion-model", SD_KONTEXT_MODEL,
+        "--vae", vae,
+        "--clip_l", clip_l,
+        "--t5xxl", t5xxl,
+        "--clip-on-cpu",
+        "-r", source_path,
+        "-p", prompt,
+        "-o", edit_output,
+        "--steps", "28",
+        "-W", "1024", "-H", "1024",
+        "--cfg-scale", "3.5",
+        "--sampling-method", "euler",
+        "--offload-to-cpu", "--diffusion-fa",
+    ]
+
+    log("  EDIT: Running sd-cli Kontext...")
+    start_t = time.time()
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        while time.time() - start_t < SD_KONTEXT_TIMEOUT_S:
+            if (os.path.exists(edit_output) and
+                    os.path.getsize(edit_output) > 1000):
+                time.sleep(2)
+                proc.kill()
+                try:
+                    proc.wait(timeout=5)
+                except Exception:
+                    pass
+                subprocess.run(["killall", "-9", "sd-cli"],
+                               capture_output=True, timeout=5)
+                break
+            time.sleep(3)
+            sd_watchdog_ping()
+        else:
+            proc.kill()
+            subprocess.run(["killall", "-9", "sd-cli"],
+                           capture_output=True, timeout=5)
+            log("  EDIT: Generation timed out")
+            subprocess.run(["sudo", "systemctl", "start", "ollama"],
+                           timeout=30, capture_output=True)
+            wait_for_ollama()
+            return "Image editing timed out (10 min limit). Sorry!"
+    except Exception as e:
+        log(f"  EDIT: sd-cli error: {e}")
+        subprocess.run(["sudo", "systemctl", "start", "ollama"],
+                       timeout=30, capture_output=True)
+        wait_for_ollama()
+        return f"Image editing error: {e}"
+
+    elapsed = int(time.time() - start_t)
+    log(f"  EDIT: Image edited in {elapsed}s")
+
+    # Restart Ollama
+    log("  EDIT: Restarting Ollama...")
+    subprocess.run(["sudo", "systemctl", "start", "ollama"],
+                   timeout=30, capture_output=True)
+
+    # Send edited image via Signal
+    log("  EDIT: Sending edited image via Signal...")
+    if signal_send_attachment(f"\u270f\ufe0f {prompt[:200]}", edit_output):
+        log("  EDIT: Edited image sent successfully")
+    else:
+        log("  EDIT: WARNING: Failed to send edited image via Signal")
+
+    wait_for_ollama()
+    sd_status('EDIT: complete, resuming jobs')
+    return f"\u270f\ufe0f Image edited and sent! ({elapsed}s)"
+
+
 def get_chat_context():
     """Build context from recent monitoring data for LLM chat responses."""
     parts = []
@@ -1376,7 +1514,7 @@ def clean_llm_reply(text):
     return text.strip()
 
 
-def chat_with_llm(user_text, allow_sd=True):
+def chat_with_llm(user_text, allow_sd=True, attachment_path=None):
     """Process a user message with LLM, optionally executing shell commands.
 
     Supports simple tool use: if the LLM outputs a line starting with EXEC:,
@@ -1385,6 +1523,9 @@ def chat_with_llm(user_text, allow_sd=True):
 
     When allow_sd=False (parallel chat during GPU-free jobs), image generation
     requests are deferred — the user is told to try again between jobs.
+
+    If attachment_path is set, the user sent an image — LLM is told about it
+    so it can trigger Kontext editing if appropriate.
 
     Returns the reply string to send via Signal.
     """
@@ -1436,6 +1577,16 @@ def chat_with_llm(user_text, allow_sd=True):
         "When asked to upscale the last generated image:\n"
         "EXEC: /opt/stable-diffusion.cpp/upscale /tmp/sd-output.png\n"
         "Uses ESRGAN 4× upscale (512→2048). Takes ~30s. Only if asked.\n\n"
+
+        "== IMAGE EDITING (KONTEXT) ==\n"
+        "When the user sends a PHOTO with an edit instruction (or asks to edit an image):\n"
+        "EXEC: /opt/stable-diffusion.cpp/edit-image <edit instruction in English>\n"
+        "Uses FLUX.1-Kontext-dev to understand and edit the reference image.\n"
+        "Takes ~5-7 min. The source image is automatically the one the user sent.\n"
+        "Edit prompts: describe what to change — 'make it cyberpunk', 'add a hat',\n"
+        "'change background to sunset', 'make it look like an oil painting'.\n"
+        "ONLY use when the user sends a photo AND asks to modify/edit/change it.\n"
+        "If they just send a photo with no edit request, acknowledge it.\n\n"
 
         "== DAILY RESEARCH DATA ==\n"
         "bc250 runs 300+ automated monitoring jobs. All data in /opt/netscan/data/.\n"
@@ -1569,9 +1720,16 @@ def chat_with_llm(user_text, allow_sd=True):
         "  * If AK asks something serious/urgent, drop the act and be direct."
     )
 
+    # If user sent an image, prepend context about it
+    if attachment_path:
+        user_content = (f"[User sent a photo: {attachment_path}]\n"
+                        f"{user_text or 'edit this image'}")
+    else:
+        user_content = user_text
+
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_text}
+        {"role": "user", "content": user_content}
     ]
 
     reply = ""
@@ -1634,6 +1792,21 @@ def chat_with_llm(user_text, allow_sd=True):
                 img_path = parts[1].strip() if len(parts) > 1 else SD_OUTPUT_PATH
                 return upscale_and_send(img_path)
 
+            # Intercept Kontext image editing
+            if cmd.startswith(SD_EDIT_SCRIPT_PREFIX):
+                if not allow_sd:
+                    return ("🦞 Can't edit images right now — GPU is busy. "
+                            "Ask me again in a few minutes.")
+                edit_prompt = re.sub(
+                    r'^/opt/stable-diffusion\.cpp/edit-image\s*',
+                    '', cmd).strip()
+                if not edit_prompt:
+                    return "No edit instruction provided. What should I change?"
+                if not attachment_path:
+                    return ("No image attached. Send a photo with your edit "
+                            "instruction and I'll modify it with Kontext.")
+                return edit_and_send_image(attachment_path, edit_prompt)
+
             exec_count += 1
             log(f"    Chat EXEC ({exec_count}): {cmd[:80]}")
             try:
@@ -1691,8 +1864,12 @@ def process_signal_chat(tag=None):
 
     for i, msg in enumerate(messages):
         text = msg['text']
-        log(f"    [{i+1}/{count}] {text[:80]}{'...' if len(text) > 80 else ''}")
-        reply = chat_with_llm(text, allow_sd=(tag != 'parallel'))
+        attachments = msg.get('attachments', [])
+        att_path = attachments[0] if attachments else None
+        att_info = f" [+image: {att_path}]" if att_path else ""
+        log(f"    [{i+1}/{count}] {text[:80]}{'...' if len(text) > 80 else ''}{att_info}")
+        reply = chat_with_llm(text, allow_sd=(tag != 'parallel'),
+                              attachment_path=att_path)
         signal_reply(reply)
         log(f"    Replied: {reply[:80]}{'...' if len(reply) > 80 else ''}")
         sd_watchdog_ping()

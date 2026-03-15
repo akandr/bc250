@@ -5995,8 +5995,8 @@ def gen_load():
         script_html += '<div style="color:var(--fg-dim)">No generating data yet (need samples with GPU clock &gt;1.2 GHz)</div>'
     script_html += '</div></div>'
 
-    # ─── Capacity planning — dynamically read from openclaw cron jobs.json ───
-    cron_jobs_path = os.path.expanduser("~/.openclaw/cron/jobs.json")
+    # ─── Capacity planning — dynamically read from jobs.json ───
+    cron_jobs_path = "/opt/netscan/data/jobs.json"
     cron_jobs_night = []  # (sort_key, name, schedule_str, timeout_str, last_status, last_dur_s)
     cron_jobs_day = []
     cron_total = 0
