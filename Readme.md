@@ -621,10 +621,10 @@ The MoE's one miss was adding preamble before a numbered list — the list itsel
 
 | Model | Median | Load time |
 |-------|:------:|:---------:|
-| MoE 35B-A3B | **17.5s** | 16.2s (~660 MB/s from NVMe) |
+| MoE 35B-A3B | **18.0s** | 16.2s (~660 MB/s from NVMe) |
 | qwen3.5:9b | **7.0s** | 5.6s (~1.1 GB/s from NVMe) |
 
-With `OLLAMA_KEEP_ALIVE=30m`, cold start (17.5s) occurs only after 30 minutes of inactivity. Warm TTFT at short prompts: 0.3–1.7s.
+With `OLLAMA_KEEP_ALIVE=30m`, cold start (18.0s) occurs only after 30 minutes of inactivity. Warm TTFT at short prompts: 0.3–1.7s.
 
 ### 4.6 Prefill (prompt evaluation) benchmarks
 
@@ -2025,7 +2025,7 @@ Four tasks at 16K and 32K filled context (80% fill, 5 diverse text domains). Fac
 
 | Model | Run 1 | Run 2 | Run 3 | Median | Load time |
 |-------|:-----:|:-----:|:-----:|:------:|:---------:|
-| ★ MoE 35B-A3B | 18.0s | 18.0s | 17.5s | **17.5s** | 16.2s (~660 MB/s) |
+| ★ MoE 35B-A3B | 18.0s | 18.0s | 17.5s | **18.0s** | 16.2s (~660 MB/s) |
 | ★ qwen3.5:9b | 11.9s | 6.8s | 7.0s | **7.0s** | 5.6s (~1.1 GB/s) |
 
 > Run 1 of qwen3.5:9b is ~70% slower than Run 2/3 because the GGUF file was not yet in the Linux page cache. Subsequent loads read from cached RAM pages. The MoE shows no gap because its GGUF was already cached from prior tests. Page cache was not dropped between runs (see B1.1).
