@@ -1,0 +1,350 @@
+Starting benchmark (ensure queue-runner is stopped)...
+
+======================================================================
+PHASE 1: Generation Speed + Prefill @4K — All Models
+======================================================================
+
+[1/32] llama3.2:3b
+  prefill_tiny: 194.5 tok/s (26 tokens)
+  prefill_short: 443.3 tok/s (33 tokens)
+  prefill_medium: 530.3 tok/s (61 tokens)
+  prefill_long: 637.4 tok/s (265 tokens)
+  gen=103.7 tok/s  prefill_medium=530.5 tok/s  vram=2.2G  gpu=100%
+
+[2/32] qwen2.5:3b
+  prefill_tiny: 205.0 tok/s (30 tokens)
+  prefill_short: 432.7 tok/s (37 tokens)
+  prefill_medium: 454.4 tok/s (65 tokens)
+  prefill_long: 635.7 tok/s (275 tokens)
+  gen=101.9 tok/s  prefill_medium=454.8 tok/s  vram=2.1G  gpu=100%
+
+[3/32] phi4-mini:latest
+  prefill_tiny: 83.7 tok/s (4 tokens)
+  prefill_short: 112.3 tok/s (10 tokens)
+  prefill_medium: 300.5 tok/s (40 tokens)
+  prefill_long: 513.6 tok/s (245 tokens)
+  gen=87.5 tok/s  prefill_medium=299.6 tok/s  vram=2.5G  gpu=100%
+
+[4/32] gemma3:4b
+  prefill_tiny: 104.7 tok/s (10 tokens)
+  prefill_short: 175.4 tok/s (16 tokens)
+  prefill_medium: 324.3 tok/s (45 tokens)
+  prefill_long: 467.2 tok/s (272 tokens)
+  gen=76.7 tok/s  prefill_medium=324.8 tok/s  vram=3.8G  gpu=100%
+
+[5/32] qwen3:4b
+  prefill_tiny: 98.5 tok/s (11 tokens)
+  prefill_short: 173.0 tok/s (18 tokens)
+  prefill_medium: 293.1 tok/s (46 tokens)
+  prefill_long: 454.8 tok/s (256 tokens)
+  gen=74.0 tok/s  prefill_medium=293.2 tok/s  vram=2.9G  gpu=100%
+
+[6/32] qwen2.5:7b
+  prefill_tiny: 132.7 tok/s (30 tokens)
+  prefill_short: 215.9 tok/s (37 tokens)
+  prefill_medium: 236.7 tok/s (65 tokens)
+  prefill_long: 0 tok/s (0 tokens)
+  gen=54.8 tok/s  prefill_medium=236.6 tok/s  vram=4.4G  gpu=100%
+
+[7/32] qwen2.5-coder:7b
+  prefill_tiny: 142.1 tok/s (30 tokens)
+  prefill_short: 215.8 tok/s (37 tokens)
+  prefill_medium: 236.5 tok/s (65 tokens)
+  prefill_long: 293.4 tok/s (275 tokens)
+  gen=55.0 tok/s  prefill_medium=236.7 tok/s  vram=4.4G  gpu=100%
+
+[8/32] llama3.1:8b
+  prefill_tiny: 50.9 tok/s (11 tokens)
+  prefill_short: 102.0 tok/s (18 tokens)
+  prefill_medium: 172.7 tok/s (46 tokens)
+  prefill_long: 256.6 tok/s (250 tokens)
+  gen=51.5 tok/s  prefill_medium=172.7 tok/s  vram=4.7G  gpu=100%
+
+[9/32] mannix/llama3.1-8b-lexi:latest
+  prefill_tiny: 273.7 tok/s (321 tokens)
+  prefill_short: 2595.6 tok/s (328 tokens)
+  prefill_medium: 1601.2 tok/s (356 tokens)
+  prefill_long: 685.1 tok/s (560 tokens)
+  gen=50.1 tok/s  prefill_medium=1601.8 tok/s  vram=4.5G  gpu=100%
+
+[10/32] huihui_ai/seed-coder-abliterate:latest
+  prefill_tiny: 99.0 tok/s (21 tokens)
+  prefill_short: 158.3 tok/s (28 tokens)
+  prefill_medium: 213.1 tok/s (57 tokens)
+  prefill_long: 230.3 tok/s (280 tokens)
+  gen=50.8 tok/s  prefill_medium=213.4 tok/s  vram=4.8G  gpu=100%
+
+[11/32] granite3.3:8b
+  prefill_tiny: 120.4 tok/s (44 tokens)
+  prefill_short: 245.0 tok/s (50 tokens)
+  prefill_medium: 260.7 tok/s (80 tokens)
+  prefill_long: 234.1 tok/s (332 tokens)
+  gen=45.9 tok/s  prefill_medium=261.1 tok/s  vram=4.9G  gpu=100%
+
+[12/32] huihui_ai/qwen3-abliterated:8b
+  prefill_tiny: 48.9 tok/s (11 tokens)
+  prefill_short: 100.9 tok/s (18 tokens)
+  prefill_medium: 170.0 tok/s (46 tokens)
+  prefill_long: 255.8 tok/s (256 tokens)
+  gen=45.5 tok/s  prefill_medium=170.2 tok/s  vram=4.9G  gpu=100%
+
+[13/32] qwen3-abl-nothink:latest
+  prefill_tiny: 47.8 tok/s (11 tokens)
+  prefill_short: 101.1 tok/s (18 tokens)
+  prefill_medium: 170.1 tok/s (46 tokens)
+  prefill_long: 256.3 tok/s (256 tokens)
+  gen=45.5 tok/s  prefill_medium=169.8 tok/s  vram=4.9G  gpu=100%
+
+[14/32] deepseek-r1:8b
+  prefill_tiny: 38.5 tok/s (3 tokens)
+  prefill_short: 56.0 tok/s (10 tokens)
+  prefill_medium: 141.2 tok/s (38 tokens)
+  prefill_long: 250.0 tok/s (248 tokens)
+  gen=43.3 tok/s  prefill_medium=140.8 tok/s  vram=5.1G  gpu=100%
+
+[15/32] qwen3:8b
+  prefill_tiny: 50.2 tok/s (11 tokens)
+  prefill_short: 101.7 tok/s (18 tokens)
+  prefill_medium: 168.9 tok/s (46 tokens)
+  prefill_long: 257.3 tok/s (256 tokens)
+  gen=43.0 tok/s  prefill_medium=169.1 tok/s  vram=5.1G  gpu=100%
+
+[16/32] qwen3:8b-nothink
+  prefill_tiny: 50.8 tok/s (11 tokens)
+  prefill_short: 101.8 tok/s (18 tokens)
+  prefill_medium: 169.7 tok/s (46 tokens)
+  prefill_long: 257.5 tok/s (256 tokens)
+  gen=43.2 tok/s  prefill_medium=168.8 tok/s  vram=5.1G  gpu=100%
+
+[17/32] qwen3:8b-q8_0
+  prefill_tiny: 59.7 tok/s (11 tokens)
+  prefill_short: 138.4 tok/s (18 tokens)
+  prefill_medium: 202.7 tok/s (46 tokens)
+  prefill_long: 314.8 tok/s (256 tokens)
+  gen=31.1 tok/s  prefill_medium=200.4 tok/s  vram=8.5G  gpu=100%
+
+[18/32] glm4:9b
+  prefill_tiny: 56.9 tok/s (7 tokens)
+  prefill_short: 96.9 tok/s (14 tokens)
+  prefill_medium: 167.0 tok/s (42 tokens)
+  prefill_long: 269.3 tok/s (247 tokens)
+  gen=45.3 tok/s  prefill_medium=166.4 tok/s  vram=5.1G  gpu=100%
+
+[19/32] gemma2:9b
+  prefill_tiny: 52.7 tok/s (10 tokens)
+  prefill_short: 105.3 tok/s (16 tokens)
+  prefill_medium: 156.4 tok/s (45 tokens)
+  prefill_long: 225.0 tok/s (271 tokens)
+  gen=38.5 tok/s  prefill_medium=157.7 tok/s  vram=6.9G  gpu=100%
+
+[20/32] qwen3.5:9b
+  prefill_tiny: 43.4 tok/s (11 tokens)
+  prefill_short: 82.0 tok/s (18 tokens)
+  prefill_medium: 147.4 tok/s (46 tokens)
+  prefill_long: 193.3 tok/s (264 tokens)
+  gen=31.9 tok/s  prefill_medium=147.3 tok/s  vram=7.9G  gpu=100%
+
+[21/32] gemma3:12b
+  prefill_tiny: 33.4 tok/s (10 tokens)
+  prefill_short: 60.4 tok/s (16 tokens)
+  prefill_medium: 105.9 tok/s (45 tokens)
+  prefill_long: 144.9 tok/s (272 tokens)
+  gen=29.1 tok/s  prefill_medium=105.9 tok/s  vram=8.7G  gpu=100%
+
+[22/32] mistral-nemo:12b
+  prefill_tiny: 40.7 tok/s (4 tokens)
+  prefill_short: 60.5 tok/s (11 tokens)
+  prefill_medium: 119.5 tok/s (40 tokens)
+  prefill_long: 209.1 tok/s (252 tokens)
+  gen=34.1 tok/s  prefill_medium=119.1 tok/s  vram=6.7G  gpu=100%
+
+[23/32] deepseek-r1:14b
+  prefill_tiny: 36.1 tok/s (4 tokens)
+  prefill_short: 32.5 tok/s (11 tokens)
+  prefill_medium: 72.9 tok/s (39 tokens)
+  prefill_long: 131.6 tok/s (249 tokens)
+  gen=28.8 tok/s  prefill_medium=72.8 tok/s  vram=8.5G  gpu=100%
+
+[24/32] phi4:14b
+  prefill_tiny: 29.4 tok/s (11 tokens)
+  prefill_short: 54.6 tok/s (18 tokens)
+  prefill_medium: 87.8 tok/s (46 tokens)
+  prefill_long: 131.1 tok/s (250 tokens)
+  gen=28.6 tok/s  prefill_medium=87.7 tok/s  vram=8.5G  gpu=100%
+
+[25/32] qwen3:14b
+  prefill_tiny: 29.9 tok/s (11 tokens)
+  prefill_short: 56.2 tok/s (18 tokens)
+  prefill_medium: 89.6 tok/s (46 tokens)
+  prefill_long: 137.5 tok/s (256 tokens)
+  gen=26.9 tok/s  prefill_medium=89.7 tok/s  vram=8.9G  gpu=100%
+
+[26/32] qwen3-14b-16k:latest
+  prefill_tiny: 30.5 tok/s (11 tokens)
+  prefill_short: 55.7 tok/s (18 tokens)
+  prefill_medium: 89.8 tok/s (46 tokens)
+  prefill_long: 136.9 tok/s (256 tokens)
+  gen=27.6 tok/s  prefill_medium=89.8 tok/s  vram=8.7G  gpu=100%
+
+[27/32] qwen3-14b-abl-nothink:latest
+  prefill_tiny: 30.3 tok/s (11 tokens)
+  prefill_short: 55.7 tok/s (18 tokens)
+  prefill_medium: 89.9 tok/s (46 tokens)
+  prefill_long: 136.6 tok/s (256 tokens)
+  gen=27.5 tok/s  prefill_medium=89.8 tok/s  vram=8.7G  gpu=100%
+
+[28/32] huihui_ai/qwen3-abliterated:14b
+  prefill_tiny: 30.7 tok/s (11 tokens)
+  prefill_short: 55.7 tok/s (18 tokens)
+  prefill_medium: 89.9 tok/s (46 tokens)
+  prefill_long: 136.8 tok/s (256 tokens)
+  gen=27.5 tok/s  prefill_medium=89.8 tok/s  vram=8.7G  gpu=100%
+
+[29/32] hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K
+  prefill_tiny: 34.4 tok/s (9 tokens)
+  prefill_short: 57.9 tok/s (16 tokens)
+  prefill_medium: 80.8 tok/s (44 tokens)
+  prefill_long: 250.4 tok/s (254 tokens)
+  gen=59.4 tok/s  prefill_medium=80.5 tok/s  vram=10.7G  gpu=100%
+
+[30/32] hf.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:IQ2_M
+  prefill_tiny: 38.1 tok/s (9 tokens)
+  prefill_short: 70.1 tok/s (16 tokens)
+  prefill_medium: 96.6 tok/s (44 tokens)
+  prefill_long: 272.8 tok/s (254 tokens)
+  gen=62.8 tok/s  prefill_medium=96.5 tok/s  vram=10.3G  gpu=100%
+
+[31/32] qwen3.5-35b-a3b-iq2m:latest
+  prefill_tiny: 41.2 tok/s (11 tokens)
+  prefill_short: 65.9 tok/s (18 tokens)
+  prefill_medium: 92.4 tok/s (46 tokens)
+  prefill_long: 204.7 tok/s (264 tokens)
+  gen=37.7 tok/s  prefill_medium=92.4 tok/s  vram=12.3G  gpu=100%
+
+[32/32] qwen3.5-27b-iq2m:latest
+  FAIL (warmup): timed out
+
+Phase 1 complete: 31/32 succeeded
+Results saved to /tmp/bench-full-results.json
+
+======================================================================
+PHASE 2: Context Degradation — Key Models × 4 Context Sizes
+======================================================================
+
+[1/19] llama3.2:3b
+  ctx=4096: gen=87.8 tok/s  prefill=526.1 tok/s  prompt_tokens=2254
+  ctx=16384: gen=56.3 tok/s  prefill=331.4 tok/s  prompt_tokens=8919
+  ctx=32768: gen=38.3 tok/s  prefill=222.9 tok/s  prompt_tokens=17799
+  ctx=65536: gen=23.3 tok/s  prefill=134.3 tok/s  prompt_tokens=35563
+
+[2/19] gemma3:4b
+  ctx=4096: gen=74.8 tok/s  prefill=494.8 tok/s  prompt_tokens=2214
+  ctx=16384: gen=72.3 tok/s  prefill=455.0 tok/s  prompt_tokens=8815
+  ctx=32768: gen=70.0 tok/s  prefill=415.8 tok/s  prompt_tokens=17608
+  ctx=65536: gen=65.1 tok/s  prefill=356.8 tok/s  prompt_tokens=35202
+
+[3/19] phi4-mini:latest
+  ctx=4096: gen=74.3 tok/s  prefill=451.7 tok/s  prompt_tokens=2232
+  ctx=16384: gen=48.7 tok/s  prefill=288.8 tok/s  prompt_tokens=8897
+  ctx=32768: gen=33.2 tok/s  prefill=194.3 tok/s  prompt_tokens=17777
+  ctx=65536: gen=20.3 tok/s  prefill=117.2 tok/s  prompt_tokens=35541
+
+[4/19] qwen3:4b
+  ctx=4096: gen=61.4 tok/s  prefill=361.7 tok/s  prompt_tokens=2281
+  ctx=16384: gen=40.1 tok/s  prefill=211.2 tok/s  prompt_tokens=9076
+  ctx=32768: gen=28.5 tok/s  prefill=138.3 tok/s  prompt_tokens=18128
+  ctx=65536: gen=17.6 tok/s  prefill=80.7 tok/s  prompt_tokens=36238
+
+[5/19] hf.co/unsloth/Qwen3-30B-A3B-GGUF:Q2_K
+  ctx=4096: gen=53.6 tok/s  prefill=250.3 tok/s  prompt_tokens=2279
+  ctx=16384: gen=40.1 tok/s  prefill=156.4 tok/s  prompt_tokens=9074
+  ctx=32768: gen=30.0 tok/s  prefill=100.1 tok/s  prompt_tokens=18126
+  ctx=65536: FAIL: timed out
+
+[6/19] hf.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:IQ2_M
+  ctx=4096: FAIL (warmup)
+
+[7/19] qwen2.5:7b
+  ctx=4096: FAIL (warmup)
+
+[8/19] llama3.1:8b
+  ctx=4096: gen=47.0 tok/s  prefill=233.3 tok/s  prompt_tokens=2239
+  ctx=16384: gen=35.6 tok/s  prefill=167.3 tok/s  prompt_tokens=8904
+  ctx=32768: gen=26.5 tok/s  prefill=122.1 tok/s  prompt_tokens=17784
+  ctx=65536: gen=17.6 tok/s  prefill=78.9 tok/s  prompt_tokens=35548
+
+[9/19] huihui_ai/seed-coder-abliterate:latest
+  ctx=4096: gen=46.1 tok/s  prefill=233.6 tok/s  prompt_tokens=2249
+  ctx=16384: gen=34.7 tok/s  prefill=165.9 tok/s  prompt_tokens=8914
+  ctx=32768: gen=25.7 tok/s  prefill=120.3 tok/s  prompt_tokens=17794
+  ctx=65536: gen=17.9 tok/s  prefill=81.1 tok/s  prompt_tokens=32768
+
+[10/19] qwen3:8b
+  ctx=4096: gen=39.4 tok/s  prefill=224.9 tok/s  prompt_tokens=2281
+  ctx=16384: gen=30.3 tok/s  prefill=157.8 tok/s  prompt_tokens=9076
+  ctx=32768: gen=22.5 tok/s  prefill=111.3 tok/s  prompt_tokens=18128
+  ctx=65536: gen=15.4 tok/s  prefill=71.2 tok/s  prompt_tokens=36238
+
+[11/19] glm4:9b
+  ctx=4096: gen=37.0 tok/s  prefill=238.4 tok/s  prompt_tokens=2213
+  ctx=16384: gen=23.3 tok/s  prefill=159.6 tok/s  prompt_tokens=8814
+  ctx=32768: gen=15.5 tok/s  prefill=111.8 tok/s  prompt_tokens=17607
+  ctx=65536: gen=9.2 tok/s  prefill=69.6 tok/s  prompt_tokens=35199
+
+[12/19] qwen3.5-35b-a3b-iq2m:latest
+  ctx=4096: gen=35.6 tok/s  prefill=239.4 tok/s  prompt_tokens=2281
+  ctx=16384: gen=31.9 tok/s  prefill=214.6 tok/s  prompt_tokens=9076
+  ctx=32768: gen=28.5 tok/s  prefill=182.2 tok/s  prompt_tokens=18128
+  ctx=65536: FAIL: timed out
+
+[13/19] qwen3.5:9b
+  ctx=4096: gen=31.1 tok/s  prefill=226.5 tok/s  prompt_tokens=2281
+  ctx=16384: gen=29.4 tok/s  prefill=206.0 tok/s  prompt_tokens=9076
+  ctx=32768: gen=27.0 tok/s  prefill=181.8 tok/s  prompt_tokens=18128
+  ctx=65536: gen=23.4 tok/s  prefill=144.5 tok/s  prompt_tokens=36238
+
+[14/19] gemma3:12b
+  ctx=4096: gen=28.4 tok/s  prefill=154.6 tok/s  prompt_tokens=2214
+  ctx=16384: gen=17.5 tok/s  prefill=134.7 tok/s  prompt_tokens=8815
+  ctx=32768: gen=26.3 tok/s  prefill=121.9 tok/s  prompt_tokens=17608
+  ctx=65536: gen=24.2 tok/s  prefill=103.6 tok/s  prompt_tokens=35202
+
+[15/19] mistral-nemo:12b
+  ctx=4096: gen=31.8 tok/s  prefill=190.6 tok/s  prompt_tokens=2232
+  ctx=16384: gen=24.7 tok/s  prefill=136.5 tok/s  prompt_tokens=8897
+  ctx=32768: gen=19.1 tok/s  prefill=99.0 tok/s  prompt_tokens=17777
+  ctx=65536: gen=13.1 tok/s  prefill=63.2 tok/s  prompt_tokens=35542
+
+[16/19] deepseek-r1:14b
+  ctx=4096: gen=26.4 tok/s  prefill=121.1 tok/s  prompt_tokens=2274
+  ctx=16384: FAIL (warmup)
+
+[17/19] qwen3:14b
+  ctx=4096: gen=25.2 tok/s  prefill=125.4 tok/s  prompt_tokens=2281
+  ctx=16384: gen=20.7 tok/s  prefill=93.1 tok/s  prompt_tokens=9076
+  ctx=32768: gen=16.7 tok/s  prefill=68.3 tok/s  prompt_tokens=18128
+  ctx=65536: FAIL: timed out
+
+[18/19] phi4:14b
+  ctx=4096: gen=26.0 tok/s  prefill=123.7 tok/s  prompt_tokens=2239
+  ctx=16384: gen=19.5 tok/s  prefill=92.8 tok/s  prompt_tokens=8904
+  ctx=32768: gen=14.7 tok/s  prefill=72.8 tok/s  prompt_tokens=16384
+  ctx=65536: gen=14.8 tok/s  prefill=72.9 tok/s  prompt_tokens=16384
+
+[19/19] gemma2:9b
+  ctx=4096: gen=29.6 tok/s  prefill=254.0 tok/s  prompt_tokens=2236
+  ctx=16384: gen=17.1 tok/s  prefill=214.6 tok/s  prompt_tokens=8192
+  ctx=32768: gen=17.0 tok/s  prefill=215.4 tok/s  prompt_tokens=8192
+  ctx=65536: gen=17.0 tok/s  prefill=214.6 tok/s  prompt_tokens=8192
+
+Phase 2 complete: 19 models tested
+Results saved to /tmp/bench-full-results.json
+
+Done. Remember to restart queue-runner.
+
+======================================================================
+BENCHMARK COMPLETE
+======================================================================
+Results: /tmp/bench-full-results.json
+Phase 1: 31/32 models benchmarked
+Phase 2: 19 models with context sweep

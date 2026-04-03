@@ -1,0 +1,171 @@
+{
+  "metadata": {
+    "date": "2026-04-01",
+    "hardware": "AMD BC-250 (Cyan Skillfish APU, GFX1013), 16 GB GDDR6 UMA",
+    "llama_cpp_version": "b1-6b949d1 (HEAD, built from source, GGML_VULKAN=ON, GCC 15.2.1)",
+    "ollama_version": "0.18.0 (Vulkan backend, bundled Vulkan 1.4.321)",
+    "system_vulkan": "1.4.328 (Mesa 25.3.4 RADV)",
+    "kernel": "6.18.9",
+    "os": "Fedora 43",
+    "methodology": "Fresh reboot, all services disabled, caches dropped between tests. llama-bench: -r 1 -fa 1 -ctk q4_0 -ctv q4_0 -ngl 99. Ollama: FA=1 KV=q4_0 ctx=65536 GPU_OVERHEAD=0. OOM protection (oom_score_adj=-1000) on all tests."
+  },
+  "llama_bench_results": [
+    {
+      "backend": "llama.cpp",
+      "model": "moe-coder-30b-iq2m",
+      "model_size_gb": 10.1,
+      "ctx": 4096,
+      "pp_tok_s": [294.81, 294.67, 285.00],
+      "tg_tok_s": [85.21, 84.61, 84.33],
+      "pp_avg": 291.49,
+      "tg_avg": 84.72,
+      "note": "confirmed across 3 fresh boots"
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "moe-coder-30b-iq2m",
+      "model_size_gb": 10.1,
+      "ctx": 16384,
+      "pp_tok_s": [173.77, 173.24, 152.75],
+      "tg_tok_s": [84.09, 84.48, 84.66],
+      "pp_avg": 166.59,
+      "tg_avg": 84.41,
+      "note": "confirmed across 3 fresh boots; PP has 12% boot-to-boot variance"
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "moe-coder-30b-iq2m",
+      "model_size_gb": 10.1,
+      "ctx": 32768,
+      "pp_tok_s": null,
+      "tg_tok_s": null,
+      "error": "system_crash",
+      "note": "OOM kills SSH, then system freezes — model + KV cache exceeds 16GB UMA"
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "deepseek-r1-14b-q4km",
+      "model_size_gb": 8.4,
+      "ctx": 4096,
+      "pp_tok_s": [133.43, 133.91],
+      "tg_tok_s": [28.95, 29.04],
+      "pp_avg": 133.67,
+      "tg_avg": 29.0,
+      "note": "confirmed across 2 fresh boots"
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "deepseek-r1-14b-q4km",
+      "model_size_gb": 8.4,
+      "ctx": 16384,
+      "pp_tok_s": 82.63,
+      "tg_tok_s": 29.02,
+      "wall_s": 409,
+      "note": "single run"
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "deepseek-r1-14b-q4km",
+      "model_size_gb": 8.4,
+      "ctx": 32768,
+      "pp_tok_s": null,
+      "tg_tok_s": null,
+      "error": "system_crash",
+      "note": "system freeze — model + KV cache exceeds 16GB UMA"
+    }
+  ],
+  "ollama_results": [
+    {
+      "backend": "ollama",
+      "model": "moe-coder-30b-iq2m",
+      "ctx": 4096,
+      "pp_tok_s": 316.39,
+      "tg_tok_s": 58.28,
+      "ttft_s": 4.21,
+      "load_s": 0.0
+    },
+    {
+      "backend": "ollama",
+      "model": "moe-coder-30b-iq2m",
+      "ctx": 16384,
+      "pp_tok_s": 228.11,
+      "tg_tok_s": 48.97,
+      "ttft_s": 23.07,
+      "load_s": 0.0
+    },
+    {
+      "backend": "ollama",
+      "model": "moe-coder-30b-iq2m",
+      "ctx": 32768,
+      "pp_tok_s": 157.44,
+      "tg_tok_s": 39.17,
+      "ttft_s": 66.73,
+      "load_s": 0.0
+    },
+    {
+      "backend": "ollama",
+      "model": "moe-coder-30b-iq2m",
+      "ctx": 65536,
+      "pp_tok_s": 96.75,
+      "tg_tok_s": 28.69,
+      "ttft_s": 216.98,
+      "load_s": 0.0
+    },
+    {
+      "backend": "ollama",
+      "model": "deepseek-r1-14b-q4km",
+      "ctx": 4096,
+      "pp_tok_s": 127.53,
+      "tg_tok_s": 27.15
+    },
+    {
+      "backend": "ollama",
+      "model": "deepseek-r1-14b-q4km",
+      "ctx": 32768,
+      "pp_tok_s": 83.23,
+      "tg_tok_s": 20.92
+    }
+  ],
+  "comparison_summary": {
+    "moe_4k": {
+      "llama_cpp_tg": 84.33,
+      "ollama_tg": 58.28,
+      "overhead_factor": 1.45,
+      "llama_cpp_pp": 285.00,
+      "ollama_pp": 316.39,
+      "pp_overhead_factor": 0.90,
+      "note": "Ollama PP is 10% FASTER than raw llama.cpp at 4K"
+    },
+    "moe_16k": {
+      "llama_cpp_tg": 84.66,
+      "ollama_tg": 48.97,
+      "overhead_factor": 1.73,
+      "llama_cpp_pp": 152.75,
+      "ollama_pp": 228.11,
+      "pp_overhead_factor": 0.67,
+      "note": "Ollama PP is 33% FASTER than raw llama.cpp at 16K"
+    },
+    "deepseek_4k": {
+      "llama_cpp_tg": 29.04,
+      "ollama_tg": 27.15,
+      "overhead_factor": 1.07,
+      "llama_cpp_pp": 133.91,
+      "ollama_pp": 127.53,
+      "pp_overhead_factor": 1.05
+    },
+    "deepseek_16k": {
+      "llama_cpp_tg": 29.02,
+      "llama_cpp_pp": 82.63,
+      "note": "no Ollama 16K data for deepseek"
+    },
+    "key_findings": [
+      "Generation (TG): llama.cpp is 1.07-1.73x faster depending on model and context",
+      "Prompt processing (PP): Ollama is FASTER for MoE at all tested contexts (10-33%)",
+      "MoE TG overhead grows with context: 1.46x at 4K → 1.72x at 16K",
+      "Dense model (deepseek) shows minimal overhead: only 1.07x at 4K",
+      "32K+ context crashes raw llama.cpp (both models) — Ollama handles it via memory management",
+      "Ollama enables 32K/64K context that raw llama.cpp cannot achieve on 16GB UMA",
+      "Fresh-reboot Ollama 64K = 28.7 tok/s (vs 0.7 on stale system — confirms memory fragmentation hypothesis)"
+    ]
+  }
+}

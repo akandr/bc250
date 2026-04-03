@@ -1,0 +1,46 @@
+[
+  {
+    "backend": "llama.cpp",
+    "model": "deepseek-r1-14b",
+    "ctx": 4096,
+    "rc": 0,
+    "wall_s": 91.1,
+    "swap_pre": 0,
+    "swap_post": 475,
+    "pp_tok_s": 133.91,
+    "tg_tok_s": 29.04
+  },
+  {
+    "backend": "llama.cpp",
+    "model": "deepseek-r1-14b",
+    "ctx": 16384,
+    "rc": 0,
+    "wall_s": 409.3,
+    "swap_pre": 475,
+    "swap_post": 475,
+    "pp_tok_s": 82.63,
+    "tg_tok_s": 29.02
+  },
+  {
+    "backend": "llama.cpp",
+    "model": "moe-coder-30b",
+    "ctx": 4096,
+    "rc": 0,
+    "wall_s": 60.6,
+    "swap_pre": 475,
+    "swap_post": 478,
+    "pp_tok_s": 285.0,
+    "tg_tok_s": 84.33
+  },
+  {
+    "backend": "llama.cpp",
+    "model": "moe-coder-30b",
+    "ctx": 16384,
+    "rc": 0,
+    "wall_s": 244.4,
+    "swap_pre": 478,
+    "swap_post": 508,
+    "pp_tok_s": 152.75,
+    "tg_tok_s": 84.66
+  }
+]
