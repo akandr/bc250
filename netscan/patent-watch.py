@@ -41,7 +41,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"
+OLLAMA_MODEL = "gemma4-26b-q3"
 
 PATENT_DIR = Path("/opt/netscan/data/patents")
 PATENT_DB = PATENT_DIR / "patent-db.json"

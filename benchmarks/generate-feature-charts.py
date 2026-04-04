@@ -168,16 +168,19 @@ def chart_whisper_memory():
 # ══════════════════════════════════════════════════════════════════════
 
 def chart_model_speed():
-    """Horizontal bar: gen speed + prefill speed for all three models."""
-    models = ['qwen2.5:3b\n(draft candidate)', 'qwen3.5-35b-a3b-iq2m\nMoE 35B-A3B', 'qwen3.5:9b\nQ4_K_M']
-    gen_speed = [101.9, 37.7, 31.8]
-    prefill_speed = [309.2, 69.1, 109.0]  # averaged from results
-    sizes_gb = [1.8, 10.6, 6.1]
+    """Horizontal bar: gen speed + prefill speed for all four routing models."""
+    models = ['qwen2.5:3b\n(draft candidate)',
+              '★ gemma4-26b-q3\n26B MoE A4B',
+              'qwen3.5-35b-a3b-iq2m\nMoE 35B-A3B',
+              'qwen3.5:9b\nQ4_K_M']
+    gen_speed = [101.9, 39.0, 37.7, 31.8]
+    prefill_speed = [309.2, 1238.0, 69.1, 109.0]
+    sizes_gb = [1.8, 13.5, 10.6, 6.1]
 
     y = np.arange(len(models))
     h = 0.3
 
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(10, 6.5))
     b1 = ax.barh(y + h/2, gen_speed, h, color=C_MOE, label='Generation (tok/s)', edgecolor='none', zorder=3)
     b2 = ax.barh(y - h/2, prefill_speed, h, color=C_9B, label='Prefill (tok/s)', edgecolor='none', zorder=3)
 
@@ -192,7 +195,8 @@ def chart_model_speed():
 
     # Size annotations — right-aligned, well away from bar labels
     for i in range(len(models)):
-        ax.text(345, y[i], f'{sizes_gb[i]} GB', va='center', ha='right',
+        ax.text(max(max(prefill_speed), max(gen_speed)) * 1.12, y[i], f'{sizes_gb[i]} GB',
+                va='center', ha='right',
                 fontsize=9, color='#8b949e',
                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#161b22',
                           edgecolor='#30363d', alpha=0.8))
@@ -203,11 +207,12 @@ def chart_model_speed():
     ax.set_yticklabels(models, fontsize=10)
     ax.legend(loc='upper right', framealpha=0.8, edgecolor='#30363d', facecolor='#161b22')
     ax.grid(axis='x', alpha=0.3, zorder=0)
-    ax.set_xlim(0, 500)
+    ax.set_xlim(0, max(max(prefill_speed), max(gen_speed)) * 1.15)
 
     # Routing role labels — right of the prefill bar (longest bar per model)
     for i, label in enumerate(['spec decode draft (blocked)',
-                               'default chat route',
+                               'primary chat (≤40K tokens)',
+                               'fallback chat (>40K tokens)',
                                'vision + long ctx route']):
         right_edge = max(gen_speed[i], prefill_speed[i])
         alpha = 0.6 if i == 0 else 0.9
@@ -227,7 +232,7 @@ def chart_model_speed():
 
 def chart_spec_decode_memory():
     """Stacked bar showing memory usage for spec decode scenario."""
-    scenarios = ['Draft only\n(qwen2.5:3b)', 'Verifier only\n(MoE 35B)', 'Dual load\n(spec decode)', 'Available\n(16 GB UMA)']
+    scenarios = ['Draft only\n(qwen2.5:3b)', 'Verifier only\n(Qwen MoE 35B-A3B)', 'Dual load\n(spec decode)', 'Available\n(16 GB UMA)']
     draft_sizes = [1.8, 0, 1.8, 0]
     verifier_sizes = [0, 10.6, 10.6, 0]
     kv_sizes = [0.2, 1.8, 2.0, 0]
@@ -312,7 +317,7 @@ def chart_signal_pipeline():
             fontsize=10, bbox=box_green)
     ax.text(6.5, 3, 'Image\nqwen3.5:9b\nvision', ha='center', va='center',
             fontsize=10, bbox=box_orange)
-    ax.text(6.5, 1, 'Text\nchoose_model()\nMoE or 9B', ha='center', va='center',
+    ax.text(6.5, 1, 'Text\nchoose_chat_model()\ngemma4 or Qwen MoE', ha='center', va='center',
             fontsize=10, bbox=box_blue)
 
     # Output
@@ -348,8 +353,8 @@ def chart_signal_pipeline():
 
     # Size/speed annotations
     ax.text(6.5, 4.15, '~4s for 30s audio', fontsize=8, ha='center', color='#8b949e', style='italic')
-    ax.text(6.5, 2.15, 'think: false, 64K ctx', fontsize=8, ha='center', color='#8b949e', style='italic')
-    ax.text(6.5, 0.15, '>8K tok → 9B, else MoE', fontsize=8, ha='center', color='#8b949e', style='italic')
+    ax.text(6.5, 2.15, 'think: false, 65K ctx', fontsize=8, ha='center', color='#8b949e', style='italic')
+    ax.text(6.5, 0.15, '\u226440K \u2192 gemma4-26b, >40K \u2192 qwen3.5-35b-a3b', fontsize=8, ha='center', color='#8b949e', style='italic')
 
     plt.savefig(f'{OUT_DIR}/signal-pipeline.png', dpi=150, bbox_inches='tight')
     plt.close()

@@ -36,7 +36,7 @@ DATA_DIR = Path("/opt/netscan/data")
 SUMMARY_DIR = DATA_DIR / "summary"
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"
+OLLAMA_MODEL = "gemma4-26b-q3"
 
 TODAY = date.today().isoformat().replace("-", "")
 TODAY_LABEL = date.today().strftime("%B %d, %Y")

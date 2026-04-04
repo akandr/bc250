@@ -2,7 +2,7 @@
   "metadata": {
     "date": "2026-04-01",
     "hardware": "AMD BC-250 (Cyan Skillfish APU, GFX1013), 16 GB GDDR6 UMA",
-    "llama_cpp_version": "b1-6b949d1 (HEAD, built from source, GGML_VULKAN=ON, GCC 15.2.1)",
+    "llama_cpp_version": "b1-6b949d1 (HEAD, built from source, GGML_VULKAN=ON, GCC 15.2.1); Gemma 4 tested with b7ad48e (Gemma 4 arch support)",
     "ollama_version": "0.18.0 (Vulkan backend, bundled Vulkan 1.4.321)",
     "system_vulkan": "1.4.328 (Mesa 25.3.4 RADV)",
     "kernel": "6.18.9",
@@ -72,6 +72,36 @@
       "tg_tok_s": null,
       "error": "system_crash",
       "note": "system freeze — model + KV cache exceeds 16GB UMA"
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "gemma4-26b-q3km",
+      "model_size_gb": 11.65,
+      "ctx": 4096,
+      "ngl": 99,
+      "pp_tok_s": 1.15,
+      "tg_tok_s": 0.07,
+      "note": "Vulkan GPU offload non-functional for Gemma 4 MoE on GFX1013. Orders of magnitude slower than CPU."
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "gemma4-26b-q3km",
+      "model_size_gb": 11.65,
+      "ctx": 512,
+      "ngl": 0,
+      "pp_tok_s": 214.61,
+      "tg_tok_s": 11.40,
+      "note": "CPU-only fallback (ngl=0). Working but limited by RAM (11.65 GiB model in 14 GiB system)."
+    },
+    {
+      "backend": "llama.cpp",
+      "model": "gemma4-26b-q3km",
+      "model_size_gb": 11.65,
+      "ctx": 4096,
+      "ngl": 0,
+      "pp_tok_s": 23.96,
+      "tg_tok_s": 0.14,
+      "note": "CPU-only at 4K context. Swap thrashing: model + KV cache exceeds RAM."
     }
   ],
   "ollama_results": [
@@ -124,6 +154,14 @@
       "ctx": 32768,
       "pp_tok_s": 83.23,
       "tg_tok_s": 20.92
+    },
+    {
+      "backend": "ollama",
+      "model": "gemma4-26b-q3km",
+      "ctx": 4096,
+      "pp_tok_s": 1238,
+      "tg_tok_s": 39.0,
+      "note": "Ollama 0.20, Vulkan GPU fully functional for Gemma 4 MoE"
     }
   ],
   "comparison_summary": {
@@ -158,6 +196,15 @@
       "llama_cpp_pp": 82.63,
       "note": "no Ollama 16K data for deepseek"
     },
+    "gemma4_4k": {
+      "llama_cpp_tg_vulkan": 0.07,
+      "llama_cpp_pp_vulkan": 1.15,
+      "llama_cpp_tg_cpu": 11.40,
+      "llama_cpp_pp_cpu": 214.61,
+      "ollama_tg": 39.0,
+      "ollama_pp": 1238,
+      "note": "Vulkan GPU non-functional for Gemma 4 MoE on GFX1013. CPU fallback works but limited by RAM. Ollama-only model on this hardware."
+    },
     "key_findings": [
       "Generation (TG): llama.cpp is 1.07-1.73x faster depending on model and context",
       "Prompt processing (PP): Ollama is FASTER for MoE at all tested contexts (10-33%)",
@@ -165,7 +212,8 @@
       "Dense model (deepseek) shows minimal overhead: only 1.07x at 4K",
       "32K+ context crashes raw llama.cpp (both models) — Ollama handles it via memory management",
       "Ollama enables 32K/64K context that raw llama.cpp cannot achieve on 16GB UMA",
-      "Fresh-reboot Ollama 64K = 28.7 tok/s (vs 0.7 on stale system — confirms memory fragmentation hypothesis)"
+      "Fresh-reboot Ollama 64K = 28.7 tok/s (vs 0.7 on stale system — confirms memory fragmentation hypothesis)",
+      "Gemma 4 MoE: llama.cpp Vulkan completely non-functional (0.07 TG, 1.15 PP) — CPU fallback gives 11.4 TG, Ollama gives 39 TG. Ollama-only model on GFX1013."
     ]
   }
 }

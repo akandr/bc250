@@ -54,7 +54,7 @@ LOGIN_URL = f"{BASE_URL}/member.php"
 # ── Ollama LLM ──
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"
+OLLAMA_MODEL = "gemma4-26b-q3"
 
 # ── Signal notifications ──
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"

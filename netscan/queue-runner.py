@@ -102,8 +102,10 @@ SD_NOTIFY = 'NOTIFY_SOCKET' in os.environ  # systemd watchdog support
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
 SIGNAL_ACCOUNT = os.environ.get('SIGNAL_ACCOUNT', '+<BOT_PHONE>')
 SIGNAL_OWNER = os.environ.get('SIGNAL_OWNER', '+<OWNER_PHONE>')
-SIGNAL_CHAT_MODEL = "qwen3.5-35b-a3b-iq2m"
-SIGNAL_CHAT_CTX = 65536             # Context window for chat responses (verified filled-context ceiling)
+SIGNAL_CHAT_MODEL = "gemma4-26b-q3"          # Primary: 26B MoE, 100% GPU, 100% quality, 39 tok/s
+SIGNAL_CHAT_CTX = 49152              # Gemma 4 context ceiling (48K verified, 65K=timeout)
+SIGNAL_FALLBACK_MODEL = "qwen3.5-35b-a3b-iq2m"  # Fallback for large context (35B MoE, 32K practical)
+SIGNAL_FALLBACK_CTX = 65536          # Fallback context window
 SIGNAL_CHAT_MAX_EXEC = 3            # Max shell commands per message (search+fetch+verify)
 SIGNAL_EXEC_TIMEOUT_S = 30          # Timeout for shell commands
 SIGNAL_LLM_TIMEOUT_S = 900          # 15 min — MoE model with large context can be slow
@@ -150,9 +152,12 @@ VISION_MAX_PREDICT = 500             # Max tokens for vision reply
 VISION_TIMEOUT_S = 300               # 5 min — image + long text at high ctx fill
 
 # ─── Smart Model Routing ────────────────────────────────────────────────────
-# MoE (35B) = faster, smarter for text. 9B = vision, longer context.
-# Route to 9B when: image attached (vision), or estimated tokens >8K.
-ROUTING_TOKEN_THRESHOLD = 8000       # Switch to 9B if prompt > this many tokens
+# Gemma 4 26B (primary) = 100% quality, 100% GPU, 39 tok/s, 48K context.
+# MoE 35B (fallback) = 93% quality, 32K–64K context, for prompts too large for Gemma 4.
+# 9B = vision, longest context (96K).
+# Route: image → 9B; estimated tokens > 40K → MoE 35B fallback; tokens > 8K → 9B; else → Gemma 4.
+ROUTING_GEMMA4_LIMIT = 40000         # Switch to MoE fallback if prompt > this many tokens
+ROUTING_TOKEN_THRESHOLD = 8000       # Switch to 9B if prompt > this many tokens (unused when fallback covers it)
 
 # ─── Job name sets ──────────────────────────────────────────────────────────
 # HA jobs: run opportunistically when GPU is idle (2-3 times/day)
@@ -1231,19 +1236,17 @@ def estimate_tokens(text):
 def choose_chat_model(user_text, has_image=False):
     """Smart model routing: pick the best model for the task.
 
-    Routes to 9B (vision, 65K context) when:
-    - User sent an image (needs vision capability)
-    - Estimated prompt tokens > ROUTING_TOKEN_THRESHOLD
-
-    Otherwise uses MoE (faster, smarter for text-only tasks).
+    Routes to 9B (vision) when image attached.
+    Routes to MoE 35B fallback when estimated tokens > 40K (exceeds Gemma 4's 48K ceiling).
+    Otherwise uses Gemma 4 26B (primary — 100% quality, 100% GPU, fastest prefill).
     Returns (model_name, context_size, reason).
     """
     if has_image:
         return VISION_MODEL, VISION_CTX, "vision"
 
     est_tokens = estimate_tokens(user_text)
-    if est_tokens > ROUTING_TOKEN_THRESHOLD:
-        return VISION_MODEL, 65536, "long_context"
+    if est_tokens > ROUTING_GEMMA4_LIMIT:
+        return SIGNAL_FALLBACK_MODEL, SIGNAL_FALLBACK_CTX, "long_context_fallback"
 
     return SIGNAL_CHAT_MODEL, SIGNAL_CHAT_CTX, "default"
 

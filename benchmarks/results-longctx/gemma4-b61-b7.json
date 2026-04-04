@@ -1,0 +1,58 @@
+{
+  "model": "gemma4-26b-q3:latest",
+  "b61_results": [
+    {
+      "run": 1,
+      "pos": "early",
+      "correct": true
+    },
+    {
+      "run": 1,
+      "pos": "middle",
+      "correct": true
+    },
+    {
+      "run": 1,
+      "pos": "late",
+      "correct": true
+    },
+    {
+      "run": 2,
+      "pos": "early",
+      "correct": true
+    },
+    {
+      "run": 2,
+      "pos": "middle",
+      "correct": true
+    },
+    {
+      "run": 2,
+      "pos": "late",
+      "correct": true
+    }
+  ],
+  "b7_results": [
+    {
+      "run": 1,
+      "wall_s": 19.1,
+      "load_s": 17.7,
+      "prompt_s": 0.3,
+      "eval_s": 0.5
+    },
+    {
+      "run": 2,
+      "wall_s": 17.7,
+      "load_s": 16.7,
+      "prompt_s": 0.2,
+      "eval_s": 0.5
+    },
+    {
+      "run": 3,
+      "wall_s": 17.6,
+      "load_s": 16.6,
+      "prompt_s": 0.3,
+      "eval_s": 0.5
+    }
+  ]
+}

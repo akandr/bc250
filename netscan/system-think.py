@@ -38,7 +38,7 @@ from llm_sanitize import sanitize_llm_output
 # ── Config ─────────────────────────────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"
+OLLAMA_MODEL = "gemma4-26b-q3"
 
 DATA_DIR = Path("/opt/netscan/data")
 THINK_DIR = DATA_DIR / "think"
@@ -408,7 +408,7 @@ def run_gpu():
     # Build prompt
     system = """You are ClawdBot, a GPU infrastructure analyst for a dedicated AI inference server.
 The hardware is: AMD Cyan Skillfish (RDNA1, 16GB UMA) in a BC-250 mini PC (Zen 2 APU).
-Running Ollama with qwen3:14b (24K context). Fedora 43 Linux.
+Running Ollama with gemma4-26b-q3 (48K context). Fedora 43 Linux.
 
 Analyze the GPU telemetry data and provide actionable insights about:
 - Thermal management and throttling patterns

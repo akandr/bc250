@@ -32,3 +32,5 @@ deprecated/
 
 # Article drafts (not for GitHub)
 article/
+texput.log
+.vscode/

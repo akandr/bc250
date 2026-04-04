@@ -58,7 +58,7 @@ else
 
         # Verify recovery with a quick inference test
         TEST_RESULT=$(curl -sf --max-time 60 http://localhost:11434/api/chat \
-            -d '{"model":"qwen3:14b","messages":[{"role":"user","content":"Say OK"}],"stream":false}' 2>&1 || echo "FAIL")
+            -d '{"model":"gemma4-26b-q3","messages":[{"role":"user","content":"Say OK"}],"stream":false}' 2>&1 || echo "FAIL")
 
         if echo "$TEST_RESULT" | grep -q '"content"'; then
             log "OK: Ollama recovered — inference working after restart"

@@ -44,38 +44,39 @@ C_GRAY   = "#8b949e"
 # 2 redundant 14B variants omitted per BR §3 (see qwen3-abl:14b, qwen3-14b-nothink)
 # ══════════════════════════════════════════════════════════════════════
 def chart_gen_speed_all():
-    # Data refreshed 2026-03-31 full rerun
+    # Data refreshed 2026-04-03 full rerun on Ollama 0.20.0
     models = [
-        ("llama3.2:3b",              103.7, "3B"),
+        ("llama3.2:3b",              104.3, "3B"),
         ("qwen2.5:3b",              101.9, "3B"),
-        ("phi4-mini",                87.5, "4B"),
-        ("gemma3:4b",                76.7, "4B"),
+        ("phi4-mini",                87.7, "4B"),
+        ("gemma3:4b",                76.4, "4B"),
         ("qwen3:4b",                 74.0, "4B"),
-        ("Qwen3-Coder-30B-A3B",     62.8, "MoE"),
-        ("Qwen3-30B-A3B (Q2_K)",      59.4, "MoE"),
-        ("qwen2.5:7b",              55.0, "7B"),
-        ("qwen2.5-coder:7b",        54.8, "7B"),
-        ("llama3.1:8b",              51.5, "8B"),
+        ("Qwen3-Coder-30B-A3B",     62.2, "MoE"),
+        ("Qwen3-30B-A3B (Q2_K)",     59.5, "MoE"),
+        ("qwen2.5:7b",              54.9, "7B"),
+        ("qwen2.5-coder:7b",        55.0, "7B"),
+        ("llama3.1:8b",              51.4, "8B"),
         ("seed-coder-abl:8b",       50.8, "8B"),
-        ("lexi-8b",                 50.1, "8B"),
-        ("granite3.3:8b",           45.9, "8B"),
+        ("lexi-8b",                 50.0, "8B"),
+        ("granite3.3:8b",           45.8, "8B"),
         ("qwen3-abl:8b",            45.5, "8B"),
-        ("qwen3-abliterated:8b",    45.5, "8B"),
-        ("glm4:9b",                 45.3, "9B"),
-        ("deepseek-r1:8b",          43.3, "8B"),
-        ("qwen3:8b-nothink",        43.2, "8B"),
-        ("qwen3:8b",                43.0, "8B"),
-        ("gemma2:9b",               38.5, "9B"),
-        ("★ MoE 35B-A3B",        37.7, "MoE"),
+        ("qwen3-abliterated:8b",    45.6, "8B"),
+        ("glm4:9b",                 44.9, "9B"),
+        ("deepseek-r1:8b",          43.2, "8B"),
+        ("qwen3:8b-nothink",        43.1, "8B"),
+        ("qwen3:8b",                43.5, "8B"),
+        ("gemma2:9b",               38.6, "9B"),
+        ("★ gemma4-26b-q3 (26B MoE)", 39.0, "MoE"),
+        ("★ MoE 35B-A3B",        37.6, "MoE"),
         ("mistral-nemo:12b",        34.1, "12B"),
-        ("★ qwen3.5:9b",           31.9, "9B"),
-        ("qwen3:8b-q8_0",           31.1, "8B"),
+        ("gemma4 (27B MoE)",        32.5, "MoE"),
+        ("★ qwen3.5:9b",           31.7, "9B"),
+        ("qwen3:8b-q8_0",           31.3, "8B"),
         ("gemma3:12b",              29.1, "12B"),
         ("deepseek-r1:14b",         28.8, "14B"),
         ("phi4:14b",                28.6, "14B"),
-        ("qwen3-abl:14b",           27.5, "14B"),
+        ("qwen3-abl:14b",           27.4, "14B"),
         ("qwen3:14b",               26.9, "14B"),
-        ("qwen3.5-27b-iq2m",       11.0, "27B"),
     ]
 
     models.reverse()
@@ -102,7 +103,7 @@ def chart_gen_speed_all():
     ax.set_yticks(range(len(names)))
     ax.set_yticklabels(names, fontsize=9)
     ax.set_xlabel("Generation Speed (tok/s)")
-    ax.set_title("BC-250 · Generation Speed — 30 of 32 Models\n@4K context · Q4_0/IQ2_M quants · 2 redundant 14B variants omitted", fontsize=13, fontweight='bold', pad=15)
+    ax.set_title("BC-250 · Generation Speed — 31 of 33 Models\n@4K context · Ollama 0.20 · Q4_0/IQ2_M quants · 2 redundant 14B variants omitted", fontsize=13, fontweight='bold', pad=15)
     ax.set_xlim(0, 120)
     ax.grid(axis='x', alpha=0.3)
 
@@ -201,6 +202,7 @@ def chart_context_ceiling():
         ("qwen3:8b",              39.4, 30.3, 22.5, 15.4),
         ("glm4:9b",               37.0, 23.3, 15.5,  9.2),
         ("★ MoE 35B-A3B",     35.6, 31.9, 28.5, None),
+        ("★ gemma4-26b-q3",   35.2, 31.1, 27.7, None),
         ("★ qwen3.5:9b",        31.1, 29.4, 27.0, 23.4),
         ("gemma3:12b",           28.4, 27.5, 26.3, 24.2),
         ("mistral-nemo:12b",     31.8, 24.7, 19.1, 13.1),
@@ -254,7 +256,7 @@ def chart_context_ceiling():
                 clr = '#ffffff' if v < 50 else '#000000'
             ax.text(j, i, txt, ha='center', va='center', fontsize=8, color=clr, fontweight='bold')
 
-    ax.set_title("BC-250 · Filled-Context Speed (tok/s) — 19 of 32 Models\n80% real-token fill · Q4_0 KV · ✂️ = truncated · ⚠️ = impractical",
+    ax.set_title("BC-250 · Filled-Context Speed (tok/s) — 20 of 33 Models\n80% real-token fill · Q4_0 KV · ✂️ = truncated · ⚠️ = impractical",
                  fontsize=13, fontweight='bold', pad=15)
 
     cbar = plt.colorbar(im, ax=ax, shrink=0.6, pad=0.02)
@@ -270,56 +272,62 @@ def chart_context_ceiling():
 # CHART 4: Context Degradation — 6 Selected Models (2 production + 4 comparison)
 # ══════════════════════════════════════════════════════════════════════
 def chart_context_degradation():
-    ctx = [4, 16, 32, 64]  # K
+    ctx = [4, 16, 32, 48, 64]  # K
 
-    # Data refreshed 2026-03-31 — 80% real-token fill
+    # Data refreshed 2026-04-04 — 80% real-token fill
     models = {
-        "★ MoE 35B-A3B":  [35.6, 31.9, 28.5, 23.0],
-        "★ qwen3.5:9b":     [31.1, 29.4, 27.0, 23.4],
-        "phi4-mini":          [74.3, 48.7, 33.2, 20.3],
-        "qwen3:8b":           [39.4, 30.3, 22.5, 15.4],
-        "qwen3:14b":          [25.2, 20.7, 16.7, 12.0],
-        "gemma3:4b":          [74.8, 72.3, 70.0, 65.1],
+        "★ MoE 35B-A3B":      [35.6, 31.9, 28.5, None, 23.0],
+        "★ gemma4-26b-q3":    [35.2, 31.1, 27.7, 25.0, None],
+        "★ qwen3.5:9b":       [31.1, 29.4, 27.0, None, 23.4],
+        "phi4-mini":           [74.3, 48.7, 33.2, None, 20.3],
+        "qwen3:8b":            [39.4, 30.3, 22.5, None, 15.4],
+        "qwen3:14b":           [25.2, 20.7, 16.7, None, 12.0],
+        "gemma3:4b":           [74.8, 72.3, 70.0, None, 65.1],
     }
 
     colors = {
-        "★ MoE 35B-A3B":  C_GOLD,
-        "★ qwen3.5:9b":     C_ORANGE,
-        "phi4-mini":          C_GREEN,
-        "qwen3:8b":           C_BLUE,
-        "qwen3:14b":          C_RED,
-        "gemma3:4b":          C_TEAL,
+        "★ MoE 35B-A3B":      C_GOLD,
+        "★ gemma4-26b-q3":    C_PURPLE,
+        "★ qwen3.5:9b":       C_ORANGE,
+        "phi4-mini":           C_GREEN,
+        "qwen3:8b":            C_BLUE,
+        "qwen3:14b":           C_RED,
+        "gemma3:4b":           C_TEAL,
     }
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
 
     # Left: Absolute speed
     for name, speeds in models.items():
-        ax1.plot(ctx, speeds, 'o-', label=name, color=colors[name], linewidth=2, markersize=6)
+        valid = [(c, s) for c, s in zip(ctx, speeds) if s is not None]
+        cx, sy = zip(*valid)
+        ax1.plot(cx, sy, 'o-', label=name, color=colors[name], linewidth=2, markersize=6)
     ax1.set_xlabel("Context Size (K tokens)")
     ax1.set_ylabel("Generation Speed (tok/s)")
-    ax1.set_title("Absolute Speed vs Context Fill — 6 Models", fontsize=12, fontweight='bold')
+    ax1.set_title("Absolute Speed vs Context Fill — 7 Models", fontsize=12, fontweight='bold')
     ax1.legend(fontsize=8, framealpha=0.3)
     ax1.grid(alpha=0.3)
     ax1.set_xticks(ctx)
-    ax1.set_xticklabels(["4K", "16K", "32K", "64K"])
+    ax1.set_xticklabels(["4K", "16K", "32K", "48K", "64K"])
 
     # Right: Percentage degradation from 4K baseline
     for name, speeds in models.items():
         base = speeds[0]
-        pct = [(s / base) * 100 for s in speeds]
-        ax2.plot(ctx, pct, 'o-', label=name, color=colors[name], linewidth=2, markersize=6)
+        valid = [(c, s) for c, s in zip(ctx, speeds) if s is not None]
+        cx, sy = zip(*valid)
+        pct = [(s / base) * 100 for s in sy]
+        ax2.plot(cx, pct, 'o-', label=name, color=colors[name], linewidth=2, markersize=6)
     ax2.set_xlabel("Context Size (K tokens)")
     ax2.set_ylabel("Speed Retention (% of 4K baseline)")
-    ax2.set_title("Context Degradation — % Retained (6 Models)", fontsize=12, fontweight='bold')
+    ax2.set_title("Context Degradation — % Retained (7 Models)", fontsize=12, fontweight='bold')
     ax2.legend(fontsize=8, framealpha=0.3)
     ax2.grid(alpha=0.3)
     ax2.set_xticks(ctx)
-    ax2.set_xticklabels(["4K", "16K", "32K", "64K"])
+    ax2.set_xticklabels(["4K", "16K", "32K", "48K", "64K"])
     ax2.axhline(y=50, color=C_RED, linestyle='--', alpha=0.4, linewidth=1)
     ax2.set_ylim(20, 105)
 
-    fig.suptitle("BC-250 · Context Scaling — 6 Selected Models (★ = production)\n80% real-token fill · Q4_0 KV cache",
+    fig.suptitle("BC-250 · Context Scaling — 7 Selected Models (★ = production / quality+prefill)\n80% real-token fill · Q4_0 KV cache",
                  fontsize=14, fontweight='bold', y=1.02)
     plt.tight_layout()
     plt.savefig(f"{OUT_DIR}/bench-context-degradation.png", dpi=150, bbox_inches='tight')
@@ -370,13 +378,15 @@ def chart_quality_tasks():
 # Only models with long-context quality data (production + phi4-mini comparison)
 # ══════════════════════════════════════════════════════════════════════
 def chart_longctx_quality():
-    models = ["MoE 35B-A3B", "qwen3.5:9b", "phi4-mini"]
+    models = ["★ gemma4-26b-q3", "★ MoE 35B-A3B", "qwen3.5:9b", "phi4-mini"]
     tests_16k = ["Budget\n16K", "Population\n16K", "Contradict\n16K", "Timeline\n16K"]
     tests_32k = ["Budget\n32K", "Population\n32K", "Contradict\n32K", "Timeline\n32K"]
     all_tests = tests_16k + tests_32k
 
-    # 1=pass, 0=fail
+    # 1=pass, 0=fail  (R1 data)
     results = np.array([
+        # gemma4:    16K                        32K
+        [0, 1, 1, 1,   0, 0, 1, 1],
         # MoE 35B:   16K                        32K
         [0, 1, 1, 1,   0, 1, 1, 1],
         # qwen3.5:9b
@@ -385,14 +395,14 @@ def chart_longctx_quality():
         [0, 0, 0, 1,   0, 0, 1, 1],
     ])
 
-    fig, ax = plt.subplots(figsize=(12, 4.5))
+    fig, ax = plt.subplots(figsize=(12, 5.5))
 
     from matplotlib.colors import ListedColormap
     cmap = ListedColormap(['#c0392b', '#27ae60'])
     im = ax.imshow(results, cmap=cmap, aspect='auto', vmin=0, vmax=1)
 
     # Annotate
-    for i in range(3):
+    for i in range(4):
         for j in range(8):
             txt = "PASS" if results[i][j] == 1 else "FAIL"
             clr = '#000000' if results[i][j] == 1 else 'white'
@@ -401,7 +411,7 @@ def chart_longctx_quality():
 
     ax.set_xticks(range(8))
     ax.set_xticklabels(all_tests, fontsize=9)
-    ax.set_yticks(range(3))
+    ax.set_yticks(range(4))
     ax.set_yticklabels(models, fontsize=10)
 
     # Vertical separator between 16K and 32K
@@ -409,11 +419,11 @@ def chart_longctx_quality():
     ax.text(1.5, -0.7, "16K Context", ha='center', fontsize=11, fontweight='bold', color=C_BLUE)
     ax.text(5.5, -0.7, "32K Context", ha='center', fontsize=11, fontweight='bold', color=C_ORANGE)
 
-    ax.set_title("BC-250 · Long-Context Quality — 3 of 32 Models\n4 multi-hop tests (budget/pop/contradict/timeline) at 16K & 32K",
+    ax.set_title("BC-250 · Long-Context Quality — 4 Production Models\n4 multi-hop tests (budget/pop/contradict/timeline) at 16K & 32K",
                  fontsize=13, fontweight='bold', pad=25)
 
     # Summary on right
-    totals = ["6/8", "5/8", "3/8"]
+    totals = ["5/8", "6/8", "5/8", "3/8"]
     for i, t in enumerate(totals):
         ax.text(8.3, i, t, ha='center', va='center', fontsize=11, fontweight='bold', color='#c9d1d9')
     ax.text(8.3, -0.7, "Total", ha='center', fontsize=10, fontweight='bold', color='#c9d1d9')
@@ -478,6 +488,7 @@ def chart_vram_usage():
         ("llama3.2:3b",      2.2),
         ("phi4-mini",        2.5),
         ("qwen3:4b",         2.9),
+        ("gemma4 (27B MoE)", 3.0),
         ("gemma3:4b",        3.8),
         ("qwen2.5:7b",       4.4),
         ("llama3.1:8b",      4.7),
@@ -492,10 +503,10 @@ def chart_vram_usage():
         ("qwen3:8b-q8_0",    8.5),
         ("gemma3:12b",       8.7),
         ("qwen3:14b",        8.9),
-        ("Qwen3-Coder-30B-A3B",  11.0),
+        ("Qwen3-Coder-30B-A3B",  10.3),
         ("Qwen3-30B-A3B (Q2_K)",  10.7),
         ("★ MoE 35B-A3B",12.3),
-        ("qwen3.5-27b-iq2m",       13.4),
+        ("★ gemma4-26b-q3 (26B MoE)", 13.5),
     ]
 
     names = [m[0] for m in models]
@@ -519,7 +530,7 @@ def chart_vram_usage():
     ax.set_yticks(range(len(names)))
     ax.set_yticklabels(names, fontsize=9)
     ax.set_xlabel("VRAM Usage @4K Context (GiB)")
-    ax.set_title("BC-250 · VRAM Usage — 22 of 32 Models @4K Context\n16.5 GiB Vulkan available · quant/think variants excluded",
+    ax.set_title("BC-250 · VRAM Usage — 23 of 33 Models @4K Context\nOllama 0.20 · 16.5 GiB Vulkan available · quant/think variants excluded",
                  fontsize=13, fontweight='bold', pad=15)
     ax.set_xlim(0, 18)
     ax.grid(axis='x', alpha=0.3)
@@ -704,34 +715,38 @@ def chart_statistical_cv():
 # Measured 2026-03-31 with medium prompt (~46-65 tokens) @4K context
 # ══════════════════════════════════════════════════════════════════════
 def chart_prefill_speed():
-    # (model, prefill_tok/s @4K medium prompt, size_cat)
+    # Phase 3 medium prefill (warm model, ~88 token prompt, 16K ctx)
+    # Ollama 0.20 brought massive prefill improvements for some architectures
     models = [
-        ("llama3.2:3b",              530.5, "3B"),
-        ("qwen2.5:3b",              454.8, "3B"),
-        ("gemma3:4b",                324.8, "4B"),
-        ("phi4-mini",                299.6, "4B"),
-        ("qwen3:4b",                 293.2, "4B"),
-        ("granite3.3:8b",           261.1, "8B"),
-        ("qwen2.5-coder:7b",        236.7, "7B"),
-        ("qwen2.5:7b",              236.6, "7B"),
-        ("seed-coder-abl:8b",       213.4, "8B"),
-        ("qwen3:8b-q8_0",           200.4, "8B"),
-        ("llama3.1:8b",              172.7, "8B"),
-        ("qwen3-abl:8b",            170.2, "8B"),
-        ("qwen3:8b",                169.1, "8B"),
-        ("qwen3:8b-nothink",        168.8, "8B"),
-        ("glm4:9b",                 166.4, "9B"),
-        ("gemma2:9b",               157.7, "9B"),
-        ("★ qwen3.5:9b",           147.3, "9B"),
-        ("deepseek-r1:8b",          140.8, "8B"),
-        ("mistral-nemo:12b",        119.1, "12B"),
-        ("gemma3:12b",              105.9, "12B"),
-        ("★ Qwen3-Coder-30B-A3B",  96.5, "MoE"),
-        ("★ MoE 35B-A3B",          92.4, "MoE"),
-        ("qwen3:14b",               89.7, "14B"),
-        ("phi4:14b",                 87.7, "14B"),
-        ("Qwen3-30B-A3B (Q2_K)",    80.5, "MoE"),
-        ("deepseek-r1:14b",         72.8, "14B"),
+        ("qwen2.5:3b",              10738, "3B"),
+        ("llama3.2:3b",              10479, "3B"),
+        ("phi4-mini",                6968, "4B"),
+        ("qwen2.5-coder:7b",        5826, "7B"),
+        ("qwen2.5:7b",              5830, "7B"),
+        ("granite3.3:8b",           5762, "8B"),
+        ("gemma3:4b",                3781, "4B"),
+        ("gemma2:9b",               3346, "9B"),
+        ("★ Qwen3-Coder-30B-A3B",  2982, "MoE"),
+        ("★ Qwen3-30B-A3B (Q2_K)", 2632, "MoE"),
+        ("deepseek-r1:14b",         2298, "14B"),
+        ("qwen3:8b-nothink",        1985, "8B"),
+        ("qwen3:8b",                1974, "8B"),
+        ("deepseek-r1:8b",          1824, "8B"),
+        ("★ gemma4-26b-q3 (26B MoE)", 1238, "MoE"),
+        ("lexi-8b",                  959, "8B"),
+        ("qwen3:4b",                 290, "4B"),
+        ("gemma4 (27B MoE)",         252, "MoE"),
+        ("seed-coder-abl:8b",       196, "8B"),
+        ("qwen3:8b-q8_0",           196, "8B"),
+        ("glm4:9b",                 178, "9B"),
+        ("llama3.1:8b",              174, "8B"),
+        ("qwen3-abl:8b",            166, "8B"),
+        ("★ qwen3.5:9b",           146, "9B"),
+        ("mistral-nemo:12b",        140, "12B"),
+        ("★ MoE 35B-A3B",          123, "MoE"),
+        ("gemma3:12b",              112, "12B"),
+        ("phi4:14b",                  92, "14B"),
+        ("qwen3:14b",                91, "14B"),
     ]
 
     models.reverse()
@@ -753,14 +768,15 @@ def chart_prefill_speed():
         if name.startswith("★"):
             bar.set_edgecolor(C_GOLD)
             bar.set_linewidth(2)
-        ax.text(spd + 5, i, f"{spd:.0f}", va='center', fontsize=9, color='#c9d1d9')
+        ax.text(spd + max(spd * 0.02, 50), i, f"{spd:,.0f}", va='center', fontsize=9, color='#c9d1d9')
 
     ax.set_yticks(range(len(names)))
     ax.set_yticklabels(names, fontsize=9)
     ax.set_xlabel("Prefill Speed (tok/s)")
-    ax.set_title("BC-250 · Prefill Speed — 26 of 32 Models\n@4K context · medium prompt (~50 tokens) · Q4_0 KV · ★ = production",
+    ax.set_title("BC-250 · Prefill Speed — 29 of 33 Models\nOllama 0.20 · warm model · ~88-token prompt · Q4_0 KV · ★ = production",
                  fontsize=13, fontweight='bold', pad=15)
-    ax.set_xlim(0, 600)
+    ax.set_xscale('log')
+    ax.set_xlim(50, 20000)
     ax.grid(axis='x', alpha=0.3)
 
     handles = [mpatches.Patch(facecolor=c, label=s) for s, c in size_colors.items()]
@@ -794,6 +810,7 @@ def chart_gen_vs_prefill():
         ("glm4:9b",              45.3, 166.4),
         ("qwen3:8b",             43.0, 169.1),
         ("gemma2:9b",            38.5, 157.7),
+        ("★ gemma4-26b-q3",       39.0, 1238.0),
         ("★ MoE 35B",           37.7,  92.4),
         ("mistral-nemo:12b",    34.1, 119.1),
         ("★ qwen3.5:9b",        31.9, 147.3),
@@ -811,7 +828,7 @@ def chart_gen_vs_prefill():
     y = np.arange(len(names))
     h = 0.35
 
-    fig, ax = plt.subplots(figsize=(14, 11))
+    fig, ax = plt.subplots(figsize=(18, 10))
     bars1 = ax.barh(y - h/2, gen, h, color=C_BLUE, edgecolor='#30363d', linewidth=0.5, label='Generation (tok/s)')
     bars2 = ax.barh(y + h/2, pref, h, color=C_GREEN, edgecolor='#30363d', linewidth=0.5, alpha=0.8, label='Prefill (tok/s)')
 
@@ -827,9 +844,9 @@ def chart_gen_vs_prefill():
     ax.set_yticks(y)
     ax.set_yticklabels(names, fontsize=9)
     ax.set_xlabel("Speed (tok/s)")
-    ax.set_title("BC-250 · Generation vs Prefill Speed — 22 Models\n@4K context · ratio label = prefill/gen multiplier · ★ = production",
+    ax.set_title("BC-250 · Generation vs Prefill Speed — 23 Models\n@4K context · ratio label = prefill/gen multiplier · ★ = production",
                  fontsize=13, fontweight='bold', pad=15)
-    ax.set_xlim(0, 600)
+    ax.set_xlim(0, max(pref) * 1.15)
     ax.grid(axis='x', alpha=0.3)
     ax.legend(fontsize=10, framealpha=0.3, loc='lower right')
 
@@ -904,10 +921,10 @@ def chart_prefill_vs_prompt_size():
 # ══════════════════════════════════════════════════════════════════════
 def chart_llamacpp_vs_ollama():
     labels = [
-        "MoE 30B\n4K ctx",
-        "MoE 30B\n16K ctx",
-        "MoE 30B\n32K ctx",
-        "MoE 30B\n64K ctx",
+        "Qwen3 MoE 30B-A3B\n4K ctx",
+        "Qwen3 MoE 30B-A3B\n16K ctx",
+        "Qwen3 MoE 30B-A3B\n32K ctx",
+        "Qwen3 MoE 30B-A3B\n64K ctx",
         "DeepSeek 14B\n4K ctx",
         "DeepSeek 14B\n32K ctx",
     ]

@@ -52,7 +52,7 @@ PROFILE_PRIVATE_PATH = os.path.join(SCRIPT_DIR, "profile-private.json")
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"  # best model — batch runs during quiet hours
+OLLAMA_MODEL = "gemma4-26b-q3"  # best model — batch runs during quiet hours
 
 QUIET_START = 0   # 00:00
 QUIET_END   = 6   # 06:00  — no chat, GPU free for batch jobs

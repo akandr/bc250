@@ -39,7 +39,7 @@ HA_OBSERVE = "/opt/netscan/ha-observe.py"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"  # consolidated model for all batch scripts
+OLLAMA_MODEL = "gemma4-26b-q3"  # consolidated model for all batch scripts
 
 QUIET_START = 0   # 00:00
 QUIET_END   = 6   # 06:00 — no chat, GPU free for batch jobs

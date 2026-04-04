@@ -36,7 +36,7 @@ from llm_sanitize import sanitize_llm_output
 
 OLLAMA_URL   = "http://localhost:11434"
 OLLAMA_CHAT  = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"
+OLLAMA_MODEL = "gemma4-26b-q3"
 
 DATA_DIR     = Path("/opt/netscan/data")
 CSI_DIR      = DATA_DIR / "csi-think"

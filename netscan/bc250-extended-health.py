@@ -26,7 +26,7 @@ WEB_DIR = Path(os.environ.get("NETSCAN_WEB", "/opt/netscan/web"))
 THINK_DIR = DATA_DIR / "think"
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_CHAT = f"{OLLAMA_URL}/v1/chat/completions"
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3:14b")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma4-26b-q3")
 
 # CJK detection regex
 CJK_RE = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\u3000-\u303f\uff00-\uffef]')

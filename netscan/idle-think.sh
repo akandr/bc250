@@ -122,7 +122,7 @@ SIGNAL_TO = SIGNAL_CFG.get("to", "+<OWNER_PHONE>")
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"  # best model for richer analysis
+OLLAMA_MODEL = "gemma4-26b-q3"  # best model for richer analysis
 
 QUIET_START = 0
 QUIET_END   = 6

@@ -118,7 +118,7 @@ USER_AGENT = f"netscan-bc250-digest/2.0 ({FEED_ID} daily digest bot)"
 
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_CHAT = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "qwen3:14b"  # consolidated model for all batch scripts
+OLLAMA_MODEL = "gemma4-26b-q3"  # consolidated model for all batch scripts
 OLLAMA_TIMEOUT_PER_CALL = 900     # 15 min max per LLM call
 
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
