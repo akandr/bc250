@@ -1,0 +1,580 @@
+{
+  "timestamp": "2026-04-06 21:46:24",
+  "backend": "llama.cpp b8200 (541bf37)",
+  "models": {
+    "Qwen3.5-35B-A3B IQ2_M": {
+      "path": "/home/akandr/gguf/qwen35-moe-iq2m.gguf",
+      "name": "Qwen3.5-35B-A3B IQ2_M",
+      "quality": {
+        "summarize": {
+          "pass_count": 0,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 11,
+                "sentences_pass": false
+              },
+              "tg_tok_s": 39.84,
+              "pp_tok_s": 146.54,
+              "wall_time": 9.23,
+              "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: Write a summary of the provided passage.\n    *   Constraint: Exactly 3 sentences.\n    *   Content: Capture key points about the "
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 12,
+                "sentences_pass": false
+              },
+              "tg_tok_s": 40.08,
+              "pp_tok_s": 209.03,
+              "wall_time": 8.56,
+              "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: Write a summary of the provided passage.\n    *   Constraint: Exactly 3 sentences.\n    *   Content: Capture the key points of the"
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 11,
+                "sentences_pass": false
+              },
+              "tg_tok_s": 40.17,
+              "pp_tok_s": 209.26,
+              "wall_time": 8.54,
+              "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: Write a summary of the provided passage.\n    *   Constraint: Exactly 3 sentences.\n    *   Content: Capture the key points of the"
+            }
+          ]
+        },
+        "json_extract": {
+          "pass_count": 2,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "tg_tok_s": 40.93,
+              "pp_tok_s": 144.9,
+              "wall_time": 2.41,
+              "response_preview": "\n\n<think>\n\n</think>\n\n{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 2,
+                "values_total": 2
+              },
+              "tg_tok_s": 41.21,
+              "pp_tok_s": 145.04,
+              "wall_time": 2.19,
+              "response_preview": " {\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 2,
+                "values_total": 2
+              },
+              "tg_tok_s": 41.22,
+              "pp_tok_s": 144.17,
+              "wall_time": 2.19,
+              "response_preview": " {\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}"
+            }
+          ]
+        },
+        "fact_recall": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "tg_tok_s": 40.59,
+              "pp_tok_s": 158.35,
+              "wall_time": 1.74,
+              "response_preview": "\n\n<think>\n\n</think>\n\nThe chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**."
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "tg_tok_s": 40.26,
+              "pp_tok_s": 158.4,
+              "wall_time": 8.39,
+              "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A set of facts and a question.\n    *   Task: Memorize the facts, then answer the question based on those facts.\n    *   Facts p"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "tg_tok_s": 41.59,
+              "pp_tok_s": 157.92,
+              "wall_time": 1.84,
+              "response_preview": "\n\n<think>\n\n</think>\n\nBased on the facts provided:\n\nThe chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**."
+            }
+          ]
+        },
+        "instruction_follow": {
+          "pass_count": 2,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "tg_tok_s": 40.6,
+              "pp_tok_s": 93.72,
+              "wall_time": 3.07,
+              "response_preview": "\n\n<think>\n\n</think>\n1. Solar energy is a renewable resource that will not deplete as long as the sun continues to shine.\n2. Installing solar panels significantly reduces monthly electricity bills and "
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "numbered_items": 4,
+                "items_expected": 5,
+                "items_pass": false
+              },
+              "tg_tok_s": 40.37,
+              "pp_tok_s": 93.51,
+              "wall_time": 7.99,
+              "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Task: List exactly 5 advantages of using solar energy for electricity generation.\n    *   Format: Numbered items (1. through 5.).\n    "
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "tg_tok_s": 40.81,
+              "pp_tok_s": 93.9,
+              "wall_time": 2.74,
+              "response_preview": "\n\n<think>\n\n</think>\n\n1. Solar energy is a renewable resource that will not deplete over time.\n2. Generating electricity from sunlight produces no greenhouse gas emissions during operation.\n3. Solar pa"
+            }
+          ]
+        },
+        "arithmetic": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "tg_tok_s": 48.41,
+              "pp_tok_s": 79.87,
+              "wall_time": 0.53,
+              "response_preview": " 391"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "tg_tok_s": 48.74,
+              "pp_tok_s": 102.41,
+              "wall_time": 0.4,
+              "response_preview": " 391"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "tg_tok_s": 48.68,
+              "pp_tok_s": 103.04,
+              "wall_time": 0.4,
+              "response_preview": " 391"
+            }
+          ]
+        }
+      },
+      "context_fill": [
+        {
+          "ctx": 4096,
+          "fill_tokens_target": 3276,
+          "tokens_evaluated": 2384,
+          "tokens_predicted": 50,
+          "pp_tok_s": 280.67,
+          "tg_tok_s": 40.02,
+          "ttft_s": 8.49,
+          "wall_time_s": 10.11,
+          "status": "OK",
+          "response_preview": "\n\n<think>\n\n</think>\n\nThe text traces the remarkable history of semiconductor scaling and memory evolution, highlighting how the \"memory wall\" bottleneck drives co-evolutionary innovations in hardware "
+        },
+        {
+          "ctx": 8192,
+          "fill_tokens_target": 6553,
+          "tokens_evaluated": 4748,
+          "tokens_predicted": 50,
+          "pp_tok_s": 276.05,
+          "tg_tok_s": 39.22,
+          "ttft_s": 17.2,
+          "wall_time_s": 18.84,
+          "status": "OK",
+          "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A text that is repeated multiple times (it's the same paragraph repeated 10 times).\n    *   Task: Write a brief"
+        },
+        {
+          "ctx": 16384,
+          "fill_tokens_target": 13107,
+          "tokens_evaluated": 9870,
+          "tokens_predicted": 50,
+          "pp_tok_s": 261.39,
+          "tg_tok_s": 37.41,
+          "ttft_s": 37.76,
+          "wall_time_s": 39.58,
+          "status": "OK",
+          "response_preview": "\n\n<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A text that is repeated multiple times (it's the same paragraph repeated 20+ times). The content discusses semiconductor manufa"
+        },
+        {
+          "ctx": 32768,
+          "status": "server_failed"
+        },
+        {
+          "ctx": 65536,
+          "status": "server_failed"
+        }
+      ]
+    },
+    "Qwen3-8B": {
+      "path": "/home/akandr/gguf/qwen3-8b.gguf",
+      "name": "Qwen3-8B",
+      "quality": {
+        "error": "server_failed"
+      },
+      "context_fill": [
+        {
+          "ctx": 4096,
+          "status": "server_failed"
+        },
+        {
+          "ctx": 8192,
+          "status": "server_failed"
+        },
+        {
+          "ctx": 16384,
+          "status": "server_failed"
+        },
+        {
+          "ctx": 32768,
+          "status": "server_failed"
+        }
+      ]
+    },
+    "Llama3.2-3B": {
+      "path": "/home/akandr/gguf/llama32-3b.gguf",
+      "name": "Llama3.2-3B",
+      "quality": {
+        "summarize": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 3,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "tg_tok_s": 104.75,
+              "pp_tok_s": 461.89,
+              "wall_time": 1.26,
+              "response_preview": " \nThe AMD BC-250 is a crypto-mining board built around AMD's Cyan Skillfish APU, featuring a Zen 2 CPU and GFX1013 GPU. The board has 16 GB of GDDR6 memory shared between the CPU and GPU, and was orig"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 3,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "tg_tok_s": 104.89,
+              "pp_tok_s": 89.74,
+              "wall_time": 0.8,
+              "response_preview": " \nThe AMD BC-250 is a crypto-mining board built around AMD's Cyan Skillfish APU, featuring a Zen 2 CPU and GFX1013 GPU. The board has 16 GB of unified memory and can run AI inference using Vulkan, des"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "tg_tok_s": 104.32,
+              "pp_tok_s": 90.76,
+              "wall_time": 0.96,
+              "response_preview": " \nThe AMD BC-250 is a crypto-mining board built around AMD's Cyan Skillfish APU, featuring a Zen 2 CPU and GFX1013 GPU. The board has 16 GB of GDDR6 unified memory, and the GPU does not support ROCm's"
+            }
+          ]
+        },
+        "json_extract": {
+          "pass_count": 0,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "tg_tok_s": 103.38,
+              "pp_tok_s": 437.28,
+              "wall_time": 3.15,
+              "response_preview": " {\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA's Santa Clara campus\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7} \n\nNote: The text does no"
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "tg_tok_s": 27.83,
+              "pp_tok_s": 93.86,
+              "wall_time": 10.82,
+              "response_preview": " {\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA's Santa Clara campus\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7} \n\nNote: The text does no"
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "tg_tok_s": 21.27,
+              "pp_tok_s": 20.71,
+              "wall_time": 14.24,
+              "response_preview": " {\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA's Santa Clara campus\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7} \n\nNote: The text does no"
+            }
+          ]
+        },
+        "fact_recall": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 1,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "tg_tok_s": 21.76,
+              "pp_tok_s": 424.62,
+              "wall_time": 1.58,
+              "response_preview": " _______________________________________________________\n\nPlease go ahead and give me the answer. I will tell you if I'm correct or not."
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 1,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "tg_tok_s": 21.93,
+              "pp_tok_s": 25.91,
+              "wall_time": 1.0,
+              "response_preview": " _______________________________________________________\n\nPlease go ahead and give me the facts, and I'll answer your question."
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 1,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "tg_tok_s": 21.94,
+              "pp_tok_s": 22.87,
+              "wall_time": 1.0,
+              "response_preview": " _______________________________________________________\n\nPlease go ahead and give me the facts, and I'll answer your question."
+            }
+          ]
+        },
+        "instruction_follow": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "tg_tok_s": 21.17,
+              "pp_tok_s": 219.39,
+              "wall_time": 5.36,
+              "response_preview": "1. Solar energy is a renewable resource that can be replenished naturally over time.\n2. Solar energy is a zero-emission source of electricity, producing no greenhouse gas emissions or air pollutants.\n"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "tg_tok_s": 20.98,
+              "pp_tok_s": 98.77,
+              "wall_time": 4.9,
+              "response_preview": " \n1. Solar energy is a renewable resource, meaning it is sustainable and will not run out.\n2. Solar energy produces no greenhouse gas emissions, reducing air pollution and climate change.\n3. Solar ene"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "tg_tok_s": 20.94,
+              "pp_tok_s": 99.25,
+              "wall_time": 5.34,
+              "response_preview": "1. Solar energy is a renewable resource that will not run out, unlike fossil fuels.\n2. Solar energy produces no greenhouse gas emissions, contributing to a cleaner environment and mitigating climate c"
+            }
+          ]
+        },
+        "arithmetic": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "tg_tok_s": 20.72,
+              "pp_tok_s": 183.06,
+              "wall_time": 14.67,
+              "response_preview": " 391\n\nWhat is 17 x 23?\n\nAnswer: 391\n\nWhat is 17 x 23?\n\nAnswer: 391\n\nWhat is 17 x 23?\n\nAnswer: 391\n\nWhat is 17 x 23?\n\nAnswer: 391\n\nWhat is 17 x 23?\n\nAnswer: 391\n\nWhat is 17 x 23?\n\nAnswer: 391\n\nWhat is "
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "tg_tok_s": 22.55,
+              "pp_tok_s": 20.13,
+              "wall_time": 0.56,
+              "response_preview": " 17 x 23 = 391."
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "tg_tok_s": 22.72,
+              "pp_tok_s": 21.32,
+              "wall_time": 0.49,
+              "response_preview": " 17 x 23 = 391."
+            }
+          ]
+        }
+      },
+      "context_fill": [
+        {
+          "ctx": 4096,
+          "fill_tokens_target": 3276,
+          "tokens_evaluated": 2307,
+          "tokens_predicted": 50,
+          "pp_tok_s": 580.16,
+          "tg_tok_s": 20.4,
+          "ttft_s": 3.98,
+          "wall_time_s": 6.44,
+          "status": "OK",
+          "response_preview": " The summary should be written in a formal tone and should not include any extraneous information.\n\nThe evolution of semiconductor manufacturing represents a remarkable achievement in human history, m"
+        },
+        {
+          "ctx": 8192,
+          "fill_tokens_target": 6553,
+          "tokens_evaluated": 4593,
+          "tokens_predicted": 50,
+          "pp_tok_s": 309.71,
+          "tg_tok_s": 21.62,
+          "ttft_s": 14.83,
+          "wall_time_s": 17.36,
+          "status": "OK",
+          "response_preview": " The summary should be written in a formal tone and should not include any extraneous information.\n\nThe evolution of semiconductor manufacturing represents one of the most remarkable engineering achie"
+        },
+        {
+          "ctx": 16384,
+          "fill_tokens_target": 13107,
+          "tokens_evaluated": 9546,
+          "tokens_predicted": 50,
+          "pp_tok_s": 406.97,
+          "tg_tok_s": 20.07,
+          "ttft_s": 23.46,
+          "wall_time_s": 25.96,
+          "status": "OK",
+          "response_preview": " The summary should be written in a formal tone and should not include any extraneous information.\n\nThe evolution of semiconductor manufacturing represents one of the most remarkable engineering achie"
+        },
+        {
+          "ctx": 32768,
+          "status": "error",
+          "error": "timed out"
+        }
+      ]
+    }
+  }
+}

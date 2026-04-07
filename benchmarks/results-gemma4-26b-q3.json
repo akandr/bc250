@@ -1,0 +1,67 @@
+{
+  "model": "gemma4-26b-q3",
+  "quant": "UD-Q3_K_M",
+  "architecture": "26B MoE A4B",
+  "file_size_gb": 12.5,
+  "speed_4k": {
+    "gen_tok_s": 38.8,
+    "prefill_tok_s": 1238.1
+  },
+  "gpu_offload": {
+    "size_gb": 13.5,
+    "vram_gb": 13.5,
+    "gpu_pct": 100
+  },
+  "context_tests": {
+    "4096": {
+      "status": "OK",
+      "gen_tok_s": 36.7,
+      "prompt_tokens": 1842
+    },
+    "8192": {
+      "status": "OK",
+      "gen_tok_s": 37.9,
+      "prompt_tokens": 2022
+    },
+    "16384": {
+      "status": "OK",
+      "gen_tok_s": 37.2,
+      "prompt_tokens": 2022
+    },
+    "32768": {
+      "status": "OK",
+      "gen_tok_s": 37.6,
+      "prompt_tokens": 2022
+    },
+    "65536": {
+      "status": "FAIL",
+      "error": "timed out"
+    }
+  },
+  "context_retest_clean_boot": {
+    "4096": {"status": "OK", "gen_tok_s": 36.7, "prefill_tok_s": 271.0, "prompt_tokens": 2756},
+    "8192": {"status": "OK", "gen_tok_s": 34.5, "prefill_tok_s": 255.3, "prompt_tokens": 5026},
+    "16384": {"status": "OK", "gen_tok_s": 34.3, "prefill_tok_s": 255.7, "prompt_tokens": 5026},
+    "32768": {"status": "OK", "gen_tok_s": 34.2, "prefill_tok_s": 255.7, "prompt_tokens": 5026},
+    "49152": {"status": "OK", "gen_tok_s": 33.7, "prefill_tok_s": 255.4, "prompt_tokens": 5026},
+    "65536": {"status": "FAIL", "error": "timed out after 300s, RAM exhausted + 325MB swap"}
+  },
+  "prefill_tests": {
+    "100": {
+      "prefill_tok_s": 157.4,
+      "tokens": 108
+    },
+    "500": {
+      "prefill_tok_s": 367.8,
+      "tokens": 464
+    },
+    "1000": {
+      "prefill_tok_s": 549.5,
+      "tokens": 908
+    },
+    "2000": {
+      "prefill_tok_s": 525.4,
+      "tokens": 1797
+    }
+  }
+}

@@ -11,7 +11,7 @@
 
 **GPU-accelerated AI home server on an obscure AMD APU — Vulkan inference, autonomous intelligence, Signal chat**
 
-`Zen 2 · GFX1013 ("RDNA 1.5", informal) · 16 GB unified · Vulkan · 35B MoE @ 37.5 tok/s · 256K alloc / 32K practical filled ctx · 330 autonomous jobs/cycle · 130 dashboard pages`
+`Zen 2 · GFX1013 ("RDNA 1.5", informal) · 16 GB unified · Vulkan · 35B MoE @ 37.5 tok/s · 64K alloc / 32K practical filled ctx · 330 autonomous jobs/cycle · 130 dashboard pages`
 
 [![Code: AGPL v3](https://img.shields.io/badge/Code-AGPL%20v3-blue.svg)](LICENSE)
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/Docs-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
@@ -24,9 +24,9 @@
 
 > A complete guide to running a **35-billion-parameter language model** (Mixture-of-Experts architecture), **FLUX.2 image generation**, and 330 autonomous jobs on the AMD BC-250 — a crypto-mining board built around AMD's Cyan Skillfish APU (Zen 2 + GFX1013 GPU, 16 GB GDDR6), often associated by the community with the PS5's silicon lineage ([Phoronix](https://www.phoronix.com/news/AMD-RADV-PS5-BC-250), [LLVM AMDGPU](https://llvm.org/docs/AMDGPUUsage.html#processors)), repurposed as a headless AI server with a community-patched BIOS.
 >
- > 35B MoE at 37.5 tok/s (tokens/second) with a 256K allocation ceiling and 32K practical filled context (64K allocation default), FLUX.2-klein-9B as the preferred image model from side-by-side testing, hardware-specific driver workarounds, memory tuning notes, and real-world benchmarks on this niche hardware. If you're new to LLM terminology, see the glossary below.
+ > 35B MoE at 37.5 tok/s (tokens/second) with a 64K context allocation ceiling and 32K practical filled context, FLUX.2-klein-9B as the preferred image model from side-by-side testing, hardware-specific driver workarounds, memory tuning notes, and real-world benchmarks on this niche hardware. If you're new to LLM terminology, see the glossary below.
 
-> **What makes this unusual:** This document describes one public, real-world LLM inference deployment on BC-250 / GFX1013 hardware — GFX10-era silicon informally called "RDNA 1.5" by the community. ROCm's userspace libraries don't ship GFX1013 support. OpenCL/rusticl was not functional in this configuration. On this Fedora 43 / Mesa 25.3.4 stack, Vulkan was the only GPU compute path that proved usable — and even that required working around two kernel memory bottlenecks (GTT cap + TTM pages_limit) before 14B models would run.
+> **What makes this unusual:** This document describes one public, real-world LLM inference deployment on BC-250 / GFX1013 hardware — GFX10-era silicon informally called "RDNA 1.5" by the community. ROCm's userspace libraries don't ship GFX1013 support. OpenCL/rusticl was not functional in this configuration. On this Fedora 43 / Mesa 25.3.4 stack, Vulkan was the only GPU compute path found to be usable — and even that required working around two kernel memory bottlenecks (GTT cap + TTM pages_limit) before 14B models would run.
 >
 > **Disclaimer:** Unless otherwise stated, performance figures in this document are local measurements from one BC-250 board running Fedora 43, Mesa 25.3.4, and Ollama 0.18.0 with specific model quantizations. They are not vendor benchmarks and may not be reproducible on different software stacks.
 
@@ -63,7 +63,7 @@
 | [2](#2-driver--compute-stack) | Driver & Compute Stack | What works (Vulkan), what doesn't (ROCm) |
 | [3](#3-ollama--vulkan-setup) | Ollama + Vulkan Setup | Install, GPU memory tuning (GTT + TTM) |
 | [4](#4-models--benchmarks) | Models & Benchmarks | Model compatibility, speed, memory budget |
-| [4.10](#410-ollama-vs-upstream-llamacpp--vulkan-overhead-analysis) | ↳ Ollama vs llama.cpp | TG: +45% Qwen MoE, +7% dense; 32K+ only via Ollama |
+| [4.10](#410-ollama-vs-upstream-llamacpp--vulkan-overhead-analysis) | ↳ Ollama vs llama.cpp | TG: +45% Qwen MoE (HEAD), 32K–64K: b8200 faster |
 | | **`PART II ─ AI STACK`** | |
 | [5](#5-signal-chat-bot) | Signal Chat Bot | Chat, vision analysis, audio transcription, smart routing |
 | [6](#6-image-generation) | Image Generation | FLUX.2-klein-9B, synchronous pipeline |
@@ -124,7 +124,7 @@ CPU and GPU share the same 16 GB physical pool (UMA — Unified Memory Architect
 **Two bottlenecks had to be fixed in this setup:**
 
 1. **GTT cap** — `amdgpu` driver defaults to 50% of RAM (~7.4 GiB). The legacy fix was `amdgpu.gttsize=14336` in kernel cmdline, but this parameter is now deprecated in favor of `ttm.pages_limit` ([kernel TTM docs](https://docs.kernel.org/gpu/drm-mm.html), [Jeff Geerling's notes](https://www.jeffgeerling.com/blog/2025/increasing-vram-allocation-on-amd-ai-apus-under-linux/)).
-2. **TTM pages_limit** — kernel TTM memory manager independently caps allocations at ~7.4 GiB. Fix: `ttm.pages_limit=4194304` (16 GiB in 4K pages). **On this Fedora 43 / kernel 6.18.9 stack, this is the only tuning needed.** Other kernels or distros may behave differently.
+2. **TTM pages_limit** — kernel TTM memory manager independently caps allocations at ~7.4 GiB. Fix: `ttm.pages_limit=4194304` (16 GiB in 4K pages). **On this Fedora 43 / kernel 6.18.9 stack, this was the only additional tuning required.** Other kernels or distros may behave differently.
 
 > ✅ **GTT migration complete:** `amdgpu.gttsize` is deprecated and was removed from this setup's kernel cmdline. With `ttm.pages_limit=4194304` alone, GTT grew from 14→16 GiB and Vulkan available from 14.0→16.5 GiB. The deprecated parameter was actually *limiting* the allocation.
 
@@ -143,7 +143,7 @@ The BC-250's `GFX1013` falls between supported driver tiers. BC-250/Cyan Skillfi
 | **ROCm / HIP** | ❌ | `rocblas_abort()` — GFX1013 not in GPU list |
 | **OpenCL (rusticl)** | ⚠️ | Not usable in this setup (Mesa 25.3.4 / Fedora 43). Community reports suggest evolving support. |
 
-**Why ROCm fails:** GFX1013 is listed in LLVM as supporting `rocm-amdhsa`, but AMD's ROCm userspace (rocBLAS/Tensile) doesn't ship GFX1013 solution libraries. On this Fedora 43 / Mesa 25.3.4 deployment, **Vulkan was the only GPU compute path that proved usable** as of early 2026. OpenCL/rusticl may work in other Mesa versions or configurations.
+**Why ROCm fails:** GFX1013 is listed in LLVM as supporting `rocm-amdhsa`, but AMD's ROCm userspace (rocBLAS/Tensile) doesn't ship GFX1013 solution libraries. On this Fedora 43 / Mesa 25.3.4 deployment, **Vulkan was the only GPU compute path found to work** in this configuration as of early 2026. OpenCL/rusticl may function in other Mesa versions or setups.
 
 <details>
 <summary><b>▸ What about HSA_OVERRIDE_GFX_VERSION?</b></summary>
@@ -214,10 +214,10 @@ A common question: "Why not build llama.cpp locally with `-march=native` instead
 
 **Key findings:**
 
-- **`-march=native` vs `-march=haswell`: 0.1% difference** — negligible, confirms CPU SIMD target is irrelevant when inference runs on Vulkan GPU.
+- **`-march=native` vs `-march=haswell`: 0.1% difference** — negligible, suggesting CPU SIMD target has little impact when inference runs on Vulkan GPU.
 - **llama.cpp HEAD vs Ollama 0.18: +9% dense, +77% Qwen MoE** — from improved Vulkan shaders upstream. The Qwen MoE gain is especially large, suggesting significant shader optimization for sparse architectures. Ollama will inherit these gains in the next release.
-- **No swap thrashing** — llama-server with Qwen MoE 30B-A3B at 65K context used 12 GiB RAM with 1.7 GiB swap (same as baseline). The earlier "swap thrashing" finding from round 1 was due to running without flash attention and q4_0 KV.
-- **Practical value:** Ollama manages model loading/unloading, HTTP API, systemd integration, and KV cache lifecycle. Replacing it with raw `llama-server` would require reimplementing all of that, for speed gains that upstream will deliver anyway.
+- **No swap thrashing** — llama-server with Qwen3.5 MoE 35B-A3B at 65K context used 12 GiB RAM with 1.7 GiB swap (same as baseline). The earlier "swap thrashing" finding from round 1 was due to running without flash attention and q4_0 KV.
+- **Practical value:** Ollama manages model loading/unloading, HTTP API, systemd integration, and KV cache lifecycle. Replacing it with raw `llama-server` would require reimplementing all of that, for speed gains that upstream will deliver anyway. Confirmed in §4.10b: llama-server b8200 is 4–18% faster on filled-context TG, but the `/v1/chat/completions` endpoint with `/no_think` restores quality (Qwen3-8B 15/15, Llama 13–15/15), while MoE remains limited by b8200's outdated template (1/15). Server pre-allocates KV (MoE caps at 16K vs Ollama's 64K).
 
 The llama-bench numbers that look even faster (79–89 tok/s) use **small default context allocation** (~640 tokens vs Ollama's 65K). Larger context = more KV cache memory = less bandwidth available for generation.
 
@@ -329,7 +329,7 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 |--------|------|-------|
 | VRAM carveout | 512 MB | BIOS-reserved from UMA pool (not separate memory) |
 | GTT | **16 GiB** | Tuned via `ttm.pages_limit=4194304` (default 7.4 GiB). Deprecated `amdgpu.gttsize` removed from this setup. |
-| TTM pages_limit | **16 GiB** | `ttm.pages_limit=4194304` — the only memory tuning parameter needed in this setup |
+| TTM pages_limit | **16 GiB** | `ttm.pages_limit=4194304` — the primary memory tuning parameter in this setup |
 
 | Vulkan heap | Size |
 |-------------|------|
@@ -420,7 +420,7 @@ echo 'w /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor - - - - performanc
 
 > ⁹ **Gemma 4 26B MoE A4B (custom GGUF):** The 26B A4B variant (128 experts, 8 active + 1 shared, 3.8B active params) runs at **39.0 tok/s** with **100% GPU offload** (13.5 GiB) using Unsloth UD-Q3_K_M quantization (11.6 GiB file). This is the largest model successfully run fully on GPU on BC-250. Ollama's official Q4_K_M (18 GB) exceeds 16 GB UMA and crashes the system. Context ceiling is **48K** (49152 verified at 33.7 tok/s; 65K times out after 5 min, exhausts RAM + swap). Prefill reaches 1238 tok/s at 4K context.
 
-> **IQ2_M basic functionality confirmed:** Quality benchmarks (5 tasks × 3 runs) confirmed that the 35B MoE scored **14/15 (93%)** on summarization, JSON extraction, fact recall, instruction following, and arithmetic — while the 9B Q4_K_M fallback scored **15/15 (100%)**. The extreme quantization (~2.5 bits per parameter) doesn't break basic functionality on these tasks. However, the benchmark tasks are simple enough that even 3B models score 93% — they do not measure nuance, reasoning depth, or generation quality where larger models are expected to have an advantage. Complex mathematical reasoning and multi-step logic were not tested. See §4.5a for details.
+> **IQ2_M basic functionality verified:** Quality benchmarks (5 tasks × 3 runs) showed the 35B MoE scoring **14/15 (93%)** on summarization, JSON extraction, fact recall, instruction following, and arithmetic — while the 9B Q4_K_M fallback scored **15/15 (100%)**. The extreme quantization (~2.5 bits per parameter) doesn't break basic functionality on these tasks. However, the benchmark tasks are simple enough that even 3B models score 93% — they do not measure nuance, reasoning depth, or generation quality where larger models are expected to have an advantage. Complex mathematical reasoning and multi-step logic were not tested. See §4.5a for details.
 
 ### 4.2 Benchmark visualization
 
@@ -643,7 +643,7 @@ Environment=OLLAMA_CONTEXT_LENGTH=65536
 
 > Follow-up benchmark with repeated measurements and quality assessment.
 
-**Statistical validation** — 3 runs × 8 models confirms single-run reliability:
+**Statistical validation** — 3 runs × 8 models supports single-run reliability:
 
 | Model | Gen median | Range | CV% |
 |-------|:---------:|:-----:|:---:|
@@ -706,7 +706,7 @@ On UMA, both prefill and generation share memory bandwidth. Prefill is the time 
 | Medium | 384 | 229 tok/s | 33.0 | 1.7s |
 | Long | 1,179 | 225 tok/s | 32.5 | 5.2s |
 
-> **Observations:** Both production models converged to ~230 tok/s prefill at medium-to-long prompts in this testing — an observed pattern whose mechanism is unproven (could be Vulkan dispatch overhead, memory controller bandwidth, or another bottleneck; see §4.9). At tiny prompts (<50 tokens), GPU compute overhead dominates and prefill drops to 53–61 tok/s. Generation rate was stable across prompt sizes in this testing: MoE held 38–39 tok/s, 9B held 32–33 tok/s. TTFT scales linearly: at 384 tokens it's ~1.7s, at 1.2K tokens it's ~5.2s. For real-world Signal chat (3K system prompt + conversation), expect TTFT of ~15–20s on cold start, <2s when the model is warm (prompt cached via `OLLAMA_KEEP_ALIVE=30m`).
+> **Observations:** Both production models converged to ~230 tok/s prefill at medium-to-long prompts in this testing — an observed pattern whose underlying cause remains unclear (could be Vulkan dispatch overhead, memory controller bandwidth, or another bottleneck; see §4.9). At tiny prompts (<50 tokens), GPU compute overhead dominates and prefill drops to 53–61 tok/s. Generation rate was stable across prompt sizes in this testing: MoE held 38–39 tok/s, 9B held 32–33 tok/s. TTFT scales linearly: at 384 tokens it's ~1.7s, at 1.2K tokens it's ~5.2s. For real-world Signal chat (3K system prompt + conversation), expect TTFT of ~15–20s on cold start, <2s when the model is warm (prompt cached via `OLLAMA_KEEP_ALIVE=30m`).
 
 <details>
 <summary><b>Historical: qwen3:14b Q4_K_M (previous primary, 24K context)</b></summary>
@@ -783,11 +783,15 @@ The benchmark campaign measures this specific BC-250 board under one software st
 - **Quality coverage is partial.** 32 models attempted, 31 produced usable results. qwen2.5:7b scored 20% (corrupted by 72% loading bug; only fact recall passes). qwen3.5-27b-iq2m scored 0% (all 15 tasks timed out). Two models scored low due to `think:false` not being honored — thinking tokens consumed the output budget.
 - **Filled-context coverage is partial.** 32 models attempted at 4K–64K with 80% real-token fill. 25 reach 64K, 5 have lower native ceilings (32K or 16K), 1 broken (qwen2.5-coder:7b, pec=0), 1 too large to load (qwen3.5-27b-iq2m). All 32 were tested; not all produced usable data.
 - **Long-context quality is limited in scope.** Tested on 4 production models at 16K and 32K. Embedded fact retrieval: 24/24 pass. Multi-hop reasoning: 8/32 pass. Long-range synthesis: 31/32 pass. Not tested at 64K, not tested on non-production models.
-- **Ollama backend lag.** As documented in §4.10, Ollama bundles a llama.cpp Vulkan backend that lags upstream HEAD. Building llama.cpp from HEAD yields **+45% generation speed on Qwen MoE at 4K context** and **+7% on dense models** (measured against Ollama 0.18; likely similar on 0.20 since generation speeds are unchanged). The Qwen MoE-specific gap suggests newer Vulkan shader optimizations may not yet be in Ollama's vendored copy. However, Ollama's memory management enables 32K–64K contexts that raw llama.cpp cannot achieve (system crash). All tok/s numbers in this document are Ollama measurements — actual hardware potential is higher at small contexts, but Ollama unlocks large contexts.
+- **Reasoning/thinking token overhead not benchmarked.** Several models support "think mode" (extended chain-of-thought before responding), but no dedicated benchmark compares thinking-on vs thinking-off speed or measures thinking token generation rates. The main related observation: two models scored low in quality tests because `think:false` was not honored — thinking tokens consumed the output budget. A dedicated reasoning benchmark would help quantify the practical throughput impact of thinking tokens on this hardware.
+- **Ollama backend lag.** As documented in §4.10, Ollama bundles a llama.cpp Vulkan backend that lags upstream HEAD. Building llama.cpp from HEAD yields **+45% generation speed on Qwen MoE at 4K context** and **+7% on dense models** (measured against Ollama 0.18; likely similar on 0.20 since generation speeds are unchanged). The Qwen MoE-specific gap suggests newer Vulkan shader optimizations may not yet be in Ollama's vendored copy. However, recent llama.cpp versions (b8400+) crash the system at 32K context due to increased Vulkan memory usage — the speed optimizations that roughly doubled TG also increased memory footprint beyond the 16 GB UMA limit. Older versions (b8200) handle the full range up to 64K and are 10–58% faster than Ollama at large contexts, but ~45% slower at 4K. See §4.10/§4.10a for the full version comparison. All tok/s numbers in this document are Ollama measurements — actual hardware potential varies by llama.cpp version and context size.
+- **llama.cpp b8200 model support is limited.** The b8200 build predates architecture support for gemma3, gemma4, and qwen3.5 model families. Of the 8 representative models tested, 3 failed to load entirely. Quality, vision, cold-start, and filled-context-with-real-text tests are Ollama-only and cannot be directly replicated with llama-bench (which measures raw PP/TG speed, not chat quality or API behavior).
 
 ### 4.10 Ollama vs upstream llama.cpp — Vulkan overhead analysis
 
-A controlled comparison was performed between Ollama 0.18.0 and upstream llama.cpp HEAD (commit `6b949d1`) built from source on-device with `-DGGML_VULKAN=ON`. All tests run on fresh reboot with services disabled, caches dropped between tests, OOM protection enabled (`oom_score_adj=-1000`). *Note: this comparison predates the Ollama 0.20 upgrade. The 0.20 re-benchmark (§4.1) shows generation speeds unchanged from 0.18 (±0.1% average), so the overhead gap likely persists. A re-test of llama-bench at 16K context caused an OOM system freeze, consistent with previous observations.* Gemma 4 was tested separately with llama.cpp HEAD `b7ad48e` (Gemma 4 architecture support added in #21406).
+A controlled comparison was performed between Ollama 0.18.0 and upstream llama.cpp HEAD (commit `6b949d1`) built from source on-device with `-DGGML_VULKAN=ON`. All tests run on fresh reboot with services disabled, caches dropped between tests, OOM protection enabled (`oom_score_adj=-1000`). *Note: this comparison predates the Ollama 0.20 upgrade. The 0.20 re-benchmark (§4.1) shows generation speeds unchanged from 0.18 (±0.1% average), so the overhead gap likely persists.* Gemma 4 was tested separately with llama.cpp HEAD `b7ad48e` (Gemma 4 architecture support added in #21406).
+
+**Update:** The 32K crash appears to be **version-specific** rather than an inherent limitation. Testing llama.cpp b8200 (`541bf37`) showed 32K context works without crashing — the system stays stable with ~300 MiB free. Between b8200 and b8400 (~85 commits), Vulkan backend optimizations roughly doubled 4K generation speed (43→78 tok/s) but increased memory usage enough to exceed 16 GB UMA at 32K. This appears to be a speed-vs-memory trade-off rather than an inherent Ollama advantage.
 
 **Methodology:** llama-bench with `-r 1 -fa 1 -ctk q4_0 -ctv q4_0 -ngl 99` (single repetition, flash attention, quantized KV cache). Ollama with matching settings: `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q4_0 OLLAMA_CONTEXT_LENGTH=65536`. Same model files (hardlinks to Ollama blobs). Fresh reboot, no other processes running.
 
@@ -797,14 +801,19 @@ A controlled comparison was performed between Ollama 0.18.0 and upstream llama.c
 |-------|--------:|-------------:|----------:|---------:|
 | Qwen3 MoE 30B-A3B IQ2_M (10.1 GB) | 4K | **84.3** | 58.3 | 1.45× |
 | Qwen3 MoE 30B-A3B IQ2_M | 16K | **84.7** | 49.0 | 1.73× |
-| Qwen3 MoE 30B-A3B IQ2_M | 32K | ☠ crash | 39.2 | — |
-| Qwen3 MoE 30B-A3B IQ2_M | 64K | ☠ crash | 28.7 | — |
+| Qwen3 MoE 30B-A3B IQ2_M | 32K | ☠ crash† | 39.2 | — |
+| Qwen3 MoE 30B-A3B IQ2_M | 64K | ☠ crash† | 28.7 | — |
+| Qwen3.5 MoE 35B-A3B IQ2_M (b8200) | 4K | **43.0** | 58.3 | 0.74× |
+| Qwen3.5 MoE 35B-A3B IQ2_M (b8200) | 32K | **43.0** | 39.2 | **1.10×** |
+| Qwen3.5 MoE 35B-A3B IQ2_M (b8200) | 64K | **43.0** | 28.7 | **1.50×** |
 | DeepSeek-R1 14B Q4_K_M (8.4 GB) | 4K | **29.0** | 27.2 | 1.07× |
 | DeepSeek-R1 14B | 16K | **29.0** | — | — |
-| DeepSeek-R1 14B | 32K | ☠ crash | 20.9 | — |
-| Gemma 4 26B Q3_K_M (11.6 GiB) | 4K | 0.07† | **39.0** | 0.002× |
+| DeepSeek-R1 14B | 32K | ☠ crash† | 20.9 | — |
+| Gemma 4 26B Q3_K_M (11.6 GiB) | 4K | 0.07†† | **39.0** | 0.002× |
 
-† Vulkan GPU offload appears non-functional — llama.cpp produces 0.07 tok/s TG vs 11.4 tok/s on CPU-only (ngl=0). See finding 6 below.
+† With llama.cpp HEAD (b8400+) — the 32K crash is version-specific. See b8200 rows and the update note above.
+
+†† Vulkan GPU offload appears non-functional — llama.cpp produces 0.07 tok/s TG vs 11.4 tok/s on CPU-only (ngl=0). See finding 6 below.
 
 **Prompt processing speed (tok/s):**
 
@@ -812,30 +821,250 @@ A controlled comparison was performed between Ollama 0.18.0 and upstream llama.c
 |-------|--------:|-------------:|----------:|------:|
 | Qwen3 MoE 30B-A3B IQ2_M | 4K | 285.0 | **316.4** | 0.90× |
 | Qwen3 MoE 30B-A3B IQ2_M | 16K | 152.8 | **228.1** | 0.67× |
-| Qwen3 MoE 30B-A3B IQ2_M | 32K | ☠ crash | **157.4** | — |
-| Qwen3 MoE 30B-A3B IQ2_M | 64K | ☠ crash | **96.8** | — |
+| Qwen3 MoE 30B-A3B IQ2_M | 32K | ☠ crash† | **157.4** | — |
+| Qwen3 MoE 30B-A3B IQ2_M | 64K | ☠ crash† | **96.8** | — |
+| Qwen3.5 MoE 35B-A3B IQ2_M (b8200) | 4K | 306.6 | **316.4** | 0.97× |
+| Qwen3.5 MoE 35B-A3B IQ2_M (b8200) | 32K | **206.9** | 157.4 | **1.31×** |
+| Qwen3.5 MoE 35B-A3B IQ2_M (b8200) | 64K | **152.5** | 96.8 | **1.58×** |
 | DeepSeek-R1 14B | 4K | **133.9** | 127.5 | 1.05× |
 | DeepSeek-R1 14B | 16K | **82.6** | — | — |
-| DeepSeek-R1 14B | 32K | ☠ crash | **83.2** | — |
-| Gemma 4 26B Q3_K_M | 4K | 1.15† | **1238** | 0.001× |
+| DeepSeek-R1 14B | 32K | ☠ crash† | **83.2** | — |
+| Gemma 4 26B Q3_K_M | 4K | 1.15†† | **1238** | 0.001× |
 
 **Key findings:**
 
+| # | Finding | Summary |
+|:-:|---------|--------|
+| 1 | TG overhead | b8200: 1-17% faster than Ollama. HEAD: 45-73% faster (MoE) but crashes at 32K |
+| 2 | PP overhead | Ollama 7-32% faster at prefill (4K-16K) |
+| 3 | Large context | b8200 handles full 64K; HEAD crashes at 32K (speed-vs-memory trade-off) |
+| 4 | TG vs context | llama-bench: <0.3% TG change 128-64K. Ollama: ~51% degradation |
+| 5 | 64K regression | Fresh-reboot: 28.7 tok/s at 64K (vs 0.7 on stale system) |
+| 6 | Gemma 4 | llama.cpp Vulkan broken (0.07 tok/s). Only works via Ollama (39 tok/s) |
+
 ![llama.cpp vs Ollama — generation speed](images/charts/bench-llamacpp-vs-ollama.png)
 
-1. **Generation overhead is model-dependent.** Qwen MoE models show 1.45–1.73× overhead (growing with context), while dense models show only 1.07×. The wide gap for MoE vs near-parity for dense suggests the overhead may be in Vulkan sparse-layer dispatch — possibly because Ollama's vendored shaders lag upstream by a couple of weeks and miss recent MoE-specific optimizations.
+<details><summary><b>Detailed findings (click to expand)</b></summary>
 
-2. **Prompt processing: Ollama is sometimes faster.** At 4K and 16K context, Ollama's PP is 7–32% faster than raw llama.cpp for the Qwen MoE. This suggests Ollama uses different batch scheduling or prompt caching that benefits prefill throughput.
+1. **Generation overhead is model- and version-dependent.** HEAD: Qwen MoE 1.45-1.73x (growing with context), dense only 1.07x. b8200: 1-17% faster across 6 models, larger gap on smaller/faster models (17% for qwen3:4b vs 1% for deepseek-r1:14b). Three architectures (gemma3, gemma4, qwen3.5) cannot load on b8200. Pattern suggests a fixed Vulkan dispatch cost.
 
-3. **32K+ context: Ollama is essential.** Raw llama.cpp crashes the system at 32K for *both* models (10.1 GB and 8.4 GB). The 16 GB UMA cannot fit model weights + large KV cache without Ollama's memory management. Ollama successfully runs all context sizes up to 64K, making 32K–64K contexts **only possible through Ollama** on this hardware.
+2. **Prompt processing: Ollama is sometimes faster.** At 4K-16K, Ollama's PP is 7-32% faster for Qwen MoE, suggesting different batch scheduling or prompt caching.
 
-4. **llama-bench TG is context-invariant.** At 4K and 16K, llama.cpp generation speed is nearly identical for both models (Qwen MoE: 84.3 vs 84.7; DeepSeek: 29.0 vs 29.0 tok/s). Ollama shows degradation (Qwen MoE: 58.3 → 49.0), likely because it pre-allocates the full context window (up to 65K slots) regardless of actual usage, which on a 16 GB UMA system would cost memory bandwidth even at small context sizes.
+3. **32K-64K context: version-dependent.** HEAD (b8400+) crashes at 32K. b8200 handles the full range to 64K: 10-31% faster than Ollama at 32K, ~50% faster at 64K. The ~85 commits between b8200 and b8400 roughly doubled 4K speed but pushed memory past 16 GB UMA. See 4.10a for the full sweep.
 
-5. **Fresh-reboot 64K regression resolved.** Fresh-reboot Ollama achieves 28.7 tok/s at 64K (vs 0.7 tok/s on stale system with memory fragmentation). This strongly suggests the regression documented in §4.8 is caused by UMA memory fragmentation rather than a software bug, though the exact mechanism has not been confirmed at the driver level.
+4. **llama-bench TG shows minimal context sensitivity.** b8200: 42.9-43.0 tok/s from 128 to 64K tokens (variance <0.3%). Dense models confirm: llama3.2:3b and qwen3:8b show <0.2% TG change at 32K. Ollama degrades ~51% over the same range (58 to 29 tok/s), likely from pre-allocating 65K KV slots regardless of actual usage.
 
-6. **Gemma 4 MoE: llama.cpp Vulkan appears non-functional.** With `ngl=99`, llama-bench produces 0.07 tok/s TG and 1.15 tok/s PP — orders of magnitude slower than CPU-only fallback (11.4 TG, 214.6 PP at pp512). Meanwhile Ollama achieves 39 tok/s TG and 1238 tok/s PP using its own Vulkan dispatch. This suggests Ollama's vendored Vulkan shaders may handle Gemma 4's MoE dispatch differently than upstream llama.cpp on GFX1013. In practice, Gemma 4 is only usable through Ollama on this hardware — though this may change as upstream Vulkan support for the architecture matures.
+5. **Fresh-reboot 64K regression resolved.** 28.7 tok/s at 64K (vs 0.7 on stale system). Likely UMA memory fragmentation, not a software bug.
 
-All results reproduced across 3 fresh boots. TG is highly stable (<1% variance), PP shows up to 12% boot-to-boot variance (likely Vulkan shader compilation timing). System crashes at 32K are deterministic for both models — raw llama.cpp has no memory budget awareness for UMA constraints. The TG gap is wider at small contexts because llama-bench allocates only what's needed, while Ollama appears to pre-allocate the full context window — at larger contexts the overhead converges as both backends pay similar memory bandwidth costs.
+6. **Gemma 4 MoE: llama.cpp Vulkan non-functional on GFX1013.** 0.07 tok/s TG with ngl=99 vs 11.4 tok/s CPU-only (ngl=0). Ollama achieves 39 tok/s via its vendored shaders. Gemma 4 is Ollama-only on this hardware for now.
+
+</details>
+
+**Reproducibility:** 3 fresh boots, TG variance <1%, PP variance up to 12% (Vulkan shader compilation). 32K crashes deterministic with b8400+ but absent on b8200.
+
+### 4.10a Comprehensive b8200 benchmark — context scaling and limits
+
+A full context sweep was performed with llama.cpp b8200 (`541bf37`) to characterize the older Vulkan backend across the entire context range. All tests: single run, flash attention, Q4_0 KV cache, full GPU offload, services stopped, fresh boot.
+
+> **Why llama-bench, not Ollama API?** Ollama bundles its own llama.cpp binary — there is no straightforward way to swap it for b8200. These benchmarks use llama-bench directly against the same GGUF model files (hardlinked to Ollama's blob store). llama-bench is not synthetic: `pp65536` processes 65,536 real tokens through the full model forward pass. The key difference from Ollama's filled-context tests (§4.5) is likely memory management: llama-bench allocates KV cache on demand for each test, while Ollama appears to pre-allocate the full 65K-slot KV window regardless of actual prompt size. This may explain why llama-bench TG shows negligible context sensitivity (42.9 tok/s at all tested sizes) while Ollama TG degrades from 58→29 tok/s — if Ollama pays the memory bandwidth cost of 65K KV slots even at 4K context.
+
+**Context sweep — Qwen3.5 MoE 35B-A3B IQ2_M (10.6 GiB):**
+
+| Context | PP (tok/s) | TG (tok/s) | Free RAM | Time |
+|--------:|-----------:|-----------:|---------:|-----:|
+| 128 | 183.9 | 42.9 | 10 GiB | 21s |
+| 256 | 263.7 | 42.9 | 10 GiB | 22s |
+| 512 | 325.8 | 42.9 | 11 GiB | 23s |
+| 1K | 326.0 | 42.9 | 11 GiB | 26s |
+| 2K | 315.7 | 42.9 | 11 GiB | 33s |
+| 4K | 306.6 | 42.9 | 11 GiB | 47s |
+| 8K | 286.6 | 43.0 | 11 GiB | 77s |
+| 16K | 253.8 | 43.0 | 11 GiB | 149s |
+| 32K | 206.9 | 43.0 | ~300 MiB | ~2h |
+| **48K** | **175.5** | **43.0** | **~200 MiB** | ~3h |
+| **64K** | **152.5** | **43.0** | **~190 MiB** | ~4h |
+| 80K | ☠ OOM crash | — | — | system freeze |
+
+![b8200 context sweep](images/charts/bench-b8200-context-sweep.png)
+
+**Key observations:**
+
+| # | Observation | Data |
+|:-:|-------------|------|
+| 1 | TG context-invariant | 42.9–43.0 tok/s from 128→64K (variance <0.3%) |
+| 2 | PP peaks at 512–1K | 326 tok/s peak → 152 at 64K (−53%), linear in log(ctx) |
+| 3 | 64K = practical ceiling | 80K → OOM crash. At 64K: ~190 MiB free of 14.3 GiB |
+| 4 | Speed-memory trade-off | b8200: slow but stable to 64K. HEAD: 2× faster but crashes at 32K |
+
+**1. TG is context-invariant** — 42.9–43.0 tok/s across all tested sizes, 128 to 64K. Ollama shows ~51% TG degradation over the same range (58→29 tok/s, measured with 80% real-token fill in §4.5). The likely cause: llama-bench allocates KV cache per-test, while Ollama pre-allocates the full 65K window. At 64K both use similar KV cache sizes, yet b8200 is still ~50% faster (43 vs 29 tok/s) — suggesting Ollama's overhead is not solely allocation-related.
+
+**2. PP peaks at 512–1K tokens** (~326 tok/s), then declines as memory bandwidth becomes the bottleneck. PP drops 53% from peak to 64K (326→152 tok/s). The curve is approximately linear in log(context).
+
+**3. 64K is the practical ceiling.** 80K crashes the system (OOM, full freeze). At 64K: ~190 MiB free — no margin for 80K's additional ~0.7 GiB KV cache. b8200 at 64K is ~50% faster than Ollama on both PP and TG.
+
+**4. Speed vs memory trade-off:**
+
+| Version | TG @4K | TG @32K | Max context | PP @4K |
+|---------|-------:|--------:|:-----------:|-------:|
+| b8200 (Mar 5) | 43 | 43 | **64K** | 326 |
+| HEAD (Apr 4) | 78 | ☠ crash | 16K | 379 |
+| Ollama 0.18 | 58 | 39 | 64K | 316 |
+
+b8200 is the only tested llama.cpp version that handles large contexts on this hardware, but is ~45% slower than HEAD at small contexts.
+
+![Version comparison](images/charts/bench-b8200-version-comparison.png)
+
+![Speed-memory trade-off](images/charts/bench-b8200-speed-memory-tradeoff.png)
+
+**KV cache quantization — no speed impact on b8200:**
+
+| KV Type | PP @512 | TG @128 | PP @32K | TG @32K |
+|---------|--------:|--------:|--------:|--------:|
+| Q4_0 | 325.8 | 42.9 | 206.9 | 43.0 |
+| Q8_0 | 326.7 | 43.0 | **225.2** | 42.9 |
+| F16 | 327.4 | 43.2 | — | — |
+
+Q8_0 is slightly *faster* than Q4_0 at 32K (225 vs 207 PP) — the dequantization overhead from Q4_0 exceeds the memory savings. All three KV types produce identical TG. F16 was not tested at 32K (would likely OOM due to 4× larger KV cache). **Flash attention is mandatory** — Q4_0 KV fails to create a context without FA enabled.
+
+![KV comparison](images/charts/bench-b8200-kv-comparison.png)
+
+**Additional findings:**
+
+- **CPU-only (ngl=0):** TG=6.1 tok/s — GPU provides 7× acceleration.
+- **Flash attention:** No measurable speed difference in this test (42.9 tok/s both with and without FA at f16 KV). FA is required for quantized KV cache support.
+- **Gemma 4:** Cannot load on b8200 — architecture support was added later (post-#21406).
+
+**Multi-model b8200 comparison — Ollama vs llama-bench at 4K context:**
+
+To check whether the b8200 overhead pattern generalizes beyond the Qwen MoE, the same llama-bench configuration was tested on several additional models. Three architectures (gemma3, gemma4, qwen3.5) could not load on b8200 — their GGUF format requires architecture support added after b8200's build date.
+
+| Model | Size | Ollama TG | b8200 TG | Ratio | Notes |
+|-------|-----:|----------:|---------:|------:|-------|
+| llama3.2:3b | 1.9 GiB | 103.8 | 109.5 | 1.05× | Dense, fastest model |
+| qwen3:4b | 2.3 GiB | 73.6 | 86.4 | 1.17× | Dense |
+| qwen3:8b | 4.9 GiB | 43.1 | 48.3 | 1.12× | Dense |
+| deepseek-r1:8b | 4.9 GiB | 43.2 | 48.4 | 1.12× | Dense (DeepSeek-R1 distill) |
+| deepseek-r1:14b | 8.4 GiB | 29.0 | 29.2 | 1.01× | Dense |
+| Qwen3.5 MoE 35B-A3B | 10.6 GiB | 37.5 | 42.9 | 1.14× | MoE (from context sweep) |
+| gemma3:4b | 3.2 GiB | — | — | — | Architecture not supported in b8200 |
+| qwen3.5:9b | 6.2 GiB | — | — | — | Architecture not supported in b8200 |
+| gemma3:12b | 7.6 GiB | — | — | — | Architecture not supported in b8200 |
+
+b8200 is 1–17% faster than Ollama on models it can load. The pattern — larger gap on smaller/faster models (17% for 4B vs 1% for 14B) — suggests a fixed Vulkan dispatch cost. Ollama TG values from §4.1 under comparable conditions (fresh boot, 4K, single run).
+
+**Context scaling — dense models at 32K (b8200):**
+
+| Model | TG @4K | TG @32K | Change | PP @4K | PP @32K |
+|-------|-------:|--------:|-------:|-------:|--------:|
+| llama3.2:3b (1.9 GiB) | 109.5 | 109.4 | −0.1% | 702.0 | 201.2 |
+| qwen3:8b (4.9 GiB) | 48.3 | 48.4 | +0.1% | 290.4 | 99.8 |
+| deepseek-r1:14b (8.4 GiB) | 29.2 | — | OOM | 154.9 | — |
+
+Context-invariant TG holds for dense models too: <0.2% TG change between 4K and 32K. PP degrades as expected (66–71% drop). deepseek-r1:14b (8.4 GiB) could not complete 32K — total with KV cache exceeds UMA budget.
+
+![PP degradation curve](images/charts/bench-b8200-pp-curve.png)
+
+### 4.10b llama-server b8200 — quality and filled-context verification
+
+The benchmarks in §4.10a used `llama-bench`, which measures raw inference speed but cannot evaluate output quality or use filled-context prompts. To close this gap, `llama-server` (also from b8200, `541bf37`) was used to run the same quality tasks (§4.5a) and filled-context tests (§4.5) against 3 models. Quality was tested via both the raw `/completion` API and the OpenAI-compatible `/v1/chat/completions` endpoint.
+
+> **Why b8200?** This build was pinned because it is the last llama.cpp version that handles 64K context on this hardware without crashing (§4.10). Newer builds (~b8400+) roughly doubled generation speed but exceed 16 GB UMA at 32K. llama.cpp Vulkan performance changes meaningfully across versions — these results are specific to b8200 and may not reflect current upstream.
+
+**Setup:** llama-server on port 18080, `-ngl 99 --flash-attn on -ctk q4_0 -ctv q4_0`, single slot (`-np 1`). Ollama stopped during tests. Server restarted per model and per context size for fill tests.
+
+**Quality comparison — `/completion` (raw, no chat template) vs Ollama chat API:**
+
+| Task | MoE 35B (Ollama) | MoE 35B (server) | Qwen3-8B (Ollama) | Qwen3-8B (server) | Llama3.2-3B (Ollama) | Llama3.2-3B (server) |
+|------|:---:|:---:|:---:|:---:|:---:|:---:|
+| Summarize | 3/3 | 0/3 | 3/3 | 0/3 | 3/3 | 3/3 |
+| JSON extract | 3/3 | 2/3 | 3/3 | 0/3 | 3/3 | 0/3 |
+| Fact recall | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| Instruction follow | 2/3 | 2/3 | 3/3 | 0/3 | 2/3 | 3/3 |
+| Arithmetic | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| **Total** | **14/15** | **10/15** | **15/15** | **6/15** | **14/15** | **12/15** |
+
+> Qwen3-8B's original test run crashed the server mid-benchmark; scores are from a separate re-run under the same configuration.
+
+**Why quality drops:** Qwen3 and Qwen3.5 are thinking models. Without a chat template, the raw `/completion` endpoint triggers `<think>` blocks that inflate sentence counts (summarize fails at 11–18 sentences instead of 3), wrap JSON in reasoning preamble (extraction fails to parse), and generate pseudo-numbered items during reasoning (instruction following miscounts). Tasks checking for keywords or numbers (fact recall, arithmetic) pass regardless — the correct answer appears in the output.
+
+Llama3.2-3B is not a thinking model and scores 12/15. The only failure is JSON extraction: the model appends explanatory text after the JSON object, making the response unparseable.
+
+**Quality comparison — `/v1/chat/completions` (with chat template, `/no_think` for thinking models):**
+
+To check whether the quality gap is purely a template issue, the same tasks were re-run using the `/v1/chat/completions` endpoint. Thinking models received a `/no_think` system message to suppress chain-of-thought.
+
+| Task | MoE 35B (Ollama) | MoE 35B (chat) | Qwen3-8B (Ollama) | Qwen3-8B (chat) | Llama3.2-3B (Ollama) | Llama3.2-3B (chat) |
+|------|:---:|:---:|:---:|:---:|:---:|:---:|
+| Summarize | 3/3 | 0/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| JSON extract | 3/3 | 0/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| Fact recall | 3/3 | 0/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| Instruction follow | 2/3 | 0/3 | 3/3 | 3/3 | 2/3 | 3/3 |
+| Arithmetic | 3/3 | 1/3 | 3/3 | 3/3 | 3/3 | 1/3 |
+| **Total** | **14/15** | **1/15** | **15/15** | **15/15** | **14/15** | **13/15** |
+
+Qwen3-8B scores 15/15, matching Ollama exactly. Llama3.2-3B scores 13–15/15 (arithmetic varies across runs). The chat template fully restores quality for both.
+
+MoE 35B-A3B still scores only 1/15 despite `/no_think`. The b8200 binary pre-dates Qwen3.5's release, and its embedded chat template does not suppress thinking for this model architecture. Ollama handles MoE correctly because it maintains its own template library, updated independently of the llama.cpp binary.
+
+![llama-server b8200 — quality by endpoint](images/charts/bench-b8200-quality-comparison.png)
+
+The raw `/completion` endpoint fails thinking models due to missing templates. `/v1/chat/completions` restores full quality for Qwen3-8B and Llama3.2-3B. MoE is a limitation of the b8200 build's outdated template, not the Vulkan backend itself.
+
+**Filled-context speed — llama-server vs Ollama (TG tok/s, 80% fill, Q4_0 KV):**
+
+| Model | Ctx | Ollama TG | Server TG | Change | Notes |
+|-------|----:|:---------:|:---------:|:------:|-------|
+| MoE 35B-A3B | 4K | 35.7 | 39.8 | **+11%** | |
+| MoE 35B-A3B | 8K | 34.2 | 39.4 | **+15%** | |
+| MoE 35B-A3B | 16K | 31.9 | 37.6 | **+18%** | Max for server |
+| MoE 35B-A3B | 32K | 27.9 | ☠ OOM | — | Server pre-allocates KV → OOM |
+| Qwen3-8B | 4K | 39.1 | 41.8 | **+7%** | |
+| Qwen3-8B | 8K | 35.4 | 37.8 | **+7%** | |
+| Qwen3-8B | 16K | 29.5 | 30.8 | **+4%** | |
+| Qwen3-8B | 32K | 21.6 | 22.7 | **+5%** | Server handles 32K |
+
+> All server values measured after a warm-up request to avoid cold-start Vulkan shader compilation affecting results.
+
+![llama-server vs Ollama — filled-context TG](images/charts/bench-b8200-server-vs-ollama.png)
+
+> MoE 35B-A3B llama-server fails to start at 32K/64K context: the 10.6 GiB model + pre-allocated 32K Q4_0 KV cache exceeds the 14.3 GiB usable UMA budget. Ollama manages 64K with the same model (§4.5), likely through lazy KV allocation. llama-bench (§4.10a) also handles 64K — it allocates KV per-test rather than upfront. This confirms the KV pre-allocation hypothesis from §4.10a.
+
+> Llama3.2-3B omitted: showed anomalously low TG (~20 tok/s vs Ollama's 88 tok/s at 4K fill). During quality tests on the same server instance, TG started at 105 tok/s but degraded to ~21 tok/s after several prompts — likely a server state issue in b8200's single-slot `/completion` endpoint. The model itself is not affected (llama-bench shows 109.5 tok/s).
+
+**Prefill (PP tok/s) — llama-server vs Ollama:**
+
+| Model | 4K fill | 8K fill | 16K fill | 32K fill | Degradation |
+|-------|--------:|--------:|---------:|---------:|:-----------:|
+| MoE 35B (server) | 280 | 277 | 261 | — | −7% (4K→16K) |
+| MoE 35B (Ollama) | 239 | — | 215 | 182 | −24% (4K→32K) |
+| Qwen3-8B (server) | 266 | 238 | 195 | 136 | −49% (4K→32K) |
+| Qwen3-8B (Ollama) | 225 | — | 158 | 111 | −51% (4K→32K) |
+
+> Ollama PP values from §B5.4. MoE PP via server is 17% higher than Ollama at 4K (280 vs 239), consistent with the overhead pattern in §4.10. Qwen3-8B server PP is 18% higher at 4K (266 vs 225). Both degrade monotonically with context size.
+
+**Key findings:**
+
+| # | Finding | Impact |
+|:-:|---------|--------|
+| 1 | llama-server TG 4–18% faster than Ollama | Confirms §4.10a overhead measurement with real workloads |
+| 2 | MoE gap widens with context (11%→18%) | 3 data points; Ollama overhead appears partially context-dependent |
+| 3 | MoE max context is 16K on llama-server | Pre-allocated KV cache limits large contexts. Ollama handles 64K+ |
+| 4 | Chat API restores quality | `/v1/chat/completions` + `/no_think`: Qwen3-8B 15/15, Llama 13–15/15. MoE limited by b8200 template |
+| 5 | Qwen3-8B handles 32K on llama-server | Smaller model (4.9 GiB) leaves room for KV cache |
+
+**Should llama.cpp replace Ollama for scripts and chats?**
+
+Not on this hardware. The `/v1/chat/completions` endpoint restores quality for Qwen3-8B (15/15) and Llama3.2-3B (13–15/15), but MoE still fails on b8200's outdated template. Ollama provides:
+- **Chat template management** — b8200's templates pre-date Qwen3.5; Ollama handles all models correctly
+- **Lazy KV allocation** — enables 64K context with MoE (llama-server caps at 16K)
+- **Model management** — automatic download, switching, keep-alive, unload timers
+- **Daemon mode** — systemd integration, health monitoring, hot reload
+
+The 11–18% TG speed advantage is real but insufficient to offset these features. b8200 also cannot load newer architectures (gemma3, gemma4, qwen3.5) — any llama.cpp deployment on this build would be limited to models released before it. The HEAD build supports these models but crashes above 16K context (§4.10).
+
+For batch processing at 4K–16K with supported models, llama-server b8200 offers a measurable speed advantage. For general-purpose chat and scripting, Ollama remains the practical choice.
+
+> **Revisiting these benchmarks.** llama.cpp's Vulkan backend is under active development. Between b8200 and HEAD (~200 commits apart), generation speed roughly doubled while memory usage increased enough to break large contexts. Performance on GFX1013 has changed meaningfully across this range. Re-benchmarking after a few months of upstream development would be worthwhile — especially if newer builds resolve the memory-vs-speed trade-off or improve architecture coverage.
 
 ---
 
@@ -1106,7 +1335,7 @@ When the total exceeds 16 GB, the kernel pushes pages to NVMe swap. This shows u
 
 large-v3 pushes ~1 GB into swap on first load. large-v3-turbo caused no measurable swap increase in testing. Once pages are evicted, subsequent large-v3 runs may show 0 swap delta (the 39s test) because those pages were already swapped out by earlier runs — but the damage (swap pressure, latency spikes) already happened.
 
-**Quality is comparable.** Both models tested on a 39s embedded-systems passage (flite TTS). Both made the same synthesis artifacts ("kilobots" for "kilobytes", "Wipcomer" for "libcamera"). Neither is clearly better on robotic TTS.
+**Quality is comparable.** Both models tested on a 39s embedded-systems passage (flite TTS). Both made the same synthesis artifacts ("kilobots" for "kilobytes", "Wipcomer" for "libcamera"). Both showed comparable performance on robotic TTS.
 
 **Verdict:** large-v3-turbo — 2× faster, 45% smaller, no observable swap pressure in testing on this setup. The quality difference was not distinguishable in this testing.
 
@@ -1555,7 +1784,7 @@ GPU idle detection is used for legacy `--daytime` mode and Ollama health checks:
 
 ```python
 # Three-tier detection:
-# 1. Ollama /api/ps → no models loaded → definitely idle
+# 1. Ollama /api/ps → no models loaded → appears idle
 # 2. sysfs pp_dpm_sclk → clock < 1200 MHz → model loaded but not computing
 # 3. Ollama expires_at → model about to unload → idle for 3+ min
 ```
@@ -1869,7 +2098,7 @@ Five measurement phases:
 
 > **The single most important finding:** Allocating 128K context (tiny prompt + large `num_ctx`) always succeeds, but **filling** 128K with real tokens times out (TTFT >20 min) for every model tested. Prior Ollama benchmarks that report "128K context" without filling it are misleading.
 
-Ollama also **silently truncates** some models to their native context limit without any error. Verified: qwen2.5:3b → 32K native, phi4:14b → 16K native. The `prompt_eval_count` field is the only reliable indicator.
+Ollama also **silently truncates** some models to their native context limit without any error. Verified: qwen2.5:3b → 32K native, phi4:14b → 16K native. The `prompt_eval_count` field appears to be the most reliable indicator.
 
 ---
 
@@ -1933,7 +2162,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 
 > ★ = production model. ² = intermittent loading bug (72% failure rate). ⁶ = think tokens leak into response. ⁷ = all quality tasks timed out.
 
-> **All 33 models run at 100% GPU offload** after GTT tuning (16 GiB). The qwen3.5-35b-a3b-iq2m's (Qwen MoE) 850 MB swap is OS pages pushed to NVMe — not model weights.
+> **All tested models run at 100% GPU offload** after GTT tuning (16 GiB). The qwen3.5-35b-a3b-iq2m's (Qwen MoE) 850 MB swap is OS pages pushed to NVMe — not model weights.
 
 ![Generation speed — all models](images/charts/bench-generation-speed-all.png)
 
@@ -2021,7 +2250,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 
 ### B5.1 Production models — speed vs filled context
 
-**Measurement history:** Three independent measurement rounds confirm 4K–32K results within ±1 tok/s. At 64K, a significant regression appeared between the initial round and a later retest — documented below as an open investigation item.
+**Measurement history:** Three independent measurement rounds show consistent 4K–32K results within ±1 tok/s. At 64K, a significant regression appeared between the initial round and a later retest — documented below as an open investigation item.
 
 | Model | 4K | 16K | 32K | 48K | 64K (initial) | 64K (after uptime) | Degradation (4K→32K) |
 |-------|:--:|:---:|:---:|:---:|:---:|:---:|:-----------:|
@@ -2512,7 +2741,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Issue | Impact |
 |-------|--------|
 | Shared VRAM | In this setup, image gen requires stopping Ollama (single 16 GB UMA pool). Bot offline ~1 min (FLUX.2-klein-4B) or ~2 min (FLUX.2-klein-9B). |
-| MoE context limit | With Q4_0 KV, MoE 35B-A3B allocates **256K** context. Practical filled ceiling is **32K** (28.5 tok/s, stable). 64K filled context showed 22.9 tok/s initially but only 0.7 tok/s on retest after extended uptime — likely UMA fragmentation (B5.2). |
+| MoE context limit | With Q4_0 KV, MoE 35B-A3B allocates **64K** context (was 256K on Ollama 0.18, regressed after 0.20 upgrade). Practical filled ceiling is **32K** (28.5 tok/s, stable). 64K filled context showed 22.9 tok/s initially but only 0.7 tok/s on retest after extended uptime — possibly UMA fragmentation (B5.2). |
 | Signal latency | Messages queue during job execution (typical job 2–15 min). Chat checked between every job. |
 | sd-cli hangs on GFX1013 | Vulkan cleanup bug → poll + kill workaround. |
 | Cold start latency | 30–60s after Ollama restart (model loading). |

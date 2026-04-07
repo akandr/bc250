@@ -1,0 +1,275 @@
+{
+  "path": "/home/akandr/gguf/qwen3-8b.gguf",
+  "name": "Qwen3-8B",
+  "quality": {
+    "summarize": {
+      "pass_count": 0,
+      "total": 3,
+      "runs": [
+        {
+          "run": 1,
+          "passed": false,
+          "scores": {
+            "keywords_found": 3,
+            "keywords_total": 4,
+            "keywords_pass": true,
+            "sentence_count": 17,
+            "sentences_pass": false
+          },
+          "tg_tok_s": 45.31,
+          "pp_tok_s": 184.56,
+          "wall_time": 7.98,
+          "response_preview": " \n\nOkay, I need to summarize the given passage into exactly three sentences. Let me start by reading through the passage again to identify the key points.\n\nFirst, the AMD BC-250 is a crypto-mining boa"
+        },
+        {
+          "run": 2,
+          "passed": false,
+          "scores": {
+            "keywords_found": 3,
+            "keywords_total": 4,
+            "keywords_pass": true,
+            "sentence_count": 17,
+            "sentences_pass": false
+          },
+          "tg_tok_s": 45.61,
+          "pp_tok_s": 43.99,
+          "wall_time": 6.62,
+          "response_preview": " \n\nOkay, I need to summarize the key points of the passage about the AMD BC-250 crypto-mining board. Let me start by reading through the passage again to make sure I get all the important details.\n\nFi"
+        },
+        {
+          "run": 3,
+          "passed": false,
+          "scores": {
+            "keywords_found": 3,
+            "keywords_total": 4,
+            "keywords_pass": true,
+            "sentence_count": 18,
+            "sentences_pass": false
+          },
+          "tg_tok_s": 45.51,
+          "pp_tok_s": 43.95,
+          "wall_time": 6.63,
+          "response_preview": " \n\nOkay, I need to summarize the given passage into exactly three sentences. Let me start by reading through the passage again to identify the key points.\n\nFirst, the AMD BC-250 is a crypto-mining boa"
+        }
+      ]
+    },
+    "json_extract": {
+      "pass_count": 0,
+      "total": 3,
+      "runs": [
+        {
+          "run": 1,
+          "passed": false,
+          "scores": {
+            "valid_json": false
+          },
+          "tg_tok_s": 45.69,
+          "pp_tok_s": 226.88,
+          "wall_time": 7.09,
+          "response_preview": " {\"name\": \"Dr. Maria Chen\", \"age\": \"42\", \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": \"2018\", \"team_size\": \"12\", \"patent_count\": \"7\"}\nOkay, let's tackle this. The user wan"
+        },
+        {
+          "run": 2,
+          "passed": false,
+          "scores": {
+            "valid_json": false
+          },
+          "tg_tok_s": 45.88,
+          "pp_tok_s": 43.56,
+          "wall_time": 6.58,
+          "response_preview": " {\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": \"42\",\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": \"2018\",\n  \"team_size\": \"12\",\n  \"patent_count\": \"7\"\n}\nOkay, let's tackle th"
+        },
+        {
+          "run": 3,
+          "passed": false,
+          "scores": {
+            "valid_json": false
+          },
+          "tg_tok_s": 45.88,
+          "pp_tok_s": 44.09,
+          "wall_time": 6.57,
+          "response_preview": " {\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": \"42\",\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": \"2018\",\n  \"team_size\": \"12\",\n  \"patent_count\": \"7\"\n}\nOkay, let's tackle th"
+        }
+      ]
+    },
+    "fact_recall": {
+      "pass_count": 3,
+      "total": 3,
+      "runs": [
+        {
+          "run": 1,
+          "passed": true,
+          "scores": {
+            "keywords_found": 2,
+            "keywords_total": 2,
+            "keywords_pass": true
+          },
+          "tg_tok_s": 45.7,
+          "pp_tok_s": 210.3,
+          "wall_time": 7.27,
+          "response_preview": " The chemical symbol for tungsten is W, derived from the German word \"Wolfram.\"\n\nOkay, let's see. The user asked for the chemical symbol for tungsten and the word it's derived from. From the facts pro"
+        },
+        {
+          "run": 2,
+          "passed": true,
+          "scores": {
+            "keywords_found": 2,
+            "keywords_total": 2,
+            "keywords_pass": true
+          },
+          "tg_tok_s": 45.79,
+          "pp_tok_s": 43.91,
+          "wall_time": 6.59,
+          "response_preview": " The chemical symbol for tungsten is W, derived from the German word \"Wolfram.\"\n\nOkay, let's see. The user asked for the chemical symbol for tungsten and the word it's derived from. From the facts pro"
+        },
+        {
+          "run": 3,
+          "passed": true,
+          "scores": {
+            "keywords_found": 2,
+            "keywords_total": 2,
+            "keywords_pass": true
+          },
+          "tg_tok_s": 45.82,
+          "pp_tok_s": 43.95,
+          "wall_time": 6.59,
+          "response_preview": " The chemical symbol for tungsten is W, derived from the German word \"Wolfram.\"\n\nOkay, let's see. The user asked for the chemical symbol for tungsten and the word it's derived from. From the facts pro"
+        }
+      ]
+    },
+    "instruction_follow": {
+      "pass_count": 0,
+      "total": 3,
+      "runs": [
+        {
+          "run": 1,
+          "passed": false,
+          "scores": {
+            "numbered_items": 9,
+            "items_expected": 5,
+            "items_pass": false
+          },
+          "tg_tok_s": 45.82,
+          "pp_tok_s": 200.43,
+          "wall_time": 6.81,
+          "response_preview": " 1. Reduces reliance on fossil fuels and lowers greenhouse gas emissions. 2. Lowers electricity costs over time due to minimal operational expenses. 3. Enhances energy independence by utilizing a rene"
+        },
+        {
+          "run": 2,
+          "passed": false,
+          "scores": {
+            "numbered_items": 11,
+            "items_expected": 5,
+            "items_pass": false
+          },
+          "tg_tok_s": 46.0,
+          "pp_tok_s": 43.99,
+          "wall_time": 6.56,
+          "response_preview": " 1. Reduces reliance on fossil fuels and decreases greenhouse gas emissions. 2. Lowers electricity costs over time due to minimal operational expenses. 3. Enhances energy independence by utilizing a r"
+        },
+        {
+          "run": 3,
+          "passed": false,
+          "scores": {
+            "numbered_items": 1,
+            "items_expected": 5,
+            "items_pass": false
+          },
+          "tg_tok_s": 45.8,
+          "pp_tok_s": 43.96,
+          "wall_time": 6.59,
+          "response_preview": " 1. Reduces reliance on fossil fuels and decreases greenhouse gas emissions. 2. Lowers electricity bills as sunlight is a free and abundant resource. 3. Requires minimal maintenance once installed, re"
+        }
+      ]
+    },
+    "arithmetic": {
+      "pass_count": 3,
+      "total": 3,
+      "runs": [
+        {
+          "run": 1,
+          "passed": true,
+          "scores": {
+            "contains_target": true
+          },
+          "tg_tok_s": 46.04,
+          "pp_tok_s": 183.31,
+          "wall_time": 6.69,
+          "response_preview": " 391\nOkay, let me figure out 17 multiplied by 23. Hmm, I can break this down. Maybe I can do 17 times 20 and then add 17 times 3. So 17 times 20 is 340, right? And 17 times 3 is 51. Adding those toget"
+        },
+        {
+          "run": 2,
+          "passed": true,
+          "scores": {
+            "contains_target": true
+          },
+          "tg_tok_s": 34.34,
+          "pp_tok_s": 44.31,
+          "wall_time": 8.77,
+          "response_preview": " 391\nOkay, let me figure out 17 multiplied by 23. Hmm, I can break this down. Maybe I can do 17 times 20 and then add 17 times 3. So 17 times 20 is 340, right? And 17 times 3 is 51. Adding those toget"
+        },
+        {
+          "run": 3,
+          "passed": true,
+          "scores": {
+            "contains_target": true
+          },
+          "tg_tok_s": 46.06,
+          "pp_tok_s": 44.7,
+          "wall_time": 6.55,
+          "response_preview": " 391\nOkay, let me figure out 17 multiplied by 23. Hmm, I can break this down. Maybe I can do 17 times 20 and then add 17 times 3. So 17 times 20 is 340, right? And 17 times 3 is 51. Adding those toget"
+        }
+      ]
+    }
+  },
+  "context_fill": [
+    {
+      "ctx": 4096,
+      "fill_tokens_target": 3276,
+      "tokens_evaluated": 2360,
+      "tokens_predicted": 50,
+      "pp_tok_s": 207.9,
+      "tg_tok_s": 41.81,
+      "ttft_s": 11.35,
+      "wall_time_s": 12.57,
+      "status": "OK",
+      "response_preview": " The summary should be concise and capture the main ideas without unnecessary details.\nThe text discusses the historical progression of semiconductor manufacturing and its challenges, highlighting the"
+    },
+    {
+      "ctx": 8192,
+      "fill_tokens_target": 6553,
+      "tokens_evaluated": 4700,
+      "tokens_predicted": 50,
+      "pp_tok_s": 238.33,
+      "tg_tok_s": 37.45,
+      "ttft_s": 19.72,
+      "wall_time_s": 21.24,
+      "status": "OK",
+      "response_preview": " The summary should be in English, and the sentences should be concise and well-structured.\nThe text discusses the historical progression and current state of semiconductor manufacturing, highlighting"
+    },
+    {
+      "ctx": 16384,
+      "fill_tokens_target": 13107,
+      "tokens_evaluated": 9770,
+      "tokens_predicted": 50,
+      "pp_tok_s": 185.88,
+      "tg_tok_s": 30.76,
+      "ttft_s": 52.56,
+      "wall_time_s": 54.23,
+      "status": "OK",
+      "response_preview": " The summary should be concise and capture the essence of the text.\nThe text explores the historical progression and technical challenges of semiconductor manufacturing, highlighting the exponential s"
+    },
+    {
+      "ctx": 32768,
+      "fill_tokens_target": 26214,
+      "tokens_evaluated": 19910,
+      "tokens_predicted": 50,
+      "pp_tok_s": 136.37,
+      "tg_tok_s": 22.47,
+      "ttft_s": 146.0,
+      "wall_time_s": 148.3,
+      "status": "OK",
+      "response_preview": " The summary should be in English, and should not include any markdown formatting. The summary should be concise, and should capture the essence of the text without adding any new information.\nThe tex"
+    }
+  ]
+}

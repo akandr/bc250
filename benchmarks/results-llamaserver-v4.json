@@ -1,0 +1,879 @@
+{
+  "timestamp": "2026-04-06 23:58:52",
+  "backend": "llama.cpp b8200 (541bf37)",
+  "test_version": "v4_no_think",
+  "models": {
+    "Qwen3.5-35B-A3B IQ2_M": {
+      "path": "/home/akandr/gguf/qwen35-moe-iq2m.gguf",
+      "name": "Qwen3.5-35B-A3B IQ2_M",
+      "quality_chat": {
+        "summarize": {
+          "pass_count": 0,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "keywords_found": 0,
+                "keywords_total": 4,
+                "keywords_pass": false,
+                "sentence_count": 0,
+                "sentences_pass": false
+              },
+              "wall_time": 9.05,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 235,
+                "total_tokens": 535
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "keywords_found": 0,
+                "keywords_total": 4,
+                "keywords_pass": false,
+                "sentence_count": 0,
+                "sentences_pass": false
+              },
+              "wall_time": 8.51,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 235,
+                "total_tokens": 535
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "keywords_found": 0,
+                "keywords_total": 4,
+                "keywords_pass": false,
+                "sentence_count": 0,
+                "sentences_pass": false
+              },
+              "wall_time": 8.5,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 235,
+                "total_tokens": 535
+              },
+              "response_preview": ""
+            }
+          ]
+        },
+        "json_extract": {
+          "pass_count": 0,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "wall_time": 8.25,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 127,
+                "total_tokens": 427
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "wall_time": 8.15,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 127,
+                "total_tokens": 427
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "valid_json": false
+              },
+              "wall_time": 8.18,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 127,
+                "total_tokens": 427
+              },
+              "response_preview": ""
+            }
+          ]
+        },
+        "fact_recall": {
+          "pass_count": 0,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "keywords_found": 0,
+                "keywords_total": 2,
+                "keywords_pass": false
+              },
+              "wall_time": 8.41,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 166,
+                "total_tokens": 466
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "keywords_found": 0,
+                "keywords_total": 2,
+                "keywords_pass": false
+              },
+              "wall_time": 8.34,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 166,
+                "total_tokens": 466
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "keywords_found": 0,
+                "keywords_total": 2,
+                "keywords_pass": false
+              },
+              "wall_time": 8.36,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 166,
+                "total_tokens": 466
+              },
+              "response_preview": ""
+            }
+          ]
+        },
+        "instruction_follow": {
+          "pass_count": 0,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "numbered_items": 0,
+                "items_expected": 5,
+                "items_pass": false
+              },
+              "wall_time": 8.07,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 67,
+                "total_tokens": 367
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "numbered_items": 0,
+                "items_expected": 5,
+                "items_pass": false
+              },
+              "wall_time": 8.0,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 67,
+                "total_tokens": 367
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "numbered_items": 0,
+                "items_expected": 5,
+                "items_pass": false
+              },
+              "wall_time": 8.02,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 67,
+                "total_tokens": 367
+              },
+              "response_preview": ""
+            }
+          ]
+        },
+        "arithmetic": {
+          "pass_count": 1,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "contains_target": false
+              },
+              "wall_time": 7.87,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 48,
+                "total_tokens": 348
+              },
+              "response_preview": ""
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "wall_time": 0.67,
+              "usage": {
+                "completion_tokens": 6,
+                "prompt_tokens": 48,
+                "total_tokens": 54
+              },
+              "response_preview": "391"
+            },
+            {
+              "run": 3,
+              "passed": false,
+              "scores": {
+                "contains_target": false
+              },
+              "wall_time": 7.82,
+              "usage": {
+                "completion_tokens": 300,
+                "prompt_tokens": 48,
+                "total_tokens": 348
+              },
+              "response_preview": ""
+            }
+          ]
+        }
+      },
+      "context_fill": [
+        {
+          "ctx": 4096,
+          "fill_tokens_target": 3276,
+          "tokens_evaluated": 2384,
+          "tokens_predicted": 50,
+          "pp_tok_s": 280.4,
+          "tg_tok_s": 39.77,
+          "wall_time_s": 10.16,
+          "status": "OK"
+        },
+        {
+          "ctx": 8192,
+          "fill_tokens_target": 6553,
+          "tokens_evaluated": 4748,
+          "tokens_predicted": 50,
+          "pp_tok_s": 276.94,
+          "tg_tok_s": 39.44,
+          "wall_time_s": 18.83,
+          "status": "OK"
+        },
+        {
+          "ctx": 16384,
+          "fill_tokens_target": 13107,
+          "tokens_evaluated": 9870,
+          "tokens_predicted": 50,
+          "pp_tok_s": 260.98,
+          "tg_tok_s": 37.56,
+          "wall_time_s": 39.59,
+          "status": "OK"
+        }
+      ]
+    },
+    "Qwen3-8B": {
+      "path": "/home/akandr/gguf/qwen3-8b.gguf",
+      "name": "Qwen3-8B",
+      "quality_chat": {
+        "summarize": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 3,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "wall_time": 3.59,
+              "usage": {
+                "completion_tokens": 125,
+                "prompt_tokens": 231,
+                "total_tokens": 356
+              },
+              "response_preview": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU and a GFX1013 GPU with 24 compute units, utilizing a 16 GB GDDR6 unified memory architecture. Originally used in mining racks by ASRock Rack, these boards are now available on the secondary market and re"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 3,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "wall_time": 2.55,
+              "usage": {
+                "completion_tokens": 117,
+                "prompt_tokens": 231,
+                "total_tokens": 348
+              },
+              "response_preview": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU and a GFX1013 GPU with 24 compute units and 1536 stream processors. It uses 16 GB of GDDR6 unified memory via a 256-bit memory bus and was originally used in mining racks before becoming available on the"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 3,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "wall_time": 2.55,
+              "usage": {
+                "completion_tokens": 117,
+                "prompt_tokens": 231,
+                "total_tokens": 348
+              },
+              "response_preview": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU and a GFX1013 GPU with 24 compute units and 1536 stream processors. It uses 16 GB of GDDR6 unified memory via a 256-bit memory bus and was originally used in mining racks before becoming available on the"
+            }
+          ]
+        },
+        "json_extract": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 1,
+                "values_total": 2
+              },
+              "wall_time": 2.01,
+              "usage": {
+                "completion_tokens": 72,
+                "prompt_tokens": 123,
+                "total_tokens": 195
+              },
+              "response_preview": "{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": \"42\",\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": \"2018\",\n  \"team_size\": \"12\",\n  \"patent_count\": \"7\"\n}"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 1,
+                "values_total": 2
+              },
+              "wall_time": 1.56,
+              "usage": {
+                "completion_tokens": 72,
+                "prompt_tokens": 123,
+                "total_tokens": 195
+              },
+              "response_preview": "{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": \"42\",\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": \"2018\",\n  \"team_size\": \"12\",\n  \"patent_count\": \"7\"\n}"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 1,
+                "values_total": 2
+              },
+              "wall_time": 1.56,
+              "usage": {
+                "completion_tokens": 72,
+                "prompt_tokens": 123,
+                "total_tokens": 195
+              },
+              "response_preview": "{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": \"42\",\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": \"2018\",\n  \"team_size\": \"12\",\n  \"patent_count\": \"7\"\n}"
+            }
+          ]
+        },
+        "fact_recall": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "wall_time": 1.41,
+              "usage": {
+                "completion_tokens": 36,
+                "prompt_tokens": 156,
+                "total_tokens": 192
+              },
+              "response_preview": "The chemical symbol for tungsten is **W**, and it is derived from the word **Wolfram** (from the German word for tungsten)."
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "wall_time": 0.76,
+              "usage": {
+                "completion_tokens": 35,
+                "prompt_tokens": 156,
+                "total_tokens": 191
+              },
+              "response_preview": "The chemical symbol for tungsten is **W**, and it is derived from the word **Wolfram** (the German name for tungsten)."
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "wall_time": 0.76,
+              "usage": {
+                "completion_tokens": 35,
+                "prompt_tokens": 156,
+                "total_tokens": 191
+              },
+              "response_preview": "The chemical symbol for tungsten is **W**, and it is derived from the word **Wolfram** (the German name for tungsten)."
+            }
+          ]
+        },
+        "instruction_follow": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "wall_time": 1.83,
+              "usage": {
+                "completion_tokens": 74,
+                "prompt_tokens": 65,
+                "total_tokens": 139
+              },
+              "response_preview": "1. Solar energy reduces reliance on fossil fuels, lowering greenhouse gas emissions.  \n2. It provides a renewable and inexhaustible energy source.  \n3. Solar power systems can be installed in remote areas with limited grid access.  \n4. It requires minimal maintenance once installed.  \n5. Solar energ"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "wall_time": 1.61,
+              "usage": {
+                "completion_tokens": 74,
+                "prompt_tokens": 65,
+                "total_tokens": 139
+              },
+              "response_preview": "1. Solar energy reduces reliance on fossil fuels, lowering greenhouse gas emissions.  \n2. It provides a renewable and inexhaustible energy source.  \n3. Solar power systems can be installed in remote areas with limited grid access.  \n4. It requires minimal maintenance once installed.  \n5. Solar energ"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "wall_time": 1.58,
+              "usage": {
+                "completion_tokens": 74,
+                "prompt_tokens": 65,
+                "total_tokens": 139
+              },
+              "response_preview": "1. Solar energy reduces reliance on fossil fuels, lowering greenhouse gas emissions.  \n2. It provides a renewable and inexhaustible energy source.  \n3. Solar power systems can be installed in remote areas with limited grid access.  \n4. It requires minimal maintenance once installed.  \n5. Solar energ"
+            }
+          ]
+        },
+        "arithmetic": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "wall_time": 0.39,
+              "usage": {
+                "completion_tokens": 8,
+                "prompt_tokens": 44,
+                "total_tokens": 52
+              },
+              "response_preview": "391"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "wall_time": 0.18,
+              "usage": {
+                "completion_tokens": 8,
+                "prompt_tokens": 44,
+                "total_tokens": 52
+              },
+              "response_preview": "391"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "wall_time": 0.18,
+              "usage": {
+                "completion_tokens": 8,
+                "prompt_tokens": 44,
+                "total_tokens": 52
+              },
+              "response_preview": "391"
+            }
+          ]
+        }
+      }
+    },
+    "Llama3.2-3B": {
+      "path": "/home/akandr/gguf/llama32-3b.gguf",
+      "name": "Llama3.2-3B",
+      "quality_chat": {
+        "summarize": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "wall_time": 1.23,
+              "usage": {
+                "completion_tokens": 90,
+                "prompt_tokens": 237,
+                "total_tokens": 327
+              },
+              "response_preview": "The AMD BC-250 is a crypto-mining board built around the Cyan Skillfish APU, featuring a Zen 2 CPU and GFX1013 GPU. The board has 16 GB of unified memory and supports Vulkan for AI inference, despite lacking tensor cores. It can run complex AI models, such as a 35-billion parameter language model, a"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "wall_time": 0.78,
+              "usage": {
+                "completion_tokens": 80,
+                "prompt_tokens": 237,
+                "total_tokens": 317
+              },
+              "response_preview": "The AMD BC-250 is a crypto-mining board built around the Cyan Skillfish APU, featuring a Zen 2 CPU and GFX1013 GPU. The board has 16 GB of unified memory and supports Vulkan for AI inference, despite lacking tensor cores. It can run a 35-billion parameter language model at 38 tokens per second using"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 4,
+                "keywords_total": 4,
+                "keywords_pass": true,
+                "sentence_count": 3,
+                "sentences_pass": true
+              },
+              "wall_time": 0.78,
+              "usage": {
+                "completion_tokens": 80,
+                "prompt_tokens": 237,
+                "total_tokens": 317
+              },
+              "response_preview": "The AMD BC-250 is a crypto-mining board built around the Cyan Skillfish APU, featuring a Zen 2 CPU and GFX1013 GPU. The board has 16 GB of unified memory and supports Vulkan for AI inference, despite lacking tensor cores. It can run a 35-billion parameter language model at 38 tokens per second using"
+            }
+          ]
+        },
+        "json_extract": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 2,
+                "values_total": 2
+              },
+              "wall_time": 0.72,
+              "usage": {
+                "completion_tokens": 55,
+                "prompt_tokens": 138,
+                "total_tokens": 193
+              },
+              "response_preview": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 2,
+                "values_total": 2
+              },
+              "wall_time": 0.53,
+              "usage": {
+                "completion_tokens": 55,
+                "prompt_tokens": 138,
+                "total_tokens": 193
+              },
+              "response_preview": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "valid_json": true,
+                "keys_found": 4,
+                "keys_total": 4,
+                "keys_pass": true,
+                "values_matched": 2,
+                "values_total": 2
+              },
+              "wall_time": 0.53,
+              "usage": {
+                "completion_tokens": 55,
+                "prompt_tokens": 138,
+                "total_tokens": 193
+              },
+              "response_preview": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}"
+            }
+          ]
+        },
+        "fact_recall": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "wall_time": 0.47,
+              "usage": {
+                "completion_tokens": 22,
+                "prompt_tokens": 164,
+                "total_tokens": 186
+              },
+              "response_preview": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram\"."
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "wall_time": 0.22,
+              "usage": {
+                "completion_tokens": 23,
+                "prompt_tokens": 164,
+                "total_tokens": 187
+              },
+              "response_preview": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\"."
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "keywords_found": 2,
+                "keywords_total": 2,
+                "keywords_pass": true
+              },
+              "wall_time": 0.22,
+              "usage": {
+                "completion_tokens": 23,
+                "prompt_tokens": 164,
+                "total_tokens": 187
+              },
+              "response_preview": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\"."
+            }
+          ]
+        },
+        "instruction_follow": {
+          "pass_count": 3,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "wall_time": 1.2,
+              "usage": {
+                "completion_tokens": 115,
+                "prompt_tokens": 84,
+                "total_tokens": 199
+              },
+              "response_preview": "1. Solar energy is a renewable and sustainable source of electricity, reducing reliance on finite fossil fuels and mitigating climate change.\n2. Solar energy generation produces no greenhouse gas emissions or air pollutants, making it a cleaner alternative to traditional energy sources.\n3. Solar pan"
+            },
+            {
+              "run": 2,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "wall_time": 1.03,
+              "usage": {
+                "completion_tokens": 107,
+                "prompt_tokens": 84,
+                "total_tokens": 191
+              },
+              "response_preview": "1. Solar energy is a renewable resource, reducing reliance on finite fossil fuels and mitigating climate change.\n2. Solar energy generation produces no greenhouse gas emissions or pollutants, making it a cleaner source of electricity.\n3. Solar panels require minimal maintenance and can last for up t"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "numbered_items": 5,
+                "items_expected": 5,
+                "items_pass": true
+              },
+              "wall_time": 1.01,
+              "usage": {
+                "completion_tokens": 105,
+                "prompt_tokens": 84,
+                "total_tokens": 189
+              },
+              "response_preview": "1. Solar energy is a renewable resource, reducing reliance on finite fossil fuels and mitigating climate change.\n2. Solar energy generation produces no greenhouse gas emissions or pollutants, making it a cleaner source of electricity.\n3. Solar panels require minimal maintenance and can last for up t"
+            }
+          ]
+        },
+        "arithmetic": {
+          "pass_count": 1,
+          "total": 3,
+          "runs": [
+            {
+              "run": 1,
+              "passed": false,
+              "scores": {
+                "contains_target": false
+              },
+              "wall_time": 0.08,
+              "usage": {
+                "completion_tokens": 2,
+                "prompt_tokens": 61,
+                "total_tokens": 63
+              },
+              "response_preview": "397"
+            },
+            {
+              "run": 2,
+              "passed": false,
+              "scores": {
+                "contains_target": false
+              },
+              "wall_time": 0.02,
+              "usage": {
+                "completion_tokens": 2,
+                "prompt_tokens": 61,
+                "total_tokens": 63
+              },
+              "response_preview": "397"
+            },
+            {
+              "run": 3,
+              "passed": true,
+              "scores": {
+                "contains_target": true
+              },
+              "wall_time": 0.02,
+              "usage": {
+                "completion_tokens": 2,
+                "prompt_tokens": 61,
+                "total_tokens": 63
+              },
+              "response_preview": "391"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

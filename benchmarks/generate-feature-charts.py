@@ -210,13 +210,15 @@ def chart_model_speed():
     ax.set_xlim(0, max(max(prefill_speed), max(gen_speed)) * 1.15)
 
     # Routing role labels — right of the prefill bar (longest bar per model)
+    # y-offsets to avoid collision with GB size annotations
+    label_y_offsets = [0, 0.22, 0, 0]
     for i, label in enumerate(['spec decode draft (blocked)',
                                'primary chat (≤40K tokens)',
                                'fallback chat (>40K tokens)',
                                'vision + long ctx route']):
         right_edge = max(gen_speed[i], prefill_speed[i])
         alpha = 0.6 if i == 0 else 0.9
-        ax.text(right_edge + 35, y[i], f'← {label}',
+        ax.text(right_edge + 35, y[i] + label_y_offsets[i], f'← {label}',
                 fontsize=8, color='#8b949e', va='center', ha='left', alpha=alpha,
                 style='italic')
 
