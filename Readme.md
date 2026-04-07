@@ -202,7 +202,7 @@ A common question: "Why not build llama.cpp locally with `-march=native` instead
 
 **Short answer:** Ollama already uses AVX2 (via its bundled `libggml-cpu-haswell.so`), and the CPU target is irrelevant anyway — all matrix ops run on the Vulkan GPU. Verified on this hardware:
 
-| Configuration | qwen3:4b gen tok/s | MoE 35B-A3B gen tok/s |
+| Configuration | qwen3:4b gen tok/s | Qwen3.5 MoE 35B-A3B gen tok/s |
 |---------------|-------------------:|----------------------:|
 | **Ollama 0.18** (Vulkan, 65K ctx, q4_0 KV, FA) | **~74** | **~37.3** |
 | **llama-server** (HEAD, same settings) | **80.7** (+9%) | **65.9** (+77%) |
@@ -490,7 +490,7 @@ mistral-nemo:12b           ✅  ✅   ✅   ✅   ✅    ✅    —
 qwen3:14b                  ✅  ✅   ✅   ✅   ✅    ✅    —
 phi4:14b                   ✅  ✅   ✅   ✅   ✅    ✅    —
 deepseek-r1:14b            ✅  ✅   ✅   ✅   ✅    ✅    —
-★ MoE 35B-A3B              ✅  —    ✅   ✅   ✅    ❌    —   ⁷ was 256K on 0.18
+★ Qwen3.5 MoE 35B-A3B     ✅  —    ✅   ✅   ✅    ❌    —   ⁷ was 256K on 0.18
 Qwen3-Coder-30B-A3B        ✅  —    ✅   ✅   ✅    ❌    —   ⁷ was 256K on 0.18
 Qwen3-30B-A3B (Q2_K)       ✅  —    ✅   ✅   ✅    ✅    ✅
 gemma4 (27B MoE)           ✅  —    ✅   ✅   ✅    ✅    ✅
@@ -613,7 +613,7 @@ Environment=OLLAMA_CONTEXT_LENGTH=65536
 
 | Model | 4K | 8K | 16K | 32K | 64K | 96K | 128K | Notes |
 |-------|:--:|:--:|:---:|:---:|:---:|:---:|:----:|-------|
-| **MoE 35B-A3B** | 35.7 | 34.2 | 31.9 | 27.9 | 22.5 | 18.9 | TIMEOUT | Ceiling at 96K filled |
+| **Qwen3.5 MoE 35B-A3B** | 35.7 | 34.2 | 31.9 | 27.9 | 22.5 | 18.9 | TIMEOUT | Ceiling at 96K filled |
 | **qwen3.5:9b** | 31.2 | 30.4 | 29.0 | 26.6 | 22.6 | 19.6 | TIMEOUT | Ceiling at 96K filled |
 | **🏆 gemma4-26b-q3** | 35.2 | 33.3 | 31.1 | 27.7 | TIMEOUT | — | — | Ceiling at 48K filled (40K=26.4, 48K=25.0) |
 | qwen2.5:3b | 93.6 | 87.9 | 77.8 | 62.0 | **32K³** | **32K³** | **32K³** | Truncated above 32K |
@@ -660,7 +660,7 @@ CV <1.5% across all 8 models tested. Single-run measurements are reliable on thi
 
 **Quality assessment** — 5 tasks × 3 runs, scored by Python script (keyword match, JSON parse, regex):
 
-| Task | MoE 35B-A3B | qwen3.5:9b |
+| Task | Qwen3.5 MoE 35B-A3B | qwen3.5:9b |
 |------|:---:|:---:|
 | Summarization | 3/3 ✅ | 3/3 ✅ |
 | JSON extraction | 3/3 ✅ | 3/3 ✅ |
@@ -675,7 +675,7 @@ The MoE's one miss was adding preamble before a numbered list — the list itsel
 
 | Model | Median | Load time |
 |-------|:------:|:---------:|
-| MoE 35B-A3B | **18.0s** | 16.2s (~660 MB/s from NVMe) |
+| Qwen3.5 MoE 35B-A3B | **18.0s** | 16.2s (~660 MB/s from NVMe) |
 | qwen3.5:9b | **7.0s** | 5.6s (~1.1 GB/s from NVMe) |
 
 With `OLLAMA_KEEP_ALIVE=30m`, cold start (18.0s) occurs only after 30 minutes of inactivity. Warm TTFT at short prompts: 0.3–1.7s.
@@ -1004,7 +1004,7 @@ To check whether the quality gap is purely a template issue, the same tasks were
 
 Qwen3-8B scores 15/15, matching Ollama exactly. Llama3.2-3B scores 13–15/15 (arithmetic varies across runs). The chat template fully restores quality for both.
 
-MoE 35B-A3B still scores only 1/15 despite `/no_think`. The b8200 binary pre-dates Qwen3.5's release, and its embedded chat template does not suppress thinking for this model architecture. Ollama handles MoE correctly because it maintains its own template library, updated independently of the llama.cpp binary.
+Qwen3.5 MoE 35B-A3B still scores only 1/15 despite `/no_think`. The b8200 binary pre-dates Qwen3.5's release, and its embedded chat template does not suppress thinking for this model architecture. Ollama handles MoE correctly because it maintains its own template library, updated independently of the llama.cpp binary.
 
 ![llama-server b8200 — quality by endpoint](images/charts/bench-b8200-quality-comparison.png)
 
@@ -1014,10 +1014,10 @@ The raw `/completion` endpoint fails thinking models due to missing templates. `
 
 | Model | Ctx | Ollama TG | Server TG | Change | Notes |
 |-------|----:|:---------:|:---------:|:------:|-------|
-| MoE 35B-A3B | 4K | 35.7 | 39.8 | **+11%** | |
-| MoE 35B-A3B | 8K | 34.2 | 39.4 | **+15%** | |
-| MoE 35B-A3B | 16K | 31.9 | 37.6 | **+18%** | Max for server |
-| MoE 35B-A3B | 32K | 27.9 | ☠ OOM | — | Server pre-allocates KV → OOM |
+| Qwen3.5 MoE 35B-A3B | 4K | 35.7 | 39.8 | **+11%** | |
+| Qwen3.5 MoE 35B-A3B | 8K | 34.2 | 39.4 | **+15%** | |
+| Qwen3.5 MoE 35B-A3B | 16K | 31.9 | 37.6 | **+18%** | Max for server |
+| Qwen3.5 MoE 35B-A3B | 32K | 27.9 | ☠ OOM | — | Server pre-allocates KV → OOM |
 | Qwen3-8B | 4K | 39.1 | 41.8 | **+7%** | |
 | Qwen3-8B | 8K | 35.4 | 37.8 | **+7%** | |
 | Qwen3-8B | 16K | 29.5 | 30.8 | **+4%** | |
@@ -1027,7 +1027,7 @@ The raw `/completion` endpoint fails thinking models due to missing templates. `
 
 ![llama-server vs Ollama — filled-context TG](images/charts/bench-b8200-server-vs-ollama.png)
 
-> MoE 35B-A3B llama-server fails to start at 32K/64K context: the 10.6 GiB model + pre-allocated 32K Q4_0 KV cache exceeds the 14.3 GiB usable UMA budget. Ollama manages 64K with the same model (§4.5), likely through lazy KV allocation. llama-bench (§4.10a) also handles 64K — it allocates KV per-test rather than upfront. This confirms the KV pre-allocation hypothesis from §4.10a.
+> Qwen3.5 MoE 35B-A3B llama-server fails to start at 32K/64K context: the 10.6 GiB model + pre-allocated 32K Q4_0 KV cache exceeds the 14.3 GiB usable UMA budget. Ollama manages 64K with the same model (§4.5), likely through lazy KV allocation. llama-bench (§4.10a) also handles 64K — it allocates KV per-test rather than upfront. This confirms the KV pre-allocation hypothesis from §4.10a.
 
 > Llama3.2-3B omitted: showed anomalously low TG (~20 tok/s vs Ollama's 88 tok/s at 4K fill). During quality tests on the same server instance, TG started at 105 tok/s but degraded to ~21 tok/s after several prompts — likely a server state issue in b8200's single-slot `/completion` endpoint. The model itself is not affected (llama-bench shows 109.5 tok/s).
 
@@ -2112,7 +2112,7 @@ Ollama also **silently truncates** some models to their native context limit wit
 | mistral-nemo:12b | 34.0 | [33.9 – 34.0] | **0.2%** |
 | qwen3:8b | 42.8 | [42.8 – 43.0] | **0.3%** |
 | ★ qwen3.5:9b | 31.7 | [31.7 – 31.9] | **0.4%** |
-| ★ MoE 35B-A3B | 37.5 | [37.3 – 37.6] | **0.4%** |
+| ★ Qwen3.5 MoE 35B-A3B | 37.5 | [37.3 – 37.6] | **0.4%** |
 | Qwen3-30B-A3B (Q2_K) | 58.5 | [57.9 – 58.9] | **0.9%** |
 | llama3.2:3b | 102.2 | [101.3 – 103.9] | **1.3%** |
 | phi4-mini | 86.1 | [85.0 – 87.4] | **1.4%** |
@@ -2148,7 +2148,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 | 18 | **qwen3:8b** | 8.2B | Q4_K_M | **43.1** | 192.7 | 7.7s | 5.1 GiB | 100% |
 | 19 | qwen3:8b-nothink | 8.2B | Q4_K_M | 43.1 | 209.7 | 3.4s | 5.1 GiB | 100% |
 | 20 | gemma2:9b | 9.2B | Q4_0 | 38.2 | 194.8 | 12.5s | 6.9 GiB | 100% |
-| 21 | ★ **MoE 35B-A3B** | **35B/3B** | **UD-IQ2_M** | **37.5** | 127.5 | 17.4s | **12.3 GiB** | **93%** |
+| 21 | ★ **Qwen3.5 MoE 35B-A3B** | **35B/3B** | **UD-IQ2_M** | **37.5** | 127.5 | 17.4s | **12.3 GiB** | **93%** |
 | 22 | mistral-nemo:12b | 12.2B | Q4_0 | 34.1 | 159.8 | 13.0s | 6.7 GiB | 80% |
 | 23 | ★ **qwen3.5:9b** | **9.7B** | **Q4_K_M** | **31.7** | 171.3 | 11.2s | **7.9 GiB** | **100%** |
 | 24 | qwen3:8b-q8_0 | 8.2B | Q8_0 | 31.2 | 237.2 | 12.6s | 8.5 GiB | 100% |
@@ -2203,7 +2203,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 | 14 | qwen3-14b-16k | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | **15/15** | **100** |
 | 15 | qwen3:14b | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | **15/15** | **100** |
 | 16 | deepseek-r1:14b | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | **15/15** | **100** |
-| 17 | ★ MoE 35B-A3B | 3/3 | 3/3 | 3/3 | 2/3 | 3/3 | **14/15** | **93** |
+| 17 | ★ Qwen3.5 MoE 35B-A3B | 3/3 | 3/3 | 3/3 | 2/3 | 3/3 | **14/15** | **93** |
 | 18 | phi4-mini | 3/3 | 3/3 | 3/3 | 2/3 | 3/3 | **14/15** | **93** |
 | 19 | llama3.2:3b | 3/3 | 3/3 | 3/3 | 2/3 | 3/3 | **14/15** | **93** |
 | 20 | llama3.1:8b | 3/3 | 3/3 | 3/3 | 2/3 | 3/3 | **14/15** | **93** |
@@ -2254,7 +2254,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 
 | Model | 4K | 16K | 32K | 48K | 64K (initial) | 64K (after uptime) | Degradation (4K→32K) |
 |-------|:--:|:---:|:---:|:---:|:---:|:---:|:-----------:|
-| ★ **MoE 35B-A3B** | 35.6 | 31.9 | 28.5 | — | **22.9** | **0.7** ⚠️ | **−20%** |
+| ★ **Qwen3.5 MoE 35B-A3B** | 35.6 | 31.9 | 28.5 | — | **22.9** | **0.7** ⚠️ | **−20%** |
 | ★ **qwen3.5:9b** | 31.1 | 29.4 | 27.0 | — | **23.4** | — | **−13%** |
 | 🏆 **gemma4-26b-q3** | 35.2 | 31.1 | 27.7 | **25.0** | TIMEOUT | — | **−29%** (4K→48K) |
 | phi4-mini | 74.3 | 48.7 | 33.2 | — | 20.3 | — | −55% |
@@ -2299,7 +2299,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 | phi4:14b | 26.0 | 19.5 | ✂️ 16K | — | **16K** | R1+R2 |
 | gemma2:9b | 29.6 | 17.1 | ✂️ 8K | — | **8K³** | R1+R2 |
 | deepseek-r1:14b | 26.5 | 19.7 | 14.8 | ⚠️ 2.3 → 0.1⁶ | **32K** | R1+R3 |
-| ★ MoE 35B-A3B | 35.6 | 31.9 | 28.5 | 22.9 → 0.7⁶ | **64K** → **??**⁶ | R1+R2+R3 |
+| ★ Qwen3.5 MoE 35B-A3B | 35.6 | 31.9 | 28.5 | 22.9 → 0.7⁶ | **64K** → **??**⁶ | R1+R2+R3 |
 | ★ qwen3.5:9b | 31.1 | 29.4 | 27.0 | 23.4 | **64K** | R2 |
 | 🏆 gemma4-26b-q3 | 35.2 | 31.1 | 27.7 | TIMEOUT | **48K** | R4 |
 
@@ -2313,11 +2313,11 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 
 | Model | Metric | Initial (R1) | Retest (R3) | Change |
 |-------|--------|:-----------:|:----------:|:------:|
-| MoE 35B-A3B | gen tok/s | **22.9** | **0.7** | −97% |
-| MoE 35B-A3B | prefill tok/s | 135 | 58 | −57% |
-| MoE 35B-A3B | TTFT (s) | 302 | 596 | +97% |
-| MoE 35B-A3B | prompt tokens | 38,348 | 30,614 | −20% |
-| MoE 35B-A3B | swap delta | +328 MB | — | — |
+| Qwen3.5 MoE 35B-A3B | gen tok/s | **22.9** | **0.7** | −97% |
+| Qwen3.5 MoE 35B-A3B | prefill tok/s | 135 | 58 | −57% |
+| Qwen3.5 MoE 35B-A3B | TTFT (s) | 302 | 596 | +97% |
+| Qwen3.5 MoE 35B-A3B | prompt tokens | 38,348 | 30,614 | −20% |
+| Qwen3.5 MoE 35B-A3B | swap delta | +328 MB | — | — |
 | deepseek-r1:14b | gen tok/s | **2.3** | **0.1** | −96% |
 | deepseek-r1:14b | TTFT (s) | — | 13,084 | 3.6 hours |
 | deepseek-r1:14b | prompt tokens | — | 30,609 | — |
@@ -2342,7 +2342,7 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 
 | Model | 4K | 16K | 32K | 48K | 64K (initial) | 64K (after uptime) |
 |-------|:--:|:---:|:---:|:---:|:---:|:---:|
-| ★ MoE 35B-A3B | 239 | 215 | 182 | — | **135** | **58** ⚠️ |
+| ★ Qwen3.5 MoE 35B-A3B | 239 | 215 | 182 | — | **135** | **58** ⚠️ |
 | 🏆 gemma4-26b-q3 | 270 | 219 | 177 | **148** | TIMEOUT | — |
 | ★ qwen3.5:9b | 227 | 206 | 182 | — | 145 | — |
 | phi4-mini | 452 | 289 | 194 | — | 117 | — |
@@ -2350,13 +2350,13 @@ The largest models show the tightest variance (0.2%). Smaller models show slight
 | qwen3:14b | 125 | 93 | 68 | — | — | — |
 | deepseek-r1:14b | 121 | 91 | 69 | — | — | **2.4** ⚠️ |
 
-> Prefill rate (tok/s) at 80% filled context. gemma4-26b-q3 achieves 270 tok/s at 4K (highest among production models), degrading gracefully to 148 tok/s at 48K. Both MoE 35B-A3B and qwen3.5:9b converge to ~230 tok/s prefill at 4K. At 64K, the MoE shows a 2.3× prefill regression between the initial round (135 tok/s) and retest (58 tok/s) — same system, same Ollama version. deepseek-r1:14b prefill collapsed to 2.4 tok/s at 64K on retest (from ~40 tok/s estimated initially). See ⁶ regression note in B5.2.
+> Prefill rate (tok/s) at 80% filled context. gemma4-26b-q3 achieves 270 tok/s at 4K (highest among production models), degrading gracefully to 148 tok/s at 48K. Both Qwen3.5 MoE 35B-A3B and qwen3.5:9b converge to ~230 tok/s prefill at 4K. At 64K, the MoE shows a 2.3× prefill regression between the initial round (135 tok/s) and retest (58 tok/s) — same system, same Ollama version. deepseek-r1:14b prefill collapsed to 2.4 tok/s at 64K on retest (from ~40 tok/s estimated initially). See ⁶ regression note in B5.2.
 
 ### B5.5 TTFT at filled context (Phase 3 core, run 1)
 
 | Model | 4K | 16K | 32K | 48K | 64K |
 |-------|:--:|:---:|:---:|:---:|:---:|
-| ★ MoE 35B-A3B | 26s | 63s | 126s | — | **302s** |
+| ★ Qwen3.5 MoE 35B-A3B | 26s | 63s | 126s | — | **302s** |
 | 🏆 gemma4-26b-q3 | 11s | 43s | 107s | **191s** | TIMEOUT |
 | ★ qwen3.5:9b | 117s¹ | 57s | 116s | — | **279s** |
 | phi4-mini | 11s | 37s | 105s | — | — |
@@ -2384,7 +2384,7 @@ Three unique facts embedded at 25%, 50%, 75% positions in 16K filled context:
 | Model | Early (25%) | Middle (50%) | Late (75%) | Total |
 |-------|:---:|:---:|:---:|:---:|
 | ★ gemma4-26b-q3 | **2/2** ✅ | **2/2** ✅ | **2/2** ✅ | **6/6** |
-| ★ MoE 35B-A3B | **2/2** ✅ | **2/2** ✅ | **2/2** ✅ | **6/6** |
+| ★ Qwen3.5 MoE 35B-A3B | **2/2** ✅ | **2/2** ✅ | **2/2** ✅ | **6/6** |
 | ★ qwen3.5:9b | **2/2** ✅ | **2/2** ✅ | **2/2** ✅ | **6/6** |
 | phi4-mini | **2/2** ✅ | **2/2** ✅ | **2/2** ✅ | **6/6** |
 | **Total** | | | | **24/24** (100%) |
@@ -2404,7 +2404,7 @@ Four tasks at 16K and 32K filled context (80% fill, 5 diverse text domains). Fac
 | Model | 16K (R1/R2) | 32K (R1/R2) | Combined |
 |-------|:---:|:---:|:---:|
 | ★ gemma4-26b-q3 | 3/4 / 3/4 | 2/4 / 3/4 | **11/16** |
-| ★ MoE 35B-A3B | 3/4 / 2/4 | 3/4 / 2/4 | **10/16** |
+| ★ Qwen3.5 MoE 35B-A3B | 3/4 / 2/4 | 3/4 / 2/4 | **10/16** |
 | qwen3.5:9b | 2/4 / 3/4 | 3/4 / 2/4 | **10/16** |
 | phi4-mini | 1/4 / 3/4 | 2/4 / 2/4 | **8/16** |
 
@@ -2428,7 +2428,7 @@ Four tasks at 16K and 32K filled context (80% fill, 5 diverse text domains). Fac
 | Model | Run 1 | Run 2 | Run 3 | Median | Load time |
 |-------|:-----:|:-----:|:-----:|:------:|:---------:|
 | ★ gemma4-26b-q3 | 19.1s | 17.7s | 17.6s | **17.7s** | 16.7s (~690 MB/s) |
-| ★ MoE 35B-A3B | 18.0s | 18.0s | 17.5s | **18.0s** | 16.2s (~660 MB/s) |
+| ★ Qwen3.5 MoE 35B-A3B | 18.0s | 18.0s | 17.5s | **18.0s** | 16.2s (~660 MB/s) |
 | ★ qwen3.5:9b | 11.9s | 6.8s | 7.0s | **7.0s** | 5.6s (~1.1 GB/s) |
 
 > Run 1 of qwen3.5:9b is ~70% slower than Run 2/3 because the GGUF file was not yet in the Linux page cache. Subsequent loads read from cached RAM pages. The MoE shows no gap because its GGUF was already cached from prior tests. Page cache was not dropped between runs (see B1.1).
@@ -2741,7 +2741,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/rpc \
 | Issue | Impact |
 |-------|--------|
 | Shared VRAM | In this setup, image gen requires stopping Ollama (single 16 GB UMA pool). Bot offline ~1 min (FLUX.2-klein-4B) or ~2 min (FLUX.2-klein-9B). |
-| MoE context limit | With Q4_0 KV, MoE 35B-A3B allocates **64K** context (was 256K on Ollama 0.18, regressed after 0.20 upgrade). Practical filled ceiling is **32K** (28.5 tok/s, stable). 64K filled context showed 22.9 tok/s initially but only 0.7 tok/s on retest after extended uptime — possibly UMA fragmentation (B5.2). |
+| MoE context limit | With Q4_0 KV, Qwen3.5 MoE 35B-A3B allocates **64K** context (was 256K on Ollama 0.18, regressed after 0.20 upgrade). Practical filled ceiling is **32K** (28.5 tok/s, stable). 64K filled context showed 22.9 tok/s initially but only 0.7 tok/s on retest after extended uptime — possibly UMA fragmentation (B5.2). |
 | Signal latency | Messages queue during job execution (typical job 2–15 min). Chat checked between every job. |
 | sd-cli hangs on GFX1013 | Vulkan cleanup bug → poll + kill workaround. |
 | Cold start latency | 30–60s after Ollama restart (model loading). |

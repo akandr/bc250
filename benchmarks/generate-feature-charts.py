@@ -234,7 +234,7 @@ def chart_model_speed():
 
 def chart_spec_decode_memory():
     """Stacked bar showing memory usage for spec decode scenario."""
-    scenarios = ['Draft only\n(qwen2.5:3b)', 'Verifier only\n(Qwen MoE 35B-A3B)', 'Dual load\n(spec decode)', 'Available\n(16 GB UMA)']
+    scenarios = ['Draft only\n(qwen2.5:3b)', 'Verifier only\n(Qwen3.5 MoE 35B-A3B)', 'Dual load\n(spec decode)', 'Available\n(16 GB UMA)']
     draft_sizes = [1.8, 0, 1.8, 0]
     verifier_sizes = [0, 10.6, 10.6, 0]
     kv_sizes = [0.2, 1.8, 2.0, 0]
@@ -319,7 +319,7 @@ def chart_signal_pipeline():
             fontsize=10, bbox=box_green)
     ax.text(6.5, 3, 'Image\nqwen3.5:9b\nvision', ha='center', va='center',
             fontsize=10, bbox=box_orange)
-    ax.text(6.5, 1, 'Text\nchoose_chat_model()\ngemma4 or Qwen MoE', ha='center', va='center',
+    ax.text(6.5, 1, 'Text\nchoose_chat_model()\ngemma4 or Qwen3.5 MoE', ha='center', va='center',
             fontsize=10, bbox=box_blue)
 
     # Output

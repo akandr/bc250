@@ -67,7 +67,7 @@ def chart_gen_speed_all():
         ("qwen3:8b",                43.5, "8B"),
         ("gemma2:9b",               38.6, "9B"),
         ("★ gemma4-26b-q3 (26B MoE)", 39.0, "MoE"),
-        ("★ MoE 35B-A3B",        37.6, "MoE"),
+        ("★ Qwen3.5 MoE 35B-A3B", 37.6, "MoE"),
         ("mistral-nemo:12b",        34.1, "12B"),
         ("gemma4 (27B MoE)",        32.5, "MoE"),
         ("★ qwen3.5:9b",           31.7, "9B"),
@@ -130,7 +130,7 @@ def chart_quality_all():
         ("phi4:14b",            100), ("qwen3-abl:14b",       100),
         ("qwen3-14b-nothink",   100), ("qwen3-14b-16k",       100),
         ("qwen3:14b",           100), ("deepseek-r1:14b",     100),
-        ("★ MoE 35B-A3B",    93),  ("phi4-mini",            93),
+        ("★ Qwen3.5 MoE 35B-A3B", 93), ("phi4-mini",        93),
         ("llama3.2:3b",          93),  ("llama3.1:8b",          93),
         ("glm4:9b",              93),
         ("Qwen3-Coder-30B-A3B",  87),  ("seed-coder-abl:8b",    87),
@@ -201,7 +201,7 @@ def chart_context_ceiling():
         ("seed-coder-abl:8b",    46.1, 34.7, 25.7, 17.9),
         ("qwen3:8b",              39.4, 30.3, 22.5, 15.4),
         ("glm4:9b",               37.0, 23.3, 15.5,  9.2),
-        ("★ MoE 35B-A3B",     35.6, 31.9, 28.5, None),
+        ("★ Qwen3.5 MoE 35B-A3B", 35.6, 31.9, 28.5, None),
         ("★ gemma4-26b-q3",   35.2, 31.1, 27.7, None),
         ("★ qwen3.5:9b",        31.1, 29.4, 27.0, 23.4),
         ("gemma3:12b",           28.4, 27.5, 26.3, 24.2),
@@ -276,7 +276,7 @@ def chart_context_degradation():
 
     # Data refreshed 2026-04-04 — 80% real-token fill
     models = {
-        "★ MoE 35B-A3B":      [35.6, 31.9, 28.5, None, 23.0],
+        "★ Qwen3.5 MoE 35B-A3B": [35.6, 31.9, 28.5, None, 23.0],
         "★ gemma4-26b-q3":    [35.2, 31.1, 27.7, 25.0, None],
         "★ qwen3.5:9b":       [31.1, 29.4, 27.0, None, 23.4],
         "phi4-mini":           [74.3, 48.7, 33.2, None, 20.3],
@@ -286,7 +286,7 @@ def chart_context_degradation():
     }
 
     colors = {
-        "★ MoE 35B-A3B":      C_GOLD,
+        "★ Qwen3.5 MoE 35B-A3B": C_GOLD,
         "★ gemma4-26b-q3":    C_PURPLE,
         "★ qwen3.5:9b":       C_ORANGE,
         "phi4-mini":           C_GREEN,
@@ -505,7 +505,7 @@ def chart_vram_usage():
         ("qwen3:14b",        8.9),
         ("Qwen3-Coder-30B-A3B",  10.3),
         ("Qwen3-30B-A3B (Q2_K)",  10.7),
-        ("★ MoE 35B-A3B",12.3),
+        ("★ Qwen3.5 MoE 35B-A3B", 12.3),
         ("★ gemma4-26b-q3 (26B MoE)", 13.5),
     ]
 
@@ -565,7 +565,7 @@ def chart_speed_vs_quality():
         ("deepseek-r1:8b",    43.3, 73,  8.0, False),
         ("qwen3:8b",           43.0, 100, 8.2, False),
         ("gemma2:9b",          38.5, 100, 9.2, False),
-        ("★ MoE 35B-A3B",     37.7, 93, 35.0, True),
+        ("★ Qwen3.5 MoE 35B-A3B", 37.7, 93, 35.0, True),
         ("mistral-nemo:12b",  34.1, 80, 12.2, False),
         ("★ qwen3.5:9b",      31.9, 100, 9.7, True),
         ("gemma3:12b",        29.1, 100, 12.0, False),
@@ -656,7 +656,7 @@ def chart_statistical_cv():
         ("mistral-nemo:12b", 0.2, 34.0),
         ("qwen3:8b",         0.3, 42.8),
         ("qwen3.5:9b",       0.4, 31.7),
-        ("MoE 35B-A3B",          0.4, 37.5),
+        ("Qwen3.5 MoE 35B-A3B",    0.4, 37.5),
         ("Qwen3-30B-A3B (Q2_K)",   0.9, 58.5),
         ("llama3.2:3b",      1.3, 102.2),
         ("phi4-mini",        1.4, 86.1),
@@ -743,7 +743,7 @@ def chart_prefill_speed():
         ("qwen3-abl:8b",            166, "8B"),
         ("★ qwen3.5:9b",           146, "9B"),
         ("mistral-nemo:12b",        140, "12B"),
-        ("★ MoE 35B-A3B",          123, "MoE"),
+        ("★ Qwen3.5 MoE 35B-A3B", 123, "MoE"),
         ("gemma3:12b",              112, "12B"),
         ("phi4:14b",                  92, "14B"),
         ("qwen3:14b",                91, "14B"),
@@ -873,7 +873,7 @@ def chart_prefill_vs_prompt_size():
         "qwen3:8b":           [ 50.2, 101.7, 168.9, 257.3],
         "★ qwen3.5:9b":      [ 43.4,  82.0, 147.4, 193.3],
         "gemma3:12b":         [ 33.4,  60.4, 105.9, 144.9],
-        "★ MoE 35B-A3B":     [ 41.2,  65.9,  92.4, 204.7],
+        "★ Qwen3.5 MoE 35B-A3B": [ 41.2,  65.9,  92.4, 204.7],
         "qwen3:14b":          [ 29.9,  56.2,  89.6, 137.5],
     }
 
@@ -884,7 +884,7 @@ def chart_prefill_vs_prompt_size():
         "qwen3:8b":       C_BLUE,
         "★ qwen3.5:9b":  C_ORANGE,
         "gemma3:12b":     C_PINK,
-        "★ MoE 35B-A3B": C_GOLD,
+        "★ Qwen3.5 MoE 35B-A3B": C_GOLD,
         "qwen3:14b":      C_RED,
     }
 
