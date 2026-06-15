@@ -1,0 +1,20 @@
+{
+  "model": "qwen3:14b",
+  "pages_limit": 4194304,
+  "n": 1,
+  "tiers": {
+    "64": {
+      "runs": [
+        {
+          "status": "timeout",
+          "wall": 6046.1
+        }
+      ],
+      "gtt_gib": 10.2,
+      "free_gib": 0.41,
+      "ok": 0,
+      "status": "timeout"
+    }
+  },
+  "gtt_highwater": 10.2
+}

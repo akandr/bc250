@@ -1,0 +1,15 @@
+{
+  "step": "cold-start-rerun-g11-35b",
+  "captured_at": "2026-06-09",
+  "config": "verified-stock 24-CU (bc250_cc_write_mode=0, active_cu_number 24), Ollama 0.20.0",
+  "protocol": "ollama unload (keep_alive=0) + sudo sync; echo 3 > drop_caches before each run; num_ctx 4096, num_predict 20; TTFT counts first response-or-thinking token",
+  "model": "qwen3.5-35b-a3b-iq2m:latest",
+  "label": "qwen3.5-35b-a3b (IQ2_M, 11 GiB)",
+  "runs": [
+    {"run_idx": 1, "ttft_s": 21.03, "load_s": 19.99, "prompt_eval_s": 0.46, "eval_count": 20},
+    {"run_idx": 2, "ttft_s": 20.72, "load_s": 19.77, "prompt_eval_s": 0.45, "eval_count": 20},
+    {"run_idx": 3, "ttft_s": 21.45, "load_s": 20.46, "prompt_eval_s": 0.46, "eval_count": 20}
+  ],
+  "median": {"ttft_s": 21.0, "load_s": 20.0, "read_rate_gib_s": 0.55},
+  "note": "Replaces mislabelled May 40-CU/0.18.0 cold value (16.5s load / 0.67 GiB/s). New rate clusters with 9b (0.56) and deepseek (0.51), reinforcing the NVMe-bound load claim."
+}

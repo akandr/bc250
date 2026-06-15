@@ -1,0 +1,135 @@
+{
+  "model": "qwen3:14b",
+  "ts": "2026-06-11 15:56",
+  "quality": {
+    "summarize": {
+      "pass_count": 0,
+      "n": 2,
+      "runs": [
+        {
+          "pass": false,
+          "detail": "kw 3/4, sentences~3",
+          "wall_s": 20.2,
+          "out": "The AMD BC-250 is a crypto-mining board based on the Zen 2 CPU and GFX1013 GPU, featuring 16 GB of GDDR6 unified memory and a 256-bit memory bus. It lacks dedicated AI hardware like tensor cores but can still run large language models using quantized weights and Vulkan. The board is available on the"
+        },
+        {
+          "pass": false,
+          "detail": "kw 3/4, sentences~3",
+          "wall_s": 4.7,
+          "out": "The AMD BC-250 is a crypto-mining board based on the Zen 2 CPU and GFX1013 GPU, featuring 16 GB of GDDR6 unified memory and a 256-bit memory bus. It lacks dedicated AI hardware like tensor cores but can still run large language models using quantized weights and Vulkan. The board was originally used"
+        }
+      ]
+    },
+    "json_extract": {
+      "pass_count": 2,
+      "n": 2,
+      "runs": [
+        {
+          "pass": true,
+          "detail": "valid JSON, keys 4/4",
+          "wall_s": 4.7,
+          "out": "{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}"
+        },
+        {
+          "pass": true,
+          "detail": "valid JSON, keys 4/4",
+          "wall_s": 3.5,
+          "out": "{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}"
+        }
+      ]
+    },
+    "fact_recall": {
+      "pass_count": 2,
+      "n": 2,
+      "runs": [
+        {
+          "pass": true,
+          "detail": "W+Wolfram present",
+          "wall_s": 3.2,
+          "out": "The chemical symbol for tungsten is W, and it is derived from the word \"Wolfram\" (from German)."
+        },
+        {
+          "pass": true,
+          "detail": "W+Wolfram present",
+          "wall_s": 1.3,
+          "out": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram.\""
+        }
+      ]
+    },
+    "instruction_follow": {
+      "pass_count": 2,
+      "n": 2,
+      "runs": [
+        {
+          "pass": true,
+          "detail": "5 numbered items",
+          "wall_s": 5.4,
+          "out": "1. Solar energy is a renewable resource that reduces dependence on fossil fuels.  \n2. It produces no greenhouse gas emissions during operation, helping to combat climate change.  \n3. Solar power systems have low operating costs once installed, leading to long-term savings.  \n4. Solar energy can be h"
+        },
+        {
+          "pass": true,
+          "detail": "5 numbered items",
+          "wall_s": 4.8,
+          "out": "1. Solar energy is a renewable resource that reduces dependence on fossil fuels.  \n2. It produces no greenhouse gas emissions during operation, helping to combat climate change.  \n3. Solar power systems can be installed in remote areas, providing electricity where grid access is limited.  \n4. The co"
+        }
+      ]
+    },
+    "arithmetic": {
+      "pass_count": 2,
+      "n": 2,
+      "runs": [
+        {
+          "pass": true,
+          "detail": "has 391",
+          "wall_s": 0.9,
+          "out": "391"
+        },
+        {
+          "pass": true,
+          "detail": "has 391",
+          "wall_s": 0.3,
+          "out": "391"
+        }
+      ]
+    }
+  },
+  "synthesis": {
+    "career_synth": {
+      "usable": true,
+      "chars": 874,
+      "wall_s": 22.6,
+      "out": "**1) One-line verdict:**  \nOption A (GPU compiler role) offers the strongest long-term technical growth and industry influence, but B and C may be better depending on personal priorities like stability or remote flexibility.\n\n**2) Top 3 Decision Factors:**\n- **Career Growth**: A > B > C (A is cutting-edge, B is stable, C is high-risk/high-reward)\n- **Work-Life Balance**: C > B > A (startup may be flexible, automotive is structured, chip vendor is intense)\n- **Compensation & Equity**: A \u2248 B > C (startup may offer equity but lower base pay)\n\n**3) Main Red Flags:**\n- **A (GPU Compiler)**: High technical complexity and long hours may lead to burnout.\n- **B (Automotive Tier-1)**: Stagnant tech stack and slow innovation due to industry conservatism.\n- **C (ML-infra Startup)**: High risk of failure, unclear path to impact, and potential for underpayment despite equity."
+    },
+    "company_synth": {
+      "usable": true,
+      "chars": 943,
+      "wall_s": 10.5,
+      "out": "**Situation Summary:** A mid-size camera-sensor manufacturer is grappling with increased competition from a larger rival, a patent-infringement lawsuit that threatens its operations, and rising demand for automotive infrared (IR) sensors. The company must navigate these challenges while positioning itself in a growing market segment.\n\n**Top 3 Risks (by severity):**  \n1. **Patent-infringement lawsuit** \u2013 could result in significant legal costs, damages, or restrictions on product offerings.  \n2. **Rising competition from a larger rival** \u2013 may erode market share, pricing power, and customer relationships.  \n3. **Inability to scale production for automotive IR sensors** \u2013 could limit growth potential in a high-demand, high-margin segment.\n\n**Concrete Opportunity:** Focus on developing and differentiating automotive IR sensor technology to capture market share in a segment experiencing strong growth and limited supply-side capacity."
+    },
+    "market_synth": {
+      "usable": true,
+      "chars": 483,
+      "wall_s": 5.9,
+      "out": "Rising GPU memory prices and reduced foundry capacity are likely to constrain supply, tightening the consumer GPU market. Meanwhile, surging demand for AI accelerators may divert high-performance parts away from gamers and creators, further limiting availability. Prices are expected to climb as scarcity intensifies, with premium models seeing the steepest increases. **Act now: consider purchasing high-end GPUs in the next 30 days to secure availability before shortages worsen.**"
+    }
+  },
+  "parser_compat": {
+    "exec_weather": {
+      "exec_detected": true,
+      "cmd": "curl -s wttr.in/Wroclaw?format=3",
+      "had_think_tag": false,
+      "reasoning_leak": false,
+      "user_reply_len": 0,
+      "raw": "EXEC: curl -s wttr.in/Wroclaw?format=3"
+    },
+    "exec_search": {
+      "exec_detected": true,
+      "cmd": "ddgr --num 5 --noprompt \"latest AMD RDNA4 release date\"",
+      "had_think_tag": false,
+      "reasoning_leak": false,
+      "user_reply_len": 0,
+      "raw": "EXEC: ddgr --num 5 --noprompt \"latest AMD RDNA4 release date\""
+    },
+    "json_extract_valid": true
+  }
+}

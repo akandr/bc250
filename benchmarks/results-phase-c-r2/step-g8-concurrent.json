@@ -1,0 +1,431 @@
+{
+  "results": [
+    {
+      "pair": "granite_deepseek14b",
+      "m1": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+      "m2": "/opt/models/deepseek-r1-14b.gguf",
+      "m1_label": "granite-4.0-h-tiny (~4 GiB)",
+      "m2_label": "deepseek-r1-14b (~8.4 GiB)",
+      "combined_gib": 12.5,
+      "serial_a": [
+        {
+          "tag": "granite_deepseek14b-ser-a-r1",
+          "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+          "rc": 0,
+          "wall_s": 9.778,
+          "gen_tok_s": 97.79,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_deepseek14b-ser-a-r2",
+          "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+          "rc": 0,
+          "wall_s": 13.594,
+          "gen_tok_s": 98.67,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_deepseek14b-ser-a-r3",
+          "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+          "rc": 0,
+          "wall_s": 13.541,
+          "gen_tok_s": 97.97,
+          "ok": true,
+          "timed_out": false
+        }
+      ],
+      "serial_b": [
+        {
+          "tag": "granite_deepseek14b-ser-b-r1",
+          "model": "/opt/models/deepseek-r1-14b.gguf",
+          "rc": 0,
+          "wall_s": 73.614,
+          "gen_tok_s": 18.26,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_deepseek14b-ser-b-r2",
+          "model": "/opt/models/deepseek-r1-14b.gguf",
+          "rc": 0,
+          "wall_s": 65.984,
+          "gen_tok_s": 18.31,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_deepseek14b-ser-b-r3",
+          "model": "/opt/models/deepseek-r1-14b.gguf",
+          "rc": 0,
+          "wall_s": 62.816,
+          "gen_tok_s": 18.32,
+          "ok": true,
+          "timed_out": false
+        }
+      ],
+      "parallel": [
+        {
+          "a": {
+            "tag": "granite_deepseek14b-par-a-r1",
+            "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+            "rc": 0,
+            "wall_s": 17.906,
+            "gen_tok_s": 75.88,
+            "ok": true,
+            "timed_out": false
+          },
+          "b": {
+            "tag": "granite_deepseek14b-par-b-r1",
+            "model": "/opt/models/deepseek-r1-14b.gguf",
+            "rc": 0,
+            "wall_s": 70.502,
+            "gen_tok_s": 18.3,
+            "ok": true,
+            "timed_out": false
+          },
+          "sampler_csv": null
+        },
+        {
+          "a": {
+            "tag": "granite_deepseek14b-par-a-r2",
+            "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+            "rc": 0,
+            "wall_s": 33.935,
+            "gen_tok_s": 10.78,
+            "ok": true,
+            "timed_out": false
+          },
+          "b": {
+            "tag": "granite_deepseek14b-par-b-r2",
+            "model": "/opt/models/deepseek-r1-14b.gguf",
+            "rc": 0,
+            "wall_s": 87.902,
+            "gen_tok_s": 18.31,
+            "ok": true,
+            "timed_out": false
+          },
+          "sampler_csv": null
+        },
+        {
+          "a": {
+            "tag": "granite_deepseek14b-par-a-r3",
+            "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+            "rc": 0,
+            "wall_s": 20.509,
+            "gen_tok_s": 47.2,
+            "ok": true,
+            "timed_out": false
+          },
+          "b": {
+            "tag": "granite_deepseek14b-par-b-r3",
+            "model": "/opt/models/deepseek-r1-14b.gguf",
+            "rc": 0,
+            "wall_s": 69.409,
+            "gen_tok_s": 18.3,
+            "ok": true,
+            "timed_out": false
+          },
+          "sampler_csv": null
+        }
+      ],
+      "summary": {
+        "serial_a_wall": {
+          "mean": 12.3,
+          "min": 9.78,
+          "max": 13.59,
+          "n": 3
+        },
+        "serial_b_wall": {
+          "mean": 67.47,
+          "min": 62.82,
+          "max": 73.61,
+          "n": 3
+        },
+        "parallel_a_wall": {
+          "mean": 24.12,
+          "min": 17.91,
+          "max": 33.94,
+          "n": 3
+        },
+        "parallel_b_wall": {
+          "mean": 75.94,
+          "min": 69.41,
+          "max": 87.9,
+          "n": 3
+        },
+        "serial_a_gen": {
+          "mean": 98.14,
+          "min": 97.79,
+          "max": 98.67,
+          "n": 3
+        },
+        "serial_b_gen": {
+          "mean": 18.3,
+          "min": 18.26,
+          "max": 18.32,
+          "n": 3
+        },
+        "parallel_a_gen": {
+          "mean": 44.62,
+          "min": 10.78,
+          "max": 75.88,
+          "n": 3
+        },
+        "parallel_b_gen": {
+          "mean": 18.3,
+          "min": 18.3,
+          "max": 18.31,
+          "n": 3
+        },
+        "gen_slow_a": {
+          "mean": 4.17,
+          "min": 1.29,
+          "max": 9.15,
+          "n": 3
+        },
+        "gen_slow_b": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0,
+          "n": 3
+        },
+        "ok_serial_a": 3,
+        "ok_serial_b": 3,
+        "ok_parallel_a": 3,
+        "ok_parallel_b": 3,
+        "killed": 0,
+        "stall_a": {
+          "mean": 1.95,
+          "min": 1.51,
+          "max": 2.5,
+          "n": 3
+        },
+        "stall_b": {
+          "mean": 1.13,
+          "min": 0.96,
+          "max": 1.33,
+          "n": 3
+        }
+      }
+    },
+    {
+      "pair": "granite_gptoss20b",
+      "m1": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+      "m2": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+      "m1_label": "granite-4.0-h-tiny (~4 GiB)",
+      "m2_label": "gpt-oss-20b-mxfp4 (~11.3 GiB)",
+      "combined_gib": 15.5,
+      "serial_a": [
+        {
+          "tag": "granite_gptoss20b-ser-a-r1",
+          "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+          "rc": 0,
+          "wall_s": 15.308,
+          "gen_tok_s": 98.78,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_gptoss20b-ser-a-r2",
+          "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+          "rc": 0,
+          "wall_s": 13.545,
+          "gen_tok_s": 98.73,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_gptoss20b-ser-a-r3",
+          "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+          "rc": 0,
+          "wall_s": 13.795,
+          "gen_tok_s": 98.85,
+          "ok": true,
+          "timed_out": false
+        }
+      ],
+      "serial_b": [
+        {
+          "tag": "granite_gptoss20b-ser-b-r1",
+          "model": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+          "rc": 0,
+          "wall_s": 51.911,
+          "gen_tok_s": 60.75,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_gptoss20b-ser-b-r2",
+          "model": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+          "rc": 0,
+          "wall_s": 49.504,
+          "gen_tok_s": 60.94,
+          "ok": true,
+          "timed_out": false
+        },
+        {
+          "tag": "granite_gptoss20b-ser-b-r3",
+          "model": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+          "rc": 0,
+          "wall_s": 49.902,
+          "gen_tok_s": 60.53,
+          "ok": true,
+          "timed_out": false
+        }
+      ],
+      "parallel": [
+        {
+          "a": {
+            "tag": "granite_gptoss20b-par-a-r1",
+            "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+            "rc": 0,
+            "wall_s": 15.312,
+            "gen_tok_s": 94.44,
+            "ok": true,
+            "timed_out": false
+          },
+          "b": {
+            "tag": "granite_gptoss20b-par-b-r1",
+            "model": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+            "rc": 0,
+            "wall_s": 51.483,
+            "gen_tok_s": 60.7,
+            "ok": true,
+            "timed_out": false
+          },
+          "sampler_csv": null
+        },
+        {
+          "a": {
+            "tag": "granite_gptoss20b-par-a-r2",
+            "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+            "rc": 0,
+            "wall_s": 14.923,
+            "gen_tok_s": 97.31,
+            "ok": true,
+            "timed_out": false
+          },
+          "b": {
+            "tag": "granite_gptoss20b-par-b-r2",
+            "model": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+            "rc": 0,
+            "wall_s": 51.518,
+            "gen_tok_s": 60.77,
+            "ok": true,
+            "timed_out": false
+          },
+          "sampler_csv": null
+        },
+        {
+          "a": {
+            "tag": "granite_gptoss20b-par-a-r3",
+            "model": "/opt/models/granite-4.0-h-tiny-q4km.gguf",
+            "rc": 0,
+            "wall_s": 14.799,
+            "gen_tok_s": 97.45,
+            "ok": true,
+            "timed_out": false
+          },
+          "b": {
+            "tag": "granite_gptoss20b-par-b-r3",
+            "model": "/opt/models/gpt-oss-20b-mxfp4.gguf",
+            "rc": 0,
+            "wall_s": 51.5,
+            "gen_tok_s": 61.21,
+            "ok": true,
+            "timed_out": false
+          },
+          "sampler_csv": null
+        }
+      ],
+      "summary": {
+        "serial_a_wall": {
+          "mean": 14.22,
+          "min": 13.54,
+          "max": 15.31,
+          "n": 3
+        },
+        "serial_b_wall": {
+          "mean": 50.44,
+          "min": 49.5,
+          "max": 51.91,
+          "n": 3
+        },
+        "parallel_a_wall": {
+          "mean": 15.01,
+          "min": 14.8,
+          "max": 15.31,
+          "n": 3
+        },
+        "parallel_b_wall": {
+          "mean": 51.5,
+          "min": 51.48,
+          "max": 51.52,
+          "n": 3
+        },
+        "serial_a_gen": {
+          "mean": 98.79,
+          "min": 98.73,
+          "max": 98.85,
+          "n": 3
+        },
+        "serial_b_gen": {
+          "mean": 60.74,
+          "min": 60.53,
+          "max": 60.94,
+          "n": 3
+        },
+        "parallel_a_gen": {
+          "mean": 96.4,
+          "min": 94.44,
+          "max": 97.45,
+          "n": 3
+        },
+        "parallel_b_gen": {
+          "mean": 60.89,
+          "min": 60.7,
+          "max": 61.21,
+          "n": 3
+        },
+        "gen_slow_a": {
+          "mean": 1.02,
+          "min": 1.01,
+          "max": 1.05,
+          "n": 3
+        },
+        "gen_slow_b": {
+          "mean": 1.0,
+          "min": 0.99,
+          "max": 1.0,
+          "n": 3
+        },
+        "ok_serial_a": 3,
+        "ok_serial_b": 3,
+        "ok_parallel_a": 3,
+        "ok_parallel_b": 3,
+        "killed": 0,
+        "stall_a": {
+          "mean": 1.06,
+          "min": 1.0,
+          "max": 1.1,
+          "n": 3
+        },
+        "stall_b": {
+          "mean": 1.02,
+          "min": 0.99,
+          "max": 1.04,
+          "n": 3
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "timestamp": "2026-06-08T07:42:09.020205",
+    "elapsed_min": 18.9,
+    "n_runs": 3,
+    "n_gen": 200,
+    "n_ctx": 4096
+  }
+}

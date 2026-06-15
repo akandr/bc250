@@ -1,0 +1,18 @@
+{
+  "n_samples": 1666,
+  "duration_s": 333.7,
+  "power_mw_mean": 55253.1,
+  "power_mw_p50": 47172,
+  "power_mw_p95": 106041,
+  "power_mw_max": 116071,
+  "sclk_mhz_mean": 1067.0,
+  "sclk_mhz_max": 1500,
+  "temp_c_mean": 58.4,
+  "temp_c_max": 76.0,
+  "energy_j": 18437.7,
+  "vram_gib_max": 0.03,
+  "gtt_gib_max": 10.888,
+  "label": "w5e",
+  "hz": 5.0,
+  "csv": "/home/akandr/phase-c-out/results/power-w5e.csv"
+}

@@ -1,0 +1,59 @@
+{
+  "source": "extracted from results-phase-c-r2/step-2-ctx-quality.json",
+  "results": {
+    "qwen3.5-9b-ollama": {
+      "ctx": 131072,
+      "runs": [
+        {
+          "status": "ok",
+          "n_prompt": 96281,
+          "prefill_tok_s": 109.869,
+          "prefill_s": 876.3,
+          "prefill_min": 14.6,
+          "gen_tok_s": 18.4,
+          "needle_pass": true
+        },
+        {
+          "status": "ok",
+          "n_prompt": 96281,
+          "prefill_tok_s": 108.092,
+          "prefill_s": 890.7,
+          "prefill_min": 14.85,
+          "gen_tok_s": 18.378,
+          "needle_pass": true
+        }
+      ],
+      "aggregate_prefill_tok_s": 108.981,
+      "aggregate_prefill_s": 883.5,
+      "aggregate_prefill_min": 14.72,
+      "aggregate_gen_tok_s": 18.389
+    },
+    "granite-4.0-h-tiny": {
+      "ctx": 131072,
+      "runs": [
+        {
+          "status": "ok",
+          "n_prompt": 94068,
+          "prefill_tok_s": 658.05,
+          "prefill_s": 142.9,
+          "prefill_min": 2.38,
+          "gen_tok_s": 96.99,
+          "needle_pass": true
+        },
+        {
+          "status": "ok",
+          "n_prompt": 94068,
+          "prefill_tok_s": 658.06,
+          "prefill_s": 142.9,
+          "prefill_min": 2.38,
+          "gen_tok_s": 97.62,
+          "needle_pass": true
+        }
+      ],
+      "aggregate_prefill_tok_s": 658.055,
+      "aggregate_prefill_s": 142.9,
+      "aggregate_prefill_min": 2.38,
+      "aggregate_gen_tok_s": 97.305
+    }
+  }
+}

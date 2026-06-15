@@ -1,0 +1,176 @@
+{
+  "model": "qwq-32b-iq2m",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "4": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 93.6,
+          "pe": 2756,
+          "ec": 128,
+          "gen": 9.32,
+          "pre": 47.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 90.3,
+          "pe": 2756,
+          "ec": 128,
+          "gen": 9.32,
+          "pre": 47.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 90.0,
+          "pe": 2756,
+          "ec": 128,
+          "gen": 9.33,
+          "pre": 47.1,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 11.1,
+      "free_gib": 0.36,
+      "ok": 3,
+      "gen_med": 9.32,
+      "pre_med": 47.1,
+      "gen_runs": [
+        9.32,
+        9.32,
+        9.33
+      ],
+      "pe": 2756
+    },
+    "8": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 158.6,
+          "pe": 5451,
+          "ec": 128,
+          "gen": 8.71,
+          "pre": 43.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 158.8,
+          "pe": 5451,
+          "ec": 128,
+          "gen": 8.71,
+          "pre": 43.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 158.7,
+          "pe": 5451,
+          "ec": 128,
+          "gen": 8.71,
+          "pre": 43.1,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 11.39,
+      "free_gib": 0.42,
+      "ok": 3,
+      "gen_med": 8.71,
+      "pre_med": 43.1,
+      "gen_runs": [
+        8.71,
+        8.71,
+        8.71
+      ],
+      "pe": 5451
+    },
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 332.7,
+          "pe": 10843,
+          "ec": 128,
+          "gen": 7.71,
+          "pre": 36.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 332.2,
+          "pe": 10843,
+          "ec": 128,
+          "gen": 7.71,
+          "pre": 36.4,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 332.6,
+          "pe": 10843,
+          "ec": 128,
+          "gen": 7.71,
+          "pre": 36.4,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 11.97,
+      "free_gib": 0.22,
+      "ok": 3,
+      "gen_med": 7.71,
+      "pre_med": 36.4,
+      "gen_runs": [
+        7.71,
+        7.71,
+        7.71
+      ],
+      "pe": 10843
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 824.3,
+          "pe": 21627,
+          "ec": 128,
+          "gen": 6.26,
+          "pre": 27.5,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 826.1,
+          "pe": 21627,
+          "ec": 128,
+          "gen": 6.26,
+          "pre": 27.6,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 823.9,
+          "pe": 21627,
+          "ec": 128,
+          "gen": 6.27,
+          "pre": 27.6,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 13.12,
+      "free_gib": 0.23,
+      "ok": 3,
+      "gen_med": 6.26,
+      "pre_med": 27.6,
+      "gen_runs": [
+        6.26,
+        6.26,
+        6.27
+      ],
+      "pe": 21627
+    }
+  },
+  "gtt_highwater": 13.12
+}

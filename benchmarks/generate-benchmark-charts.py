@@ -138,7 +138,7 @@ def chart_quality_all():
         ("qwen2.5:3b",           73),  ("deepseek-r1:8b",       73),
         ("qwen2.5-coder:7b",    40),  ("qwen3:4b ⁶",          33),
         ("Qwen3-30B-A3B (Q2_K) ⁶",27),
-        ("qwen2.5:7b ²",        20),  ("qwen3.5-27b-iq2m ⁷",   0),
+        ("qwen2.5:7b ²",        20),  ("qwen3.5-27b-iq2m ⁷",  53),
     ]
 
     models.reverse()
@@ -173,7 +173,7 @@ def chart_quality_all():
         mpatches.Patch(facecolor=C_GREEN, label='100%'),
         mpatches.Patch(facecolor=C_BLUE, label='93%'),
         mpatches.Patch(facecolor=C_ORANGE, label='73–87%'),
-        mpatches.Patch(facecolor=C_RED, label='≤40% (think leak / load bug / specialized)'),
+        mpatches.Patch(facecolor=C_RED, label='<70% (degraded / think leak / load bug)'),
     ]
     ax.legend(handles=handles, loc='lower right', fontsize=9, framealpha=0.3)
 
@@ -201,7 +201,7 @@ def chart_context_ceiling():
         ("seed-coder-abl:8b",    46.1, 34.7, 25.7, 17.9),
         ("qwen3:8b",              39.4, 30.3, 22.5, 15.4),
         ("glm4:9b",               37.0, 23.3, 15.5,  9.2),
-        ("★ Qwen3.5 MoE 35B-A3B", 35.6, 31.9, 28.5, None),
+        ("★ Qwen3.5 MoE 35B-A3B", 25.7, 23.3, 20.7, 16.6),
         ("★ gemma4-26b-q3",   35.2, 31.1, 27.7, None),
         ("★ qwen3.5:9b",        31.1, 29.4, 27.0, 23.4),
         ("gemma3:12b",           28.4, 27.5, 26.3, 24.2),
@@ -274,25 +274,25 @@ def chart_context_ceiling():
 def chart_context_degradation():
     ctx = [4, 16, 32, 48, 64]  # K
 
-    # Data refreshed 2026-04-04 — 80% real-token fill
+    # Canonical 16 GiB n=3 (Table 5) — 80% real-token fill; 48K not measured (None)
     models = {
-        "★ Qwen3.5 MoE 35B-A3B": [35.6, 31.9, 28.5, None, 23.0],
-        "★ gemma4-26b-q3":    [35.2, 31.1, 27.7, 25.0, None],
-        "★ qwen3.5:9b":       [31.1, 29.4, 27.0, None, 23.4],
-        "phi4-mini":           [74.3, 48.7, 33.2, None, 20.3],
-        "qwen3:8b":            [39.4, 30.3, 22.5, None, 15.4],
-        "qwen3:14b":           [25.2, 20.7, 16.7, None, 12.0],
-        "gemma3:4b":           [74.8, 72.3, 70.0, None, 65.1],
+        "★ qwen3.5-35b-a3b":  [25.7, 23.3, 20.7, None, 16.6],
+        "★ qwen3.5:9b":       [22.6, 20.1, 18.4, None, 16.4],
+        "gemma3:4b":           [46.5, 45.1, 43.4, None, 40.3],
+        "phi4-mini":           [55.0, 34.1, 22.6, None, 13.4],
+        "qwen3:8b":            [28.2, 21.0, 15.6, None, None],
+        "qwen3:14b":           [18.7, 14.9, 11.7, None, None],
+        "mistral-nemo:12b":    [23.4, 17.7, 13.3, None,  8.9],
     }
 
     colors = {
-        "★ Qwen3.5 MoE 35B-A3B": C_GOLD,
-        "★ gemma4-26b-q3":    C_PURPLE,
+        "★ qwen3.5-35b-a3b":  C_GOLD,
         "★ qwen3.5:9b":       C_ORANGE,
+        "gemma3:4b":           C_TEAL,
         "phi4-mini":           C_GREEN,
         "qwen3:8b":            C_BLUE,
         "qwen3:14b":           C_RED,
-        "gemma3:4b":           C_TEAL,
+        "mistral-nemo:12b":    C_PURPLE,
     }
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
@@ -982,6 +982,108 @@ def chart_llamacpp_vs_ollama():
     print("  ✓ bench-llamacpp-vs-ollama.png")
 
 
+def chart_cu_unlock():
+    # Source: §B9.1 / article tab:cu_unlock — 11-model paired 24-CU vs 40-CU
+    # A/B at 4K context, llama.cpp b9265, n=3. Generation & prefill speed-up.
+    # (model, gen Δ×, prefill Δ×)
+    rows = [
+        ("mistral-small-3.2",      1.57, 1.62),
+        ("qwq-32b",                1.55, 1.56),
+        ("deepseek-r1-14b",        1.43, 1.43),
+        ("qwen3.5:9b",             1.34, 1.57),
+        ("qwen3-coder-30b",        1.33, 1.49),
+        ("gpt-oss-20b MXFP4",      1.32, 1.37),
+        ("qwen3.5-35b-a3b",        1.32, 1.43),
+        ("qwen3.6-35b-a3b",        1.31, 1.46),
+        ("granite-4.0-h-tiny",     1.24, 1.50),
+        ("gemma4-latest",          1.14, 1.52),
+        ("gpt-oss-20b (Ollama)",   1.12, 1.54),
+    ]
+    rows.sort(key=lambda r: r[1])          # ascending gen Δ, biggest on top
+    names  = [r[0] for r in rows]
+    gen    = [r[1] for r in rows]
+    pfill  = [r[2] for r in rows]
+    med_gen, med_pf = 1.32, 1.50
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 7), sharey=True)
+    y = np.arange(len(names))
+
+    for ax, vals, med, title, color in (
+        (axes[0], gen,   med_gen, "Generation speed-up", C_BLUE),
+        (axes[1], pfill, med_pf,  "Prefill speed-up",     C_GOLD),
+    ):
+        ax.barh(y, vals, color=color, alpha=0.85, edgecolor='#30363d')
+        ax.axvline(1.0, color=C_GRAY, lw=1, ls='-', alpha=0.6)
+        ax.axvline(med, color=C_GREEN, lw=1.5, ls='--', alpha=0.9,
+                   label=f"median {med:.2f}×")
+        for i, v in enumerate(vals):
+            ax.annotate(f"{v:.2f}×", xy=(v + 0.01, i), va='center',
+                        fontsize=9, color='#c9d1d9', fontweight='bold')
+        ax.set_xlim(1.0, 1.75)
+        ax.set_title(title, fontsize=12, fontweight='bold', pad=8)
+        ax.grid(axis='x', alpha=0.3)
+        ax.legend(loc='lower right', fontsize=10, framealpha=0.3)
+
+    axes[0].set_yticks(y)
+    axes[0].set_yticklabels(names, fontsize=9)
+    fig.suptitle("BC-250 · 40-CU unlock vs stock 24-CU — paired A/B (4K ctx, llama.cpp b9265, n=3)\n"
+                 "All 11 models gain on both axes; prefill gains more (compute-bound) than generation (bandwidth-bound)",
+                 fontsize=12.5, fontweight='bold', y=0.99)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(f"{OUT_DIR}/bench-cu-unlock.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    print("  ✓ bench-cu-unlock.png")
+
+
+def chart_roofline():
+    # Source: §B10 / article §disc-mem-bw. Measured ceilings on 24-CU @1.5GHz:
+    PEAK_BW    = 357.0    # GB/s   (512 MiB streaming copy)
+    PEAK_FLOPS = 3901.0   # GFLOP/s (8 independent FMA chains/thread)
+    RIDGE      = PEAK_FLOPS / PEAK_BW   # 10.93 FLOP/byte
+
+    fig, ax = plt.subplots(figsize=(11, 7))
+    x = np.logspace(-0.5, 2, 400)             # 0.32 .. 100 FLOP/byte
+    attain = np.minimum(PEAK_FLOPS, PEAK_BW * x)
+    ax.plot(x, attain, color=C_GRAY, lw=2.5, zorder=3)
+
+    # Ridge marker
+    ax.axvline(RIDGE, color=C_GREEN, ls='--', lw=1.4, alpha=0.8)
+    ax.annotate(f"ridge point\n{RIDGE:.1f} FLOP/byte",
+                xy=(RIDGE, 130), fontsize=10, color=C_GREEN,
+                ha='center', fontweight='bold')
+    ax.annotate("bandwidth-bound\n(weight reads dominate)", xy=(1.0, 1700),
+                fontsize=10.5, color=C_BLUE, ha='center', fontweight='bold')
+    ax.annotate("compute-bound", xy=(40, 1500),
+                fontsize=10.5, color=C_ORANGE, ha='center', fontweight='bold')
+
+    # Quantization decode points: AI = 2 / bytes_per_weight, on the BW slope
+    quants = [
+        ("Q8_0",   2.0, C_PINK),
+        ("Q4_K_M", 4.0, C_TEAL),
+        ("IQ2_M",  6.4, C_GOLD),
+    ]
+    for label, ai, col in quants:
+        yv = PEAK_BW * ai
+        ax.scatter([ai], [yv], s=90, color=col, zorder=5, edgecolor='#0d1117')
+        ax.annotate(f"{label}\nAI={ai:.1f}", xy=(ai, yv), xytext=(ai * 0.82, yv * 1.5),
+                    fontsize=9, color=col, ha='center', fontweight='bold')
+
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlim(0.32, 100)
+    ax.set_ylim(100, 6000)
+    ax.set_xlabel("Arithmetic intensity (FLOP / byte)")
+    ax.set_ylabel("Attainable throughput (GFLOP/s)")
+    ax.set_title("BC-250 GFX1013 roofline (24-CU, oberon 1.5 GHz cap)\n"
+                 "357 GB/s · 3901 GFLOP/s — every LLM decode quant sits left of the ridge",
+                 fontsize=13, fontweight='bold', pad=12)
+    ax.grid(True, which='both', alpha=0.25)
+    plt.tight_layout()
+    plt.savefig(f"{OUT_DIR}/bench-roofline.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    print("  ✓ bench-roofline.png")
+
+
 if __name__ == "__main__":
     print("Generating benchmark charts...")
     chart_gen_speed_all()
@@ -998,4 +1100,6 @@ if __name__ == "__main__":
     chart_gen_vs_prefill()
     chart_prefill_vs_prompt_size()
     chart_llamacpp_vs_ollama()
+    chart_cu_unlock()
+    chart_roofline()
     print(f"\nAll charts saved to {OUT_DIR}/")

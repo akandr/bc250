@@ -1,0 +1,91 @@
+{
+  "step": "perf",
+  "results": {
+    "qwq-32b-iq3m": {
+      "runs": [
+        {
+          "model": "qwq-32b-iq3m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwq-32b-iq3m-run1",
+          "projected_vm_gib": 14.34,
+          "wall_s": 903.11,
+          "status": "timeout",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780399271297.csv"
+        },
+        {
+          "model": "qwq-32b-iq3m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwq-32b-iq3m-run2",
+          "projected_vm_gib": 14.34,
+          "wall_s": 923.72,
+          "status": "timeout",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780400208023.csv"
+        }
+      ],
+      "aggregate": {},
+      "backend": "llama-completion",
+      "kind": "dense"
+    },
+    "mistral-small-3.2-q4km": {
+      "runs": [
+        {
+          "model": "mistral-small-3.2-q4km",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-mistral-small-3.2-q4km-run1",
+          "projected_vm_gib": 13.75,
+          "wall_s": 783.91,
+          "rc": 0,
+          "prompt_eval_ms": 461209.08,
+          "n_prompt": 253,
+          "prefill_tok_s": 0.55,
+          "load_ms": 319956.88,
+          "total_ms": 461335.12,
+          "ttft_s": 781.166,
+          "output": "[end of text]",
+          "status": "parse_fail",
+          "stderr_tail": "(131072) -- the full capacity of the model will not be utilized\n1.02.634.306 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)\n5.20.892.482 I llama_completion: llama threadpool init, n_threads = 6\n5.20.892.852 I \n5.20.893.446 I system_info: n_threads = 6 (n_threads_batch = 6) / 12 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n5.20.893.452 I \n5.20.983.158 I sampler seed: 42\n5.20.983.299 I sampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = -1\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.000\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000, adaptive_target = -1.000, adaptive_decay = 0.900\n5.20.984.296 I sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist \n5.20.984.300 I generate: n_ctx = 4096, n_batch = 2048, n_predict = 100, n_keep = 1\n5.20.984.301 I \n13.02.227.246 I common_perf_print:    sampling time =      28.18 ms\n13.02.227.249 I common_perf_print:    samplers time =      10.49 ms /   254 tokens\n13.02.227.443 I common_perf_print:        load time =  319956.88 ms\n13.02.227.446 I common_perf_print: prompt eval time =  461209.08 ms /   253 tokens ( 1822.96 ms per token,     0.55 tokens per second)\n13.02.227.447 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)\n13.02.227.447 I common_perf_print:       total time =  461335.12 ms /   254 tokens\n13.02.227.449 I common_perf_print: unaccounted time =      97.86 ms /   0.0 %      (total - sampling - prompt eval - eval) / (total)\n13.02.227.449 I common_perf_print:    graphs reused =          0\n",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780401213883.csv"
+        }
+      ],
+      "aggregate": {
+        "prefill_tok_s_median": 0.55,
+        "prefill_tok_s_min": 0.55,
+        "prefill_tok_s_max": 0.55,
+        "prefill_tok_s_cv_pct": 0.0,
+        "ttft_s_median": 781.166,
+        "ttft_s_min": 781.166,
+        "ttft_s_max": 781.166,
+        "ttft_s_cv_pct": 0.0
+      },
+      "backend": "llama-completion",
+      "kind": "dense"
+    }
+  }
+}

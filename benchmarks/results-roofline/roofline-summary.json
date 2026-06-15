@@ -1,0 +1,93 @@
+{
+  "device": "AMD BC-250 (RADV GFX1013)",
+  "date": "2026-06-07",
+  "config": "24-CU, oberon-governor 1500 MHz",
+  "bw_peak_gbs": 357.29,
+  "fp32_peak_gflops": 3901.2,
+  "ridge_flops_per_byte": 10.92,
+  "quant_ai": {
+    "Q8_0": 2.0,
+    "Q4_K_M": 3.5555555555555554,
+    "Q4_0": 4.0,
+    "MXFP4": 4.0,
+    "IQ2_M": 6.4
+  },
+  "models": {
+    "deepseek-r1-14b": {
+      "label": "deepseek-r1:14b\n(Q4_K_M dense)",
+      "gen_tok_s": 21.18,
+      "quant": "Q4_K_M",
+      "param_b": 14.0,
+      "active_param_b": 14.0,
+      "file_gb": 8.4,
+      "dense": true,
+      "ai_flops_per_byte": 3.556,
+      "eff_weight_gb": 9.02,
+      "eff_bw_gbs": 191.0,
+      "eff_bw_fraction_of_peak": 0.535,
+      "perf_gflops": 593.0,
+      "bw_roofline_bound_gflops": 1270.4
+    },
+    "granite-4.0-h-tiny": {
+      "label": "granite-4.0-h-tiny\n(Q4_K_M hybrid)",
+      "gen_tok_s": 104.23,
+      "quant": "Q4_K_M",
+      "param_b": 7.1,
+      "active_param_b": 3.3,
+      "file_gb": 4.0,
+      "dense": false,
+      "ai_flops_per_byte": 3.556,
+      "eff_weight_gb": 2.0,
+      "eff_bw_gbs": 208.1,
+      "eff_bw_fraction_of_peak": 0.582,
+      "perf_gflops": 687.9,
+      "bw_roofline_bound_gflops": 1270.4,
+      "note": "hybrid; small file \u2192 possible L2 cache effects"
+    },
+    "qwen3.5-35b-iq2m": {
+      "label": "qwen3.5-35b-A3B\n(IQ2_M MoE)",
+      "gen_tok_s": 59.53,
+      "quant": "IQ2_M",
+      "param_b": 35.0,
+      "active_param_b": 3.0,
+      "file_gb": 11.0,
+      "dense": false,
+      "ai_flops_per_byte": 6.4,
+      "eff_weight_gb": 1.01,
+      "eff_bw_gbs": 60.3,
+      "eff_bw_fraction_of_peak": 0.169,
+      "perf_gflops": 357.2,
+      "bw_roofline_bound_gflops": 2286.7
+    },
+    "gpt-oss-20b-mxfp4": {
+      "label": "gpt-oss-20b\n(MXFP4 MoE)",
+      "gen_tok_s": 66.11,
+      "quant": "MXFP4",
+      "param_b": 20.0,
+      "active_param_b": 3.7,
+      "file_gb": 12.0,
+      "dense": false,
+      "ai_flops_per_byte": 4.0,
+      "eff_weight_gb": 2.38,
+      "eff_bw_gbs": 157.6,
+      "eff_bw_fraction_of_peak": 0.441,
+      "perf_gflops": 489.2,
+      "bw_roofline_bound_gflops": 1429.2
+    },
+    "qwen3-coder-30b-iq2m": {
+      "label": "qwen3-coder-30b-A3B\n(IQ2_M MoE)",
+      "gen_tok_s": 57.72,
+      "quant": "IQ2_M",
+      "param_b": 30.0,
+      "active_param_b": 3.0,
+      "file_gb": 11.0,
+      "dense": false,
+      "ai_flops_per_byte": 6.4,
+      "eff_weight_gb": 1.18,
+      "eff_bw_gbs": 68.2,
+      "eff_bw_fraction_of_peak": 0.191,
+      "perf_gflops": 346.3,
+      "bw_roofline_bound_gflops": 2286.7
+    }
+  }
+}

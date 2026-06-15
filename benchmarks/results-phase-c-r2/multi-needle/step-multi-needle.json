@@ -1,0 +1,1368 @@
+{
+  "step": "multi-needle",
+  "results": {
+    "qwen3.5-9b-ollama": {
+      "backend": "ollama",
+      "kind": "dense",
+      "tiers": {
+        "32768": {
+          "runs": [
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 32768,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-qwen3.5-9b-ollama-32768-r1",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 2.0,
+              "wall_s": 135.97,
+              "rc": 0,
+              "n_gen": 69,
+              "eval_ms": 2755.21,
+              "gen_tok_s": 25.044,
+              "n_prompt": 24202,
+              "prompt_eval_ms": 119772.01,
+              "prefill_tok_s": 202.067,
+              "load_ms": 12637.68,
+              "total_ms": 135957.23,
+              "ttft_s": 132.41,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780242802365.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 32768,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-qwen3.5-9b-ollama-32768-r2",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 2.0,
+              "wall_s": 130.98,
+              "rc": 0,
+              "n_gen": 69,
+              "eval_ms": 2763.15,
+              "gen_tok_s": 24.971,
+              "n_prompt": 24202,
+              "prompt_eval_ms": 127791.07,
+              "prefill_tok_s": 189.387,
+              "load_ms": 257.43,
+              "total_ms": 130982.08,
+              "ttft_s": 128.048,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780242938842.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 25.008,
+            "gen_tok_s_min": 24.971,
+            "gen_tok_s_max": 25.044,
+            "gen_tok_s_cv_pct": 0.21,
+            "prefill_tok_s_median": 195.727,
+            "prefill_tok_s_min": 189.387,
+            "prefill_tok_s_max": 202.067,
+            "prefill_tok_s_cv_pct": 4.58,
+            "ttft_s_median": 130.229,
+            "ttft_s_min": 128.048,
+            "ttft_s_max": 132.41,
+            "ttft_s_cv_pct": 2.37,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.1
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.1
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-qwen3.5-9b-ollama-65536-r1",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.0,
+              "wall_s": 330.07,
+              "rc": 0,
+              "n_gen": 69,
+              "eval_ms": 3022.78,
+              "gen_tok_s": 22.827,
+              "n_prompt": 48234,
+              "prompt_eval_ms": 314669.41,
+              "prefill_tok_s": 153.285,
+              "load_ms": 11964.68,
+              "total_ms": 330070.2,
+              "ttft_s": 326.634,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780243070332.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-qwen3.5-9b-ollama-65536-r2",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.0,
+              "wall_s": 324.35,
+              "rc": 0,
+              "n_gen": 69,
+              "eval_ms": 3711.97,
+              "gen_tok_s": 18.589,
+              "n_prompt": 48234,
+              "prompt_eval_ms": 320143.29,
+              "prefill_tok_s": 150.664,
+              "load_ms": 241.46,
+              "total_ms": 324347.42,
+              "ttft_s": 320.385,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780243400908.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 20.708,
+            "gen_tok_s_min": 18.589,
+            "gen_tok_s_max": 22.827,
+            "gen_tok_s_cv_pct": 14.47,
+            "prefill_tok_s_median": 151.974,
+            "prefill_tok_s_min": 150.664,
+            "prefill_tok_s_max": 153.285,
+            "prefill_tok_s_cv_pct": 1.22,
+            "ttft_s_median": 323.51,
+            "ttft_s_min": 320.385,
+            "ttft_s_max": 326.634,
+            "ttft_s_cv_pct": 1.37,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "131072": {
+          "runs": [
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-qwen3.5-9b-ollama-131072-r1",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 8.0,
+              "wall_s": 930.54,
+              "rc": 0,
+              "n_gen": 69,
+              "eval_ms": 3854.45,
+              "gen_tok_s": 17.901,
+              "n_prompt": 96313,
+              "prompt_eval_ms": 905032.59,
+              "prefill_tok_s": 106.419,
+              "load_ms": 19779.73,
+              "total_ms": 930539.33,
+              "ttft_s": 924.812,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780243725767.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-qwen3.5-9b-ollama-131072-r2",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 8.0,
+              "wall_s": 922.45,
+              "rc": 0,
+              "n_gen": 69,
+              "eval_ms": 3851.62,
+              "gen_tok_s": 17.915,
+              "n_prompt": 96313,
+              "prompt_eval_ms": 917905.4,
+              "prefill_tok_s": 104.927,
+              "load_ms": 272.2,
+              "total_ms": 922443.84,
+              "ttft_s": 918.178,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780244656818.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 17.908,
+            "gen_tok_s_min": 17.901,
+            "gen_tok_s_max": 17.915,
+            "gen_tok_s_cv_pct": 0.06,
+            "prefill_tok_s_median": 105.673,
+            "prefill_tok_s_min": 104.927,
+            "prefill_tok_s_max": 106.419,
+            "prefill_tok_s_cv_pct": 1.0,
+            "ttft_s_median": 921.495,
+            "ttft_s_min": 918.178,
+            "ttft_s_max": 924.812,
+            "ttft_s_cv_pct": 0.51,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        }
+      }
+    },
+    "gemma4-latest": {
+      "backend": "ollama",
+      "kind": "moe_a4b",
+      "tiers": {
+        "32768": {
+          "runs": [
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 32768,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-gemma4-latest-32768-r1",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 2.4,
+              "wall_s": 107.97,
+              "rc": 0,
+              "n_gen": 300,
+              "eval_ms": 11104.81,
+              "gen_tok_s": 27.015,
+              "n_prompt": 23267,
+              "prompt_eval_ms": 81444.79,
+              "prefill_tok_s": 285.678,
+              "load_ms": 14384.04,
+              "total_ms": 107969.39,
+              "ttft_s": 95.829,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780245579774.csv",
+              "needle_score": 0,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": false,
+                "NEED-2-CRIMSON-WOLF-34": false,
+                "NEED-3-EMERALD-EAGLE-56": false,
+                "NEED-4-VIOLET-OWL-78": false,
+                "NEED-5-AMBER-FOX-90": false
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 32768,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-gemma4-latest-32768-r2",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 2.4,
+              "wall_s": 96.72,
+              "rc": 0,
+              "n_gen": 300,
+              "eval_ms": 11033.19,
+              "gen_tok_s": 27.191,
+              "n_prompt": 23267,
+              "prompt_eval_ms": 84605.95,
+              "prefill_tok_s": 275.004,
+              "load_ms": 341.34,
+              "total_ms": 96713.81,
+              "ttft_s": 84.947,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780245688250.csv",
+              "needle_score": 0,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": false,
+                "NEED-2-CRIMSON-WOLF-34": false,
+                "NEED-3-EMERALD-EAGLE-56": false,
+                "NEED-4-VIOLET-OWL-78": false,
+                "NEED-5-AMBER-FOX-90": false
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 27.103,
+            "gen_tok_s_min": 27.015,
+            "gen_tok_s_max": 27.191,
+            "gen_tok_s_cv_pct": 0.46,
+            "prefill_tok_s_median": 280.341,
+            "prefill_tok_s_min": 275.004,
+            "prefill_tok_s_max": 285.678,
+            "prefill_tok_s_cv_pct": 2.69,
+            "ttft_s_median": 90.388,
+            "ttft_s_min": 84.947,
+            "ttft_s_max": 95.829,
+            "ttft_s_cv_pct": 8.51,
+            "needle_score_median": 0.0,
+            "needle_score_max": 0
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.1
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.1
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "65536": {
+          "runs": [
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-gemma4-latest-65536-r1",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.8,
+              "wall_s": 253.1,
+              "rc": 0,
+              "n_gen": 32,
+              "eval_ms": 1289.28,
+              "gen_tok_s": 24.82,
+              "n_prompt": 46366,
+              "prompt_eval_ms": 235766.55,
+              "prefill_tok_s": 196.661,
+              "load_ms": 14525.72,
+              "total_ms": 253096.64,
+              "ttft_s": 250.292,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780245785473.csv",
+              "needle_score": 0,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": false,
+                "NEED-2-CRIMSON-WOLF-34": false,
+                "NEED-3-EMERALD-EAGLE-56": false,
+                "NEED-4-VIOLET-OWL-78": false,
+                "NEED-5-AMBER-FOX-90": false
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-gemma4-latest-65536-r2",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.8,
+              "wall_s": 256.52,
+              "rc": 0,
+              "n_gen": 300,
+              "eval_ms": 12519.39,
+              "gen_tok_s": 23.963,
+              "n_prompt": 46366,
+              "prompt_eval_ms": 242235.32,
+              "prefill_tok_s": 191.409,
+              "load_ms": 325.26,
+              "total_ms": 256517.26,
+              "ttft_s": 242.561,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780246039077.csv",
+              "needle_score": 0,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": false,
+                "NEED-2-CRIMSON-WOLF-34": false,
+                "NEED-3-EMERALD-EAGLE-56": false,
+                "NEED-4-VIOLET-OWL-78": false,
+                "NEED-5-AMBER-FOX-90": false
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 24.392,
+            "gen_tok_s_min": 23.963,
+            "gen_tok_s_max": 24.82,
+            "gen_tok_s_cv_pct": 2.48,
+            "prefill_tok_s_median": 194.035,
+            "prefill_tok_s_min": 191.409,
+            "prefill_tok_s_max": 196.661,
+            "prefill_tok_s_cv_pct": 1.91,
+            "ttft_s_median": 246.427,
+            "ttft_s_min": 242.561,
+            "ttft_s_max": 250.292,
+            "ttft_s_cv_pct": 2.22,
+            "needle_score_median": 0.0,
+            "needle_score_max": 0
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "131072": {
+          "runs": [
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-gemma4-latest-131072-r1",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 9.6,
+              "wall_s": 819.84,
+              "rc": 0,
+              "n_gen": 300,
+              "eval_ms": 15453.64,
+              "gen_tok_s": 19.413,
+              "n_prompt": 92579,
+              "prompt_eval_ms": 786355.95,
+              "prefill_tok_s": 117.732,
+              "load_ms": 14809.28,
+              "total_ms": 819841.64,
+              "ttft_s": 801.165,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780246296104.csv",
+              "needle_score": 0,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": false,
+                "NEED-2-CRIMSON-WOLF-34": false,
+                "NEED-3-EMERALD-EAGLE-56": false,
+                "NEED-4-VIOLET-OWL-78": false,
+                "NEED-5-AMBER-FOX-90": false
+              },
+              "needle_reason": "repeat_loop"
+            },
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-gemma4-latest-131072-r2",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 9.6,
+              "wall_s": 814.97,
+              "rc": 0,
+              "n_gen": 300,
+              "eval_ms": 15346.21,
+              "gen_tok_s": 19.549,
+              "n_prompt": 92579,
+              "prompt_eval_ms": 796299.21,
+              "prefill_tok_s": 116.262,
+              "load_ms": 347.94,
+              "total_ms": 814965.59,
+              "ttft_s": 796.647,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780247116454.csv",
+              "needle_score": 0,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": false,
+                "NEED-2-CRIMSON-WOLF-34": false,
+                "NEED-3-EMERALD-EAGLE-56": false,
+                "NEED-4-VIOLET-OWL-78": false,
+                "NEED-5-AMBER-FOX-90": false
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 19.481,
+            "gen_tok_s_min": 19.413,
+            "gen_tok_s_max": 19.549,
+            "gen_tok_s_cv_pct": 0.49,
+            "prefill_tok_s_median": 116.997,
+            "prefill_tok_s_min": 116.262,
+            "prefill_tok_s_max": 117.732,
+            "prefill_tok_s_cv_pct": 0.89,
+            "ttft_s_median": 798.906,
+            "ttft_s_min": 796.647,
+            "ttft_s_max": 801.165,
+            "ttft_s_cv_pct": 0.4,
+            "needle_score_median": 0.0,
+            "needle_score_max": 0
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        }
+      }
+    },
+    "deepseek-r1-14b": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "32768": {
+          "runs": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-deepseek-r1-14b-32768-r1",
+              "projected_vm_gib": 11.57,
+              "wall_s": 337.55,
+              "rc": 0,
+              "prompt_eval_ms": 290654.79,
+              "n_prompt": 23873,
+              "prefill_tok_s": 82.14,
+              "eval_ms": 4630.21,
+              "n_gen": 71,
+              "gen_tok_s": 15.33,
+              "load_ms": 40423.51,
+              "total_ms": 295701.46,
+              "ttft_s": 331.078,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780247931933.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-deepseek-r1-14b-32768-r2",
+              "projected_vm_gib": 11.57,
+              "wall_s": 323.19,
+              "rc": 0,
+              "prompt_eval_ms": 288991.22,
+              "n_prompt": 23873,
+              "prefill_tok_s": 82.61,
+              "eval_ms": 4629.65,
+              "n_gen": 71,
+              "gen_tok_s": 15.34,
+              "load_ms": 27653.5,
+              "total_ms": 294031.28,
+              "ttft_s": 316.645,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780248270024.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 15.335,
+            "gen_tok_s_min": 15.33,
+            "gen_tok_s_max": 15.34,
+            "gen_tok_s_cv_pct": 0.05,
+            "prefill_tok_s_median": 82.375,
+            "prefill_tok_s_min": 82.14,
+            "prefill_tok_s_max": 82.61,
+            "prefill_tok_s_cv_pct": 0.4,
+            "ttft_s_median": 323.861,
+            "ttft_s_min": 316.645,
+            "ttft_s_max": 331.078,
+            "ttft_s_cv_pct": 3.15,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.1
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.1
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "65536": {
+          "runs": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-deepseek-r1-14b-65536-r1",
+              "projected_vm_gib": 14.77,
+              "wall_s": 915.83,
+              "rc": 0,
+              "prompt_eval_ms": 879428.58,
+              "n_prompt": 47594,
+              "prefill_tok_s": 54.12,
+              "eval_ms": 13504.82,
+              "n_gen": 138,
+              "gen_tok_s": 10.22,
+              "load_ms": 20738.77,
+              "total_ms": 893444.11,
+              "ttft_s": 900.167,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780248593782.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-deepseek-r1-14b-65536-r2",
+              "projected_vm_gib": 14.77,
+              "wall_s": 918.87,
+              "rc": 0,
+              "prompt_eval_ms": 880538.64,
+              "n_prompt": 47594,
+              "prefill_tok_s": 54.05,
+              "eval_ms": 6944.85,
+              "n_gen": 71,
+              "gen_tok_s": 10.22,
+              "load_ms": 29298.16,
+              "total_ms": 887958.91,
+              "ttft_s": 909.837,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780249510167.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 10.22,
+            "gen_tok_s_min": 10.22,
+            "gen_tok_s_max": 10.22,
+            "gen_tok_s_cv_pct": 0.0,
+            "prefill_tok_s_median": 54.085,
+            "prefill_tok_s_min": 54.05,
+            "prefill_tok_s_max": 54.12,
+            "prefill_tok_s_cv_pct": 0.09,
+            "ttft_s_median": 905.002,
+            "ttft_s_min": 900.167,
+            "ttft_s_max": 909.837,
+            "ttft_s_cv_pct": 0.76,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "131072": {
+          "runs": [],
+          "ladder_status": "vm_skip",
+          "reason": "projected_vm_21.2gib_over_15.0gib_ceiling"
+        }
+      }
+    },
+    "granite-4.0-h-tiny": {
+      "backend": "llama-completion",
+      "kind": "mamba_moe",
+      "tiers": {
+        "32768": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-granite-4.0-h-tiny-32768-r1",
+              "projected_vm_gib": 5.54,
+              "wall_s": 34.78,
+              "rc": 0,
+              "prompt_eval_ms": 24781.84,
+              "n_prompt": 23622,
+              "prefill_tok_s": 953.2,
+              "eval_ms": 557.59,
+              "n_gen": 64,
+              "gen_tok_s": 114.78,
+              "load_ms": 8661.28,
+              "total_ms": 25423.41,
+              "ttft_s": 33.443,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780250429608.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-granite-4.0-h-tiny-32768-r2",
+              "projected_vm_gib": 5.54,
+              "wall_s": 29.02,
+              "rc": 0,
+              "prompt_eval_ms": 25034.46,
+              "n_prompt": 23622,
+              "prefill_tok_s": 943.58,
+              "eval_ms": 553.5,
+              "n_gen": 64,
+              "gen_tok_s": 115.63,
+              "load_ms": 2695.23,
+              "total_ms": 25682.77,
+              "ttft_s": 27.73,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780250464899.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 115.205,
+            "gen_tok_s_min": 114.78,
+            "gen_tok_s_max": 115.63,
+            "gen_tok_s_cv_pct": 0.52,
+            "prefill_tok_s_median": 948.39,
+            "prefill_tok_s_min": 943.58,
+            "prefill_tok_s_max": 953.2,
+            "prefill_tok_s_cv_pct": 0.72,
+            "ttft_s_median": 30.587,
+            "ttft_s_min": 27.73,
+            "ttft_s_max": 33.443,
+            "ttft_s_cv_pct": 13.21,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.1
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.1
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "65536": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-granite-4.0-h-tiny-65536-r1",
+              "projected_vm_gib": 7.14,
+              "wall_s": 62.16,
+              "rc": 0,
+              "prompt_eval_ms": 58856.23,
+              "n_prompt": 47111,
+              "prefill_tok_s": 800.44,
+              "eval_ms": 588.09,
+              "n_gen": 64,
+              "gen_tok_s": 108.83,
+              "load_ms": 1947.54,
+              "total_ms": 59596.23,
+              "ttft_s": 60.804,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780250494434.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-granite-4.0-h-tiny-65536-r2",
+              "projected_vm_gib": 7.14,
+              "wall_s": 63.05,
+              "rc": 0,
+              "prompt_eval_ms": 59959.32,
+              "n_prompt": 47111,
+              "prefill_tok_s": 785.72,
+              "eval_ms": 567.27,
+              "n_gen": 62,
+              "gen_tok_s": 109.29,
+              "load_ms": 1755.49,
+              "total_ms": 60678.57,
+              "ttft_s": 61.715,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780250557097.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 109.06,
+            "gen_tok_s_min": 108.83,
+            "gen_tok_s_max": 109.29,
+            "gen_tok_s_cv_pct": 0.3,
+            "prefill_tok_s_median": 793.08,
+            "prefill_tok_s_min": 785.72,
+            "prefill_tok_s_max": 800.44,
+            "prefill_tok_s_cv_pct": 1.31,
+            "ttft_s_median": 61.26,
+            "ttft_s_min": 60.804,
+            "ttft_s_max": 61.715,
+            "ttft_s_cv_pct": 1.05,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        },
+        "131072": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 131072,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-granite-4.0-h-tiny-131072-r1",
+              "projected_vm_gib": 10.34,
+              "wall_s": 154.99,
+              "rc": 0,
+              "prompt_eval_ms": 149659.12,
+              "n_prompt": 94097,
+              "prefill_tok_s": 628.74,
+              "eval_ms": 658.49,
+              "n_gen": 64,
+              "gen_tok_s": 97.19,
+              "load_ms": 3267.38,
+              "total_ms": 150865.41,
+              "ttft_s": 152.927,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780250620663.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 131072,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 300,
+              "label": "mn-granite-4.0-h-tiny-131072-r2",
+              "projected_vm_gib": 10.34,
+              "wall_s": 151.48,
+              "rc": 0,
+              "prompt_eval_ms": 148875.37,
+              "n_prompt": 94097,
+              "prefill_tok_s": 632.05,
+              "eval_ms": 638.56,
+              "n_gen": 62,
+              "gen_tok_s": 97.09,
+              "load_ms": 1058.19,
+              "total_ms": 149801.9,
+              "ttft_s": 149.934,
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/scratch/overlay-1780250776204.csv",
+              "needle_score": 5,
+              "needle_found": {
+                "NEED-1-AZURE-FALCON-12": true,
+                "NEED-2-CRIMSON-WOLF-34": true,
+                "NEED-3-EMERALD-EAGLE-56": true,
+                "NEED-4-VIOLET-OWL-78": true,
+                "NEED-5-AMBER-FOX-90": true
+              },
+              "needle_reason": "ok"
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 97.14,
+            "gen_tok_s_min": 97.09,
+            "gen_tok_s_max": 97.19,
+            "gen_tok_s_cv_pct": 0.07,
+            "prefill_tok_s_median": 630.395,
+            "prefill_tok_s_min": 628.74,
+            "prefill_tok_s_max": 632.05,
+            "prefill_tok_s_cv_pct": 0.37,
+            "ttft_s_median": 151.43,
+            "ttft_s_min": 149.934,
+            "ttft_s_max": 152.927,
+            "ttft_s_cv_pct": 1.4,
+            "needle_score_median": 5.0,
+            "needle_score_max": 5
+          },
+          "placements": [
+            [
+              "NEED-1-AZURE-FALCON-12",
+              10.0
+            ],
+            [
+              "NEED-2-CRIMSON-WOLF-34",
+              30.0
+            ],
+            [
+              "NEED-3-EMERALD-EAGLE-56",
+              50.0
+            ],
+            [
+              "NEED-4-VIOLET-OWL-78",
+              70.0
+            ],
+            [
+              "NEED-5-AMBER-FOX-90",
+              90.0
+            ]
+          ],
+          "ladder_status": "ok"
+        }
+      }
+    }
+  },
+  "config": {
+    "tiers": [
+      32768,
+      65536,
+      131072
+    ],
+    "runs_n": 2,
+    "n_gen": 300,
+    "codes": [
+      "NEED-1-AZURE-FALCON-12",
+      "NEED-2-CRIMSON-WOLF-34",
+      "NEED-3-EMERALD-EAGLE-56",
+      "NEED-4-VIOLET-OWL-78",
+      "NEED-5-AMBER-FOX-90"
+    ],
+    "depths_pct": [
+      0.1,
+      0.3,
+      0.5,
+      0.7,
+      0.9
+    ]
+  }
+}

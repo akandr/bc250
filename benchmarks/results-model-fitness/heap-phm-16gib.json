@@ -1,0 +1,108 @@
+{
+  "build": "b9265",
+  "pages_limit": 4194304,
+  "cells": [
+    {
+      "model": "qwen3.5-35b-a3b-iq2m",
+      "ctx": 4096,
+      "phm0": {
+        "status": "OK",
+        "pp": 281.9,
+        "tg": 63.59,
+        "wall": 81.9
+      },
+      "phm1": {
+        "status": "OK",
+        "pp": 281.9,
+        "tg": 64.69,
+        "wall": 82.4
+      },
+      "ratio": 1.017
+    },
+    {
+      "model": "qwen3.5-35b-a3b-iq2m",
+      "ctx": 32768,
+      "phm0": {
+        "status": "OK",
+        "pp": 227.2,
+        "tg": 63.88,
+        "wall": 470.5
+      },
+      "phm1": {
+        "status": "OK",
+        "pp": 227.1,
+        "tg": 64.29,
+        "wall": 472.0
+      },
+      "ratio": 1.006
+    },
+    {
+      "model": "qwen3.5-35b-a3b-iq2m",
+      "ctx": 65536,
+      "phm0": {
+        "status": "OK",
+        "pp": 186.8,
+        "tg": 55.57,
+        "wall": 1093.4
+      },
+      "phm1": {
+        "status": "OK",
+        "pp": 184.1,
+        "tg": 57.27,
+        "wall": 1109.5
+      },
+      "ratio": 1.031
+    },
+    {
+      "model": "granite-4.0-h-tiny",
+      "ctx": 4096,
+      "phm0": {
+        "status": "OK",
+        "pp": 703.8,
+        "tg": 105.58,
+        "wall": 26.6
+      },
+      "phm1": {
+        "status": "OK",
+        "pp": 703.3,
+        "tg": 107.12,
+        "wall": 27.3
+      },
+      "ratio": 1.015
+    },
+    {
+      "model": "granite-4.0-h-tiny",
+      "ctx": 32768,
+      "phm0": {
+        "status": "OK",
+        "pp": 639.4,
+        "tg": 105.43,
+        "wall": 163.1
+      },
+      "phm1": {
+        "status": "OK",
+        "pp": 637.8,
+        "tg": 106.89,
+        "wall": 164.0
+      },
+      "ratio": 1.014
+    },
+    {
+      "model": "granite-4.0-h-tiny",
+      "ctx": 65536,
+      "phm0": {
+        "status": "OK",
+        "pp": 576.1,
+        "tg": 105.26,
+        "wall": 350.6
+      },
+      "phm1": {
+        "status": "OK",
+        "pp": 573.6,
+        "tg": 107.0,
+        "wall": 352.9
+      },
+      "ratio": 1.017
+    }
+  ]
+}

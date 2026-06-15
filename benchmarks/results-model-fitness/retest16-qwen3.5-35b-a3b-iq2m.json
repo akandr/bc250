@@ -1,0 +1,57 @@
+{
+  "model": "qwen3.5-35b-a3b-iq2m",
+  "pages_limit": 4194304,
+  "gtt_highwater_gib": 12.52,
+  "tiers": [
+    {
+      "status": "OK",
+      "wall_s": 33.2,
+      "prompt_tokens": 2770,
+      "gen_tok_s": 27.8,
+      "prefill_tok_s": 188.4,
+      "tier_k": 4,
+      "gtt_used_gib": 12.03,
+      "free_gib_after": 0.36
+    },
+    {
+      "status": "OK",
+      "wall_s": 82.3,
+      "prompt_tokens": 11001,
+      "gen_tok_s": 24.9,
+      "prefill_tok_s": 164.6,
+      "tier_k": 16,
+      "gtt_used_gib": 12.12,
+      "free_gib_after": 0.36
+    },
+    {
+      "status": "OK",
+      "wall_s": 177.4,
+      "prompt_tokens": 21974,
+      "gen_tok_s": 22.1,
+      "prefill_tok_s": 136.9,
+      "tier_k": 32,
+      "gtt_used_gib": 12.24,
+      "free_gib_after": 1.01
+    },
+    {
+      "status": "OK",
+      "wall_s": 298.2,
+      "prompt_tokens": 32948,
+      "gen_tok_s": 19.8,
+      "prefill_tok_s": 116.7,
+      "tier_k": 48,
+      "gtt_used_gib": 12.39,
+      "free_gib_after": 0.61
+    },
+    {
+      "status": "OK",
+      "wall_s": 448.0,
+      "prompt_tokens": 43921,
+      "gen_tok_s": 17.7,
+      "prefill_tok_s": 101.9,
+      "tier_k": 64,
+      "gtt_used_gib": 12.52,
+      "free_gib_after": 0.93
+    }
+  ]
+}

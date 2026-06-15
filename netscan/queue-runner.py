@@ -102,10 +102,17 @@ SD_NOTIFY = 'NOTIFY_SOCKET' in os.environ  # systemd watchdog support
 SIGNAL_RPC = "http://127.0.0.1:8080/api/v1/rpc"
 SIGNAL_ACCOUNT = os.environ.get('SIGNAL_ACCOUNT', '+<BOT_PHONE>')
 SIGNAL_OWNER = os.environ.get('SIGNAL_OWNER', '+<OWNER_PHONE>')
-SIGNAL_CHAT_MODEL = "gemma4-26b-q3"          # Primary: 26B MoE, 100% GPU, 100% quality, 39 tok/s
-SIGNAL_CHAT_CTX = 49152              # Gemma 4 context ceiling (48K verified, 65K=timeout)
-SIGNAL_FALLBACK_MODEL = "qwen3.5-35b-a3b-iq2m"  # Fallback for large context (35B MoE, 32K practical)
-SIGNAL_FALLBACK_CTX = 65536          # Fallback context window
+# Primary: qwen3:14b — 14B dense Q4_K_M, 9.3 GiB → ~6 GiB headroom on the 16 GB
+# board, so it coexists safely with signal-cli + queue-runner. 100% on the quality
+# battery (§B4); reaches 64K filled context (§4.5a). One model covers ≤64K, so the
+# long-context branch reuses it (no separate MoE needed).
+# WHY NOT gemma4-26b-q3: at 13.5 GiB it has ~1 GiB headroom and swap-stalls the
+# whole board under any concurrent load — it hung the box for ~13 min during eval
+# (see benchmarks/bench-gemma4-eval.py). Kept available for manual ≤32K use only.
+SIGNAL_CHAT_MODEL = "qwen3:14b"      # Primary chat + synthesis (≤64K, incl. long context)
+SIGNAL_CHAT_CTX = 65536              # qwen3:14b verified to 64K filled (§4.5a)
+SIGNAL_REASON_MODEL = "deepseek-r1:14b"  # 'Think:' prefix → R1-distilled reasoning tier
+SIGNAL_REASON_CTX = 32768            # deepseek-r1:14b practical filled ceiling (§4.5)
 SIGNAL_CHAT_MAX_EXEC = 3            # Max shell commands per message (search+fetch+verify)
 SIGNAL_EXEC_TIMEOUT_S = 30          # Timeout for shell commands
 SIGNAL_LLM_TIMEOUT_S = 900          # 15 min — MoE model with large context can be slow
@@ -152,12 +159,13 @@ VISION_MAX_PREDICT = 500             # Max tokens for vision reply
 VISION_TIMEOUT_S = 300               # 5 min — image + long text at high ctx fill
 
 # ─── Smart Model Routing ────────────────────────────────────────────────────
-# Gemma 4 26B (primary) = 100% quality, 100% GPU, 39 tok/s, 48K context.
-# MoE 35B (fallback) = 93% quality, 32K–64K context, for prompts too large for Gemma 4.
-# 9B = vision, longest context (96K).
-# Route: image → 9B; estimated tokens > 40K → MoE 35B fallback; tokens > 8K → 9B; else → Gemma 4.
-ROUTING_GEMMA4_LIMIT = 40000         # Switch to MoE fallback if prompt > this many tokens
-ROUTING_TOKEN_THRESHOLD = 8000       # Switch to 9B if prompt > this many tokens (unused when fallback covers it)
+# Route order:
+#   image            → qwen3.5:9b      (only vision-capable model; reloaded on demand)
+#   "Think:" prefix  → deepseek-r1:14b (reasoning tier, ≤32K)
+#   else             → qwen3:14b       (primary; handles ≤64K including long context)
+# qwen3:14b covers the whole non-vision range, so there's no separate large-context
+# fallback model anymore (the old 35B MoE timed out at filled 16K — strictly worse).
+ROUTING_LONG_CTX_LIMIT = 60000       # safety rail: warn/clamp if a prompt nears the 64K ceiling
 
 # ─── Job name sets ──────────────────────────────────────────────────────────
 # HA jobs: run opportunistically when GPU is idle (2-3 times/day)
@@ -1233,20 +1241,19 @@ def estimate_tokens(text):
     return len(text) // 4
 
 
-def choose_chat_model(user_text, has_image=False):
+def choose_chat_model(user_text, has_image=False, use_thinking=False):
     """Smart model routing: pick the best model for the task.
 
-    Routes to 9B (vision) when image attached.
-    Routes to MoE 35B fallback when estimated tokens > 40K (exceeds Gemma 4's 48K ceiling).
-    Otherwise uses Gemma 4 26B (primary — 100% quality, 100% GPU, fastest prefill).
+    image         → qwen3.5:9b      (only vision-capable model; reloaded on demand)
+    "Think:" mode → deepseek-r1:14b (R1-distilled reasoning tier, ≤32K)
+    default       → qwen3:14b       (primary; 100% quality, ≤64K incl. long context)
     Returns (model_name, context_size, reason).
     """
     if has_image:
         return VISION_MODEL, VISION_CTX, "vision"
 
-    est_tokens = estimate_tokens(user_text)
-    if est_tokens > ROUTING_GEMMA4_LIMIT:
-        return SIGNAL_FALLBACK_MODEL, SIGNAL_FALLBACK_CTX, "long_context_fallback"
+    if use_thinking:
+        return SIGNAL_REASON_MODEL, SIGNAL_REASON_CTX, "reasoning"
 
     return SIGNAL_CHAT_MODEL, SIGNAL_CHAT_CTX, "default"
 
@@ -2093,7 +2100,7 @@ def chat_with_llm(user_text, allow_sd=True, attachment_path=None):
 
     # Smart model routing: pick best model for the task
     chat_model, chat_ctx, route_reason = choose_chat_model(
-        user_content, has_image=bool(attachment_path))
+        user_content, has_image=bool(attachment_path), use_thinking=use_thinking)
     if route_reason != "default":
         log(f"    Route: {chat_model} ({route_reason})")
 

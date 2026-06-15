@@ -1,0 +1,78 @@
+{
+  "variant": "c-template",
+  "model": "gemma4:latest",
+  "tiers": {
+    "4096": {
+      "runs": [
+        {
+          "run": 1,
+          "wall_s": 27.53,
+          "elapsed_s": 27.53,
+          "out_chars": 1227,
+          "out_head": "attes.\n\n---\n**Summary of the text:**\n\nThe provided text is a detailed, highly technical, and somewhat esoteric passage that describes the concept of **\"mapping\"** or **\"mapping\"** relationships between different types of data structures, processes, or concepts. The core of the text revolves around t",
+          "out_tail": "*Conclusion:**\n\nThe text is a highly specialized academic passage that describes the concept of **mapping** or **relationship** between different sets of data or concepts. It is not a narrative story,",
+          "eval_count": 250,
+          "prompt_eval_count": 2936,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        },
+        {
+          "run": 2,
+          "wall_s": 8.76,
+          "elapsed_s": 8.76,
+          "out_chars": 1097,
+          "out_head": "(The original text is a complex mix of academic jargon, philosophical concepts, and technical terms, making a single, definitive, universally applicable answer difficult. However, based on the structure of the prompt, the most direct and comprehensive answer is to identify the core theme of the text",
+          "out_tail": "tween a belief and reality).\n    *   \"Justification\" (The evidence or reason supporting a belief).\n3.  **The Structure of Argumentation:**\n    *   \"Argument\" (A set of premises leading to a conclusion",
+          "eval_count": 250,
+          "prompt_eval_count": 2936,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        }
+      ],
+      "max_score": 0,
+      "mean_score": 0.0
+    },
+    "32768": {
+      "runs": [
+        {
+          "run": 1,
+          "wall_s": 96.63,
+          "elapsed_s": 96.63,
+          "out_chars": 1223,
+          "out_head": ".[?ref]\n\n---\n**[Source: Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipe",
+          "out_tail": "/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia/Wikipedia",
+          "eval_count": 250,
+          "prompt_eval_count": 22051,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        },
+        {
+          "run": 2,
+          "wall_s": 6.3,
+          "elapsed_s": 6.3,
+          "out_chars": 674,
+          "out_head": "(This is a placeholder for the actual answer, as the prompt is a complex, multi-part request that requires a detailed, structured response.)\n\n**Please provide the full text you would like me to analyze.**\n\nOnce you provide the text, I will analyze it and provide a comprehensive answer, addressing al",
+          "out_tail": "e.\n3.  **The purpose:** Determining the main goal or purpose of the text.\n4.  **The audience:** Identifying the intended readership.\n5.Write a detailed, structured response based on the provided text.",
+          "eval_count": 150,
+          "prompt_eval_count": 22051,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        }
+      ],
+      "max_score": 0,
+      "mean_score": 0.0
+    }
+  }
+}

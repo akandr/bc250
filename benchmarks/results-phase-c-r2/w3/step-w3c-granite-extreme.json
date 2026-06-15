@@ -1,0 +1,270 @@
+{
+  "step": "ctx-quality",
+  "results": {
+    "granite-4.0-h-tiny": {
+      "backend": "llama-completion",
+      "kind": "mamba_moe",
+      "tiers": {
+        "131072": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 131072,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-granite-4.0-h-tiny-131072-r1",
+              "projected_vm_gib": 10.34,
+              "wall_s": 231.94,
+              "rc": 0,
+              "prompt_eval_ms": 223838.43,
+              "n_prompt": 94068,
+              "prefill_tok_s": 420.25,
+              "eval_ms": 339.02,
+              "n_gen": 25,
+              "gen_tok_s": 73.74,
+              "load_ms": 6860.36,
+              "total_ms": 224454.51,
+              "ttft_s": 230.699,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780340238933.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 131072,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-granite-4.0-h-tiny-131072-r2",
+              "projected_vm_gib": 10.34,
+              "wall_s": 225.98,
+              "rc": 0,
+              "prompt_eval_ms": 223830.17,
+              "n_prompt": 94068,
+              "prefill_tok_s": 420.27,
+              "eval_ms": 337.06,
+              "n_gen": 25,
+              "gen_tok_s": 74.17,
+              "load_ms": 1019.4,
+              "total_ms": 224440.93,
+              "ttft_s": 224.85,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780340501384.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 73.955,
+            "gen_tok_s_min": 73.74,
+            "gen_tok_s_max": 74.17,
+            "gen_tok_s_cv_pct": 0.41,
+            "prefill_tok_s_median": 420.26,
+            "prefill_tok_s_min": 420.25,
+            "prefill_tok_s_max": 420.27,
+            "prefill_tok_s_cv_pct": 0.0,
+            "ttft_s_median": 227.774,
+            "ttft_s_min": 224.85,
+            "ttft_s_max": 230.699,
+            "ttft_s_cv_pct": 1.82
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 498073
+        },
+        "196608": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 196608,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-granite-4.0-h-tiny-196608-r1",
+              "projected_vm_gib": 13.54,
+              "wall_s": 408.9,
+              "rc": 0,
+              "prompt_eval_ms": 406546.49,
+              "n_prompt": 141032,
+              "prefill_tok_s": 346.9,
+              "eval_ms": 366.6,
+              "n_gen": 24,
+              "gen_tok_s": 65.47,
+              "load_ms": 1088.63,
+              "total_ms": 407325.27,
+              "ttft_s": 407.635,
+              "output": "DELTA-7-VIOLET-MOUNTAIN-93\nOMEGA-4-COBALT-RIVER-17 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780340802873.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 196608,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-granite-4.0-h-tiny-196608-r2",
+              "projected_vm_gib": 13.54,
+              "wall_s": 408.72,
+              "rc": 0,
+              "prompt_eval_ms": 406456.08,
+              "n_prompt": 141032,
+              "prefill_tok_s": 346.98,
+              "eval_ms": 367.07,
+              "n_gen": 24,
+              "gen_tok_s": 65.38,
+              "load_ms": 1044.19,
+              "total_ms": 407232.21,
+              "ttft_s": 407.5,
+              "output": "DELTA-7-VIOLET-MOUNTAIN-93\nOMEGA-4-COBALT-RIVER-17 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780341242275.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 65.425,
+            "gen_tok_s_min": 65.38,
+            "gen_tok_s_max": 65.47,
+            "gen_tok_s_cv_pct": 0.1,
+            "prefill_tok_s_median": 346.94,
+            "prefill_tok_s_min": 346.9,
+            "prefill_tok_s_max": 346.98,
+            "prefill_tok_s_cv_pct": 0.02,
+            "ttft_s_median": 407.567,
+            "ttft_s_min": 407.5,
+            "ttft_s_max": 407.635,
+            "ttft_s_cv_pct": 0.02
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 747110
+        },
+        "262144": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 262144,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-granite-4.0-h-tiny-262144-r1",
+              "projected_vm_gib": 16.74,
+              "status": "skip",
+              "skip_reason": "projected_vm_16.7gib_over_15.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 262144,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-granite-4.0-h-tiny-262144-r2",
+              "projected_vm_gib": 16.74,
+              "status": "skip",
+              "skip_reason": "projected_vm_16.7gib_over_15.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 996147
+        }
+      }
+    }
+  },
+  "config": {
+    "tiers": [
+      131072,
+      196608,
+      262144
+    ],
+    "runs_n": 2,
+    "n_gen": 200,
+    "needle_code": "DELTA-7-VIOLET-MOUNTAIN-93"
+  }
+}

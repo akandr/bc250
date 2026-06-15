@@ -1,0 +1,1722 @@
+{
+  "step": "ctx-quality",
+  "results": {
+    "qwen3.5-9b-q4km": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-9b-q4km-65536-r1",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.82,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.285.537 I llama_completion: llama backend init\n0.00.285.551 I llama_completion: load the model and apply lora adapter, if any\n0.00.285.565 I common_init_result: fitting params to device memory ...\n0.00.285.565 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.529.975 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.529.985 E llama_model_load_from_file_impl: failed to load model\n0.00.530.028 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.759.037 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.759.043 E llama_model_load_from_file_impl: failed to load model\n0.00.759.050 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.759.057 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 56.0,
+                "temp_c_mean": 56.0,
+                "power_mw_mean": 51078.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780087925006.csv",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-9b-q4km-65536-r2",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.915 I llama_completion: llama backend init\n0.00.032.928 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.944 I common_init_result: fitting params to device memory ...\n0.00.032.944 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.269.776 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.269.784 E llama_model_load_from_file_impl: failed to load model\n0.00.269.826 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.498.562 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.498.570 E llama_model_load_from_file_impl: failed to load model\n0.00.498.576 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.498.583 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 54183.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780087956324.csv",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "deepseek-r1-14b": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-deepseek-r1-14b-65536-r1",
+              "projected_vm_gib": 14.77,
+              "status": "skip",
+              "skip_reason": "projected_vm_14.8gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-deepseek-r1-14b-65536-r2",
+              "projected_vm_gib": 14.77,
+              "status": "skip",
+              "skip_reason": "projected_vm_14.8gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "gpt-oss-20b-mxfp4": {
+      "backend": "llama-completion",
+      "kind": "moe_mxfp4",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "gpt-oss-20b-mxfp4",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gpt-oss-20b-mxfp4-65536-r1",
+              "projected_vm_gib": 18.48,
+              "status": "skip",
+              "skip_reason": "projected_vm_18.5gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gpt-oss-20b-mxfp4",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gpt-oss-20b-mxfp4-65536-r2",
+              "projected_vm_gib": 18.48,
+              "status": "skip",
+              "skip_reason": "projected_vm_18.5gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "qwen3-coder-30b-iq2m": {
+      "backend": "llama-completion",
+      "kind": "moe",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3-coder-30b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3-coder-30b-iq2m-65536-r1",
+              "projected_vm_gib": 18.09,
+              "status": "skip",
+              "skip_reason": "projected_vm_18.1gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3-coder-30b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3-coder-30b-iq2m-65536-r2",
+              "projected_vm_gib": 18.09,
+              "status": "skip",
+              "skip_reason": "projected_vm_18.1gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "qwen3.5-35b-iq2m": {
+      "backend": "llama-completion",
+      "kind": "moe",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3.5-35b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-35b-iq2m-65536-r1",
+              "projected_vm_gib": 19.41,
+              "status": "skip",
+              "skip_reason": "projected_vm_19.4gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3.5-35b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-35b-iq2m-65536-r2",
+              "projected_vm_gib": 19.41,
+              "status": "skip",
+              "skip_reason": "projected_vm_19.4gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "qwen3.6-35b-iq2m": {
+      "backend": "llama-completion",
+      "kind": "moe",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3.6-35b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.6-35b-iq2m-65536-r1",
+              "projected_vm_gib": 19.53,
+              "status": "skip",
+              "skip_reason": "projected_vm_19.5gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3.6-35b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.6-35b-iq2m-65536-r2",
+              "projected_vm_gib": 19.53,
+              "status": "skip",
+              "skip_reason": "projected_vm_19.5gib_over_13.5gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "granite-4.0-h-tiny": {
+      "backend": "llama-completion",
+      "kind": "mamba_moe",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-granite-4.0-h-tiny-65536-r1",
+              "projected_vm_gib": 7.14,
+              "wall_s": 63.62,
+              "rc": 0,
+              "prompt_eval_ms": 56551.71,
+              "n_prompt": 47075,
+              "prefill_tok_s": 832.42,
+              "eval_ms": 227.33,
+              "n_gen": 25,
+              "gen_tok_s": 109.97,
+              "load_ms": 6175.52,
+              "total_ms": 56923.51,
+              "ttft_s": 62.727,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 63,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1444.4,
+                "temp_c_max": 84.0,
+                "temp_c_mean": 77.1,
+                "power_mw_mean": 115499.0,
+                "gtt_gib_max": 4.48,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780088917385.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-granite-4.0-h-tiny-65536-r2",
+              "projected_vm_gib": 7.14,
+              "wall_s": 58.45,
+              "rc": 0,
+              "prompt_eval_ms": 56532.52,
+              "n_prompt": 47075,
+              "prefill_tok_s": 832.71,
+              "eval_ms": 226.71,
+              "n_gen": 25,
+              "gen_tok_s": 110.27,
+              "load_ms": 1056.1,
+              "total_ms": 56904.51,
+              "ttft_s": 57.589,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 58,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1482.8,
+                "temp_c_max": 86.0,
+                "temp_c_mean": 81.9,
+                "power_mw_mean": 125961.0,
+                "gtt_gib_max": 4.48,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780089011511.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 110.12,
+            "gen_tok_s_min": 109.97,
+            "gen_tok_s_max": 110.27,
+            "gen_tok_s_cv_pct": 0.19,
+            "prefill_tok_s_median": 832.565,
+            "prefill_tok_s_min": 832.42,
+            "prefill_tok_s_max": 832.71,
+            "prefill_tok_s_cv_pct": 0.02,
+            "ttft_s_median": 60.158,
+            "ttft_s_min": 57.589,
+            "ttft_s_max": 62.727,
+            "ttft_s_cv_pct": 6.04
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 131072,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-granite-4.0-h-tiny-131072-r1",
+              "projected_vm_gib": 10.34,
+              "wall_s": 144.93,
+              "rc": 0,
+              "prompt_eval_ms": 142812.72,
+              "n_prompt": 94068,
+              "prefill_tok_s": 658.68,
+              "eval_ms": 256.01,
+              "n_gen": 25,
+              "gen_tok_s": 97.65,
+              "load_ms": 1077.88,
+              "total_ms": 143349.56,
+              "ttft_s": 143.891,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 143,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1493.0,
+                "temp_c_max": 89.0,
+                "temp_c_mean": 84.2,
+                "power_mw_mean": 125087.0,
+                "gtt_gib_max": 4.924,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780089145469.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 131072,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-granite-4.0-h-tiny-131072-r2",
+              "projected_vm_gib": 10.34,
+              "wall_s": 144.83,
+              "rc": 0,
+              "prompt_eval_ms": 142787.24,
+              "n_prompt": 94068,
+              "prefill_tok_s": 658.8,
+              "eval_ms": 256.72,
+              "n_gen": 25,
+              "gen_tok_s": 97.38,
+              "load_ms": 1061.99,
+              "total_ms": 143323.35,
+              "ttft_s": 143.849,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93 [end of text]",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 142,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1493.0,
+                "temp_c_max": 91.0,
+                "temp_c_mean": 86.8,
+                "power_mw_mean": 125971.0,
+                "gtt_gib_max": 4.924,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780089320905.csv",
+              "output_len_chars": 64,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 97.515,
+            "gen_tok_s_min": 97.38,
+            "gen_tok_s_max": 97.65,
+            "gen_tok_s_cv_pct": 0.2,
+            "prefill_tok_s_median": 658.74,
+            "prefill_tok_s_min": 658.68,
+            "prefill_tok_s_max": 658.8,
+            "prefill_tok_s_cv_pct": 0.01,
+            "ttft_s_median": 143.87,
+            "ttft_s_min": 143.849,
+            "ttft_s_max": 143.891,
+            "ttft_s_cv_pct": 0.02
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 498073
+        }
+      }
+    },
+    "gemma4-26b-a4b-iq3m": {
+      "backend": "llama-completion",
+      "kind": "moe_a4b",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "gemma4-26b-a4b-iq3m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-26b-a4b-iq3m-65536-r1",
+              "projected_vm_gib": 7.2,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gemma4-26b-a4b-iq3m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-26b-a4b-iq3m-65536-r2",
+              "projected_vm_gib": 7.2,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "qwen3.6-27b-q4km": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3.6-27b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.6-27b-q4km-65536-r1",
+              "projected_vm_gib": 7.2,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/qwen3.6-27b-q4km.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3.6-27b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.6-27b-q4km-65536-r2",
+              "projected_vm_gib": 7.2,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/qwen3.6-27b-q4km.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "glm-5.1-q4km": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "glm-5.1-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-glm-5.1-q4km-65536-r1",
+              "projected_vm_gib": 4.8,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/glm-5.1-q4km.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "glm-5.1-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-glm-5.1-q4km-65536-r2",
+              "projected_vm_gib": 4.8,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/glm-5.1-q4km.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "llama-3.4-8b-q4km": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "llama-3.4-8b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-llama-3.4-8b-q4km-65536-r1",
+              "projected_vm_gib": 3.52,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/llama-3.4-8b-q4km.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "llama-3.4-8b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-llama-3.4-8b-q4km-65536-r2",
+              "projected_vm_gib": 3.52,
+              "status": "skip",
+              "skip_reason": "model_path_not_found:/opt/models/llama-3.4-8b-q4km.gguf",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "qwen3.5-9b-ollama": {
+      "backend": "ollama",
+      "kind": "dense",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-9b-ollama-65536-r1",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.0,
+              "wall_s": 318.79,
+              "rc": 0,
+              "n_gen": 27,
+              "eval_ms": 1541.99,
+              "gen_tok_s": 17.51,
+              "n_prompt": 48195,
+              "prompt_eval_ms": 301077.41,
+              "prefill_tok_s": 160.075,
+              "load_ms": 15064.05,
+              "total_ms": 318773.75,
+              "ttft_s": 316.141,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 312,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1451.9,
+                "temp_c_max": 95.0,
+                "temp_c_mean": 86.4,
+                "power_mw_mean": 124074.0,
+                "gtt_gib_max": 8.656,
+                "vram_gib_max": 0.014
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780090296350.csv",
+              "output_len_chars": 50,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-9b-ollama-65536-r2",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.0,
+              "wall_s": 319.76,
+              "rc": 0,
+              "n_gen": 27,
+              "eval_ms": 1157.75,
+              "gen_tok_s": 23.321,
+              "n_prompt": 48195,
+              "prompt_eval_ms": 306469.49,
+              "prefill_tok_s": 157.259,
+              "load_ms": 11766.57,
+              "total_ms": 319753.05,
+              "ttft_s": 318.236,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 313,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1432.9,
+                "temp_c_max": 94.0,
+                "temp_c_mean": 88.6,
+                "power_mw_mean": 121967.0,
+                "gtt_gib_max": 8.656,
+                "vram_gib_max": 0.013
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780090645652.csv",
+              "output_len_chars": 50,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 20.416,
+            "gen_tok_s_min": 17.51,
+            "gen_tok_s_max": 23.321,
+            "gen_tok_s_cv_pct": 20.13,
+            "prefill_tok_s_median": 158.667,
+            "prefill_tok_s_min": 157.259,
+            "prefill_tok_s_max": 160.075,
+            "prefill_tok_s_cv_pct": 1.25,
+            "ttft_s_median": 317.188,
+            "ttft_s_min": 316.141,
+            "ttft_s_max": 318.236,
+            "ttft_s_cv_pct": 0.47
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-9b-ollama-131072-r1",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 8.0,
+              "wall_s": 905.1,
+              "rc": 0,
+              "n_gen": 27,
+              "eval_ms": 1471.61,
+              "gen_tok_s": 18.347,
+              "n_prompt": 96281,
+              "prompt_eval_ms": 889297.28,
+              "prefill_tok_s": 108.266,
+              "load_ms": 13759.06,
+              "total_ms": 905100.96,
+              "ttft_s": 903.056,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 885,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1430.5,
+                "temp_c_max": 95.0,
+                "temp_c_mean": 89.2,
+                "power_mw_mean": 121347.0,
+                "gtt_gib_max": 9.681,
+                "vram_gib_max": 0.014
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780091040923.csv",
+              "output_len_chars": 50,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "qwen3.5-9b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-qwen3.5-9b-ollama-131072-r2",
+              "ollama_model_tag": "qwen3.5:9b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 8.0,
+              "wall_s": 911.85,
+              "rc": 0,
+              "n_gen": 27,
+              "eval_ms": 1476.65,
+              "gen_tok_s": 18.285,
+              "n_prompt": 96281,
+              "prompt_eval_ms": 896318.86,
+              "prefill_tok_s": 107.418,
+              "load_ms": 13435.87,
+              "total_ms": 911849.34,
+              "ttft_s": 909.755,
+              "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 892,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1418.4,
+                "temp_c_max": 95.0,
+                "temp_c_mean": 89.3,
+                "power_mw_mean": 121062.0,
+                "gtt_gib_max": 9.681,
+                "vram_gib_max": 0.014
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780091976621.csv",
+              "output_len_chars": 50,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 18.316,
+            "gen_tok_s_min": 18.285,
+            "gen_tok_s_max": 18.347,
+            "gen_tok_s_cv_pct": 0.24,
+            "prefill_tok_s_median": 107.842,
+            "prefill_tok_s_min": 107.418,
+            "prefill_tok_s_max": 108.266,
+            "prefill_tok_s_cv_pct": 0.56,
+            "ttft_s_median": 906.406,
+            "ttft_s_min": 903.056,
+            "ttft_s_max": 909.755,
+            "ttft_s_cv_pct": 0.52
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 498073
+        }
+      }
+    },
+    "gemma4-latest": {
+      "backend": "ollama",
+      "kind": "moe_a4b",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-latest-65536-r1",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.8,
+              "wall_s": 261.86,
+              "rc": 0,
+              "n_gen": 400,
+              "eval_ms": 16615.17,
+              "gen_tok_s": 24.074,
+              "n_prompt": 46320,
+              "prompt_eval_ms": 229107.17,
+              "prefill_tok_s": 202.176,
+              "load_ms": 14318.67,
+              "total_ms": 261858.65,
+              "ttft_s": 243.426,
+              "output": "...for a time, or simply a few years, and a decade of sustained efforts to make the service work? (Self-Correction: To answer this, I've used a combination of historical records and contemporary academic/publicly available data:The date I've compiled is a hybrid, drawing from public records, expert knowledge, and my own synthesized understanding, but it's important to note that the historical context is incredibly complex and subject to interpretation based on the sources used. The specific source isn't easily pinpointed, but the general consensus points to the late 1980s to early 1990s, correlating with the rise of personal computers and the subsequent rapid diversification of electronic communication technology, culminating in the widespread adoption of the World Wide Web during the early 1990s. My knowledge cutoff is for the *current* year, which is not provided in the prompt's context.\n\nThe fundamental breakthrough that made the global connectivity achievable by the early 1990s was the development and subsequent popularization of TCP/IP, which established a standardized, robust, and scalable communication protocol stack. The implementation of TCP/IP was a colossal engineering feat that required unprecedented collaboration and standardization among multiple, often competing, research groups and institutions, culminating in the creation of the internet.\n\nThe key moment wasn't a single \"Eureka!\" moment, but rather a convergence of several parallel and often secretive developments, built upon foundational theoretical work:\n\n1.  **Packet Switching Theory:** The foundational concept came from pioneering theoretical work by **Paul Baran** (RAND Corporation) and **Leonard Kleinrock** (MIT).\n2.  **Packet Switching Implementation:** Practical implementations were heavily influenced by the research of **Donald Davies** (NPL) and **Leonard Kleinrock** (UCLA).\n3.  **Packet Switching Theory & Development:** The crucial synthesis and application into a real-world network needed standardization. This was",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 257,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1468.9,
+                "temp_c_max": 93.0,
+                "temp_c_mean": 84.5,
+                "power_mw_mean": 118475.0,
+                "gtt_gib_max": 3.428,
+                "vram_gib_max": 0.021
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780093023996.csv",
+              "output_len_chars": 2027,
+              "needle_pass": false,
+              "needle_reason": "missing_primary:DELTA",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-latest-65536-r2",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 4.8,
+              "wall_s": 261.7,
+              "rc": 0,
+              "n_gen": 400,
+              "eval_ms": 16548.83,
+              "gen_tok_s": 24.171,
+              "n_prompt": 46320,
+              "prompt_eval_ms": 229320.45,
+              "prefill_tok_s": 201.988,
+              "load_ms": 13984.66,
+              "total_ms": 261693.93,
+              "ttft_s": 243.305,
+              "output": "... can be doing, we can't make it. (Self-generated - 1/3-based on performance for the next round, is more than sufficient. (N/A) |\n\n**1-10: The Practice of using Self-Referential Model.Name**\n\n---\n\n**[End of Test]**\n\n*Disclaimer: This is a demonstration of how to safely and robustly handle and analyze complex, multi-modal data formats for accurate, robust, 2023-2024.\n\n**[Confirmation]** This confirms that the Model's ability to process, analyze, and generate comprehensive, multi-modal understanding of user-provided structured data can be relied upon, is at the Core level, and shows comprehensive pattern recognition capability, needs a significant improvement in robust *real-time* (Live) understanding and *proactive* (Proactive) recommendations, and *Proactive* (Proactive) Suggestion...\n**[Final]** The model's ability to reliably analyze, process, generate, and interpret complex data streams is at the Core-level.\n\n---\n*Self-Correction:*The model has proven to be an extremely robust, deep, contextual, and highly efficient core understanding engine.\n\n**[Confidence]** This confirms the ability to process, analyze, and generate comprehensive, multi-modal, and consistent output.\n\n**[Conclusion]** This model is sufficiently robust to handle, synthesize, analyze, and generate, confirming the capability to manage, refine, and execute against the entire set of comprehensive, robust, and highly flexible benchmarks and performance parameters.\n\n**[Final]** The model is highly reliable to answer questions related to **What is the fundamental nature of the request and how can it be best addressed?**\n\n**[Self-Correction]**The model must adhere to the original constraints and synthesize the comprehensive knowledge of the subject.\n\n**[Conclusion]**",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 257,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1468.9,
+                "temp_c_max": 94.0,
+                "temp_c_mean": 86.4,
+                "power_mw_mean": 120628.0,
+                "gtt_gib_max": 3.428,
+                "vram_gib_max": 0.021
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780093316373.csv",
+              "output_len_chars": 1761,
+              "needle_pass": false,
+              "needle_reason": "missing_primary:DELTA",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 24.123,
+            "gen_tok_s_min": 24.074,
+            "gen_tok_s_max": 24.171,
+            "gen_tok_s_cv_pct": 0.28,
+            "prefill_tok_s_median": 202.082,
+            "prefill_tok_s_min": 201.988,
+            "prefill_tok_s_max": 202.176,
+            "prefill_tok_s_cv_pct": 0.07,
+            "ttft_s_median": 243.365,
+            "ttft_s_min": 243.305,
+            "ttft_s_max": 243.426,
+            "ttft_s_cv_pct": 0.04
+          },
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-latest-131072-r1",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 9.6,
+              "wall_s": 789.09,
+              "rc": 0,
+              "n_gen": 7,
+              "eval_ms": 321.45,
+              "gen_tok_s": 21.776,
+              "n_prompt": 92538,
+              "prompt_eval_ms": 771245.34,
+              "prefill_tok_s": 119.985,
+              "load_ms": 14576.58,
+              "total_ms": 789084.12,
+              "ttft_s": 785.822,
+              "output": "otro2002.",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 774,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1478.7,
+                "temp_c_max": 94.0,
+                "temp_c_mean": 87.9,
+                "power_mw_mean": 121289.0,
+                "gtt_gib_max": 3.897,
+                "vram_gib_max": 0.021
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780093653583.csv",
+              "output_len_chars": 9,
+              "needle_pass": false,
+              "needle_reason": "too_short:9",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gemma4-latest",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 131072,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-latest-131072-r2",
+              "ollama_model_tag": "gemma4:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 9.6,
+              "wall_s": 800.48,
+              "rc": 0,
+              "output": "igator/s...\"\n...e...d(2,29:..W.../Ache-C...are*2.\n\n*D(2,29:..L...h-Acheverge...\n\n*H...rva...g...A(y?&tory...B&y...C(B&e)t...A.\n...&x...y...p&...S(tream-2?y.\n\n...A&k...R1.0000000000000000000000000000000",
+              "status": "parse_fail",
+              "raw_response": {
+                "model": "gemma4:latest",
+                "created_at": "2026-05-29T22:54:33.612065806Z",
+                "message": {
+                  "role": "assistant",
+                  "content": "igator/s...\"\n...e...d(2,29:..W.../Ache-C...are*2.\n\n*D(2,29:..L...h-Acheverge...\n\n*H...rva...g...A(y?&tory...B&y...C(B&e)t...A.\n...&x...y...p&...S(tream-2?y.\n\n...A&k...R1.0000000000000000000000000000000"
+                },
+                "done": false
+              },
+              "gpu_overlay": {
+                "samples": 785,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1469.4,
+                "temp_c_max": 95.0,
+                "temp_c_mean": 88.3,
+                "power_mw_mean": 120360.0,
+                "gtt_gib_max": 3.897,
+                "vram_gib_max": 0.021
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780094473181.csv",
+              "output_len_chars": 201,
+              "needle_pass": false,
+              "needle_reason": "repeat_loop",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 21.776,
+            "gen_tok_s_min": 21.776,
+            "gen_tok_s_max": 21.776,
+            "gen_tok_s_cv_pct": 0.0,
+            "prefill_tok_s_median": 119.985,
+            "prefill_tok_s_min": 119.985,
+            "prefill_tok_s_max": 119.985,
+            "prefill_tok_s_cv_pct": 0.0,
+            "ttft_s_median": 785.822,
+            "ttft_s_min": 785.822,
+            "ttft_s_max": 785.822,
+            "ttft_s_cv_pct": 0.0
+          },
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 498073
+        }
+      }
+    },
+    "gemma4-26b-q3": {
+      "backend": "ollama",
+      "kind": "moe_a4b",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "gemma4-26b-q3",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-26b-q3-65536-r1",
+              "ollama_model_tag": "gemma4-26b-q3:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 8.0,
+              "wall_s": 3018.14,
+              "status": "timeout",
+              "error": "timed out",
+              "gpu_overlay": {
+                "samples": 2973,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1002.7,
+                "temp_c_max": 61.0,
+                "temp_c_mean": 56.9,
+                "power_mw_mean": 53366.0,
+                "gtt_gib_max": 12.527,
+                "vram_gib_max": 0.034
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780095409173.csv",
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gemma4-26b-q3",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-26b-q3-65536-r2",
+              "ollama_model_tag": "gemma4-26b-q3:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 8.0,
+              "wall_s": 3018.15,
+              "status": "timeout",
+              "error": "timed out",
+              "gpu_overlay": {
+                "samples": 2973,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1002.5,
+                "temp_c_max": 60.0,
+                "temp_c_mean": 56.2,
+                "power_mw_mean": 53150.0,
+                "gtt_gib_max": 12.527,
+                "vram_gib_max": 0.029
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780098462883.csv",
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "gemma4-26b-a4b-ollama": {
+      "backend": "ollama",
+      "kind": "moe_a4b",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "gemma4-26b-a4b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-26b-a4b-ollama-65536-r1",
+              "ollama_model_tag": "gemma4-26b-a4b:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 7.2,
+              "wall_s": 0.06,
+              "status": "http_error",
+              "error": "HTTP 404: {\"error\":\"model 'gemma4-26b-a4b:latest' not found\"}",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 56.0,
+                "temp_c_mean": 56.0,
+                "power_mw_mean": 53203.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780101616640.csv",
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gemma4-26b-a4b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gemma4-26b-a4b-ollama-65536-r2",
+              "ollama_model_tag": "gemma4-26b-a4b:latest",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 7.2,
+              "wall_s": 0.02,
+              "status": "http_error",
+              "error": "HTTP 404: {\"error\":\"model 'gemma4-26b-a4b:latest' not found\"}",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780101647227.csv",
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    },
+    "gpt-oss-20b-ollama": {
+      "backend": "ollama",
+      "kind": "moe_mxfp4",
+      "tiers": {
+        "65536": {
+          "runs": [
+            {
+              "model": "gpt-oss-20b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gpt-oss-20b-ollama-65536-r1",
+              "ollama_model_tag": "gpt-oss:20b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 7.2,
+              "wall_s": 3018.14,
+              "status": "timeout",
+              "error": "timed out",
+              "gpu_overlay": {
+                "samples": 2974,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1096.5,
+                "temp_c_max": 68.0,
+                "temp_c_mean": 58.0,
+                "power_mw_mean": 57448.0,
+                "gtt_gib_max": 12.445,
+                "vram_gib_max": 0.017
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780101782766.csv",
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            },
+            {
+              "model": "gpt-oss-20b-ollama",
+              "backend": "ollama",
+              "build": "ollama-0.20.0",
+              "ctx_target": 65536,
+              "kv_type": "ollama-default",
+              "env_extra": {},
+              "n_gen_target": 400,
+              "label": "ctxq-gpt-oss-20b-ollama-65536-r2",
+              "ollama_model_tag": "gpt-oss:20b",
+              "ollama_mode": "chat",
+              "projected_vm_gib": 7.2,
+              "wall_s": 3018.13,
+              "status": "timeout",
+              "error": "timed out",
+              "gpu_overlay": {
+                "samples": 2974,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1099.1,
+                "temp_c_max": 69.0,
+                "temp_c_mean": 58.0,
+                "power_mw_mean": 57473.0,
+                "gtt_gib_max": 12.445,
+                "vram_gib_max": 0.017
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780104836472.csv",
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.0
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.0,
+          "prompt_chars": 249036
+        },
+        "131072": {
+          "runs": [],
+          "aggregate": {},
+          "ladder_status": "stopped"
+        }
+      }
+    }
+  },
+  "config": {
+    "tiers": [
+      65536,
+      131072
+    ],
+    "runs_n": 2,
+    "n_gen": 400,
+    "needle_code": "DELTA-7-VIOLET-MOUNTAIN-93"
+  }
+}

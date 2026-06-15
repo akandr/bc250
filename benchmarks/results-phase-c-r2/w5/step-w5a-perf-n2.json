@@ -1,0 +1,153 @@
+{
+  "step": "perf",
+  "results": {
+    "qwq-32b-iq2m": {
+      "runs": [
+        {
+          "model": "qwq-32b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwq-32b-iq2m-run1",
+          "projected_vm_gib": 11.04,
+          "wall_s": 50.46,
+          "rc": 0,
+          "prompt_eval_ms": 5640.47,
+          "n_prompt": 248,
+          "prefill_tok_s": 43.97,
+          "eval_ms": 10285.06,
+          "n_gen": 99,
+          "gen_tok_s": 9.63,
+          "load_ms": 32446.37,
+          "total_ms": 16221.3,
+          "ttft_s": 38.087,
+          "output": "Keep your answer concise but thorough, using technical terms where appropriate but avoiding excessive jargon.\n\n**RISC vs. CISC: A Concise Comparison**\n\n**(a) RISC Design Philosophy:**  \nRISC (Reduced Instruction Set Computer) architectures, exemplified by MIPS, SPARC, and early ARM designs, prioritize simplicity and efficiency. Instructions are uniform in length, have a fixed execution time, and typically use load/store architecture\u2014meaning data movement is restricted to memory via dedicated instructions, while",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780410221155.csv"
+        },
+        {
+          "model": "qwq-32b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwq-32b-iq2m-run2",
+          "projected_vm_gib": 11.04,
+          "wall_s": 49.84,
+          "rc": 0,
+          "prompt_eval_ms": 5249.29,
+          "n_prompt": 248,
+          "prefill_tok_s": 47.24,
+          "eval_ms": 10276.63,
+          "n_gen": 99,
+          "gen_tok_s": 9.63,
+          "load_ms": 32378.51,
+          "total_ms": 15816.35,
+          "ttft_s": 37.628,
+          "output": "Keep your answer in English and avoid markdown formatting.\n\nThe RISC (Reduced Instruction Set Computer) and CISC (Complex Instruction Set Computer) architectures represent contrasting design philosophies rooted in different eras of computing. RISC architectures like MIPS, SPARC, and ARM emphasize simplicity and efficiency, using a small set of carefully chosen instructions optimized for fast execution. These designs typically have uniform instruction formats, fixed-length instructions, and rely on compiler optimization to handle complex operations through sequences of simpler instructions. This",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780410302157.csv"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 9.63,
+        "gen_tok_s_min": 9.63,
+        "gen_tok_s_max": 9.63,
+        "gen_tok_s_cv_pct": 0.0,
+        "prefill_tok_s_median": 45.605,
+        "prefill_tok_s_min": 43.97,
+        "prefill_tok_s_max": 47.24,
+        "prefill_tok_s_cv_pct": 5.07,
+        "ttft_s_median": 37.858,
+        "ttft_s_min": 37.628,
+        "ttft_s_max": 38.087,
+        "ttft_s_cv_pct": 0.86
+      },
+      "backend": "llama-completion",
+      "kind": "dense"
+    },
+    "mistral-small-3.2-q3km": {
+      "runs": [
+        {
+          "model": "mistral-small-3.2-q3km",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-mistral-small-3.2-q3km-run1",
+          "projected_vm_gib": 11.09,
+          "wall_s": 38.11,
+          "rc": 0,
+          "prompt_eval_ms": 4211.62,
+          "n_prompt": 253,
+          "prefill_tok_s": 60.07,
+          "load_ms": 31676.95,
+          "total_ms": 4299.19,
+          "ttft_s": 35.889,
+          "output": "[end of text]",
+          "status": "parse_fail",
+          "stderr_tail": "x_train (131072) -- the full capacity of the model will not be utilized\n0.32.325.236 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)\n0.32.599.809 I llama_completion: llama threadpool init, n_threads = 6\n0.32.599.839 I \n0.32.599.909 I system_info: n_threads = 6 (n_threads_batch = 6) / 12 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n0.32.599.910 I \n0.32.686.634 I sampler seed: 42\n0.32.686.658 I sampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = -1\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.000\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000, adaptive_target = -1.000, adaptive_decay = 0.900\n0.32.686.671 I sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist \n0.32.686.672 I generate: n_ctx = 4096, n_batch = 2048, n_predict = 100, n_keep = 1\n0.32.686.675 I \n0.36.898.996 I common_perf_print:    sampling time =       0.52 ms\n0.36.898.997 I common_perf_print:    samplers time =       0.20 ms /   254 tokens\n0.36.899.001 I common_perf_print:        load time =   31676.95 ms\n0.36.899.003 I common_perf_print: prompt eval time =    4211.62 ms /   253 tokens (   16.65 ms per token,    60.07 tokens per second)\n0.36.899.004 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)\n0.36.899.004 I common_perf_print:       total time =    4299.19 ms /   254 tokens\n0.36.899.005 I common_perf_print: unaccounted time =      87.05 ms /   2.0 %      (total - sampling - prompt eval - eval) / (total)\n0.36.899.005 I common_perf_print:    graphs reused =          0\n",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780410408446.csv"
+        },
+        {
+          "model": "mistral-small-3.2-q3km",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-mistral-small-3.2-q3km-run2",
+          "projected_vm_gib": 11.09,
+          "wall_s": 36.58,
+          "rc": 0,
+          "prompt_eval_ms": 4213.75,
+          "n_prompt": 253,
+          "prefill_tok_s": 60.04,
+          "load_ms": 30245.78,
+          "total_ms": 4301.44,
+          "ttft_s": 34.46,
+          "output": "[end of text]",
+          "status": "parse_fail",
+          "stderr_tail": "x_train (131072) -- the full capacity of the model will not be utilized\n0.30.810.564 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)\n0.31.041.175 I llama_completion: llama threadpool init, n_threads = 6\n0.31.041.696 I \n0.31.041.859 I system_info: n_threads = 6 (n_threads_batch = 6) / 12 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | \n0.31.041.861 I \n0.31.128.096 I sampler seed: 42\n0.31.128.128 I sampler params: \n\trepeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000\n\tdry_multiplier = 0.000, dry_base = 1.750, dry_allowed_length = 2, dry_penalty_last_n = -1\n\ttop_k = 40, top_p = 0.950, min_p = 0.050, xtc_probability = 0.000, xtc_threshold = 0.100, typical_p = 1.000, top_n_sigma = -1.000, temp = 0.000\n\tmirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000, adaptive_target = -1.000, adaptive_decay = 0.900\n0.31.128.147 I sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist \n0.31.128.152 I generate: n_ctx = 4096, n_batch = 2048, n_predict = 100, n_keep = 1\n0.31.128.152 I \n0.35.342.598 I common_perf_print:    sampling time =       0.50 ms\n0.35.342.605 I common_perf_print:    samplers time =       0.19 ms /   254 tokens\n0.35.342.609 I common_perf_print:        load time =   30245.78 ms\n0.35.342.614 I common_perf_print: prompt eval time =    4213.75 ms /   253 tokens (   16.66 ms per token,    60.04 tokens per second)\n0.35.342.615 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)\n0.35.342.615 I common_perf_print:       total time =    4301.44 ms /   254 tokens\n0.35.342.616 I common_perf_print: unaccounted time =      87.19 ms /   2.0 %      (total - sampling - prompt eval - eval) / (total)\n0.35.342.616 I common_perf_print:    graphs reused =          0\n",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780410477104.csv"
+        }
+      ],
+      "aggregate": {
+        "prefill_tok_s_median": 60.055,
+        "prefill_tok_s_min": 60.04,
+        "prefill_tok_s_max": 60.07,
+        "prefill_tok_s_cv_pct": 0.04,
+        "ttft_s_median": 35.175,
+        "ttft_s_min": 34.46,
+        "ttft_s_max": 35.889,
+        "ttft_s_cv_pct": 2.87
+      },
+      "backend": "llama-completion",
+      "kind": "dense"
+    }
+  }
+}

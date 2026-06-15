@@ -1,0 +1,133 @@
+{
+  "model": "hf.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:IQ2_M",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "4": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 33.8,
+          "pe": 2764,
+          "ec": 128,
+          "gen": 38.81,
+          "pre": 191.8,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 30.7,
+          "pe": 2764,
+          "ec": 128,
+          "gen": 38.94,
+          "pre": 192.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 30.4,
+          "pe": 2764,
+          "ec": 128,
+          "gen": 38.91,
+          "pre": 192.2,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 10.13,
+      "free_gib": 0.44,
+      "ok": 3,
+      "gen_med": 38.91,
+      "pre_med": 192.2,
+      "gen_runs": [
+        38.81,
+        38.94,
+        38.91
+      ],
+      "pe": 2764
+    },
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 114.2,
+          "pe": 10851,
+          "ec": 128,
+          "gen": 28.65,
+          "pre": 112.0,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 114.3,
+          "pe": 10851,
+          "ec": 128,
+          "gen": 28.59,
+          "pre": 112.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 114.4,
+          "pe": 10851,
+          "ec": 128,
+          "gen": 28.72,
+          "pre": 112.1,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 10.46,
+      "free_gib": 0.39,
+      "ok": 3,
+      "gen_med": 28.65,
+      "pre_med": 112.1,
+      "gen_runs": [
+        28.65,
+        28.59,
+        28.72
+      ],
+      "pe": 10851
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 325.9,
+          "pe": 21635,
+          "ec": 128,
+          "gen": 21.89,
+          "pre": 70.5,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 325.7,
+          "pe": 21635,
+          "ec": 128,
+          "gen": 21.92,
+          "pre": 70.6,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 325.7,
+          "pe": 21635,
+          "ec": 128,
+          "gen": 21.92,
+          "pre": 70.6,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 10.93,
+      "free_gib": 0.51,
+      "ok": 3,
+      "gen_med": 21.92,
+      "pre_med": 70.6,
+      "gen_runs": [
+        21.89,
+        21.92,
+        21.92
+      ],
+      "pe": 21635
+    }
+  }
+}

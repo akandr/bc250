@@ -1,0 +1,92 @@
+{
+  "model": "qwen3.5:9b",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 87.3,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.14,
+          "pre": 157.9,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 83.3,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.14,
+          "pre": 157.9,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 83.1,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.15,
+          "pre": 157.9,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 7.74,
+      "free_gib": 0.27,
+      "ok": 3,
+      "gen_med": 20.14,
+      "pre_med": 157.9,
+      "gen_runs": [
+        20.14,
+        20.14,
+        20.15
+      ],
+      "pe": 10855
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 170.0,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.56,
+          "pre": 140.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 169.7,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.59,
+          "pre": 140.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 169.9,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.57,
+          "pre": 140.1,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 8.13,
+      "free_gib": 0.38,
+      "ok": 3,
+      "gen_med": 18.57,
+      "pre_med": 140.1,
+      "gen_runs": [
+        18.56,
+        18.59,
+        18.57
+      ],
+      "pe": 21639
+    }
+  },
+  "gtt_highwater": 8.13
+}

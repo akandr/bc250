@@ -1,0 +1,15 @@
+{
+  "model": "mistral-small3.2:24b",
+  "pages_limit": 4194304,
+  "gtt_highwater_gib": 13.56,
+  "tiers": [
+    {
+      "status": "timeout/err",
+      "wall_s": 240.2,
+      "err": "timed out",
+      "tier_k": 4,
+      "gtt_used_gib": 13.56,
+      "free_gib_after": 0.32
+    }
+  ]
+}

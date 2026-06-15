@@ -17,13 +17,23 @@ import os
 import urllib.request
 
 OLLAMA = "http://127.0.0.1:11434"
-RESULTS_DIR = "/opt/netscan/tmp/longctx-quality"
+RESULTS_DIR = os.path.expanduser("~/phase-c-out/longctx-quality")
 
+# Production set as of Phase D rerun. Only Ollama-served models are testable
+# here (bench uses /api/generate). llama-completion models are perf-only and
+# don't go through this multi-hop quality suite.
 MODELS = [
-    "qwen3.5-35b-a3b-iq2m:latest",   # MoE production
-    "qwen3.5:9b",                      # Dense production
-    "phi4-mini:latest",                 # Fast production
+    "qwen3.5:9b",
+    "qwen3.5-35b-a3b-iq2m:latest",
+    "gemma4-26b-q3:latest",
+    "gemma4:latest",
 ]
+# Models that REQUIRE native sampling (MoE chat-template; greedy temp=0 produces
+# empty/loop output even with think:false). Confirmed live on bc250.
+NATIVE_SAMPLING_MODELS = {"gemma4:latest", "gemma4-26b-q3:latest"}
+NATIVE_SAMPLING_OPTS = {
+    "temperature": 1.0, "top_k": 64, "top_p": 0.95, "seed": 42,
+}
 
 # ─── Fill blocks (~500 tokens each) ─────────────────────────────────────────
 
@@ -238,11 +248,14 @@ def run_test(model, test, ctx_size, timeout=600):
     
     prompt = context + f"\n\n{test['question']}\n\nAnswer:"
     
+    opts = {"num_ctx": ctx_size, "num_predict": 300}
+    if model in NATIVE_SAMPLING_MODELS:
+        opts.update(NATIVE_SAMPLING_OPTS)
     data = {
         "model": model,
         "prompt": prompt,
         "stream": False,
-        "options": {"num_ctx": ctx_size, "num_predict": 300},
+        "options": opts,
         "keep_alive": "5m",
         "think": False,
     }

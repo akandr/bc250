@@ -1,0 +1,326 @@
+{
+  "step": "kv-longctx",
+  "captured_at": "2026-06-07T20:24:04",
+  "model": "qwen3.5-9b-ollama",
+  "model_tag": "qwen3.5:9b",
+  "kv_types": [
+    "q4_0",
+    "q8_0"
+  ],
+  "tiers": [
+    16384,
+    32768
+  ],
+  "runs_per_cell": 2,
+  "n_gen": 200,
+  "results": {
+    "q4_0": {
+      "16384": {
+        "runs": [
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q4_0",
+            "ctx_target": 16384,
+            "n_gen_target": 200,
+            "label": "kv-lc-q4_0-16k-r1",
+            "cell_timeout_s": 1189,
+            "wall_s": 93.48,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1270.02,
+            "gen_tok_s": 21.26,
+            "n_prompt": 12100,
+            "prompt_eval_ms": 80438.3,
+            "prefill_tok_s": 150.426,
+            "load_ms": 11525.28,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 92,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1434.1,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1000.0,
+              "temp_c_max": 81.0,
+              "temp_c_mean": 74.1
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.1
+          },
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q4_0",
+            "ctx_target": 16384,
+            "n_gen_target": 200,
+            "label": "kv-lc-q4_0-16k-r2",
+            "cell_timeout_s": 1189,
+            "wall_s": 81.94,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1261.23,
+            "gen_tok_s": 21.408,
+            "n_prompt": 12100,
+            "prompt_eval_ms": 80356.87,
+            "prefill_tok_s": 150.578,
+            "load_ms": 251.67,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 81,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1500.0,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1500.0,
+              "temp_c_max": 84.0,
+              "temp_c_mean": 81.2
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.1
+          }
+        ],
+        "aggregate": {
+          "gen_tok_s_median": 21.41,
+          "gen_tok_s_mean": 21.33,
+          "gen_tok_s_cv_pct": 0.69,
+          "prefill_tok_s_median": 150.58,
+          "n_ok": 2,
+          "n_runs": 2
+        }
+      },
+      "32768": {
+        "runs": [
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q4_0",
+            "ctx_target": 32768,
+            "n_gen_target": 200,
+            "label": "kv-lc-q4_0-32k-r1",
+            "cell_timeout_s": 1599,
+            "wall_s": 198.27,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1456.32,
+            "gen_tok_s": 18.54,
+            "n_prompt": 24108,
+            "prompt_eval_ms": 186552.76,
+            "prefill_tok_s": 129.229,
+            "load_ms": 9997.94,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 194,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1476.7,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1000.0,
+              "temp_c_max": 84.0,
+              "temp_c_mean": 80.9
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.0
+          },
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q4_0",
+            "ctx_target": 32768,
+            "n_gen_target": 200,
+            "label": "kv-lc-q4_0-32k-r2",
+            "cell_timeout_s": 1599,
+            "wall_s": 188.3,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1452.08,
+            "gen_tok_s": 18.594,
+            "n_prompt": 24108,
+            "prompt_eval_ms": 186495.65,
+            "prefill_tok_s": 129.268,
+            "load_ms": 229.91,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 185,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1500.0,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1500.0,
+              "temp_c_max": 85.0,
+              "temp_c_mean": 82.7
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.0
+          }
+        ],
+        "aggregate": {
+          "gen_tok_s_median": 18.59,
+          "gen_tok_s_mean": 18.57,
+          "gen_tok_s_cv_pct": 0.29,
+          "prefill_tok_s_median": 129.27,
+          "n_ok": 2,
+          "n_runs": 2
+        }
+      }
+    },
+    "q8_0": {
+      "16384": {
+        "runs": [
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q8_0",
+            "ctx_target": 16384,
+            "n_gen_target": 200,
+            "label": "kv-lc-q8_0-16k-r1",
+            "cell_timeout_s": 1189,
+            "wall_s": 88.52,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1257.9,
+            "gen_tok_s": 21.464,
+            "n_prompt": 12100,
+            "prompt_eval_ms": 77901.42,
+            "prefill_tok_s": 155.325,
+            "load_ms": 9113.95,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 88,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1442.5,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1000.0,
+              "temp_c_max": 85.0,
+              "temp_c_mean": 79.5
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.1
+          },
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q8_0",
+            "ctx_target": 16384,
+            "n_gen_target": 200,
+            "label": "kv-lc-q8_0-16k-r2",
+            "cell_timeout_s": 1189,
+            "wall_s": 79.37,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1256.99,
+            "gen_tok_s": 21.48,
+            "n_prompt": 12100,
+            "prompt_eval_ms": 77794.74,
+            "prefill_tok_s": 155.537,
+            "load_ms": 248.99,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 79,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1500.0,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1500.0,
+              "temp_c_max": 85.0,
+              "temp_c_mean": 83.4
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.1
+          }
+        ],
+        "aggregate": {
+          "gen_tok_s_median": 21.48,
+          "gen_tok_s_mean": 21.47,
+          "gen_tok_s_cv_pct": 0.07,
+          "prefill_tok_s_median": 155.54,
+          "n_ok": 2,
+          "n_runs": 2
+        }
+      },
+      "32768": {
+        "runs": [
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q8_0",
+            "ctx_target": 32768,
+            "n_gen_target": 200,
+            "label": "kv-lc-q8_0-32k-r1",
+            "cell_timeout_s": 1599,
+            "wall_s": 188.54,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1436.7,
+            "gen_tok_s": 18.793,
+            "n_prompt": 24108,
+            "prompt_eval_ms": 176393.06,
+            "prefill_tok_s": 136.672,
+            "load_ms": 10440.46,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 185,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1475.5,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1000.0,
+              "temp_c_max": 86.0,
+              "temp_c_mean": 82.4
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.0
+          },
+          {
+            "model": "qwen3.5-9b-ollama",
+            "backend": "ollama",
+            "kv_type": "q8_0",
+            "ctx_target": 32768,
+            "n_gen_target": 200,
+            "label": "kv-lc-q8_0-32k-r2",
+            "cell_timeout_s": 1599,
+            "wall_s": 178.11,
+            "rc": 0,
+            "n_gen": 27,
+            "eval_ms": 1438.99,
+            "gen_tok_s": 18.763,
+            "n_prompt": 24108,
+            "prompt_eval_ms": 176308.35,
+            "prefill_tok_s": 136.738,
+            "load_ms": 237.98,
+            "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+            "status": "ok",
+            "gpu_overlay": {
+              "samples": 175,
+              "throttle_flag": false,
+              "sclk_mhz_mean": 1500.0,
+              "sclk_mhz_max": 1500.0,
+              "sclk_mhz_min": 1500.0,
+              "temp_c_max": 86.0,
+              "temp_c_mean": 84.4
+            },
+            "needle_pass": true,
+            "needle_reason": "both_present:exact|exact",
+            "needle_depth_pct": 50.0
+          }
+        ],
+        "aggregate": {
+          "gen_tok_s_median": 18.79,
+          "gen_tok_s_mean": 18.78,
+          "gen_tok_s_cv_pct": 0.16,
+          "prefill_tok_s_median": 136.74,
+          "n_ok": 2,
+          "n_runs": 2
+        }
+      }
+    }
+  }
+}

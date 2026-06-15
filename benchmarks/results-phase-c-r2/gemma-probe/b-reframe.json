@@ -1,0 +1,78 @@
+{
+  "variant": "b-reframe",
+  "model": "gemma4:latest",
+  "tiers": {
+    "4096": {
+      "runs": [
+        {
+          "run": 1,
+          "wall_s": 34.0,
+          "elapsed_s": 34.0,
+          "out_chars": 1982,
+          "out_head": "ets, and the other (d)s.\n\n---\n**Summary:**\n\nThe provided text is a collection of references to the **\"Nondeterministic Finite Automata\" (NFA)** and **\"Formal Languages\"** concepts from Computer Science. Specifically, it references the concept of **\"DFA\" (Deterministic Finite Automata)** and the rela",
+          "out_tail": "finement: The initial analysis was too broad. The second analysis focusing on the specific technical terms (NFA, DFA, Subset Construction) is much more accurate and specific to the content provided.)*",
+          "eval_count": 440,
+          "prompt_eval_count": 2868,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        },
+        {
+          "run": 2,
+          "wall_s": 19.55,
+          "elapsed_s": 19.55,
+          "out_chars": 2718,
+          "out_head": "(The provided text is a collection of common academic/technical references regarding the concept of \"dependencies\" and \"dependencies\" in computer science, specifically related to graph theory, database theory, and algorithm design.)\n\nThe core theme revolves around the concept of **dependencies** (or",
+          "out_tail": "ely confusing prompt designed to test pattern recognition across disparate technical fields. The actual content is a jumble of academic jargon, but the unifying theme is the concept of \"Dependency\".)*",
+          "eval_count": 572,
+          "prompt_eval_count": 2868,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        }
+      ],
+      "max_score": 0,
+      "mean_score": 0.0
+    },
+    "32768": {
+      "runs": [
+        {
+          "run": 1,
+          "wall_s": 109.48,
+          "elapsed_s": 109.48,
+          "out_chars": 1881,
+          "out_head": "...\n\n---\n**[End of Document]**\n\n**[Start of Document]**\n\n**[End of Document]**\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n",
+          "out_tail": "ent]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document]\n\n**[Start of Document]\n\n**[End of Document",
+          "eval_count": 600,
+          "prompt_eval_count": 21983,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        },
+        {
+          "run": 2,
+          "wall_s": 23.54,
+          "elapsed_s": 23.54,
+          "out_chars": 2007,
+          "out_head": "...\n\n**[...The rest of the text...]**\n\n**[...The end of the document...]**\n\n---\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**",
+          "out_tail": "ment...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[...The end of the document...]**\n\n**[",
+          "eval_count": 600,
+          "prompt_eval_count": 21983,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        }
+      ],
+      "max_score": 0,
+      "mean_score": 0.0
+    }
+  }
+}

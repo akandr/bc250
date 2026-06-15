@@ -1,0 +1,22 @@
+{
+  "step": "mxfp4-probe",
+  "captured_at": "2026-06-01T23:36:02+0200",
+  "probes": {
+    "llama_completion": {
+      "classification": "ok_unclassified",
+      "status": "ok",
+      "gen_tok_s": 63.36,
+      "wall_s": 46.84,
+      "skip_reason": null,
+      "stderr_excerpt": ""
+    },
+    "ollama": {
+      "classification": "native_mxfp4",
+      "status": "ok",
+      "gen_tok_s": 46.391,
+      "wall_s": 24.26,
+      "skip_reason": null,
+      "output_excerpt": ""
+    }
+  }
+}

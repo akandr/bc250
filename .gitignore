@@ -21,8 +21,12 @@ car-known-locations.json
 user info/
 tmp/
 
-# Internal notes (Claude session context, not for repo)
+# Internal notes (planning docs, Claude session context — not for repo)
 internal_notes_claude.txt
+notes/
+
+# Claude Code session data
+.claude/
 
 # Live backup from bc250
 bc250-backup/
@@ -32,5 +36,35 @@ deprecated/
 
 # Article drafts (not for GitHub)
 article/
+Latex_template-v1.11/
+arxiv-submission/
+arxiv-submission.zip
 texput.log
 .vscode/
+
+# Vendored upstream toolkit — referenced via github.com/duggasco/bc250-40cu-unlock,
+# not mirrored in this repo.
+scripts/40cu-unlock/
+
+# Working notes / per-folder summaries: only the top-level Readme.md is tracked
+# documentation. Useful findings are folded into Readme.md, not committed as
+# scattered .md files.
+**/*.md
+!/Readme.md
+
+# Execution logs (runtime output, not data)
+logs/
+benchmarks/*.log
+benchmarks/**/*.log
+benchmarks/results-overnight-*/
+benchmarks/results-phase-c/
+benchmarks/results-phase-d-stage2-attempt1-*/
+benchmarks/bench-compare-v2-partial.json
+benchmarks/rebench-0.20.log
+benchmarks/BENCHMARK-AUDIT.md
+benchmarks/BENCHMARK-RESULTS.md
+benchmarks/METHODOLOGY-CRITIQUE.md
+benchmarks/results-llm-comprehensive.md
+benchmarks/gen_article_data_sheet.py
+benchmarks/results-prefer-host-mem.json
+benchmarks/results-overnight-20260516.json

@@ -1,0 +1,279 @@
+{
+  "device": "AMD BC-250 (RADV GFX1013)",
+  "config": "24-CU stock, oberon-governor 1500 MHz, host-coherent UMA",
+  "bytes_moved": 1073741824,
+  "runs": 3,
+  "plateau_gbs": 389.7,
+  "roofline_copy_peak_gbs": 357.29,
+  "min_occ_gbs": 5.72,
+  "min_occ_frac_sat": 0.0147,
+  "knee_wave32": 1024,
+  "knee_groups": 128,
+  "knee_gbs": 370.0,
+  "decode_eff_gbs": 191.0,
+  "decode_frac_sat": 0.49,
+  "decode_equiv_wave32": 316,
+  "knee_over_decode_occ": 3.2,
+  "sweep": [
+    {
+      "groups": 1,
+      "threads": 256,
+      "wave32": 8,
+      "gbs_median": 5.72,
+      "gbs_min": 5.68,
+      "gbs_max": 5.72,
+      "n": 3,
+      "frac_sat": 0.014677580765184368
+    },
+    {
+      "groups": 2,
+      "threads": 512,
+      "wave32": 16,
+      "gbs_median": 11.19,
+      "gbs_min": 11.19,
+      "gbs_max": 11.25,
+      "n": 3,
+      "frac_sat": 0.02871365887454774
+    },
+    {
+      "groups": 4,
+      "threads": 1024,
+      "wave32": 32,
+      "gbs_median": 22.04,
+      "gbs_min": 22.03,
+      "gbs_max": 22.21,
+      "n": 3,
+      "frac_sat": 0.056554874137178926
+    },
+    {
+      "groups": 8,
+      "threads": 2048,
+      "wave32": 64,
+      "gbs_median": 43.71,
+      "gbs_min": 43.54,
+      "gbs_max": 43.74,
+      "n": 3,
+      "frac_sat": 0.11216032434374279
+    },
+    {
+      "groups": 16,
+      "threads": 4096,
+      "wave32": 128,
+      "gbs_median": 85.52,
+      "gbs_min": 85.36,
+      "gbs_max": 85.55,
+      "n": 3,
+      "frac_sat": 0.219445228503246
+    },
+    {
+      "groups": 24,
+      "threads": 6144,
+      "wave32": 192,
+      "gbs_median": 124.77,
+      "gbs_min": 123.84,
+      "gbs_max": 124.79,
+      "n": 3,
+      "frac_sat": 0.32016114546714225
+    },
+    {
+      "groups": 32,
+      "threads": 8192,
+      "wave32": 256,
+      "gbs_median": 160.61,
+      "gbs_min": 159.95,
+      "gbs_max": 160.62,
+      "n": 3,
+      "frac_sat": 0.41212696620564016
+    },
+    {
+      "groups": 48,
+      "threads": 12288,
+      "wave32": 384,
+      "gbs_median": 225.61,
+      "gbs_min": 224.53,
+      "gbs_max": 225.83,
+      "n": 3,
+      "frac_sat": 0.5789176567190989
+    },
+    {
+      "groups": 64,
+      "threads": 16384,
+      "wave32": 512,
+      "gbs_median": 276.77,
+      "gbs_min": 276.01,
+      "gbs_max": 276.82,
+      "n": 3,
+      "frac_sat": 0.7101947602063072
+    },
+    {
+      "groups": 96,
+      "threads": 24576,
+      "wave32": 768,
+      "gbs_median": 344.14,
+      "gbs_min": 342.6,
+      "gbs_max": 344.35,
+      "n": 3,
+      "frac_sat": 0.883066895896949
+    },
+    {
+      "groups": 128,
+      "threads": 32768,
+      "wave32": 1024,
+      "gbs_median": 369.98,
+      "gbs_min": 369.23,
+      "gbs_max": 370.22,
+      "n": 3,
+      "frac_sat": 0.9493726104026071
+    },
+    {
+      "groups": 192,
+      "threads": 49152,
+      "wave32": 1536,
+      "gbs_median": 387.39,
+      "gbs_min": 386.86,
+      "gbs_max": 387.91,
+      "n": 3,
+      "frac_sat": 0.9940468553539812
+    },
+    {
+      "groups": 256,
+      "threads": 65536,
+      "wave32": 2048,
+      "gbs_median": 321.38,
+      "gbs_min": 321.08,
+      "gbs_max": 322.11,
+      "n": 3,
+      "frac_sat": 0.8246644941110056
+    },
+    {
+      "groups": 384,
+      "threads": 98304,
+      "wave32": 3072,
+      "gbs_median": 382.92,
+      "gbs_min": 382.2,
+      "gbs_max": 383.03,
+      "n": 3,
+      "frac_sat": 0.9825767878679018
+    },
+    {
+      "groups": 512,
+      "threads": 131072,
+      "wave32": 4096,
+      "gbs_median": 358.12,
+      "gbs_min": 357.64,
+      "gbs_max": 358.74,
+      "n": 3,
+      "frac_sat": 0.9189397244104591
+    },
+    {
+      "groups": 768,
+      "threads": 196608,
+      "wave32": 6144,
+      "gbs_median": 371.36,
+      "gbs_min": 370.47,
+      "gbs_max": 372.07,
+      "n": 3,
+      "frac_sat": 0.9529137050627391
+    },
+    {
+      "groups": 1024,
+      "threads": 262144,
+      "wave32": 8192,
+      "gbs_median": 378.02,
+      "gbs_min": 377.61,
+      "gbs_max": 378.89,
+      "n": 3,
+      "frac_sat": 0.9700033358138103
+    },
+    {
+      "groups": 2048,
+      "threads": 524288,
+      "wave32": 16384,
+      "gbs_median": 385.99,
+      "gbs_min": 385.87,
+      "gbs_max": 386.49,
+      "n": 3,
+      "frac_sat": 0.9904544404813836
+    },
+    {
+      "groups": 4096,
+      "threads": 1048576,
+      "wave32": 32768,
+      "gbs_median": 387.3,
+      "gbs_min": 386.98,
+      "gbs_max": 387.65,
+      "n": 3,
+      "frac_sat": 0.9938159143978856
+    },
+    {
+      "groups": 8192,
+      "threads": 2097152,
+      "wave32": 65536,
+      "gbs_median": 388.4,
+      "gbs_min": 388.16,
+      "gbs_max": 388.9,
+      "n": 3,
+      "frac_sat": 0.996638526083498
+    },
+    {
+      "groups": 16384,
+      "threads": 4194304,
+      "wave32": 131072,
+      "gbs_median": 388.68,
+      "gbs_min": 388.61,
+      "gbs_max": 389.76,
+      "n": 3,
+      "frac_sat": 0.9973570090580176
+    },
+    {
+      "groups": 32768,
+      "threads": 8388608,
+      "wave32": 262144,
+      "gbs_median": 389.71,
+      "gbs_min": 389.06,
+      "gbs_max": 389.77,
+      "n": 3,
+      "frac_sat": 1.0
+    },
+    {
+      "groups": 65536,
+      "threads": 16777216,
+      "wave32": 524288,
+      "gbs_median": 391.36,
+      "gbs_min": 391.36,
+      "gbs_max": 392.03,
+      "n": 3,
+      "frac_sat": 1.0042339175284187
+    },
+    {
+      "groups": 131072,
+      "threads": 33554432,
+      "wave32": 1048576,
+      "gbs_median": 393.94,
+      "gbs_min": 393.65,
+      "gbs_max": 394.22,
+      "n": 3,
+      "frac_sat": 1.0108542249364914
+    },
+    {
+      "groups": 262144,
+      "threads": 67108864,
+      "wave32": 2097152,
+      "gbs_median": 395.4,
+      "gbs_min": 395.26,
+      "gbs_max": 396.11,
+      "n": 3,
+      "frac_sat": 1.0146006004464858
+    },
+    {
+      "groups": 524288,
+      "threads": 134217728,
+      "wave32": 4194304,
+      "gbs_median": 396.01,
+      "gbs_min": 396.0,
+      "gbs_max": 396.93,
+      "n": 3,
+      "frac_sat": 1.016165866926689
+    }
+  ]
+}

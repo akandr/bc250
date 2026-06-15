@@ -1,0 +1,161 @@
+{
+  "step": "perf",
+  "results": {
+    "qwen3-coder-30b-iq2m": {
+      "runs": [
+        {
+          "model": "qwen3-coder-30b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwen3-coder-30b-iq2m-run1",
+          "projected_vm_gib": 10.59,
+          "wall_s": 36.16,
+          "rc": 0,
+          "prompt_eval_ms": 1432.26,
+          "n_prompt": 252,
+          "prefill_tok_s": 175.95,
+          "eval_ms": 1707.73,
+          "n_gen": 99,
+          "gen_tok_s": 57.97,
+          "load_ms": 31020.83,
+          "total_ms": 3390.81,
+          "ttft_s": 32.453,
+          "output": "RISC (Reduced Instruction Set Computer) and CISC (Complex Instruction Set Computer) represent two fundamentally different philosophies in processor design. RISC emphasizes simplicity, predictability, and efficiency, while CISC focuses on functionality and code density. The original RISC designs, exemplified by MIPS, SPARC, and ARM, were built around the principle of a small, fixed-length instruction set that supports a limited number of operations. This approach allows for simpler, more predictable instruction execution, which is",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780385740097.csv"
+        },
+        {
+          "model": "qwen3-coder-30b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwen3-coder-30b-iq2m-run2",
+          "projected_vm_gib": 10.59,
+          "wall_s": 34.05,
+          "rc": 0,
+          "prompt_eval_ms": 1405.78,
+          "n_prompt": 252,
+          "prefill_tok_s": 179.26,
+          "eval_ms": 1714.08,
+          "n_gen": 99,
+          "gen_tok_s": 57.76,
+          "load_ms": 29138.0,
+          "total_ms": 3374.43,
+          "ttft_s": 30.544,
+          "output": "RISC (Reduced Instruction Set Computer) and CISC (Complex Instruction Set Computer) represent two fundamentally different philosophies in processor design. RISC emphasizes simplicity, predictability, and efficiency, while CISC prioritizes functionality and code density. The RISC philosophy, exemplified by early designs like MIPS, SPARC, and ARM, focuses on a small, fixed-length instruction set that executes in a single cycle, enabling high-performance superscalar designs. In contrast, CISC, embodied by x",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780385806798.csv"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 57.865,
+        "gen_tok_s_min": 57.76,
+        "gen_tok_s_max": 57.97,
+        "gen_tok_s_cv_pct": 0.26,
+        "prefill_tok_s_median": 177.605,
+        "prefill_tok_s_min": 175.95,
+        "prefill_tok_s_max": 179.26,
+        "prefill_tok_s_cv_pct": 1.32,
+        "ttft_s_median": 31.498,
+        "ttft_s_min": 30.544,
+        "ttft_s_max": 32.453,
+        "ttft_s_cv_pct": 4.29
+      },
+      "backend": "llama-completion",
+      "kind": "moe"
+    },
+    "qwen3.5-35b-iq2m": {
+      "runs": [
+        {
+          "model": "qwen3.5-35b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwen3.5-35b-iq2m-run1",
+          "projected_vm_gib": 11.16,
+          "wall_s": 35.43,
+          "rc": 0,
+          "prompt_eval_ms": 1505.91,
+          "n_prompt": 253,
+          "prefill_tok_s": 168.0,
+          "eval_ms": 1658.72,
+          "n_gen": 99,
+          "gen_tok_s": 59.68,
+          "load_ms": 29474.04,
+          "total_ms": 3453.29,
+          "ttft_s": 30.98,
+          "output": "<think>\n\n</think>\n\nThe architectural debate between Reduced Instruction Set Computing (RISC) and Complex Instruction Set Computing (CISC) represents a fundamental divergence in how processors interpret software instructions, driven by different philosophies regarding hardware complexity, compiler design, and performance goals.\n\n**Instruction Set Design Philosophy and Historical Context**\nThe RISC philosophy, emerging prominently in the early 1980s with the **MIPS** (Stanford), **SPARC** (Sun), and **ARM",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780385893515.csv"
+        },
+        {
+          "model": "qwen3.5-35b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 100,
+          "label": "perf-qwen3.5-35b-iq2m-run2",
+          "projected_vm_gib": 11.16,
+          "wall_s": 38.03,
+          "rc": 0,
+          "prompt_eval_ms": 1466.2,
+          "n_prompt": 253,
+          "prefill_tok_s": 172.55,
+          "eval_ms": 1669.64,
+          "n_gen": 99,
+          "gen_tok_s": 59.29,
+          "load_ms": 32168.62,
+          "total_ms": 3425.76,
+          "ttft_s": 33.635,
+          "output": "<think>\n\n</think>\n\nThe architectural debate between Reduced Instruction Set Computing (RISC) and Complex Instruction Set Computing (CISC) represents a fundamental divergence in processor design philosophy, driven by the trade-off between hardware complexity and software efficiency.\n\n**Instruction Set Design Philosophy and Historical Context**\nRISC emerged in the early 1980s, championed by researchers like John Cocke at IBM and later formalized by David Patterson and John Hennessy. The core philosophy was that by",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780385959480.csv"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 59.485,
+        "gen_tok_s_min": 59.29,
+        "gen_tok_s_max": 59.68,
+        "gen_tok_s_cv_pct": 0.46,
+        "prefill_tok_s_median": 170.275,
+        "prefill_tok_s_min": 168.0,
+        "prefill_tok_s_max": 172.55,
+        "prefill_tok_s_cv_pct": 1.89,
+        "ttft_s_median": 32.307,
+        "ttft_s_min": 30.98,
+        "ttft_s_max": 33.635,
+        "ttft_s_cv_pct": 5.81
+      },
+      "backend": "llama-completion",
+      "kind": "moe"
+    }
+  }
+}

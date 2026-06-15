@@ -1,0 +1,18 @@
+{
+  "n_samples": 8018,
+  "duration_s": 1606.43,
+  "power_mw_mean": 53325.0,
+  "power_mw_p50": 48008.0,
+  "power_mw_p95": 100250,
+  "power_mw_max": 122103,
+  "sclk_mhz_mean": 1051.0,
+  "sclk_mhz_max": 1500,
+  "temp_c_mean": 57.6,
+  "temp_c_max": 80.0,
+  "energy_j": 85662.9,
+  "vram_gib_max": 0.43,
+  "gtt_gib_max": 13.085,
+  "label": "w4d",
+  "hz": 5.0,
+  "csv": "/home/akandr/phase-c-out/results/power-w4d.csv"
+}

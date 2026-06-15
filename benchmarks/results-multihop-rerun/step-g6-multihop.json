@@ -1,0 +1,236 @@
+{
+  "cells": [
+    {
+      "model": "qwen3.5:9b",
+      "test_name": "multihop_budget",
+      "ctx_size": 16384,
+      "ctx_label": "16K",
+      "n_runs": 3,
+      "n_pass": 3,
+      "pass_rate": 1.0,
+      "runs": [
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1648,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation to determine the amount spent on cryogenic cooling systems:\n\n**Step 1: Determine the total allocated budget for Project Aurora.**\nAccording to the note: \"The Meridian Research Institute allocated $4.2 million to Project Au",
+          "prompt_eval_count": 10751,
+          "eval_count": 464,
+          "gen_tok_s": 19.95,
+          "ttft_s": 70.16,
+          "wall_s": 93.9,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_budget",
+          "ctx_size": 16384,
+          "run_idx": 1
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1676,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation to determine the amount spent on cryogenic cooling systems:\n\n**Step 1: Identify the total allocated budget.**\nThe first note states: \"The Meridian Research Institute allocated **$4.2 million** to Project Aurora...\"\n*   Tot",
+          "prompt_eval_count": 10751,
+          "eval_count": 475,
+          "gen_tok_s": 19.95,
+          "ttft_s": 70.14,
+          "wall_s": 94.3,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_budget",
+          "ctx_size": 16384,
+          "run_idx": 2
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1378,
+          "response_preview": "Based on the text provided, here is the step-by-step calculation to determine the amount spent on cryogenic cooling systems:\n\n**Step 1: Identify the total allocated budget.**\nThe text states: \"The Meridian Research Institute allocated **$4.2 million** to Project Aurora for quantum computing research",
+          "prompt_eval_count": 10751,
+          "eval_count": 409,
+          "gen_tok_s": 19.96,
+          "ttft_s": 70.12,
+          "wall_s": 91.0,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_budget",
+          "ctx_size": 16384,
+          "run_idx": 3
+        }
+      ],
+      "timestamp": "2026-06-07T21:07:20.017378"
+    },
+    {
+      "model": "qwen3.5:9b",
+      "test_name": "multihop_population",
+      "ctx_size": 16384,
+      "ctx_label": "16K",
+      "n_runs": 3,
+      "n_pass": 3,
+      "pass_rate": 1.0,
+      "runs": [
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 947,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation to find the number of residents of Port Stellaris under 18:\n\n**Step 1: Identify the total population of the nation.**\nThe first note states: \"The island nation of Velanthos had a total population of **840,000** in the 2024",
+          "prompt_eval_count": 10749,
+          "eval_count": 280,
+          "gen_tok_s": 20.0,
+          "ttft_s": 70.62,
+          "wall_s": 84.9,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_population",
+          "ctx_size": 16384,
+          "run_idx": 1
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1320,
+          "response_preview": "To determine the number of residents in Port Stellaris under 18, we must extract the relevant statistics from the embedded notes and perform the necessary calculations.\n\n**Step 1: Determine the total population of Velanthos.**\nThe text states: \"[IMPORTANT NOTE: The island nation of Velanthos had a t",
+          "prompt_eval_count": 10749,
+          "eval_count": 472,
+          "gen_tok_s": 19.95,
+          "ttft_s": 70.61,
+          "wall_s": 94.7,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_population",
+          "ctx_size": 16384,
+          "run_idx": 2
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 666,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation:\n\n1.  **Find the total population of the island nation:** The text states, \"The island nation of Velanthos had a total population of **840,000** in the 2024 census.\"\n2.  **Calculate the population of the capital city (Port",
+          "prompt_eval_count": 10749,
+          "eval_count": 216,
+          "gen_tok_s": 20.01,
+          "ttft_s": 70.61,
+          "wall_s": 81.6,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_population",
+          "ctx_size": 16384,
+          "run_idx": 3
+        }
+      ],
+      "timestamp": "2026-06-07T21:11:41.181133"
+    },
+    {
+      "model": "qwen3.5:9b",
+      "test_name": "multihop_budget",
+      "ctx_size": 32768,
+      "ctx_label": "32K",
+      "n_runs": 3,
+      "n_pass": 3,
+      "pass_rate": 1.0,
+      "runs": [
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1089,
+          "response_preview": "Based on the text provided, here is the step-by-step calculation to determine the amount spent on cryogenic cooling systems:\n\n**Step 1: Identify the total allocated budget.**\nThe text states: \"The Meridian Research Institute allocated **$4.2 million** to Project Aurora...\"\n\n**Step 2: Identify the sp",
+          "prompt_eval_count": 21334,
+          "eval_count": 287,
+          "gen_tok_s": 18.35,
+          "ttft_s": 159.91,
+          "wall_s": 175.9,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_budget",
+          "ctx_size": 32768,
+          "run_idx": 1
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1430,
+          "response_preview": "To calculate the amount spent on cryogenic cooling systems, we must extract the relevant figures from the embedded notes within the text and perform the necessary steps:\n\n**Step 1: Determine the total allocated budget.**\nAccording to the note embedded in the text:\n> \"The Meridian Research Institute ",
+          "prompt_eval_count": 21334,
+          "eval_count": 403,
+          "gen_tok_s": 18.35,
+          "ttft_s": 159.88,
+          "wall_s": 182.3,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_budget",
+          "ctx_size": 32768,
+          "run_idx": 2
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 1109,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation to determine the amount spent on cryogenic cooling systems:\n\n1.  **Identify the total budget allocation:**\n    The text states: *\"The Meridian Research Institute allocated $4.2 million to Project Aurora...\"*\n    Total Budg",
+          "prompt_eval_count": 21334,
+          "eval_count": 299,
+          "gen_tok_s": 18.35,
+          "ttft_s": 159.87,
+          "wall_s": 176.5,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_budget",
+          "ctx_size": 32768,
+          "run_idx": 3
+        }
+      ],
+      "timestamp": "2026-06-07T21:20:50.633187"
+    },
+    {
+      "model": "qwen3.5:9b",
+      "test_name": "multihop_population",
+      "ctx_size": 32768,
+      "ctx_label": "32K",
+      "n_runs": 3,
+      "n_pass": 3,
+      "pass_rate": 1.0,
+      "runs": [
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 855,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation:\n\n1.  **Identify the total population of the island nation (Velanthos):** The first note states, \"The island nation of Velanthos had a total population of **840,000** in the 2024 census.\"\n2.  **Identify the percentage of t",
+          "prompt_eval_count": 21341,
+          "eval_count": 270,
+          "gen_tok_s": 18.36,
+          "ttft_s": 159.89,
+          "wall_s": 174.9,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_population",
+          "ctx_size": 32768,
+          "run_idx": 1
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 981,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation to determine the number of residents under 18 in Port Stellaris:\n\n**Step 1: Identify the total population of Velanthos.**\nThe first note states: \"The island nation of Velanthos had a total population of 840,000 in the 2024",
+          "prompt_eval_count": 21341,
+          "eval_count": 301,
+          "gen_tok_s": 18.36,
+          "ttft_s": 159.9,
+          "wall_s": 176.6,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_population",
+          "ctx_size": 32768,
+          "run_idx": 2
+        },
+        {
+          "status": "OK",
+          "correct": true,
+          "response_len": 889,
+          "response_preview": "Based on the notes embedded in the text, here is the step-by-step calculation:\n\n1.  **Find the total population of the island nation:**\n    The text states: \"The island nation of Velanthos had a total population of **840,000** in the 2024 census.\"\n\n2.  **Find the percentage of the population living ",
+          "prompt_eval_count": 21341,
+          "eval_count": 268,
+          "gen_tok_s": 18.38,
+          "ttft_s": 159.89,
+          "wall_s": 174.8,
+          "model": "qwen3.5:9b",
+          "test_name": "multihop_population",
+          "ctx_size": 32768,
+          "run_idx": 3
+        }
+      ],
+      "timestamp": "2026-06-07T21:29:36.959149"
+    }
+  ],
+  "metadata": {
+    "timestamp": "2026-06-07T21:29:36.959166",
+    "elapsed_min": 27.2
+  }
+}

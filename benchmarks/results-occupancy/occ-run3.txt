@@ -1,0 +1,28 @@
+N_FLOATS=134217728 BYTES_MOVED=1073741824 LOCAL_SIZE=256
+OCC groups=1 threads=256 wave32=8 gbs=5.72 frac_peak=0.0160
+OCC groups=2 threads=512 wave32=16 gbs=11.19 frac_peak=0.0313
+OCC groups=4 threads=1024 wave32=32 gbs=22.03 frac_peak=0.0617
+OCC groups=8 threads=2048 wave32=64 gbs=43.74 frac_peak=0.1224
+OCC groups=16 threads=4096 wave32=128 gbs=85.52 frac_peak=0.2393
+OCC groups=24 threads=6144 wave32=192 gbs=124.79 frac_peak=0.3493
+OCC groups=32 threads=8192 wave32=256 gbs=160.61 frac_peak=0.4495
+OCC groups=48 threads=12288 wave32=384 gbs=225.83 frac_peak=0.6321
+OCC groups=64 threads=16384 wave32=512 gbs=276.82 frac_peak=0.7748
+OCC groups=96 threads=24576 wave32=768 gbs=344.35 frac_peak=0.9638
+OCC groups=128 threads=32768 wave32=1024 gbs=370.22 frac_peak=1.0362
+OCC groups=192 threads=49152 wave32=1536 gbs=387.91 frac_peak=1.0857
+OCC groups=256 threads=65536 wave32=2048 gbs=321.38 frac_peak=0.8995
+OCC groups=384 threads=98304 wave32=3072 gbs=383.03 frac_peak=1.0720
+OCC groups=512 threads=131072 wave32=4096 gbs=358.12 frac_peak=1.0023
+OCC groups=768 threads=196608 wave32=6144 gbs=370.47 frac_peak=1.0369
+OCC groups=1024 threads=262144 wave32=8192 gbs=377.61 frac_peak=1.0569
+OCC groups=2048 threads=524288 wave32=16384 gbs=385.87 frac_peak=1.0800
+OCC groups=4096 threads=1048576 wave32=32768 gbs=386.98 frac_peak=1.0831
+OCC groups=8192 threads=2097152 wave32=65536 gbs=388.16 frac_peak=1.0864
+OCC groups=16384 threads=4194304 wave32=131072 gbs=388.61 frac_peak=1.0877
+OCC groups=32768 threads=8388608 wave32=262144 gbs=389.77 frac_peak=1.0909
+OCC groups=65536 threads=16777216 wave32=524288 gbs=391.36 frac_peak=1.0953
+OCC groups=131072 threads=33554432 wave32=1048576 gbs=393.94 frac_peak=1.1026
+OCC groups=262144 threads=67108864 wave32=2097152 gbs=395.26 frac_peak=1.1063
+OCC groups=524288 threads=134217728 wave32=4194304 gbs=396.01 frac_peak=1.1084
+RESULT bw_max_gbs=396.01 peak_ref_gbs=357.29

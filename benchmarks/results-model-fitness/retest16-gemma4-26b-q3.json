@@ -1,0 +1,37 @@
+{
+  "model": "gemma4-26b-q3",
+  "pages_limit": 4194304,
+  "gtt_highwater_gib": 12.26,
+  "tiers": [
+    {
+      "status": "OK",
+      "wall_s": 70.5,
+      "prompt_tokens": 2767,
+      "gen_tok_s": 20.4,
+      "prefill_tok_s": 55.1,
+      "tier_k": 4,
+      "gtt_used_gib": 12.0,
+      "free_gib_after": 0.35
+    },
+    {
+      "status": "OK",
+      "wall_s": 226.8,
+      "prompt_tokens": 10999,
+      "gen_tok_s": 19.5,
+      "prefill_tok_s": 52.7,
+      "tier_k": 16,
+      "gtt_used_gib": 12.14,
+      "free_gib_after": 0.44
+    },
+    {
+      "status": "OK",
+      "wall_s": 470.7,
+      "prompt_tokens": 21971,
+      "gen_tok_s": 17.6,
+      "prefill_tok_s": 48.6,
+      "tier_k": 32,
+      "gtt_used_gib": 12.26,
+      "free_gib_after": 0.34
+    }
+  ]
+}

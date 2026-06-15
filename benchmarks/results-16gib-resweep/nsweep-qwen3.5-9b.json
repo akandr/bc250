@@ -1,0 +1,176 @@
+{
+  "model": "qwen3.5:9b",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "4": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 33.7,
+          "pe": 2768,
+          "ec": 128,
+          "gen": 22.57,
+          "pre": 170.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 30.1,
+          "pe": 2768,
+          "ec": 128,
+          "gen": 22.52,
+          "pre": 170.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 29.5,
+          "pe": 2768,
+          "ec": 128,
+          "gen": 22.55,
+          "pre": 170.5,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 7.42,
+      "free_gib": 0.23,
+      "ok": 3,
+      "gen_med": 22.55,
+      "pre_med": 170.3,
+      "gen_runs": [
+        22.57,
+        22.52,
+        22.55
+      ],
+      "pe": 2768
+    },
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 85.1,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.1,
+          "pre": 153.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 85.2,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.09,
+          "pre": 153.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 85.4,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.09,
+          "pre": 153.2,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 7.62,
+      "free_gib": 0.23,
+      "ok": 3,
+      "gen_med": 20.09,
+      "pre_med": 153.3,
+      "gen_runs": [
+        20.1,
+        20.09,
+        20.09
+      ],
+      "pe": 10855
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 178.1,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.42,
+          "pre": 133.0,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 177.7,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.42,
+          "pre": 133.0,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 178.2,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.41,
+          "pre": 133.0,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 7.88,
+      "free_gib": 0.38,
+      "ok": 3,
+      "gen_med": 18.42,
+      "pre_med": 133.0,
+      "gen_runs": [
+        18.42,
+        18.42,
+        18.41
+      ],
+      "pe": 21639
+    },
+    "64": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 427.9,
+          "pe": 43206,
+          "ec": 128,
+          "gen": 16.4,
+          "pre": 105.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 428.1,
+          "pe": 43206,
+          "ec": 128,
+          "gen": 16.38,
+          "pre": 105.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 427.9,
+          "pe": 43206,
+          "ec": 128,
+          "gen": 16.39,
+          "pre": 105.2,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 8.66,
+      "free_gib": 0.95,
+      "ok": 3,
+      "gen_med": 16.39,
+      "pre_med": 105.2,
+      "gen_runs": [
+        16.4,
+        16.38,
+        16.39
+      ],
+      "pe": 43206
+    }
+  },
+  "gtt_highwater": 8.66
+}

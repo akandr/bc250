@@ -1,0 +1,18 @@
+{
+  "n_samples": 3063,
+  "duration_s": 612.4,
+  "power_mw_mean": 52269.4,
+  "power_mw_p50": 47044,
+  "power_mw_p95": 98169,
+  "power_mw_max": 119199,
+  "sclk_mhz_mean": 1046.0,
+  "sclk_mhz_max": 1500,
+  "temp_c_mean": 56.9,
+  "temp_c_max": 75.0,
+  "energy_j": 32009.8,
+  "vram_gib_max": 0.031,
+  "gtt_gib_max": 11.921,
+  "label": "w3a",
+  "hz": 5.0,
+  "csv": "/home/akandr/phase-c-out/results/power-w3a.csv"
+}

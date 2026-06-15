@@ -1,0 +1,22 @@
+device: AMD BC-250 (RADV GFX1013)
+date: 2026-06-07
+config: 24-CU, oberon-governor 1500 MHz, host-coherent UMA memory
+
+BW_FLOATS=134217728
+BW_PASS pass=0 dispatch_s=0.003060 gbs=350.85
+BW_PASS pass=1 dispatch_s=0.003009 gbs=356.88
+BW_PASS pass=2 dispatch_s=0.003011 gbs=356.60
+BW_PASS pass=3 dispatch_s=0.003005 gbs=357.29
+BW_PASS pass=4 dispatch_s=0.003009 gbs=356.81
+FP_GFLOPS_PER_PASS=274.878
+FP_PASS pass=0 dispatch_s=0.070460 gflops=3901.2
+FP_PASS pass=1 dispatch_s=0.070511 gflops=3898.4
+FP_PASS pass=2 dispatch_s=0.070516 gflops=3898.1
+FP_PASS pass=3 dispatch_s=0.070505 gflops=3898.7
+RESULT bw_peak_gbs=357.29 fp32_peak_gflops=3901.2
+
+Notes:
+- BW benchmark: Vulkan streaming copy, 128 Mi floats per buffer (512 MiB), read+write = 1 GiB per dispatch
+- FP benchmark: 8 independent FMA chains per thread, 2048 iters, 8 Mi threads; 274.9 GFLOP per dispatch
+- Memory type: HOST_VISIBLE | HOST_COHERENT (= GDDR6 in UMA; bc250 reports uma=1)
+- Wall-clock timing via CLOCK_MONOTONIC wrapped around vkQueueSubmit + vkWaitForFences

@@ -1,0 +1,153 @@
+{
+  "step": "perf-g2-extra",
+  "results": {
+    "llama3.2:3b": {
+      "kind": "dense",
+      "active_param_b": 3.0,
+      "total_param_b": 3.0,
+      "backend": "ollama",
+      "runs": [
+        {
+          "n_gen": 100,
+          "n_prompt": 214,
+          "gen_tok_s": 79.62,
+          "prefill_tok_s": 377.31,
+          "wall_s": 7.25,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 214,
+          "gen_tok_s": 78.9,
+          "prefill_tok_s": 3867.21,
+          "wall_s": 1.77,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 214,
+          "gen_tok_s": 79.36,
+          "prefill_tok_s": 3968.65,
+          "wall_s": 1.75,
+          "status": "ok"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 79.36,
+        "prefill_tok_s_median": 3867.21,
+        "n_ok": 3
+      }
+    },
+    "qwen3:4b": {
+      "kind": "dense",
+      "active_param_b": 4.0,
+      "total_param_b": 4.0,
+      "backend": "ollama",
+      "runs": [
+        {
+          "n_gen": 100,
+          "n_prompt": 201,
+          "gen_tok_s": 50.35,
+          "prefill_tok_s": 267.07,
+          "wall_s": 6.95,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 201,
+          "gen_tok_s": 50.39,
+          "prefill_tok_s": 1251.1,
+          "wall_s": 2.39,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 201,
+          "gen_tok_s": 50.53,
+          "prefill_tok_s": 1185.95,
+          "wall_s": 2.38,
+          "status": "ok"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 50.39,
+        "prefill_tok_s_median": 1185.95,
+        "n_ok": 3
+      }
+    },
+    "qwen3:8b-q8_0": {
+      "kind": "dense",
+      "active_param_b": 8.0,
+      "total_param_b": 8.0,
+      "backend": "ollama",
+      "runs": [
+        {
+          "n_gen": 100,
+          "n_prompt": 205,
+          "gen_tok_s": 25.49,
+          "prefill_tok_s": 191.85,
+          "wall_s": 19.2,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 205,
+          "gen_tok_s": 25.51,
+          "prefill_tok_s": 1020.72,
+          "wall_s": 4.36,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 205,
+          "gen_tok_s": 25.53,
+          "prefill_tok_s": 1047.3,
+          "wall_s": 4.36,
+          "status": "ok"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 25.51,
+        "prefill_tok_s_median": 1020.72,
+        "n_ok": 3
+      }
+    },
+    "qwen3:14b": {
+      "kind": "dense",
+      "active_param_b": 14.0,
+      "total_param_b": 14.0,
+      "backend": "ollama",
+      "runs": [
+        {
+          "n_gen": 100,
+          "n_prompt": 202,
+          "gen_tok_s": 20.07,
+          "prefill_tok_s": 82.46,
+          "wall_s": 20.74,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 202,
+          "gen_tok_s": 20.11,
+          "prefill_tok_s": 444.14,
+          "wall_s": 5.67,
+          "status": "ok"
+        },
+        {
+          "n_gen": 100,
+          "n_prompt": 202,
+          "gen_tok_s": 20.11,
+          "prefill_tok_s": 443.09,
+          "wall_s": 5.66,
+          "status": "ok"
+        }
+      ],
+      "aggregate": {
+        "gen_tok_s_median": 20.11,
+        "prefill_tok_s_median": 443.09,
+        "n_ok": 3
+      }
+    }
+  }
+}

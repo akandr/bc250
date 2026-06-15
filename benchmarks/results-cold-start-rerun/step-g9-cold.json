@@ -1,0 +1,107 @@
+{
+  "results": [
+    {
+      "model": "qwen3.5:9b",
+      "label": "qwen3.5:9b (Q4_K_M, 6.6 GiB)",
+      "runs": [
+        {
+          "status": "OK",
+          "run_idx": 1,
+          "ttft_s": 12.01,
+          "load_s": 11.67,
+          "prompt_eval_s": 0.35,
+          "gen_tok_s": 24.07,
+          "wall_s": 13.06,
+          "load_ms": 11667.0,
+          "prompt_eval_count": 22,
+          "eval_count": 20,
+          "model": "qwen3.5:9b",
+          "timestamp": "2026-06-07T21:50:21.212244"
+        },
+        {
+          "status": "OK",
+          "run_idx": 2,
+          "ttft_s": 12.19,
+          "load_s": 11.84,
+          "prompt_eval_s": 0.34,
+          "gen_tok_s": 24.16,
+          "wall_s": 13.22,
+          "load_ms": 11845.0,
+          "prompt_eval_count": 22,
+          "eval_count": 20,
+          "model": "qwen3.5:9b",
+          "timestamp": "2026-06-07T21:50:43.546627"
+        },
+        {
+          "status": "OK",
+          "run_idx": 3,
+          "ttft_s": 11.91,
+          "load_s": 11.58,
+          "prompt_eval_s": 0.33,
+          "gen_tok_s": 24.24,
+          "wall_s": 12.92,
+          "load_ms": 11576.0,
+          "prompt_eval_count": 22,
+          "eval_count": 20,
+          "model": "qwen3.5:9b",
+          "timestamp": "2026-06-07T21:51:05.627132"
+        }
+      ]
+    },
+    {
+      "model": "deepseek-r1:14b",
+      "label": "deepseek-r1:14b (Q4_K_M, 9.0 GiB)",
+      "runs": [
+        {
+          "status": "OK",
+          "run_idx": 1,
+          "ttft_s": 16.94,
+          "load_s": 16.43,
+          "prompt_eval_s": 0.51,
+          "gen_tok_s": 23.5,
+          "wall_s": 17.87,
+          "load_ms": 16432.0,
+          "prompt_eval_count": 17,
+          "eval_count": 20,
+          "model": "deepseek-r1:14b",
+          "timestamp": "2026-06-07T21:51:32.713357"
+        },
+        {
+          "status": "OK",
+          "run_idx": 2,
+          "ttft_s": 17.15,
+          "load_s": 16.65,
+          "prompt_eval_s": 0.5,
+          "gen_tok_s": 23.49,
+          "wall_s": 18.07,
+          "load_ms": 16648.0,
+          "prompt_eval_count": 17,
+          "eval_count": 20,
+          "model": "deepseek-r1:14b",
+          "timestamp": "2026-06-07T21:51:59.945322"
+        },
+        {
+          "status": "OK",
+          "run_idx": 3,
+          "ttft_s": 17.43,
+          "load_s": 16.93,
+          "prompt_eval_s": 0.51,
+          "gen_tok_s": 23.42,
+          "wall_s": 18.44,
+          "load_ms": 16927.0,
+          "prompt_eval_count": 17,
+          "eval_count": 20,
+          "model": "deepseek-r1:14b",
+          "timestamp": "2026-06-07T21:52:27.553210"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "timestamp": "2026-06-07T21:52:27.553253",
+    "elapsed_min": 2.5,
+    "prompt": "Briefly describe the water cycle in two sentences.",
+    "n_ctx": 4096,
+    "n_predict": 20
+  }
+}

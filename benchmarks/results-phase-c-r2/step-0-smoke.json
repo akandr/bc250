@@ -1,0 +1,61 @@
+{
+  "step": "smoke",
+  "model": "deepseek-r1-14b",
+  "runs": [
+    {
+      "model": "deepseek-r1-14b",
+      "backend": "llama-completion",
+      "build": "b9265",
+      "ctx_target": 4096,
+      "kv_type": "q4_0",
+      "env_extra": {},
+      "n_gen_target": 100,
+      "label": "smoke-run1",
+      "projected_vm_gib": 8.77,
+      "status": "skip",
+      "skip_reason": "mem_available_3.1gib_under_4.0gib_floor",
+      "wall_s": 0.0,
+      "gpu_overlay": {
+        "samples": 0,
+        "throttle_flag": false
+      }
+    },
+    {
+      "model": "deepseek-r1-14b",
+      "backend": "llama-completion",
+      "build": "b9265",
+      "ctx_target": 4096,
+      "kv_type": "q4_0",
+      "env_extra": {},
+      "n_gen_target": 100,
+      "label": "smoke-run2",
+      "projected_vm_gib": 8.77,
+      "status": "skip",
+      "skip_reason": "mem_available_3.1gib_under_4.0gib_floor",
+      "wall_s": 0.0,
+      "gpu_overlay": {
+        "samples": 0,
+        "throttle_flag": false
+      }
+    },
+    {
+      "model": "deepseek-r1-14b",
+      "backend": "llama-completion",
+      "build": "b9265",
+      "ctx_target": 4096,
+      "kv_type": "q4_0",
+      "env_extra": {},
+      "n_gen_target": 100,
+      "label": "smoke-run3",
+      "projected_vm_gib": 8.77,
+      "status": "skip",
+      "skip_reason": "mem_available_3.1gib_under_4.0gib_floor",
+      "wall_s": 0.0,
+      "gpu_overlay": {
+        "samples": 0,
+        "throttle_flag": false
+      }
+    }
+  ],
+  "aggregate": {}
+}

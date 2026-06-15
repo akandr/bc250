@@ -1,0 +1,92 @@
+{
+  "model": "qwen3.5:9b",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 89.3,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.08,
+          "pre": 153.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 85.9,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.07,
+          "pre": 153.3,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 85.4,
+          "pe": 10855,
+          "ec": 128,
+          "gen": 20.08,
+          "pre": 153.3,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 7.62,
+      "free_gib": 0.32,
+      "ok": 3,
+      "gen_med": 20.08,
+      "pre_med": 153.3,
+      "gen_runs": [
+        20.08,
+        20.07,
+        20.08
+      ],
+      "pe": 10855
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 178.2,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.4,
+          "pre": 133.0,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 178.0,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.38,
+          "pre": 133.0,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 178.3,
+          "pe": 21639,
+          "ec": 128,
+          "gen": 18.41,
+          "pre": 133.0,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 7.88,
+      "free_gib": 0.41,
+      "ok": 3,
+      "gen_med": 18.4,
+      "pre_med": 133.0,
+      "gen_runs": [
+        18.4,
+        18.38,
+        18.41
+      ],
+      "pe": 21639
+    }
+  },
+  "gtt_highwater": 7.88
+}

@@ -1,0 +1,17 @@
+n=3 16-GiB sweep v2 (curl hard-deadline) — 2 models, tiers [64]K, 21:51
+
+================================================================
+MODEL qwen3:8b  (restart+reclaim)  tiers=[64]
+================================================================
+  clean: free=14.2 GiB gtt=0.0 GiB pages_limit=4194304
+  [64K] FAIL (timeout) gtt=6.3 -> stop climb
+  VERDICT qwen3:8b: max tier noneK, gtt_hw 6.3 GiB
+
+================================================================
+MODEL qwen3:14b  (restart+reclaim)  tiers=[64]
+================================================================
+  clean: free=14.1 GiB gtt=0.0 GiB pages_limit=4194304
+  [64K] FAIL (timeout) gtt=10.2 -> stop climb
+  VERDICT qwen3:14b: max tier noneK, gtt_hw 10.2 GiB
+
+SWEEP COMPLETE

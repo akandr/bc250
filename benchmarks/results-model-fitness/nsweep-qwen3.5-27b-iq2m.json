@@ -1,0 +1,133 @@
+{
+  "model": "qwen3.5-27b-iq2m",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "4": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 82.7,
+          "pe": 2756,
+          "ec": 128,
+          "gen": 8.02,
+          "pre": 56.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 80.2,
+          "pe": 2756,
+          "ec": 128,
+          "gen": 8.02,
+          "pre": 56.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 80.1,
+          "pe": 2756,
+          "ec": 128,
+          "gen": 8.02,
+          "pre": 56.1,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 13.01,
+      "free_gib": 0.44,
+      "ok": 3,
+      "gen_med": 8.02,
+      "pre_med": 56.2,
+      "gen_runs": [
+        8.02,
+        8.02,
+        8.02
+      ],
+      "pe": 2756
+    },
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 249.1,
+          "pe": 10843,
+          "ec": 128,
+          "gen": 7.43,
+          "pre": 50.7,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 247.6,
+          "pe": 10843,
+          "ec": 128,
+          "gen": 7.44,
+          "pre": 50.8,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 246.6,
+          "pe": 10843,
+          "ec": 128,
+          "gen": 7.45,
+          "pre": 50.8,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 13.24,
+      "free_gib": 0.55,
+      "ok": 3,
+      "gen_med": 7.44,
+      "pre_med": 50.8,
+      "gen_runs": [
+        7.43,
+        7.44,
+        7.45
+      ],
+      "pe": 10843
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 527.4,
+          "pe": 21627,
+          "ec": 128,
+          "gen": 6.7,
+          "pre": 44.1,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 526.8,
+          "pe": 21627,
+          "ec": 128,
+          "gen": 6.76,
+          "pre": 44.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 527.8,
+          "pe": 21627,
+          "ec": 128,
+          "gen": 6.75,
+          "pre": 44.1,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 13.56,
+      "free_gib": 0.4,
+      "ok": 3,
+      "gen_med": 6.75,
+      "pre_med": 44.1,
+      "gen_runs": [
+        6.7,
+        6.76,
+        6.75
+      ],
+      "pe": 21627
+    }
+  }
+}

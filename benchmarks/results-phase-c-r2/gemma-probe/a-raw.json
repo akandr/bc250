@@ -1,0 +1,78 @@
+{
+  "variant": "a-raw",
+  "model": "gemma4:latest",
+  "tiers": {
+    "4096": {
+      "runs": [
+        {
+          "run": 1,
+          "wall_s": 28.94,
+          "elapsed_s": 28.94,
+          "out_chars": 987,
+          "out_head": " \u0aae\u0abe\u0ab0\u0ac7 \u0a86 \u0a95\u0ab5\u0ab0\u0ac7\u0a9c\u0aa8\u0ac0 \u0a9c\u0ab0\u0ac2\u0ab0 \u0a9b\u0ac7.\n\n**\u0a85\u0ab9\u0ac0\u0a82 \u0a9c\u0ab5\u0abe\u0aac \u0a9b\u0ac7:**\n\n\u0a86 \u0aaa\u0acd\u0ab0\u0ab6\u0acd\u0aa8\u0aa8\u0acb \u0a9c\u0ab5\u0abe\u0aac \u0a86\u0aaa\u0ab5\u0abe \u0aae\u0abe\u0a9f\u0ac7, \u0aa4\u0aae\u0abe\u0ab0\u0ac7 \u0aae\u0aa8\u0ac7 \u0ab5\u0aa7\u0ac1 \u0ab8\u0a82\u0aa6\u0ab0\u0acd\u0aad \u0a86\u0aaa\u0ab5\u0acb \u0aaa\u0aa1\u0ab6\u0ac7. \u0aa4\u0aae\u0ac7 \u0a95\u0aaf\u0abe \u0ab5\u0abf\u0ab7\u0aaf \u0aaa\u0ab0 \u0ab5\u0abe\u0aa4 \u0a95\u0ab0\u0ac0 \u0ab0\u0ab9\u0acd\u0aaf\u0abe \u0a9b\u0acb?\n\n\u0a9c\u0acb \u0aa4\u0aae\u0ac7 \u0a95\u0acb\u0a88 \u0a9a\u0acb\u0a95\u0acd\u0a95\u0ab8 \u0ab8\u0a82\u0aa6\u0ab0\u0acd\u0aad \u0a86\u0aaa\u0ab6\u0acb, \u0aa4\u0acb \u0ab9\u0ac1\u0a82 \u0aa4\u0aae\u0aa8\u0ac7 \u0aae\u0aa6\u0aa6 \u0a95\u0ab0\u0ac0 \u0ab6\u0a95\u0ac0\u0ab6.\n\n\u0a95\u0ac3\u0aaa\u0abe \u0a95\u0ab0\u0ac0\u0aa8\u0ac7 \u0aa4\u0aae\u0abe\u0ab0\u0acb \u0aaa\u0acd\u0ab0\u0ab6\u0acd\u0aa8 \u0aab\u0ab0\u0ac0\u0aa5\u0ac0 \u0ab2\u0a96\u0acb.\n\n---\n**English Translation:**\n\nI need the answer.\n\n**Here is the ans",
+          "out_tail": "potentially a request for help).\n\nSince the user has not provided a clear, actionable question, I cannot provide a definitive answer. I will assume the user is asking for clarification on the provided",
+          "eval_count": 250,
+          "prompt_eval_count": 2910,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        },
+        {
+          "run": 2,
+          "wall_s": 8.9,
+          "elapsed_s": 8.9,
+          "out_chars": 301,
+          "out_head": "(1)\n\n(2)\n\n(3)\n\n(4)\n\n(5)\n\n(6)\n\n(7)\n\n(8)\n\n(9)\n\n(10)\n\n(11)\n\n(12)\n\n(13)\n\n(14)\n\n(15)\n\n(16)\n\n(17)\n\n(18)\n\n(19)\n\n(20)\n\n(21)\n\n(22)\n\n(23)\n\n(24)\n\n(25)\n\n(26)\n\n(27)\n\n(28)\n\n(29)\n\n(30)\n\n(31)\n\n(32)\n\n(33)\n\n(34)\n\n(35)\n\n(36)\n\n(37)\n\n(38)\n\n(39)\n\n(40)\n\n(41)\n\n(42)\n\n(43)\n\n(44)\n\n(45)\n\n(46)\n\n(47)\n\n(48)\n\n(49)\n\n(50)\n\n(51)\n\n(52",
+          "out_tail": "9)\n\n(20)\n\n(21)\n\n(22)\n\n(23)\n\n(24)\n\n(25)\n\n(26)\n\n(27)\n\n(28)\n\n(29)\n\n(30)\n\n(31)\n\n(32)\n\n(33)\n\n(34)\n\n(35)\n\n(36)\n\n(37)\n\n(38)\n\n(39)\n\n(40)\n\n(41)\n\n(42)\n\n(43)\n\n(44)\n\n(45)\n\n(46)\n\n(47)\n\n(48)\n\n(49)\n\n(50)\n\n(51)\n\n(52)",
+          "eval_count": 250,
+          "prompt_eval_count": 2910,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        }
+      ],
+      "max_score": 0,
+      "mean_score": 0.0
+    },
+    "32768": {
+      "runs": [
+        {
+          "run": 1,
+          "wall_s": 97.64,
+          "elapsed_s": 97.64,
+          "out_chars": 1238,
+          "out_head": "i.e., the original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, ",
+          "out_tail": ", original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original, original",
+          "eval_count": 250,
+          "prompt_eval_count": 22025,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        },
+        {
+          "run": 2,
+          "wall_s": 2.99,
+          "elapsed_s": 2.98,
+          "out_chars": 221,
+          "out_head": "(The text above is a placeholder for the actual text that should be used for the final answer.)\n\n**Final Answer:**\n\nThe provided text is a placeholder for the actual answer. Please provide the text you want me to analyze.",
+          "out_tail": "placeholder for the actual text that should be used for the final answer.)\n\n**Final Answer:**\n\nThe provided text is a placeholder for the actual answer. Please provide the text you want me to analyze.",
+          "eval_count": 48,
+          "prompt_eval_count": 22025,
+          "score": 0,
+          "primary": false,
+          "early": false,
+          "reason": "ok",
+          "err": null
+        }
+      ],
+      "max_score": 0,
+      "mean_score": 0.0
+    }
+  }
+}

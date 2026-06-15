@@ -1,0 +1,57 @@
+{
+  "model": "gpt-oss:20b",
+  "pages_limit": 4194304,
+  "gtt_highwater_gib": 12.45,
+  "tiers": [
+    {
+      "status": "OK",
+      "wall_s": 30.9,
+      "prompt_tokens": 2820,
+      "gen_tok_s": 44.7,
+      "prefill_tok_s": 295.4,
+      "tier_k": 4,
+      "gtt_used_gib": 11.92,
+      "free_gib_after": 0.52
+    },
+    {
+      "status": "OK",
+      "wall_s": 64.6,
+      "prompt_tokens": 11051,
+      "gen_tok_s": 41.8,
+      "prefill_tok_s": 248.6,
+      "tier_k": 16,
+      "gtt_used_gib": 12.04,
+      "free_gib_after": 0.22
+    },
+    {
+      "status": "OK",
+      "wall_s": 133.4,
+      "prompt_tokens": 22024,
+      "gen_tok_s": 37.2,
+      "prefill_tok_s": 194.9,
+      "tier_k": 32,
+      "gtt_used_gib": 12.17,
+      "free_gib_after": 0.27
+    },
+    {
+      "status": "OK",
+      "wall_s": 227.5,
+      "prompt_tokens": 32998,
+      "gen_tok_s": 33.1,
+      "prefill_tok_s": 160.2,
+      "tier_k": 48,
+      "gtt_used_gib": 12.3,
+      "free_gib_after": 0.17
+    },
+    {
+      "status": "OK",
+      "wall_s": 358.2,
+      "prompt_tokens": 43971,
+      "gen_tok_s": 31.8,
+      "prefill_tok_s": 135.9,
+      "tier_k": 64,
+      "gtt_used_gib": 12.45,
+      "free_gib_after": 0.98
+    }
+  ]
+}

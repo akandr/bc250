@@ -23,7 +23,7 @@ from llm_sanitize import sanitize_llm_output
 
 OLLAMA_URL   = "http://localhost:11434"
 OLLAMA_CHAT  = f"{OLLAMA_URL}/api/chat"
-OLLAMA_MODEL = "gemma4-26b-q3"
+OLLAMA_MODEL = "qwen3.5-35b-a3b-iq2m"  # MoE: 64K-capable at 16 GiB (§3.3), for sector synthesis
 
 THINK_DIR    = Path("/opt/netscan/data/market/think")
 MARKET_DIR   = Path("/opt/netscan/data/market")
@@ -104,7 +104,7 @@ def call_ollama(system_prompt, user_prompt, temperature=0.5, max_tokens=4000, th
         "options": {
             "temperature": temperature,
             "num_predict": max_tokens,
-            "num_ctx": 24576,
+            "num_ctx": 32768,  # MoE long-context (safe beside signal-cli at 16 GiB)
         },
     }).encode()
 

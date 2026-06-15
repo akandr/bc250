@@ -1,0 +1,211 @@
+====================================================================================================
+PART 1 — TG (token generation) tok/s by model × build × env × ctx
+====================================================================================================
+model                    build  env              2048     4096     8192    16384    24576    32768    49152    65536
+--------------------------------------------------------------------------------------------------------------------
+deepseek-r1-14b          b8200  default         27.51    27.34    27.46    27.33  skip_ab  skip_ab  skip_ab  skip_ab 
+deepseek-r1-14b          b8200  prefer_host     27.73    27.55    27.62    27.55  skip_ab  skip_ab  skip_ab  skip_ab 
+
+deepseek-r1-14b          b9165  default         27.42    27.28    25.78    27.29  skip_ab  skip_ab  skip_ab  skip_ab 
+deepseek-r1-14b          b9165  prefer_host     27.61    27.52    24.19    27.56  skip_ab  skip_ab  skip_ab  skip_ab 
+
+gpt-oss-20b-mxfp4        b8200  default         82.26    82.74    82.72    82.36    83.17  skip_ab  skip_ab  skip_ab 
+gpt-oss-20b-mxfp4        b8200  prefer_host     85.61    85.03    84.94    85.27    85.16  skip_ab  skip_ab  skip_ab 
+
+gpt-oss-20b-mxfp4        b9165  default         81.55    82.17    82.05    82.38    81.87  skip_ab  skip_ab  skip_ab 
+gpt-oss-20b-mxfp4        b9165  prefer_host     85.04    85.08    85.17    85.34    85.45  skip_ab  skip_ab  skip_ab 
+
+granite-4.0-h-tiny       b8200  default        127.50   121.60   123.59   122.78   124.53   123.04   128.03   124.60 
+granite-4.0-h-tiny       b8200  prefer_host    130.13   128.12   127.46   126.99   127.77   127.98   130.19   129.86 
+
+granite-4.0-h-tiny       b9165  default        125.63   125.28   123.38   123.35   123.44   123.51   124.13   125.16 
+granite-4.0-h-tiny       b9165  prefer_host    128.53   128.24   127.98   128.33   128.49   128.38   128.21   128.36 
+
+qwen3-coder-30b-iq2m     b8200  default         75.53    75.98    75.77    76.01  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3-coder-30b-iq2m     b8200  prefer_host     77.21    77.44    77.41    77.71  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3-coder-30b-iq2m     b9165  default         75.62    75.90    75.71    75.92  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3-coder-30b-iq2m     b9165  prefer_host     77.54    77.57    77.34    77.69  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.5-35b-iq2m         b8200  default         76.31    76.61    76.66    76.40  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.5-35b-iq2m         b8200  prefer_host     78.50    77.86    77.79    77.71  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.5-35b-iq2m         b9165  default         76.40    76.70    76.76    76.85  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.5-35b-iq2m         b9165  prefer_host     78.50    77.07    78.16    78.19  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.6-35b-iq2m         b8200  default         75.87    76.19    76.27    75.90  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.6-35b-iq2m         b8200  prefer_host     77.26    76.74    77.67    76.93  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.6-35b-iq2m         b9165  default         76.39    75.91    75.90    76.40  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.6-35b-iq2m         b9165  prefer_host     77.59    77.91    77.19    77.78  skip_ab  skip_ab  skip_ab  skip_ab 
+
+
+====================================================================================================
+PART 2 — PP (prompt processing) tok/s by model × build × env × ctx
+====================================================================================================
+model                    build  env              2048     4096     8192    16384    24576    32768    49152    65536
+--------------------------------------------------------------------------------------------------------------------
+deepseek-r1-14b          b8200  default         144.6    132.1    110.2     80.5  skip_ab  skip_ab  skip_ab  skip_ab 
+deepseek-r1-14b          b8200  prefer_host     144.9    132.9    104.4     79.6  skip_ab  skip_ab  skip_ab  skip_ab 
+
+deepseek-r1-14b          b9165  default         147.8    135.9    105.0     79.9  skip_ab  skip_ab  skip_ab  skip_ab 
+deepseek-r1-14b          b9165  prefer_host     148.5    135.8    103.8     79.5  skip_ab  skip_ab  skip_ab  skip_ab 
+
+gpt-oss-20b-mxfp4        b8200  default         459.3    441.3    405.4    344.9    299.6  skip_ab  skip_ab  skip_ab 
+gpt-oss-20b-mxfp4        b8200  prefer_host     458.2    440.0    404.3    345.0    298.4  skip_ab  skip_ab  skip_ab 
+
+gpt-oss-20b-mxfp4        b9165  default         459.3    441.3    405.3    344.8    299.5  skip_ab  skip_ab  skip_ab 
+gpt-oss-20b-mxfp4        b9165  prefer_host     458.4    440.5    404.2    344.4    298.0  skip_ab  skip_ab  skip_ab 
+
+granite-4.0-h-tiny       b8200  default         884.2    876.6    855.8    812.6    774.0    734.8    670.7    616.4 
+granite-4.0-h-tiny       b8200  prefer_host     884.2    876.0    848.4    811.4    772.0    732.9    668.3    613.8 
+
+granite-4.0-h-tiny       b9165  default         904.1    896.2    873.5    828.8    787.8    747.4    669.2    617.0 
+granite-4.0-h-tiny       b9165  prefer_host     903.9    896.2    873.1    827.5    786.4    745.4    678.0    614.4 
+
+qwen3-coder-30b-iq2m     b8200  default         327.9    282.8    220.4    151.4  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3-coder-30b-iq2m     b8200  prefer_host     327.8    283.0    220.3    151.1  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3-coder-30b-iq2m     b9165  default         327.4    281.9    219.4    150.5  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3-coder-30b-iq2m     b9165  prefer_host     327.6    282.6    219.2    150.2  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.5-35b-iq2m         b8200  default         367.3    352.8    326.5    284.8  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.5-35b-iq2m         b8200  prefer_host     368.5    352.8    326.8    283.7  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.5-35b-iq2m         b9165  default         370.1    355.0    327.2    285.2  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.5-35b-iq2m         b9165  prefer_host     370.7    354.6    327.2    285.1  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.6-35b-iq2m         b8200  default         367.6    353.3    327.8    287.2  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.6-35b-iq2m         b8200  prefer_host     367.5    353.6    327.8    287.0  skip_ab  skip_ab  skip_ab  skip_ab 
+
+qwen3.6-35b-iq2m         b9165  default         369.8    355.3    328.8    287.1  skip_ab  skip_ab  skip_ab  skip_ab 
+qwen3.6-35b-iq2m         b9165  prefer_host     370.0    356.6    328.6    287.3  skip_ab  skip_ab  skip_ab  skip_ab 
+
+
+====================================================================================================
+PART 3 — PREFER_HOST_MEMORY=1 effect (Δ%, prefer_host vs default)
+====================================================================================================
+model                    build     ctx       Δtg %      Δpp %
+----------------------------------------------------------------------
+deepseek-r1-14b          b8200    2048       +0.8%      +0.2%
+deepseek-r1-14b          b8200    4096       +0.8%      +0.6%
+deepseek-r1-14b          b8200    8192       +0.6%      -5.2%
+deepseek-r1-14b          b8200   16384       +0.8%      -1.2%
+deepseek-r1-14b          b9165    2048       +0.7%      +0.4%
+deepseek-r1-14b          b9165    4096       +0.9%      -0.0%
+deepseek-r1-14b          b9165    8192       -6.2%      -1.2%
+deepseek-r1-14b          b9165   16384       +1.0%      -0.6%
+gpt-oss-20b-mxfp4        b8200    2048       +4.1%      -0.2%
+gpt-oss-20b-mxfp4        b8200    4096       +2.8%      -0.3%
+gpt-oss-20b-mxfp4        b8200    8192       +2.7%      -0.3%
+gpt-oss-20b-mxfp4        b8200   16384       +3.5%      +0.0%
+gpt-oss-20b-mxfp4        b8200   24576       +2.4%      -0.4%
+gpt-oss-20b-mxfp4        b9165    2048       +4.3%      -0.2%
+gpt-oss-20b-mxfp4        b9165    4096       +3.5%      -0.2%
+gpt-oss-20b-mxfp4        b9165    8192       +3.8%      -0.3%
+gpt-oss-20b-mxfp4        b9165   16384       +3.6%      -0.1%
+gpt-oss-20b-mxfp4        b9165   24576       +4.4%      -0.5%
+granite-4.0-h-tiny       b8200    2048       +2.1%      +0.0%
+granite-4.0-h-tiny       b8200    4096       +5.4%      -0.1%
+granite-4.0-h-tiny       b8200    8192       +3.1%      -0.9%
+granite-4.0-h-tiny       b8200   16384       +3.4%      -0.1%
+granite-4.0-h-tiny       b8200   24576       +2.6%      -0.3%
+granite-4.0-h-tiny       b8200   32768       +4.0%      -0.2%
+granite-4.0-h-tiny       b8200   49152       +1.7%      -0.4%
+granite-4.0-h-tiny       b8200   65536       +4.2%      -0.4%
+granite-4.0-h-tiny       b9165    2048       +2.3%      -0.0%
+granite-4.0-h-tiny       b9165    4096       +2.4%      -0.0%
+granite-4.0-h-tiny       b9165    8192       +3.7%      -0.1%
+granite-4.0-h-tiny       b9165   16384       +4.0%      -0.2%
+granite-4.0-h-tiny       b9165   24576       +4.1%      -0.2%
+granite-4.0-h-tiny       b9165   32768       +3.9%      -0.3%
+granite-4.0-h-tiny       b9165   49152       +3.3%      +1.3%
+granite-4.0-h-tiny       b9165   65536       +2.6%      -0.4%
+qwen3-coder-30b-iq2m     b8200    2048       +2.2%      -0.0%
+qwen3-coder-30b-iq2m     b8200    4096       +1.9%      +0.1%
+qwen3-coder-30b-iq2m     b8200    8192       +2.2%      -0.0%
+qwen3-coder-30b-iq2m     b8200   16384       +2.2%      -0.1%
+qwen3-coder-30b-iq2m     b9165    2048       +2.5%      +0.0%
+qwen3-coder-30b-iq2m     b9165    4096       +2.2%      +0.2%
+qwen3-coder-30b-iq2m     b9165    8192       +2.2%      -0.1%
+qwen3-coder-30b-iq2m     b9165   16384       +2.3%      -0.2%
+qwen3.5-35b-iq2m         b8200    2048       +2.9%      +0.3%
+qwen3.5-35b-iq2m         b8200    4096       +1.6%      -0.0%
+qwen3.5-35b-iq2m         b8200    8192       +1.5%      +0.1%
+qwen3.5-35b-iq2m         b8200   16384       +1.7%      -0.4%
+qwen3.5-35b-iq2m         b9165    2048       +2.7%      +0.2%
+qwen3.5-35b-iq2m         b9165    4096       +0.5%      -0.1%
+qwen3.5-35b-iq2m         b9165    8192       +1.8%      -0.0%
+qwen3.5-35b-iq2m         b9165   16384       +1.7%      -0.0%
+qwen3.6-35b-iq2m         b8200    2048       +1.8%      -0.0%
+qwen3.6-35b-iq2m         b8200    4096       +0.7%      +0.1%
+qwen3.6-35b-iq2m         b8200    8192       +1.8%      +0.0%
+qwen3.6-35b-iq2m         b8200   16384       +1.4%      -0.1%
+qwen3.6-35b-iq2m         b9165    2048       +1.6%      +0.1%
+qwen3.6-35b-iq2m         b9165    4096       +2.6%      +0.3%
+qwen3.6-35b-iq2m         b9165    8192       +1.7%      -0.1%
+qwen3.6-35b-iq2m         b9165   16384       +1.8%      +0.1%
+
+====================================================================================================
+PART 4 — b9165 vs b8200 effect (Δ%, b9165 vs b8200 at env=prefer_host)
+====================================================================================================
+model                    env            ctx       Δtg %      Δpp %
+----------------------------------------------------------------------
+deepseek-r1-14b          default       2048       -0.3%      +2.2%
+deepseek-r1-14b          default       4096       -0.2%      +2.9%
+deepseek-r1-14b          default       8192       -6.1%      -4.7%
+deepseek-r1-14b          default      16384       -0.1%      -0.7%
+deepseek-r1-14b          prefer_host   2048       -0.4%      +2.5%
+deepseek-r1-14b          prefer_host   4096       -0.1%      +2.2%
+deepseek-r1-14b          prefer_host   8192      -12.4%      -0.6%
+deepseek-r1-14b          prefer_host  16384       +0.0%      -0.1%
+gpt-oss-20b-mxfp4        default       2048       -0.9%      +0.0%
+gpt-oss-20b-mxfp4        default       4096       -0.7%      -0.0%
+gpt-oss-20b-mxfp4        default       8192       -0.8%      -0.0%
+gpt-oss-20b-mxfp4        default      16384       +0.0%      -0.0%
+gpt-oss-20b-mxfp4        default      24576       -1.6%      -0.0%
+gpt-oss-20b-mxfp4        prefer_host   2048       -0.7%      +0.0%
+gpt-oss-20b-mxfp4        prefer_host   4096       +0.1%      +0.1%
+gpt-oss-20b-mxfp4        prefer_host   8192       +0.3%      -0.0%
+gpt-oss-20b-mxfp4        prefer_host  16384       +0.1%      -0.2%
+gpt-oss-20b-mxfp4        prefer_host  24576       +0.3%      -0.1%
+granite-4.0-h-tiny       default       2048       -1.5%      +2.3%
+granite-4.0-h-tiny       default       4096       +3.0%      +2.2%
+granite-4.0-h-tiny       default       8192       -0.2%      +2.1%
+granite-4.0-h-tiny       default      16384       +0.5%      +2.0%
+granite-4.0-h-tiny       default      24576       -0.9%      +1.8%
+granite-4.0-h-tiny       default      32768       +0.4%      +1.7%
+granite-4.0-h-tiny       default      49152       -3.0%      -0.2%
+granite-4.0-h-tiny       default      65536       +0.4%      +0.1%
+granite-4.0-h-tiny       prefer_host   2048       -1.2%      +2.2%
+granite-4.0-h-tiny       prefer_host   4096       +0.1%      +2.3%
+granite-4.0-h-tiny       prefer_host   8192       +0.4%      +2.9%
+granite-4.0-h-tiny       prefer_host  16384       +1.1%      +2.0%
+granite-4.0-h-tiny       prefer_host  24576       +0.6%      +1.9%
+granite-4.0-h-tiny       prefer_host  32768       +0.3%      +1.7%
+granite-4.0-h-tiny       prefer_host  49152       -1.5%      +1.4%
+granite-4.0-h-tiny       prefer_host  65536       -1.2%      +0.1%
+qwen3-coder-30b-iq2m     default       2048       +0.1%      -0.1%
+qwen3-coder-30b-iq2m     default       4096       -0.1%      -0.3%
+qwen3-coder-30b-iq2m     default       8192       -0.1%      -0.4%
+qwen3-coder-30b-iq2m     default      16384       -0.1%      -0.6%
+qwen3-coder-30b-iq2m     prefer_host   2048       +0.4%      -0.1%
+qwen3-coder-30b-iq2m     prefer_host   4096       +0.2%      -0.1%
+qwen3-coder-30b-iq2m     prefer_host   8192       -0.1%      -0.5%
+qwen3-coder-30b-iq2m     prefer_host  16384       -0.0%      -0.6%
+qwen3.5-35b-iq2m         default       2048       +0.1%      +0.8%
+qwen3.5-35b-iq2m         default       4096       +0.1%      +0.6%
+qwen3.5-35b-iq2m         default       8192       +0.1%      +0.2%
+qwen3.5-35b-iq2m         default      16384       +0.6%      +0.1%
+qwen3.5-35b-iq2m         prefer_host   2048       +0.0%      +0.6%
+qwen3.5-35b-iq2m         prefer_host   4096       -1.0%      +0.5%
+qwen3.5-35b-iq2m         prefer_host   8192       +0.5%      +0.1%
+qwen3.5-35b-iq2m         prefer_host  16384       +0.6%      +0.5%
+qwen3.6-35b-iq2m         default       2048       +0.7%      +0.6%
+qwen3.6-35b-iq2m         default       4096       -0.4%      +0.6%
+qwen3.6-35b-iq2m         default       8192       -0.5%      +0.3%
+qwen3.6-35b-iq2m         default      16384       +0.7%      -0.0%
+qwen3.6-35b-iq2m         prefer_host   2048       +0.4%      +0.7%
+qwen3.6-35b-iq2m         prefer_host   4096       +1.5%      +0.8%
+qwen3.6-35b-iq2m         prefer_host   8192       -0.6%      +0.2%
+qwen3.6-35b-iq2m         prefer_host  16384       +1.1%      +0.1%

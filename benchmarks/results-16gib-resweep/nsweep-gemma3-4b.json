@@ -1,0 +1,176 @@
+{
+  "model": "gemma3:4b",
+  "pages_limit": 4194304,
+  "n": 3,
+  "tiers": {
+    "4": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 17.4,
+          "pe": 2857,
+          "ec": 128,
+          "gen": 46.5,
+          "pre": 371.0,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 12.8,
+          "pe": 2857,
+          "ec": 128,
+          "gen": 46.36,
+          "pre": 370.8,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 12.7,
+          "pe": 2857,
+          "ec": 128,
+          "gen": 46.48,
+          "pre": 371.4,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 3.31,
+      "free_gib": 6.73,
+      "ok": 3,
+      "gen_med": 46.48,
+      "pre_med": 371.0,
+      "gen_runs": [
+        46.5,
+        46.36,
+        46.48
+      ],
+      "pe": 2857
+    },
+    "16": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 38.5,
+          "pe": 11222,
+          "ec": 128,
+          "gen": 45.1,
+          "pre": 337.8,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 38.5,
+          "pe": 11222,
+          "ec": 128,
+          "gen": 45.11,
+          "pre": 337.8,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 38.5,
+          "pe": 11222,
+          "ec": 128,
+          "gen": 45.1,
+          "pre": 337.7,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 3.38,
+      "free_gib": 6.72,
+      "ok": 3,
+      "gen_med": 45.1,
+      "pre_med": 337.8,
+      "gen_runs": [
+        45.1,
+        45.11,
+        45.1
+      ],
+      "pe": 11222
+    },
+    "32": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 79.4,
+          "pe": 22378,
+          "ec": 128,
+          "gen": 43.36,
+          "pre": 304.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 79.3,
+          "pe": 22378,
+          "ec": 128,
+          "gen": 43.39,
+          "pre": 304.2,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 79.4,
+          "pe": 22378,
+          "ec": 128,
+          "gen": 43.46,
+          "pre": 304.2,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 3.48,
+      "free_gib": 5.93,
+      "ok": 3,
+      "gen_med": 43.39,
+      "pre_med": 304.2,
+      "gen_runs": [
+        43.36,
+        43.39,
+        43.46
+      ],
+      "pe": 22378
+    },
+    "64": {
+      "runs": [
+        {
+          "status": "OK",
+          "wall": 183.1,
+          "pe": 44689,
+          "ec": 128,
+          "gen": 40.34,
+          "pre": 253.5,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 183.1,
+          "pe": 44689,
+          "ec": 128,
+          "gen": 40.4,
+          "pre": 253.6,
+          "early_stop": false
+        },
+        {
+          "status": "OK",
+          "wall": 183.1,
+          "pe": 44689,
+          "ec": 128,
+          "gen": 40.34,
+          "pre": 253.5,
+          "early_stop": false
+        }
+      ],
+      "gtt_gib": 3.72,
+      "free_gib": 5.52,
+      "ok": 3,
+      "gen_med": 40.34,
+      "pre_med": 253.5,
+      "gen_runs": [
+        40.34,
+        40.4,
+        40.34
+      ],
+      "pe": 44689
+    }
+  },
+  "gtt_highwater": 3.72
+}
