@@ -1,0 +1,287 @@
+# Article quantitative-claim provenance ledger
+# Generated 2026-06-04 for the manuscript submission rewrite.
+#
+# Lists every quantitative claim in main-jucs.tex with its source data and
+# verification status against Pass A (stock 24-CU 0.20.0) and Pass B
+# (patched 40-CU 0.20.0). Each entry has fields:
+#   article_loc:    section/table/figure
+#   claim:          the quantitative statement
+#   data_source:    JSON file or telemetry CSV that backs it
+#   collected_at:   when data was collected (CU mode + Ollama version)
+#   pass_match:     CONFIRMED | MISLABELLED | PENDING (Pass C/D/E will resolve)
+#   action:         KEEP | REPLACE-FROM-PASS-A | REPLACE-FROM-PASS-D | RETAIN-WITH-CAVEAT
+#   notes:          any extra context
+#
+# 2026-06-13 16-GiB CLEAN RE-SWEEP (supersedes the 12-GiB-cap erratum):
+#   The filled-context tables (Table 3 context_scaling, Table w5_followup) were
+#   re-collected at the verified 16-GiB pool (ttm.pages_limit=4194304, confirmed
+#   live across reboot) with a curl-hard-deadline n=3 harness
+#   (benchmarks/bench-16gib-nsweep-v2.py). These 16-GiB medians are now the
+#   canonical values in the article; the article no longer carries any 12-GiB-cap
+#   erratum. Source data: benchmarks/results-16gib-resweep/nsweep-*.json.
+#   Cap-immune tables (gen_speed 4K, stat_validation, multineedle, granite-extreme,
+#   kv_longctx, cold-start, roofline, quality battery) were NOT re-run: their
+#   working sets never approached the 12-GiB ceiling, so their values are
+#   16-GiB-representative as measured. qwen3.5-27b quality re-measured at 16 GiB
+#   = 53% (8/15), source 27b-quality-16gib.json (was "0%/cap-load-failure").
+#
+# 2026-06-15 64K-TIMEOUT CELL RECONCILIATION (Table 5 context_scaling):
+#   Table 5 reports qwen3:8b and qwen3:14b at 64K filled as "timeout". In the
+#   canonical resweep files this surfaces as instability right at the 16-GB
+#   physical envelope, not a clean budget cut: nsweep-qwen3-8b.json's 64K cell
+#   recorded ok=1/3 (one completing run at 836 s / 10.9 t/s plus a timeout and an
+#   HTTP500), and nsweep-qwen3-14b.json's climb stopped at 32K (no 64K cell) on
+#   the GTT high-water guard. Both 64K cells were re-confirmed non-completing on
+#   2026-06-15: under the article's stated maximum per-tier budget (6046 s wall
+#   cap, curl --max-time, verified-stock 24-CU, pages_limit=4194304) each ran the
+#   FULL 6046 s and still timed out, with free RAM at 1.06 GiB (qwen3:8b) and
+#   0.41 GiB (qwen3:14b) — prefill thrashing against the physical pool. The lone
+#   836 s qwen3:8b completion is therefore an envelope-instability outlier, and
+#   the "timeout" label is the correct sustained-measurement characterisation.
+#   Confirmation artifacts: benchmarks/results-64k-envelope-confirm/.
+
+claims:
+
+- article_loc: "Table 1 (subsec:speed) — gen_speed 11 models"
+  claim:       "qwen3.5:9b 31.7 t/s on stock 24-CU Ollama 0.18.0"
+  data_source: "May 2026 pre-stock-revert run; original JSON not preserved"
+  collected_at: "patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-D
+  notes:       "Pass A (24-CU 0.20.0) measured 23.14 t/s. Pass B (40-CU 0.20.0) measured 31.09 t/s. Article 31.7 ≈ Pass B."
+
+- article_loc: "Table 1 — qwen3.5-35b-a3b 37.5 t/s"
+  claim:       "37.5 tok/s, IQ2_M, stock 24-CU"
+  data_source: "same May 2026 dataset"
+  collected_at: "patched 40-CU 0.18.0 (mislabel) via ollama path"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-D
+  notes:       "Pass D adds qwen3-5-35b-a3b-iq2m-ollama; Pass A's llama-completion sibling = 59.5 t/s"
+
+- article_loc: "Table 1 — llama3.2:3b, phi4-mini, gemma3:4b, qwen3:8b, mistral-nemo:12b, qwen3:14b, deepseek-r1:14b"
+  claim:       "various 26-104 t/s on stock 24-CU Ollama 0.18.0"
+  data_source: "same May 2026 dataset"
+  collected_at: "patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-D
+  notes:       "All these ollama models registered in Pass D NEW_MODELS list."
+
+- article_loc: "Table 2 (stat validation, 8 models)"
+  claim:       "qwen3.5:9b 31.7 ± CV 0.43%, etc."
+  data_source: "May 2026 dataset (same as Table 1)"
+  collected_at: "patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-D
+  notes:       "Pass D 3 runs; aggregate already provides median+CV"
+
+- article_loc: "Table 3 (context_scaling, 8 models, 4K-64K filled)"
+  claim:       "qwen3.5:9b 31.2→23.0 4K→64K filled"
+  data_source: "May 2026 ctx-quality data"
+  collected_at: "patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-A
+  notes:       "Pass A's step-2-ctx-quality.json on bc250 has q4_0 KV at 4K/16K/32K/64K for the same models. Need to extract."
+
+- article_loc: "Table 4 (kv_quant, qwen3:14b)"
+  claim:       "qwen3:14b 27.2 (q4_0) / 27.3 (q8_0) / 27.0 (f16) on 24-CU"
+  data_source: "May 2026 kv-quant"
+  collected_at: "likely patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-A
+  notes:       "Pass A's step-kv-quant covers deepseek-r1-14b f16/q8_0/q4_0 with proper protocol; qwen3:14b not measured. Either re-run qwen3:14b on stock 24-CU or replace claim with deepseek-r1-14b."
+
+- article_loc: "Table 5 (W5 followup, qwq-32b + mistral-small-3.2)"
+  claim:       "qwq-32b 8.9 t/s @ 4K, drift CV 0.21%"
+  data_source: "step-w5b-drift-n10.json (10 runs)"
+  collected_at: "patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  PENDING
+  action:      RETAIN-WITH-CAVEAT
+  notes:       "Pass A perf has qwq-32b-iq2m at 9.63 t/s (24-CU); article's 8.9 is Pass-B-or-W5-era. Replace numbers from Pass A but keep CV/drift methodology."
+
+- article_loc: "Table 6 (quality_tiers, 31 models, 5 tasks)"
+  claim:       "correctness scores 80%-100%"
+  data_source: "Phase 4 quality-task harness (separate from perf step)"
+  collected_at: "patched 40-CU 0.18.0"
+  pass_match:  CU-INDEPENDENT
+  action:      KEEP
+  notes:       "Quality scores depend only on output content, not throughput. Adding the disclaimer that timing was on 40-CU mislabel doesn't affect correctness."
+
+- article_loc: "Table 7 (longctx_quality, 48 trials)"
+  claim:       "16K/32K multi-hop pass rates"
+  data_source: "Phase 4 quality-task harness"
+  collected_at: "patched 40-CU 0.18.0"
+  pass_match:  CU-INDEPENDENT
+  action:      KEEP
+
+- article_loc: "§6.4.3 granite extreme"
+  claim:       "128K = 74 t/s, 192K = 65.4 t/s (granite-4.0-h-tiny)"
+  data_source: "step-w3c-granite-extreme.json (verified)"
+  collected_at: "W3 era — likely patched 40-CU 0.18.0"
+  pass_match:  PENDING
+  action:      QUEUE-PASS-E
+  notes:       "VERIFIED 73.96 / 65.47 t/s match in JSON. But CU mode unclear — granite at 24-CU is ~104 t/s @ 4K (Pass A), so 74 @ 128K is a 30% drop. Re-run on 24-CU to confirm."
+
+- article_loc: "sec:cold_start prose (3 models)"
+  claim:       "TTFT 21.0/12.0/17.1s; load 20.0/11.7/16.6s; rate 0.55/0.56/0.51 GiB/s (35b/9b/deepseek)"
+  data_source: "G9 cold rerun (9b, deepseek) + G11 cold rerun (35b)"
+  collected_at: "verified-stock 24-CU, Ollama 0.20.0, drop_caches each run"
+  pass_match:  VERIFIED
+  action:      DONE
+  notes:       "2026-06-09: re-measured the 35b cold cell on the board (n=3, drop_caches): TTFT 21.03/20.72/21.45s, load 19.99/19.77/20.46s -> median TTFT 21.0s, load 20.0s, rate 11GiB/20.0s=0.55 GiB/s. Replaces the mislabelled May 40-CU/0.18.0 value (16.5s/0.67) that was an outlier vs the 9b/deepseek ~0.5 GiB/s path. 9b+deepseek from G9 (results-cold-start-rerun/step-g9-cold.json) already match the prose. Raw 35b runs in results-cold-start-rerun/step-g11-cold-35b.json."
+
+- article_loc: "Table 9 (quant_impact, qwen3:8b)"
+  claim:       "Q4_K_M 43.1 t/s vs Q8_0 31.2 t/s, both q4_0 KV"
+  data_source: "May 2026 dataset"
+  collected_at: "patched 40-CU 0.18.0 (mislabel)"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-D
+  notes:       "Pass D has qwen3-8b-ollama-q4km AND qwen3-8b-ollama-q8 (qwen3:8b-q8_0 ollama tag). Replicates the comparison on stock 24-CU."
+
+- article_loc: "Table 10 (cu_unlock, 9 models 24→40 paired)"
+  claim:       "qwen3.5-9b 31.7→40.5 (1.28×); 9-model median 1.23×/1.45×"
+  data_source: "step-1-perf.40cu-canonical.json (probably)"
+  collected_at: "Gen 24 col is mislabel-era 40-CU; Gen 40 col is unclear — both numbers ~25% higher than Pass A/B"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-A-AND-B
+  notes:       "Pass A vs Pass B paired analysis at article/data/_paired_perf.py: gen +32.4% median (range +12.2..+57.4), prefill +49.8% median (range +37.1..+62.4). NEW Table 10 = paired Pass A→Pass B."
+
+- article_loc: "Table 11 (clock_power, 7 models, sclk + power telemetry)"
+  claim:       "qwen3.5:9b mean sclk 1266-1400 MHz, peak 2000 MHz, mean power 73-85W"
+  data_source: "Phase-1 sidecar overlay-*.csv files"
+  collected_at: "patched 40-CU 0.18.0"
+  pass_match:  MISLABELLED
+  action:      REPLACE-FROM-PASS-D
+  notes:       "Pass D uses /tmp/gpu-overlay-sampler.sh symlink (set up 2026-06-04 11:59) — gpu_overlay fields will populate per-cell. Need to extract per-model summaries afterwards."
+
+- article_loc: "§6.8.1 Sustained-Inference Telemetry Sweep"
+  claim:       "612s, 3063 samples, mean sclk 1046, peak 1500, mean power 52.3W, p95 98.2W, peak 119.2W"
+  data_source: "power-w3a.json (verified in this ledger)"
+  collected_at: "stock 24-CU 0.20.0 (W3a phase, post-revert)"
+  pass_match:  CONFIRMED
+  action:      KEEP
+  notes:       "ALL numbers match power-w3a.json to 4 significant figures."
+
+- article_loc: "§6.8.1 10Hz reconciliation"
+  claim:       "n=2314 samples, peak 1500 MHz, 86.9%/13.1% occupancy at 1000/1500 MHz"
+  data_source: "sclk-w6c2-10hz.csv, sclk-w6c2-10hz.summary.txt"
+  collected_at: "stock 24-CU 0.20.0 (W6c2 phase)"
+  pass_match:  CONFIRMED
+  action:      KEEP
+  notes:       "Local file matches: n=2314, p50=1000, p95=1500, max=1500, 86.9%/13.1% buckets."
+
+- article_loc: "§6.8.2 Cross-Pass Determinism"
+  claim:       "(max-min)/mean: 0.13% granite, 0.09% qwen3.5:9b, 0.09% gpt-oss-20b across 3 passes 45-min cooldown"
+  data_source: "step-w4a-perf-pass{1,2,3}.json"
+  collected_at: "0.20.0 era"
+  pass_match:  PENDING-SPOT-CHECK
+  action:      KEEP-PROVISIONALLY
+  notes:       "Three pass JSONs exist on bc250. Spot-check the median values for granite, qwen3.5:9b, gpt-oss-20b across the 3 files."
+
+- article_loc: "§6.8.3 Concurrent-Inference Contention"
+  claim:       "granite 13.0s alone vs 1475s parallel (113×); deepseek-r1-14b 67.5s vs 1482s (22×)"
+  data_source: "w4d-par-{granite,gpt-oss,qwen}-wall.txt + w4d-solo-* + step-w4d-par-*.json"
+  collected_at: "0.20.0 era"
+  pass_match:  PENDING-SPOT-CHECK
+  action:      KEEP-PROVISIONALLY
+
+- article_loc: "§6.9 Heap A/B Table 12"
+  claim:       "qwen3.5:9b @ 65k 35.6→31.4 t/s (-12%), gemma3:4b flat"
+  data_source: "step-heap-ab.json (now backed up as .prePassC.bak)"
+  collected_at: "Likely 40-CU 0.20.0 era"
+  pass_match:  AS-LABELLED
+  action:      KEEP
+  notes:       "Article correctly labels this as 40-CU. The flag effect at 65k is the headline finding. Pass C will additionally provide stock 24-CU sub-32K data."
+
+- article_loc: "§6.9.1 Sub-32K Replication"
+  claim:       "granite ≤0.04% delta at every tier; deepseek-r1-14b within ±0.3%"
+  data_source: "step-heap-ab.json (sub-32K cells from same file)"
+  collected_at: "Per .prePassC.bak — was 40-CU patched, mislabel"
+  pass_match:  PENDING
+  action:      REPLACE-FROM-PASS-C
+  notes:       "Pass C re-measures granite + deepseek + qwen3.5-9b at 2K/8K/32K under verified stock 24-CU. Granite 2K=−0.1% phm1 vs phm0 confirmed in initial Pass C output."
+
+- article_loc: "§6.6.1 MXFP4 Path"
+  claim:       "gpt-oss-20b-mxfp4 66.5 t/s vs gpt-oss-20b-ollama 45.6 t/s (+46%)"
+  data_source: "Pass A perf (step-1-perf.passA-stock24cu-20260603-1115.json)"
+  collected_at: "stock 24-CU 0.20.0"
+  pass_match:  CONFIRMED
+  action:      KEEP
+  notes:       "Pass A actual: 66.11 t/s and 45.86 t/s — match to within 0.6%."
+
+
+# ===================================================================
+# 2026-06-05 Pass F + Pass G addendum
+# ===================================================================
+# After the heap-placement demotion (no longer headline #2), the
+# remaining open items in this ledger that targeted Tables 5
+# (context_scaling) and 9 (W5 followup) were closed by two new
+# measurement passes:
+#
+#   Pass F  : 2026-06-04, n=2 replicates of the 4K-64K filled-context
+#             ladder for 6 dense+MoE models + the qwq-32b/mistral-small
+#             follow-up models. step-ctx-quality-table5-r{1,2}.passF-*.json
+#             and step-ctx-quality-table9-qwq-r{1,2}.passF-*.json on
+#             bc250 in ~/phase-c-out/.
+#   Pass G  : 2026-06-05, n=1 third replicate on the same model list,
+#             same harness, same protocol. step-ctx-quality-table5-r3.passG-*
+#             and step-ctx-quality-table9-qwq-r3.passG-*.
+#
+# Combined into n=3 medians by article/data/_combine_passFG.py;
+# canonical output at article/data/_canonical_table5_9.json.
+#
+# Ledger entries CLOSED by Pass F+G:
+#   - "Table 3 (context_scaling)"  -> now Table 5 in article;
+#                                     replaced from canonical_table5_9.
+#   - "Table 5 (W5 followup)"      -> now Table 9 in article;
+#                                     replaced from canonical_table5_9.
+# Ledger entries CLOSED by heap demotion (no longer headline):
+#   - heap A/B no longer in headlines / abstract / contributions /
+#     conclusions; section 6.9 retained as a 6.9 result with attribution.
+#
+# All numerical quantities in the current article main-jucs.tex now
+# derive from Passes A,B,C,D,E,F,G - no value remains from the
+# pre-mislabel-discovery May 2026 dataset.
+
+
+# ===================================================================
+# 2026-06-08 G-series figure re-sourcing (fig-moe-active, fig-roofline)
+# ===================================================================
+# Audit of the two figures added during the G6-G10 referee follow-ups
+# found that their decode throughputs had been pulled from the
+# step-1-perf dataset collected during the patched 40-CU period, while
+# both figures are presented in (and captioned as) verified-stock
+# 24-CU contexts. These figures postdate the 2026-06-04 ledger scrub
+# and so were not covered by it. Both have now been re-sourced to the
+# verified-stock 24-CU canonical perf set
+# (article/data/_canonical_stock24cu_perf.json, Passes A/D).
+#
+# - article_loc: "Fig fig:moe_active (subsec:speed)"
+#   was:    "MoE/hybrid + dense decode points from 40-CU step-1-perf
+#            (qwen3.x-35b 77-79, granite 129, gpt-oss-mxfp4 88.8,
+#            deepseek 30.6, qwen3.5:9b 31.4)"
+#   now:    "verified-stock 24-CU canonical (qwen3.x-35b 57.7-59.6,
+#            granite 104.2, gpt-oss-mxfp4 66.1, deepseek 21.2,
+#            qwen3.5:9b 23.1). Added QwQ-32B (dense 32B IQ2_M, 9.63)
+#            as the same-quant/same-backend control for the
+#            active-parameter claim."
+#   action: REPLACED-FROM-CANONICAL-24CU
+#   data:   benchmarks/results-moe-active/g2-dataset.json (regenerated)
+#
+# - article_loc: "Fig fig:roofline + sec:disc-mem-bw (deepseek point)"
+#   was:    "deepseek-r1:14b decode 30.6 t/s (40-CU) -> 257 GB/s eff
+#            BW = 72% of peak, 857.6 GFLOP/s"
+#   now:    "deepseek-r1:14b decode 21.18 t/s (24-CU canonical) ->
+#            177.9 GB/s eff BW = 50% of peak, 593.0 GFLOP/s. Hardware
+#            roofline peaks (357 GB/s, 3901 GFLOP/s, ridge 10.9) were
+#            already verified-stock 24-CU and are unchanged. IQ2_M AI
+#            standardised to 2.5 bits/weight (6.4 FLOP/byte)."
+#   action: REPLACED-FROM-CANONICAL-24CU
+#   data:   benchmarks/results-roofline/roofline-summary.json (regenerated)
+
+- article_loc: "Table 6 (context_scaling) — phi4:14b row"
+  claim:       "phi4:14b filled-context 4K 19.8 t/s, 16K 13.8 t/s, needle 3/3 @ 16K"
+  data_source: "passH/step-ctx-quality-phi4.passH-stock24cu-20260610-1352.json"
+  collected_at: "verified-stock 24-CU (bc250_cc_write_mode=0, active_cu_number 24), Ollama 0.20.0, oberon active, 2026-06-10"
+  pass_match:  CONFIRMED
+  action:      KEEP
+  notes:       "Replaces the previous 25.7/19.0 row, which traced to the single-run pre-canonical March 2026 campaign file results-context/march-scientific-remaining.json (Ollama 0.18.0, ~58% actual fill). Pass H uses the canonical bench-phase-c ctx-quality protocol, n=3 per tier, both needle codes verified per run. 23-cell mean within-cell CV updated 0.46% -> 0.43% in subsec:phase2."
