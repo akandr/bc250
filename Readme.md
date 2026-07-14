@@ -28,7 +28,7 @@
 
 > **What makes this unusual:** GFX1013 silicon informally called "RDNA 1.5" by the community. ROCm's userspace libraries don't ship GFX1013 support. OpenCL/rusticl was not functional in this configuration. On this Fedora 43 / Mesa 25.3.4 stack, Vulkan was the only GPU compute path found to be usable — and even that required working around two kernel memory bottlenecks (GTT cap + TTM pages_limit) before 14B models would run. The GFX1013 die physically has 40 compute units, but the factory firmware exposes only 24; a community kernel patch re-enables the rest.
 >
-> **Disclaimer:** All performance figures are local measurements from one BC-250 board (Fedora 43, Mesa 25.3.4, Ollama 0.20.0 / llama.cpp b9265, oberon governor 1500 MHz cap). Not vendor benchmarks. Single board, single driver, single firmware — results may differ on other hardware or software stacks. The methodology is documented in an accompanying paper, *Deploying LLM Inference on a Repurposed UMA APU* ([github.com/akandr/bc250](https://github.com/akandr/bc250)).
+> **Disclaimer:** All performance figures are local measurements from one BC-250 board (Fedora 43, Mesa 25.3.4, Ollama 0.20.0 / llama.cpp b9265, oberon governor 1500 MHz cap). Not vendor benchmarks. Single board, single driver, single firmware — results may differ on other hardware or software stacks. The methodology is documented in an accompanying paper ([zenodo.org/records/19476017](https://zenodo.org/records/19476017)).
 
 <details><summary><b>Quick glossary — LLM inference terms used in this document</b></summary>
 
