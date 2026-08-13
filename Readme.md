@@ -1880,6 +1880,7 @@ sys.stderr.reconfigure(line_buffering=True)
 - [Phoronix: AMD RADV PS5/BC-250](https://www.phoronix.com/news/AMD-RADV-PS5-BC-250) — Mesa RADV BC-250 support coverage
 - [Ollama](https://github.com/ollama/ollama) — LLM inference server
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) — underlying inference engine
+- [q36 / QuarkStar](https://github.com/Ninnix/q36), self-contained Vulkan engine for Qwen3.6-35B-A3B on the BC-250, with an optional SSD-streaming mode for a larger 13 GB q2-q4 quant
 - [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) — Vulkan image generation
 - [signal-cli](https://github.com/AsamK/signal-cli) — Signal messaging CLI
 - [Jeff Geerling: Increasing VRAM on AMD AI APUs](https://www.jeffgeerling.com/blog/2025/increasing-vram-allocation-on-amd-ai-apus-under-linux/) — TTM pages_limit documentation
