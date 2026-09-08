@@ -1,0 +1,481 @@
+{
+ "step": "a9-kv-competence",
+ "captured_at": "2026-09-02T13:22:54.253010",
+ "kernel": "6.18.9-200.fc43.x86_64",
+ "cu": "active_cu_number 24",
+ "kv_types": [
+  "q4_0",
+  "q8_0"
+ ],
+ "runs": 3,
+ "models": [
+  "deepseek-r1:14b",
+  "deepseek-r1:8b",
+  "gemma3:4b",
+  "gemma4-26b-q3:latest",
+  "gemma4:latest",
+  "llama3.2:3b",
+  "mistral-nemo:12b",
+  "phi4-mini:latest",
+  "qwen3.5-35b-a3b-iq2m:latest",
+  "qwen3.5:9b",
+  "qwen3:14b",
+  "qwen3:4b",
+  "qwen3:8b",
+  "qwen3:8b-nothink",
+  "qwen3:8b-q8_0"
+ ],
+ "cells": [
+  {
+   "kv_type": "q4_0",
+   "model": "deepseek-r1:14b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "deepseek-r1:8b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "gemma3:4b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "gemma4-26b-q3:latest",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "gemma4:latest",
+   "status": "OK",
+   "passes": 2,
+   "total": 15,
+   "pass_rate": 13.333333333333334,
+   "per_task": {
+    "summarize": 0,
+    "json_extract": 0,
+    "fact_recall": 2,
+    "instruction_follow": 0,
+    "arithmetic": 0
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "llama3.2:3b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "mistral-nemo:12b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "phi4-mini:latest",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3.5-35b-a3b-iq2m:latest",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3.5:9b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3:14b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3:4b",
+   "status": "OK",
+   "passes": 6,
+   "total": 15,
+   "pass_rate": 40.0,
+   "per_task": {
+    "summarize": 0,
+    "json_extract": 0,
+    "fact_recall": 3,
+    "instruction_follow": 0,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3:8b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3:8b-nothink",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q4_0",
+   "model": "qwen3:8b-q8_0",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "deepseek-r1:14b",
+   "status": "OK",
+   "passes": 12,
+   "total": 15,
+   "pass_rate": 80.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 0
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "deepseek-r1:8b",
+   "status": "OK",
+   "passes": 12,
+   "total": 15,
+   "pass_rate": 80.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 0
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "gemma3:4b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "gemma4-26b-q3:latest",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "gemma4:latest",
+   "status": "OK",
+   "passes": 0,
+   "total": 15,
+   "pass_rate": 0.0,
+   "per_task": {
+    "summarize": 0,
+    "json_extract": 0,
+    "fact_recall": 0,
+    "instruction_follow": 0,
+    "arithmetic": 0
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "llama3.2:3b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "mistral-nemo:12b",
+   "status": "OK",
+   "passes": 12,
+   "total": 15,
+   "pass_rate": 80.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 0
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "phi4-mini:latest",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3.5-35b-a3b-iq2m:latest",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3.5:9b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3:14b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3:4b",
+   "status": "OK",
+   "passes": 6,
+   "total": 15,
+   "pass_rate": 40.0,
+   "per_task": {
+    "summarize": 0,
+    "json_extract": 0,
+    "fact_recall": 3,
+    "instruction_follow": 0,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3:8b",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3:8b-nothink",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  },
+  {
+   "kv_type": "q8_0",
+   "model": "qwen3:8b-q8_0",
+   "status": "OK",
+   "passes": 15,
+   "total": 15,
+   "pass_rate": 100.0,
+   "per_task": {
+    "summarize": 3,
+    "json_extract": 3,
+    "fact_recall": 3,
+    "instruction_follow": 3,
+    "arithmetic": 3
+   }
+  }
+ ],
+ "elapsed_min": 65.0
+}

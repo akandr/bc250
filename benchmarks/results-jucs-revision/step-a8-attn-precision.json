@@ -1,0 +1,167 @@
+[
+ {
+  "label": "qwen2.5-1.5b",
+  "arch": "qwen2",
+  "attn_params": 88080384,
+  "attn_bytes": 50964480,
+  "bits_per_param_attn": 4.62890625,
+  "bits_per_param_model": 5.0031072856268235,
+  "attn_types_by_bytes": {
+   "Q4_K": 46448640,
+   "Q6_K": 4515840
+  },
+  "n_attn_tensors": 84
+ },
+ {
+  "label": "llama3.2-3b",
+  "arch": "llama",
+  "attn_params": 440401920,
+  "attn_bytes": 259080192,
+  "bits_per_param_attn": 4.70625,
+  "bits_per_param_model": 5.008892150648485,
+  "attn_types_by_bytes": {
+   "Q4_K": 222953472,
+   "Q6_K": 36126720
+  },
+  "n_attn_tensors": 84
+ },
+ {
+  "label": "phi4-mini",
+  "arch": "phi3",
+  "attn_params": 503316480,
+  "attn_bytes": 346030080,
+  "bits_per_param_attn": 5.5,
+  "bits_per_param_model": 5.179581116547215,
+  "attn_types_by_bytes": {
+   "Q5_K": 346030080
+  },
+  "n_attn_tensors": 32
+ },
+ {
+  "label": "qwen3-4b",
+  "arch": "qwen3",
+  "attn_params": 566231040,
+  "attn_bytes": 330670080,
+  "bits_per_param_attn": 4.671875,
+  "bits_per_param_model": 4.954816484888784,
+  "attn_types_by_bytes": {
+   "Q4_K": 291962880,
+   "Q6_K": 38707200
+  },
+  "n_attn_tensors": 108
+ },
+ {
+  "label": "deepseek-r1-8b",
+  "arch": "qwen3",
+  "attn_params": 905969664,
+  "attn_bytes": 726663168,
+  "bits_per_param_attn": 6.416666666666667,
+  "bits_per_param_model": 5.0978749844507245,
+  "attn_types_by_bytes": {
+   "Q4_K": 424673280,
+   "F16": 301989888
+  },
+  "n_attn_tensors": 108
+ },
+ {
+  "label": "qwen3-8b-q4km",
+  "arch": "qwen3",
+  "attn_params": 905969664,
+  "attn_bytes": 726663168,
+  "bits_per_param_attn": 6.416666666666667,
+  "bits_per_param_model": 5.0978749844507245,
+  "attn_types_by_bytes": {
+   "Q4_K": 424673280,
+   "F16": 301989888
+  },
+  "n_attn_tensors": 108
+ },
+ {
+  "label": "qwen3-8b-q8_0",
+  "arch": "qwen3",
+  "attn_params": 905969664,
+  "attn_bytes": 1104150528,
+  "bits_per_param_attn": 9.75,
+  "bits_per_param_model": 8.639145668112516,
+  "attn_types_by_bytes": {
+   "Q8_0": 802160640,
+   "F16": 301989888
+  },
+  "n_attn_tensors": 108
+ },
+ {
+  "label": "mistral-nemo-12b",
+  "arch": "llama",
+  "attn_params": 1258291200,
+  "attn_bytes": 707788800,
+  "bits_per_param_attn": 4.5,
+  "bits_per_param_model": 4.613941044543704,
+  "attn_types_by_bytes": {
+   "Q4_0": 707788800
+  },
+  "n_attn_tensors": 120
+ },
+ {
+  "label": "deepseek-r1-14b",
+  "arch": "qwen2",
+  "attn_params": 1761607680,
+  "attn_bytes": 1023344640,
+  "bits_per_param_attn": 4.647321428571429,
+  "bits_per_param_model": 4.865062967536916,
+  "attn_types_by_bytes": {
+   "Q4_K": 920125440,
+   "Q6_K": 103219200
+  },
+  "n_attn_tensors": 144
+ },
+ {
+  "label": "qwen3-14b",
+  "arch": "qwen3",
+  "attn_params": 1468006400,
+  "attn_bytes": 1127219200,
+  "bits_per_param_attn": 6.142857142857143,
+  "bits_per_param_model": 5.021686396122638,
+  "attn_types_by_bytes": {
+   "Q4_K": 707788800,
+   "F16": 419430400
+  },
+  "n_attn_tensors": 120
+ },
+ {
+  "label": "qwen3.5-35b-a3b",
+  "arch": "qwen35moe",
+  "attn_params": 692060160,
+  "attn_bytes": 475791360,
+  "bits_per_param_attn": 5.5,
+  "bits_per_param_model": 2.626756689186699,
+  "attn_types_by_bytes": {
+   "Q5_K": 475791360
+  },
+  "n_attn_tensors": 60
+ },
+ {
+  "label": "qwen3.6-35b-a3b",
+  "arch": "qwen35moe",
+  "attn_params": 692060160,
+  "attn_bytes": 475791360,
+  "bits_per_param_attn": 5.5,
+  "bits_per_param_model": 2.657013140275805,
+  "attn_types_by_bytes": {
+   "Q5_K": 475791360
+  },
+  "n_attn_tensors": 60
+ },
+ {
+  "label": "qwen3.8-27b",
+  "arch": "qwen35",
+  "attn_params": 3764387840,
+  "attn_bytes": 1744240640,
+  "bits_per_param_attn": 3.706824512534819,
+  "bits_per_param_model": 3.485287928364109,
+  "attn_types_by_bytes": {
+   "IQ3_S": 1081344000,
+   "IQ4_XS": 662896640
+  },
+  "n_attn_tensors": 99
+ }
+]

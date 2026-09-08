@@ -1,0 +1,89 @@
+{
+  "step": "a3-flashattn",
+  "captured_at": "2026-08-29T02:31:35.210032",
+  "kernel": "6.18.9-200.fc43.x86_64",
+  "cu": "active_cu_number 24",
+  "models": [
+    "qwen3.5:9b",
+    "deepseek-r1:14b"
+  ],
+  "ctx_sizes": [
+    16384,
+    32768
+  ],
+  "fa_settings": [
+    "1",
+    "0"
+  ],
+  "sampling": "temp=0 seed=42",
+  "elapsed_min": 26.5,
+  "data": {
+    "short": {
+      "qwen3.5:9b": {
+        "1": {
+          "status": "OK",
+          "output": "The fundamental bottleneck in modern computing is known as the memory wall, a phenomenon arising from the widening performance gap between the speed of the central processing unit and the latency of main memory access. As processor architectures have evolved to execute billions of instructions per second with increasingly complex pipelines and out-of-order execution, the time required for the CPU to wait for data from dynamic random-access memory (DRAM) has remained relatively stagnant, creating a scenario where the processor spends a significant portion of its cycle idle rather than performing useful work. This disparity forces architects to rely heavily on hierarchical memory systems, utilizing fast but small caches (",
+          "eval_count": 120
+        },
+        "0": {
+          "status": "OK",
+          "output": "The fundamental bottleneck in modern computing is known as the memory wall, a phenomenon arising from the widening performance gap between the speed of the central processing unit and the latency of main memory access. As processor clock speeds have escalated into the gigahertz range through aggressive pipelining and superscalar execution, memory technology has struggled to keep pace, remaining constrained by physical limitations such as signal propagation delays and the inherent latency of DRAM refresh cycles. This disparity forces the CPU to frequently stall while waiting for data, rendering its computational cycles idle and severely limiting overall system throughput. To mitigate this issue, architects have increasingly",
+          "eval_count": 120
+        }
+      },
+      "deepseek-r1:14b": {
+        "1": {
+          "status": "OK",
+          "output": "The fundamental bottleneck in modern computing is the \"memory wall,\" which refers to the growing disparity between the speed of microprocessors and the performance of main memory. As processors have become faster, the time it takes for them to access data from memory has not kept pace, leading to significant delays that can hinder overall system performance. This issue becomes more pronounced as the gap between processor speeds and memory access times widens, making it a critical challenge in computer architecture. Addressing the memory wall requires innovative approaches such as advanced caching techniques, new memory technologies, and architectural changes that optimize data flow to minimize this bottleneck",
+          "eval_count": 120
+        }
+      }
+    },
+    "needle": {
+      "qwen3.5:9b|16K": {
+        "1": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 12831
+        },
+        "0": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 12831
+        }
+      },
+      "qwen3.5:9b|32K": {
+        "1": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 25610
+        },
+        "0": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 25610
+        }
+      },
+      "deepseek-r1:14b|16K": {
+        "1": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17  \nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 12625
+        }
+      },
+      "deepseek-r1:14b|32K": {
+        "1": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17  \nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 25206
+        }
+      }
+    }
+  }
+}

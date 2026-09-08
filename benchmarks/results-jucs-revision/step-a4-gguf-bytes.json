@@ -1,0 +1,367 @@
+[
+ {
+  "label": "moe-qwen3.5-35b-a3b-iq2m",
+  "path": "/usr/share/ollama/.ollama/models/blobs/sha256-187b5bbb81d7ec1dc228cb04120302cc0d486cb3c988501af87e5f02e15ace0e",
+  "gguf_version": 3,
+  "arch": "qwen35moe",
+  "n_expert": 256,
+  "n_expert_used": 8,
+  "n_tensors": 733,
+  "file_bytes": 11391613568,
+  "tensor_bytes_total": 11380623872,
+  "expert_bytes": 9646899200,
+  "always_resident_bytes": 1733724672,
+  "expert_params": 32212254720,
+  "always_resident_params": 2448355968,
+  "total_params": 34660610688,
+  "activated_expert_fraction": 0.03125,
+  "per_token_bytes": 2035190272.0,
+  "per_token_gib": 1.895418643951416,
+  "always_resident_share_of_per_token": 0.8518735058104681,
+  "activated_expert_params": 1006632960.0,
+  "per_token_params": 3454988928.0,
+  "bits_per_param_always_resident": 5.664943152580009,
+  "bits_per_param_expert": 2.3958333333333335,
+  "bytes_by_type": {
+   "IQ2_XXS": 5536481280,
+   "IQ3_XXS": 4110417920,
+   "Q5_K": 1113784320,
+   "Q4_K": 286064640,
+   "Q6_K": 240844800,
+   "F32": 88852992,
+   "Q8_0": 4177920
+  },
+  "largest_always_resident": [
+   {
+    "name": "token_embd.weight",
+    "gib": 0.32562255859375,
+    "type": "Q5_K"
+   },
+   {
+    "name": "output.weight",
+    "gib": 0.26641845703125,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.0.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.1.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.2.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.3.attn_q.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.4.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.5.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   }
+  ]
+ },
+ {
+  "label": "dense-qwen3.5-9b",
+  "path": "/opt/models/qwen3.5-9b.gguf",
+  "gguf_version": 3,
+  "arch": "qwen35",
+  "n_expert": null,
+  "n_expert_used": null,
+  "n_tensors": 883,
+  "file_bytes": 6594462816,
+  "tensor_bytes_total": 6582475712,
+  "expert_bytes": 0,
+  "always_resident_bytes": 6582475712,
+  "expert_params": 0,
+  "always_resident_params": 9653104368,
+  "total_params": 9653104368,
+  "activated_expert_fraction": 1.0,
+  "per_token_bytes": 6582475712.0,
+  "per_token_gib": 6.130408227443695,
+  "always_resident_share_of_per_token": 1.0,
+  "activated_expert_params": 0,
+  "per_token_params": 9653104368.0,
+  "bits_per_param_always_resident": 5.455219760242833,
+  "bits_per_param_expert": null,
+  "bytes_by_type": {
+   "Q4_K": 4098097152,
+   "Q6_K": 1567211520,
+   "F16": 911204352,
+   "F32": 5962688
+  },
+  "largest_always_resident": [
+   {
+    "name": "output.weight",
+    "gib": 0.7770538330078125,
+    "type": "Q6_K"
+   },
+   {
+    "name": "token_embd.weight",
+    "gib": 0.5328369140625,
+    "type": "Q4_K"
+   },
+   {
+    "name": "v.merger.linear_fc1.weight",
+    "gib": 0.03955078125,
+    "type": "F16"
+   },
+   {
+    "name": "blk.0.ffn_down.weight",
+    "gib": 0.0384521484375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.1.ffn_down.weight",
+    "gib": 0.0384521484375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.2.ffn_down.weight",
+    "gib": 0.0384521484375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.3.ffn_down.weight",
+    "gib": 0.0384521484375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.6.ffn_down.weight",
+    "gib": 0.0384521484375,
+    "type": "Q6_K"
+   }
+  ]
+ },
+ {
+  "label": "dense-deepseek-r1-14b",
+  "path": "/opt/models/deepseek-r1-14b.gguf",
+  "gguf_version": 3,
+  "arch": "qwen2",
+  "n_expert": null,
+  "n_expert_used": null,
+  "n_tensors": 579,
+  "file_bytes": 8988109952,
+  "tensor_bytes_total": 8982142976,
+  "expert_bytes": 0,
+  "always_resident_bytes": 8982142976,
+  "expert_params": 0,
+  "always_resident_params": 14770033664,
+  "total_params": 14770033664,
+  "activated_expert_fraction": 1.0,
+  "per_token_bytes": 8982142976.0,
+  "per_token_gib": 8.365272521972656,
+  "always_resident_share_of_per_token": 1.0,
+  "activated_expert_params": 0,
+  "per_token_params": 14770033664.0,
+  "bits_per_param_always_resident": 4.865062967536916,
+  "bits_per_param_expert": null,
+  "bytes_by_type": {
+   "Q4_K": 6843432960,
+   "Q6_K": 2135347200,
+   "F32": 3362816
+  },
+  "largest_always_resident": [
+   {
+    "name": "output.weight",
+    "gib": 0.5948066711425781,
+    "type": "Q6_K"
+   },
+   {
+    "name": "token_embd.weight",
+    "gib": 0.407867431640625,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.0.ffn_down.weight",
+    "gib": 0.054073333740234375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.1.ffn_down.weight",
+    "gib": 0.054073333740234375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.2.ffn_down.weight",
+    "gib": 0.054073333740234375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.3.ffn_down.weight",
+    "gib": 0.054073333740234375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.4.ffn_down.weight",
+    "gib": 0.054073333740234375,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.5.ffn_down.weight",
+    "gib": 0.054073333740234375,
+    "type": "Q6_K"
+   }
+  ]
+ },
+ {
+  "label": "dense-phi4-mini",
+  "path": "/usr/share/ollama/.ollama/models/blobs/sha256-3c168af1dea0a414299c7d9077e100ac763370e5a98b3c53801a958a47f0a5db",
+  "gguf_version": 3,
+  "arch": "phi3",
+  "n_expert": null,
+  "n_expert_used": null,
+  "n_tensors": 196,
+  "file_bytes": 2491874624,
+  "tensor_bytes_total": 2483623296,
+  "expert_bytes": 0,
+  "always_resident_bytes": 2483623296,
+  "expert_params": 0,
+  "always_resident_params": 3836021856,
+  "total_params": 3836021856,
+  "activated_expert_fraction": 1.0,
+  "per_token_bytes": 2483623296.0,
+  "per_token_gib": 2.3130544424057007,
+  "always_resident_share_of_per_token": 1.0,
+  "activated_expert_params": 0,
+  "per_token_params": 3836021856.0,
+  "bits_per_param_always_resident": 5.179581116547215,
+  "bits_per_param_expert": null,
+  "bytes_by_type": {
+   "Q4_K": 1302331392,
+   "Q6_K": 834462720,
+   "Q5_K": 346030080,
+   "F32": 799104
+  },
+  "largest_always_resident": [
+   {
+    "name": "token_embd.weight",
+    "gib": 0.46953678131103516,
+    "type": "Q6_K"
+   },
+   {
+    "name": "blk.0.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.1.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.2.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.3.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.4.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.5.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.6.ffn_up.weight",
+    "gib": 0.0263671875,
+    "type": "Q4_K"
+   }
+  ]
+ },
+ {
+  "label": "moe-qwen3.6-35b-a3b-iq2m",
+  "path": "/opt/models/qwen3.6-35b-a3b-iq2m.gguf",
+  "gguf_version": 3,
+  "arch": "qwen35moe",
+  "n_expert": 256,
+  "n_expert_used": 8,
+  "n_tensors": 733,
+  "file_bytes": 11522702304,
+  "tensor_bytes_total": 11511712256,
+  "expert_bytes": 9766436864,
+  "always_resident_bytes": 1745275392,
+  "expert_params": 32212254720,
+  "always_resident_params": 2448355968,
+  "total_params": 34660610688,
+  "activated_expert_fraction": 0.03125,
+  "per_token_bytes": 2050476544.0,
+  "per_token_gib": 1.9096550941467285,
+  "always_resident_share_of_per_token": 0.8511559896195525,
+  "activated_expert_params": 1006632960.0,
+  "per_token_params": 3454988928.0,
+  "bits_per_param_always_resident": 5.702685115434979,
+  "bits_per_param_expert": 2.425520833333333,
+  "bytes_by_type": {
+   "IQ2_XXS": 5536481280,
+   "IQ3_XXS": 3802136576,
+   "Q5_K": 1113784320,
+   "IQ4_XS": 427819008,
+   "Q4_K": 286064640,
+   "Q6_K": 240844800,
+   "F32": 104581632
+  },
+  "largest_always_resident": [
+   {
+    "name": "token_embd.weight",
+    "gib": 0.32562255859375,
+    "type": "Q5_K"
+   },
+   {
+    "name": "output.weight",
+    "gib": 0.26641845703125,
+    "type": "Q4_K"
+   },
+   {
+    "name": "blk.0.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.1.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.2.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.3.attn_q.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.4.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   },
+   {
+    "name": "blk.5.attn_qkv.weight",
+    "gib": 0.0107421875,
+    "type": "Q5_K"
+   }
+  ]
+ }
+]

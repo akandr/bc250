@@ -1,0 +1,68 @@
+{
+  "step": "a3-flashattn",
+  "captured_at": "2026-09-03T20:03:22.760675",
+  "kernel": "6.18.9-200.fc43.x86_64",
+  "cu": "active_cu_number 24",
+  "models": [
+    "deepseek-r1:14b"
+  ],
+  "ctx_sizes": [
+    16384
+  ],
+  "fa_settings": [
+    "1",
+    "0"
+  ],
+  "sampling": "temp=0 seed=42",
+  "elapsed_min": 8.8,
+  "data": {
+    "short": {
+      "deepseek-r1:14b": {
+        "1": {
+          "status": "OK",
+          "output": "The fundamental bottleneck in modern computing is the \"memory wall,\" which refers to the growing disparity between the speed of microprocessors and the performance of main memory. As processors have become faster, the time it takes for them to access data from memory has not kept pace, leading to significant delays that can hinder overall system performance. This issue becomes more pronounced as the gap between processor speeds and memory access times widens, making it a critical challenge in computer architecture. Addressing the memory wall requires innovative approaches such as advanced caching techniques, new memory technologies, and architectural changes that optimize data flow to minimize this bottleneck",
+          "eval_count": 120
+        },
+        "0": {
+          "status": "OK",
+          "output": "The fundamental bottleneck in modern computing is the \"memory wall,\" which refers to the growing disparity between the speed of microprocessors and the performance of main memory. As processor speeds have increased exponentially over the years, the rate at which memory can deliver data has not kept pace, leading to a significant slowdown in overall system performance. This issue arises because memory access times have not improved as rapidly as processor speeds, causing processors to wait for data from memory, which becomes a critical bottleneck. To address this problem, various techniques such as caching, prefetching, and the use of faster memory technologies like DDR4 and",
+          "eval_count": 120
+        }
+      }
+    },
+    "needle": {
+      "deepseek-r1:14b|16K": {
+        "1": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17  \nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 12625
+        },
+        "0": {
+          "status": "OK",
+          "recall": true,
+          "output": "OMEGA-4-COBALT-RIVER-17  \nDELTA-7-VIOLET-MOUNTAIN-93",
+          "prompt_eval_count": 12625
+        }
+      }
+    }
+  },
+  "comparison": {
+    "short_exact_match": {
+      "deepseek-r1:14b": {
+        "exact": false,
+        "on_preview": "The fundamental bottleneck in modern computing is the \"memory wall,\" which refers to the growing disparity between the s",
+        "off_preview": "The fundamental bottleneck in modern computing is the \"memory wall,\" which refers to the growing disparity between the s"
+      }
+    },
+    "needle_recall_agreement": {
+      "deepseek-r1:14b|16K": {
+        "fa_on": true,
+        "fa_off": true,
+        "agree": true,
+        "on_status": "OK",
+        "off_status": "OK"
+      }
+    }
+  }
+}

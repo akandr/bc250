@@ -1,0 +1,176 @@
+{
+ "step": "a7-p2-accuracy",
+ "note": "Downstream task accuracy at 2048 context, 400 randomised tasks per cell. Recovered from the raw llama.cpp logs in a7-raw/: the sweep harness did not parse the score line and recorded these cells as FAILED in step-a7-broad.json. McNemar is computed on the per-task outcome sequence printed by llama-perplexity for HellaSwag, with continuity correction.",
+ "binary": "llama.cpp b9265",
+ "cu": "active_cu_number 24",
+ "cells": [
+  {
+   "test": "hellaswag",
+   "model": "phi4-mini",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__phi4-mini__hella__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 70.0
+  },
+  {
+   "test": "hellaswag",
+   "model": "phi4-mini",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__phi4-mini__hella__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 68.75
+  },
+  {
+   "test": "hellaswag",
+   "model": "qwen3-14b",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__qwen3-14b__hella__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 78.25
+  },
+  {
+   "test": "hellaswag",
+   "model": "qwen3-14b",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__qwen3-14b__hella__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 78.25
+  },
+  {
+   "test": "hellaswag",
+   "model": "qwen3-8b-q4km",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__qwen3-8b-q4km__hella__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 74.25
+  },
+  {
+   "test": "hellaswag",
+   "model": "qwen3-8b-q4km",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__qwen3-8b-q4km__hella__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 75.0
+  },
+  {
+   "test": "hellaswag",
+   "model": "qwen3-8b-q8_0",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__qwen3-8b-q8_0__hella__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 75.25
+  },
+  {
+   "test": "hellaswag",
+   "model": "qwen3-8b-q8_0",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_hellaswag__qwen3-8b-q8_0__hella__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 74.75
+  },
+  {
+   "test": "winogrande",
+   "model": "phi4-mini",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_winogrande__phi4-mini__wino__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 72.5,
+   "stderr_pct": 2.2354
+  },
+  {
+   "test": "winogrande",
+   "model": "phi4-mini",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_winogrande__phi4-mini__wino__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 71.0,
+   "stderr_pct": 2.2717
+  },
+  {
+   "test": "winogrande",
+   "model": "qwen3-8b-q4km",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_winogrande__qwen3-8b-q4km__wino__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 68.0,
+   "stderr_pct": 2.3353
+  },
+  {
+   "test": "winogrande",
+   "model": "qwen3-8b-q4km",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_winogrande__qwen3-8b-q4km__wino__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 68.75,
+   "stderr_pct": 2.3205
+  },
+  {
+   "test": "winogrande",
+   "model": "qwen3-8b-q8_0",
+   "kv_type": "f16",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_winogrande__qwen3-8b-q8_0__wino__f16__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 66.5,
+   "stderr_pct": 2.3629
+  },
+  {
+   "test": "winogrande",
+   "model": "qwen3-8b-q8_0",
+   "kv_type": "q4_0",
+   "flash_attn": "on",
+   "n_ctx": 2048,
+   "source_log": "P2_winogrande__qwen3-8b-q8_0__wino__q4_0__faon__c2048.log",
+   "n_tasks": 400,
+   "accuracy_pct": 66.5,
+   "stderr_pct": 2.3629
+  }
+ ],
+ "mcnemar_hellaswag": {
+  "phi4-mini": {
+   "discordant_f16_only": 10,
+   "discordant_q4_0_only": 5,
+   "chi2_continuity_corrected": 1.0667
+  },
+  "qwen3-14b": {
+   "discordant_f16_only": 3,
+   "discordant_q4_0_only": 3,
+   "chi2_continuity_corrected": 0.1667
+  },
+  "qwen3-8b-q4km": {
+   "discordant_f16_only": 6,
+   "discordant_q4_0_only": 9,
+   "chi2_continuity_corrected": 0.2667
+  },
+  "qwen3-8b-q8_0": {
+   "discordant_f16_only": 7,
+   "discordant_q4_0_only": 5,
+   "chi2_continuity_corrected": 0.0833
+  }
+ }
+}

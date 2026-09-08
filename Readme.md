@@ -135,7 +135,8 @@ Against a *deployable* 14B dense model the advantage is more modest: the MoE lea
 | [B10](#b10-roofline-analysis) | Roofline Analysis | 357 GB/s, 10.9 FLOP/byte ridge, decode placement |
 | [B11](#b11-clock--thermal-telemetry) | Clock & Thermal | oberon governor, 1.5 GHz cap, 57–75°C sustained |
 | [B12](#b12-image-generation-benchmarks) | Image Generation | 8 models, resolution scaling, video, upscaling |
-| [B13](#b13-model-recommendations) | Model Recommendations | Best model per use case |
+| [B13](#b13-jucs-revision--configuration-dependency-validations) | J.UCS Revision Validations | KV quality, decode window, flash attention |
+| [B14](#b14-model-recommendations) | Model Recommendations | Best model per use case |
 | | **`PART V ─ REFERENCE`** | |
 | [9](#9-repository-structure) | Repository Structure | File layout, deployment paths |
 | [10](#10-troubleshooting) | Troubleshooting | Common issues and fixes |
@@ -287,7 +288,9 @@ sudo dracut -f
 During inference the KV cache grows linearly with context length, competing with model weights for the same 16 GB pool. Key settings:
 
 - **`OLLAMA_CONTEXT_LENGTH=65536`** — caps default allocation at 64K. The verified ceiling where all models can process a full context within acceptable time.
-- **`OLLAMA_KV_CACHE_TYPE=q4_0`** — quantizes KV cache to 4-bit, reducing KV memory by ~4× vs FP16. This is a capacity trade-off, not a speed trade-off: Q4_0 allows 2× more context slots before hitting the working-set ceiling, with negligible generation-speed penalty (≤0.9% vs Q8_0 at 16–32K filled context on qwen3.5:9b).
+- **`OLLAMA_KV_CACHE_TYPE=q4_0`** — quantizes KV cache to 4-bit, reducing KV memory by ~4× vs FP16, with negligible generation-speed penalty (≤0.9% vs Q8_0 at 16–32K filled context on qwen3.5:9b).
+
+> **Correction (2026-09).** Earlier revisions of this document called Q4_0 KV a pure capacity trade-off. Graded measurement by perplexity shows that is wrong for part of the model space: Q4_0 costs up to 1.6% perplexity on most models, and **collapses models with few key/value heads** — every model measured with two KV heads (Qwen2.5 0.5b/1.5b/3b, Coder 1.5b/3b) and two of three with four heads, by factors of 3.45 to 607×; the four collapsing models measured at Q8_0 recover fully. No model with eight KV heads collapses, though two small ones pay 5–32%. Check `attention.head_count_kv` before deploying Q4_0; prefer `q8_0` where the cache fits. See the accompanying paper (§5.3.4) and `benchmarks/results-jucs-revision/`.
 
 ```bash
 # In /etc/systemd/system/ollama.service.d/override.conf:
@@ -461,7 +464,7 @@ sudo rm /etc/modprobe.d/bc250-40cu.conf && sudo dracut -f && sudo reboot
 | **Q8_0** | 64K+ | ~2.0 GiB | 21.2 | Conservative |
 | **Q4_0** (current) | **128K** | **~1.1 GiB** | **21.1** | **← deployed** |
 
-Q4_0 KV is a capacity trade-off, not a speed trade-off: ≤0.9% generation speed penalty vs Q8_0 (+0.3% at 16K, +0.9% at 32K), measured on qwen3.5:9b.
+Q4_0 KV costs ≤0.9% generation speed vs Q8_0 (+0.3% at 16K, +0.9% at 32K), measured on qwen3.5:9b. It is **not** free in quality — see the correction in §3.4.
 
 ### 4.5 Extended context benchmark — filled context verification
 
@@ -1239,9 +1242,9 @@ Q8_0 carries 67% more weight data but is only 17% slower during generation; it's
 
 Delta Q8_0 vs Q4_0: −0.3% at 16K, −1.1% at 32K. Both deltas are within run-to-run CV.
 
-KV quantization is a capacity trade-off, not a speed trade-off. Q4_0 doubles the context slots available before hitting the working-set ceiling, with no meaningful speed penalty.
+Q4_0 doubles the context slots available before hitting the working-set ceiling, with no meaningful speed penalty. The quality cost is a separate matter and is not negligible for every model — see the correction in §3.4.
 
-> **Why no speed penalty?** The most likely explanation is that Ollama's Vulkan/RADV backend does not implement a distinct Q8_0 KV kernel on GFX1013 — it accepts `OLLAMA_KV_CACHE_TYPE=q8_0` and reports it in the systemd environment, but internally falls back to Q4_0 compute paths. The delta (≤1.1%, within CV) is consistent with two runs of the same operation rather than genuinely different precision. This remains a hypothesis — no kernel-level profiling was performed to confirm it. What is confirmed: Q4_0 is the optimal KV setting on this hardware, providing 2× capacity vs Q8_0 with identical measured throughput.
+> **Why no speed penalty?** The most likely explanation is that Ollama's Vulkan/RADV backend does not implement a distinct Q8_0 KV kernel on GFX1013 — it accepts `OLLAMA_KV_CACHE_TYPE=q8_0` and reports it in the systemd environment, but internally falls back to Q4_0 compute paths. The delta (≤1.1%, within CV) is consistent with two runs of the same operation rather than genuinely different precision. This remains a hypothesis — no kernel-level profiling was performed to confirm it. What is confirmed: Q4_0 provides 2× capacity vs Q8_0 with identical measured throughput. Later graded measurement showed it is not the optimal setting for every model (§3.4).
 
 ### B8.1 MXFP4 path — gpt-oss-20b
 
@@ -1633,7 +1636,37 @@ Serialize inference at the runtime layer (which Ollama does by default with `OLL
 
 ---
 
-## B13. Model Recommendations
+## B13. J.UCS Revision — Configuration-Dependency Validations
+
+Three settings the published numbers depend on were measured rather than assumed, in response to
+peer review. The board was restored to the submitted paper's exact configuration (kernel
+**6.18.9-200.fc43**, BIOS **AMI P3.00**, Mesa **25.3.4**, `ttm.pages_limit=4194304`, oberon
+1000–1500 MHz, Ollama **0.20.0** with `OLLAMA_KV_CACHE_TYPE=q4_0` and
+`OLLAMA_FLASH_ATTENTION=1`), and every experiment was run on the **verified-stock 24-CU** arm and
+then repeated under the **40-CU unlock**. Sampling is greedy throughout (`temperature=0`,
+`seed=42`), so differences are attributable to the setting under test rather than to sampling.
+
+| Harness | Question | Result |
+|---|---|---|
+| `benchmarks/bench-a1-kv-quality.py` | Is 4-bit KV quality-neutral, not just fast? | **No, and the task-level probe cannot see it.** At task level q4_0 = q8_0 = f16 on both long-context-capable models (6/6 multi-hop, 3/3 needle at 16K and 32K, reproduced at 40-CU), but that probe sits at its ceiling. Graded perplexity (`bench-a5-perplexity.py`) shows q4_0 costs up to 1.6% and collapses models with few KV heads — see §3.4. |
+| `benchmarks/bench-a2-longdecode.py` | Is `num_predict=100` warm-up-inflated? | **No.** Across 30/50/100/512/1024 tokens the total spread is 3.1–4.5% per model; the 100-token rate sits mid-gradient. Within-cell CV ≤ 0.36% over 20 cells. At 40-CU, `deepseek-r1:14b` drops ~11% at 1024 tokens — governor throttling under sustained load (§B11), absent at 24-CU. |
+| `benchmarks/bench-a3-flashattn.py` | Is flash attention correct on GFX1013? | **Yes.** Needle retrieval identical with FA on and off in every cell that completed. Outputs share a long identical prefix (232 / 192 chars) then diverge deterministically — expected from the fused kernel's FP reduction order, so exact token match is the wrong criterion. FA-off exceeds the 16 GB pool at 32K for the 14B model, making FA a *capacity* enabler at the largest model+context combinations. |
+
+Raw per-run JSON for both CU arms is in `benchmarks/results-jucs-revision/`
+(`step-a1-kv-quality-{24,40}cu.json`, `step-a2-longdecode-{24,40}cu.json`,
+`step-a2-longdecode-ext-24cu.json` — the full 30→1024 sweep — and
+`step-a3-flashattn-{24,40}cu.json`).
+
+**Scope, honestly:** these bound the risk rather than eliminate it. The KV and flash-attention
+checks cover two to three models at two context tiers, not the full cohort at every tier, and they
+are scored with the high-ceiling competence probe (§B4), which would not detect a subtle
+degradation that leaves task success intact. Ruling that out needs perplexity or a graded benchmark.
+
+An independent re-measurement session — after a compute-unit reconfiguration and several reboots —
+reproduced the original 100-token figures to within **0.2%** on all four models. Same board and
+operator, so that is repeatability, not independent reproduction.
+
+## B14. Model Recommendations
 
 > All tok/s at 4K context, verified-stock 24-CU configuration, Ollama 0.20.0. 40-CU numbers available in §B9 (multiply generation by ~1.32×, prefill by ~1.50×).
 
@@ -1677,6 +1710,7 @@ bc250/
 │   ├── results-phase-d-stage2/     # 40-CU unlock + filled-context ladder
 │   ├── results-concurrent-rerun/   # Concurrent inference contention probe
 │   ├── results-roofline/           # Roofline microbenchmark results
+│   ├── results-jucs-revision/      # KV-quality, decode-window, flash-attn validations
 │   ├── results-moe-active/         # MoE active-parameter comparison
 │   ├── results-longctx/            # Long-context quality results
 │   └── generate-benchmark-charts.py

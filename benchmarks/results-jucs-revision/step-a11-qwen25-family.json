@@ -1,0 +1,40 @@
+{
+ "step": "a11-qwen25-family",
+ "note": "Perplexity over WikiText-2 for Qwen2.5 builds at three KV widths, llama.cpp b9265, verified-stock 24 CU.  Run with llama-perplexity directly under the same protocol as A5 and A6 (same binary, corpus and token budget); no separate harness script exists for this step, and the per-model invocations are in step-a11-qwen25-family.log, released beside this file.  These are the Q8_0 recovery values cited in the paper.",
+ "binary": "llama.cpp b9265",
+ "cu": "active_cu_number 24",
+ "corpus": "wiki.test.raw",
+ "cells": [
+  {
+   "model": "qwen2.5-3b",
+   "ppl": {
+    "f16": 7.9308,
+    "q8_0": 7.9305,
+    "q4_0": 27.3412
+   },
+   "q8_0_vs_f16_pct": -0.0038,
+   "q4_0_ratio": 3.4475
+  },
+  {
+   "model": "qwen2.5-7b",
+   "ppl": {
+    "f16": 6.6734,
+    "q8_0": 6.6703,
+    "q4_0": 2721.6197
+   },
+   "q8_0_vs_f16_pct": -0.0465,
+   "q4_0_ratio": 407.831
+  },
+  {
+   "model": "qwen2.5-coder-7b",
+   "ppl": {
+    "f16": 8.1984,
+    "q8_0": 8.2041,
+    "q4_0": 735.5786
+   },
+   "q8_0_vs_f16_pct": 0.0695,
+   "q4_0_ratio": 89.7222
+  }
+ ],
+ "protocol_equivalent_harness": "bench-a6-kv-confirm.py"
+}

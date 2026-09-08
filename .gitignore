@@ -15,6 +15,9 @@ netscan/crawl-targets.json
 netscan/watchlist.json
 car-known-locations.json
 *.pdf
+# ...except the JUCS supplementary document, which accompanies the paper
+!jucs-supplementary/*.pdf
+!jucs-supplementary/figures/*.pdf
 
 # Secrets (systemd units may contain tokens)
 # openclaw-gateway.service is tracked as reference (token redacted)
@@ -51,11 +54,14 @@ scripts/40cu-unlock/
 # scattered .md files.
 **/*.md
 !/Readme.md
+!/jucs-supplementary/README.md
 
 # Execution logs (runtime output, not data)
 logs/
 benchmarks/*.log
 benchmarks/**/*.log
+# ...except logs that are the sole primary record behind a published claim
+!benchmarks/results-jucs-revision/step-a11-qwen25-family.log
 benchmarks/results-overnight-*/
 benchmarks/results-phase-c/
 benchmarks/results-phase-d-stage2-attempt1-*/
@@ -67,4 +73,6 @@ benchmarks/METHODOLOGY-CRITIQUE.md
 benchmarks/results-llm-comprehensive.md
 benchmarks/gen_article_data_sheet.py
 benchmarks/results-prefer-host-mem.json
+# ...except this one: it is the source of a supplement table
+!benchmarks/results-prefer-host-mem.json
 benchmarks/results-overnight-20260516.json

@@ -12,6 +12,18 @@
 #   action:         KEEP | REPLACE-FROM-PASS-A | REPLACE-FROM-PASS-D | RETAIN-WITH-CAVEAT
 #   notes:          any extra context
 #
+# 2026-09-08 J.UCS REVISION NOTE:
+#   This ledger covers the canonical tables of the SUBMITTED manuscript and uses
+#   that version's numbering. In the revised manuscript those tables are:
+#   Table 1 -> Table 3 (gen_speed), Table 2 -> Table 6 (stat_validation),
+#   Table 3 -> Table 7 (context_scaling), Table 6 (quality_tiers) -> Table 12,
+#   Table 10 -> Table 14 (cu_unlock). The quality_tiers entry below (0.18.0,
+#   patched 40-CU) is superseded: Table 12 was re-measured in full on the
+#   canonical stack (benchmarks/results-jucs-revision/step-a10-competence-canonical.json).
+#   Every table added in the revision (Tables 4, 5, 8, 9, 10) names its source
+#   file in its caption or in the supplementary document; the files are under
+#   benchmarks/results-jucs-revision/ and are not repeated here.
+#
 # 2026-06-13 16-GiB CLEAN RE-SWEEP (supersedes the 12-GiB-cap erratum):
 #   The filled-context tables (Table 3 context_scaling, Table w5_followup) were
 #   re-collected at the verified 16-GiB pool (ttm.pages_limit=4194304, confirmed
