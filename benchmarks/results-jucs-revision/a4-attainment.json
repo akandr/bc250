@@ -1,0 +1,148 @@
+{
+ "peak_gb_s": 357.0,
+ "rows": [
+  {
+   "model": "llama3.2:3b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 1.8733923435211182,
+   "decode_tps": 80.6,
+   "rate_source": "Table 3",
+   "effective_gb_s": 162.13010078719998,
+   "attained": 0.4541459405803921,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "phi4-mini",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 2.3130544424057007,
+   "decode_tps": 67.9,
+   "rate_source": "Table 3",
+   "effective_gb_s": 168.63802179840002,
+   "attained": 0.47237541120000004,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "gemma3:4b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 3.094763219356537,
+   "decode_tps": 47.8,
+   "rate_source": "Table 3",
+   "effective_gb_s": 158.8382864512,
+   "attained": 0.4449251721322129,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "qwen3:8b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 4.8609619140625,
+   "decode_tps": 31.6,
+   "rate_source": "Table 3",
+   "effective_gb_s": 164.9336123392,
+   "attained": 0.46199891411540617,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "qwen3.5:9b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 6.130408227443695,
+   "decode_tps": 23.1,
+   "rate_source": "Table 3",
+   "effective_gb_s": 152.0551889472,
+   "attained": 0.4259248990117647,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "mistral-nemo:12b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 6.578693389892578,
+   "decode_tps": 26.0,
+   "rate_source": "Table 3",
+   "effective_gb_s": 183.65927424,
+   "attained": 0.5144517485714286,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "qwen3:14b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 8.633570671081543,
+   "decode_tps": 20.1,
+   "rate_source": "Table 3",
+   "effective_gb_s": 186.331540992,
+   "attained": 0.5219370896134453,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "deepseek-r1:14b",
+   "cls": "Q4 dense",
+   "path": "Ollama",
+   "per_token_gib": 8.365272521972656,
+   "decode_tps": 22.1,
+   "rate_source": "Table 3",
+   "effective_gb_s": 198.5053597696,
+   "attained": 0.5560374223238096,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "deepseek-r1-14b",
+   "cls": "Q4 dense",
+   "path": "llama.cpp",
+   "per_token_gib": 8.365272521972656,
+   "decode_tps": 21.2,
+   "rate_source": "Table 12",
+   "effective_gb_s": 190.4214310912,
+   "attained": 0.5333933644011204,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "qwen3.5-35b-a3b",
+   "cls": "IQ2_M",
+   "path": "llama.cpp",
+   "per_token_gib": 1.895418643951416,
+   "decode_tps": 59.5,
+   "rate_source": "Table 12",
+   "effective_gb_s": 121.093821184,
+   "attained": 0.3391983786666667,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "qwen3.6-35b-a3b",
+   "cls": "IQ2_M",
+   "path": "llama.cpp",
+   "per_token_gib": 1.9096550941467285,
+   "decode_tps": 59.6,
+   "rate_source": "Table 12",
+   "effective_gb_s": 122.20840202240001,
+   "attained": 0.34232045384425774,
+   "bytes_source": "scan"
+  },
+  {
+   "model": "QwQ-32B",
+   "cls": "IQ2_M",
+   "path": "llama.cpp",
+   "per_token_gib": 11.3,
+   "decode_tps": 9.6,
+   "rate_source": "Table 12",
+   "effective_gb_s": 116.47951306752,
+   "attained": 0.326273145847395,
+   "bytes_source": "file size (model removed)"
+  },
+  {
+   "model": "qwen3:8b (Q8_0)",
+   "cls": "Q8_0 dense",
+   "path": "Ollama",
+   "per_token_gib": 8.237659454345703,
+   "decode_tps": 26.1,
+   "rate_source": "Section 5.6",
+   "effective_gb_s": 230.85761863680003,
+   "attained": 0.6466599961815127,
+   "bytes_source": "scan"
+  }
+ ]
+}

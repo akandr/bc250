@@ -9,6 +9,7 @@
 \usepackage{titlesec}
 \usepackage[hidelinks]{hyperref}
 \usepackage{fancyhdr}
+\usepackage[section]{placeins}
 
 \setmainfont{TeX Gyre Termes}
 \setmonofont{TeX Gyre Cursor}[Scale=0.86]
@@ -36,7 +37,8 @@ Transferable Lessons from a Vulkan-Only, 16\,GB Edge Platform}\\[1.2ex]
 \end{center}
 
 \noindent This document holds the per-run and per-cell detail referred to from the
-main text.  Every number here comes from the released measurement data
+main text, together with the deployment, harness and evaluator detail
+moved out of Sections~3 and~4 of the main text.  Every number here comes from the released measurement data
 in the project repository; the file backing each table is named in its
 caption.  Raw logs, harnesses and the full JSON results are in the same
 repository.  Unless stated otherwise, all measurements are from the
@@ -47,7 +49,81 @@ llama.cpp~b9265 at the 16\,GiB pool
 \tableofcontents
 
 %=====================================================================
-\section{Heap Placement Under \texttt{GGML\_VK\_PREFER\_HOST\_MEMORY}}
+\section{Deployment Recipe: Kernel Memory Limits and Runtime Configuration}
+%=====================================================================
+
+\paragraph{Kernel memory limits.}  The \texttt{amdgpu} driver defaults
+to allocating 50\,\% of physical RAM as GTT ($\approx$7.4\,GiB on this
+board), and the legacy override \texttt{amdgpu.gttsize} is deprecated
+in modern kernels.  Independently, the kernel's TTM pool caps GPU
+allocations at the same value; without adjustment, 14\,B-class models
+load but return HTTP~500 during inference when the runtime extends the
+KV cache past that ceiling.  Setting \texttt{ttm.pages\_limit=4194304}
+(16\,GiB in 4\,KiB pages) lifts both.  The value holds:
+\texttt{pages\_limit} reads back as 4\,194\,304 after boot and a
+12.6\,GiB model loads with its full GTT footprint.  The setting is
+applied from three independent sources (kernel command line, a
+\texttt{modprobe.d} entry and an \texttt{/etc/tmpfiles.d} entry) and
+verified across reboots.  With the limit at 16\,GiB, Vulkan reports
+16.5\,GiB across two logical heaps, a 5.5\,GiB host-visible
+BAR-mapped heap and an 11\,GiB device-local heap, backed by the same
+physical memory; the effect of forcing the host-visible heap is
+measured in Section~S\ref{sec:s-heap}.
+
+\paragraph{Runtime configuration.}  Ollama runs with the following
+environment:
+\begin{itemize}[leftmargin=1.6em, itemsep=0.1ex, topsep=0.3ex]
+\item \texttt{OLLAMA\_VULKAN=1} (Vulkan backend);
+\item \texttt{OLLAMA\_KV\_CACHE\_TYPE=q4\_0} (4-bit KV cache);
+\item \texttt{OLLAMA\_CONTEXT\_LENGTH=65536} (default allocation,
+      overridden per call via \texttt{num\_ctx});
+\item \texttt{OLLAMA\_FLASH\_ATTENTION=1};
+\item \texttt{OLLAMA\_MAX\_LOADED\_MODELS=1} (one model resident at a
+      time, avoiding memory contention);
+\item \texttt{OLLAMA\_KEEP\_ALIVE=30m} (cold start only after
+      30~minutes idle; warm-start TTFT 0.2--2.1\,s).
+\end{itemize}
+The service unit carries \texttt{OOMScoreAdjust=-1000} to protect the
+process from the Linux OOM killer.  A 16\,GB NVMe swap file serves as
+a safety net for load-time memory spikes; in practice swap usage
+stayed at 400--850\,MB (OS buffers displaced by model weights), with
+no active paging.
+
+\paragraph{Working-set guard thresholds.}  The harness parameter
+\texttt{BC250\_VM\_CEILING\_GIB} defaults to 11\,GiB, the device-local
+Vulkan heap size with margin.  The filled-context sweeps (Tables~6
+and~9 of the main text) ran against the full 16\,GiB pool with a
+14.7\,GiB GTT high-water guard; the Granite state-space ladder ran at
+a 15\,GiB threshold, because its per-token KV footprint is far smaller
+than the dense transformers' and leaves more of the pool usable for
+weights; the 40-CU re-run used the 11\,GiB default for the light
+models and the 14.7\,GiB guard for the heavy-MoE ladder (Table~13 of
+the main text).
+
+%=====================================================================
+\section{40-CU Unlock: Register-Level Detail}
+%=====================================================================
+
+The GFX1013 die has 40 physical Compute Units; the factory harvest
+mask exposes 24 (6 of the 10 CUs in each of the four SE$\times$SH
+shader arrays).  The modification re-enables the remaining 16 by
+writing two GFX10 configuration registers during the driver's
+per-array initialisation in \texttt{gfx\_v10\_0\_get\_cu\_info()}:
+\texttt{CC\_GC\_SHADER\_ARRAY\_CONFIG} (\texttt{0xfff80000} $\to$
+\texttt{0xffe00000}, the driver-visible enumeration mask) and
+\texttt{SPI\_PG\_ENABLE\_STATIC\_WGP\_MASK} (\texttt{0x00000007}
+$\to$ \texttt{0x0000001f}, the dispatch gate determining which
+Work-Group Processors receive waves), with the matching
+\texttt{RLC\_PG\_ALWAYS\_ON\_WGP\_MASK} keepalive set in tandem.  Both
+writes are PCI-ID-gated to \texttt{0x13fe} and are a no-op on any
+other AMD GPU.  It is a patch to the in-tree AMDGPU driver (GPL-2.0)
+programming two registers the stock driver leaves at their fused-off
+values, not a firmware modification: SMU firmware, VBIOS and PSP
+signed images are untouched, and no persistent state is left on the
+board.
+
+%=====================================================================
+\section{Heap Placement Under \texttt{GGML\_VK\_PREFER\_HOST\_MEMORY}}\label{sec:s-heap}
 %=====================================================================
 
 On a unified-memory device the Vulkan allocator can place model weights
@@ -95,6 +171,154 @@ seen elsewhere in this paper, support a direction.  The canonical
 measurements leave the variable at its default.
 
 %=====================================================================
+\section{Per-Token Weight Traffic from the GGUF Tensor Tables}
+%=====================================================================
+
+Section~5.1 of the main text reads the per-token weight traffic of the
+MoE/dense pair off the GGUF tensor tables.  Table~\ref{tab:s-bytes}
+gives the accounting: a dense model reads every tensor each token, a
+sparse one its always-resident tensors plus the activated fraction of
+its expert stack.
+
+\begin{table}[h]
+\centering\small
+\caption{Per-token weight traffic measured from the GGUF tensor tables
+(harness \texttt{bench-a4-gguf-bytes.py}, output
+\texttt{step-a4-gguf-bytes.json}).  For the MoE, per-token bytes are
+the always-resident tensors plus $8/256$ of the expert stack; for
+dense models they are all tensors.  ``Attained'' is per-token bytes
+$\times$ decode rate as a fraction of the 357\,GB/s streaming peak of
+Section~7 of the main text; it is comparable within a quantisation
+format only.  Decode rates are the llama.cpp figures of Table~12 of
+the main text on verified-stock 24\,CU.  The same harness applied to every model file on the board is
+\texttt{step-a4-gguf-bytes-all.json} (Table~\ref{tab:s-attain}).}
+\label{tab:s-bytes}
+\begin{tabular}{@{}lcrrrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Quant} & \textbf{Params} & \textbf{Per-tok}
+  & \textbf{Per-tok} & \textbf{Decode} & \textbf{Attained} \\
+ & & \textbf{(B)} & \textbf{(B)} & \textbf{(GiB)} & \textbf{(tok/s)} & \\
+\midrule
+qwen3.5-35b-a3b (MoE) & IQ2\_M  & 34.66 & 3.45  & 1.90  & 59.5 & 33.9\,\% \\
+QwQ-32B (dense)       & IQ2\_M  & 32.0  & 32.0  & 11.3$^{a}$ &  9.6 & 32.6\,\% \\
+deepseek-r1-14b (dense) & Q4\_K\_M & 14.0 & 14.0 & 8.37 & 21.2 & 53.3\,\% \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\raggedright\footnotesize $^{a}$\,GGUF file size; this model is no
+longer resident on the test board.  Across the five models read from
+their tensor tables, tensor bytes run 0.07 to 0.33\,\% below file size.
+\end{table}
+
+Two effects account for the shortfall against the naive
+active-parameter ratio.  The always-resident components (attention
+projections, embedding and output layers, router) are 2.45\,B of this
+MoE's 34.66\,B parameters; with the 8-of-256 activated experts 3.45\,B
+are read per token, the figure the ``A3B'' label denotes, which
+against a 32\,B dense model gives 9.3$\times$, not 10.7$\times$.  The
+larger effect is that those tensors are quantised far more
+conservatively than the experts, 5.66 against 2.40 bits per parameter,
+so 7\,\% of the parameters are 85\,\% of the per-token \emph{bytes}.
+Per-token traffic is 1.90\,GiB against the dense comparator's
+11.3\,GiB, predicting 5.96$\times$ where the measured separation is
+6.20$\times$, agreement to 3.8\,\%.  Sparse activation converts its
+parameter ratio into a throughput ratio only to the extent that the
+always-resident components are quantised as aggressively as the
+experts; in this build and in the second MoE measured, both keep
+attention, embedding and output tensors above 5\,bits per parameter
+while the experts sit near 2.4.
+
+The accounting is not fitted to this pair.  Table~\ref{tab:s-attain}
+applies the same arithmetic, per-token bytes read from the tensor
+table times the measured decode rate, to every model of Table~3 of the
+main text and to the IQ2\_M builds of Table~12, using the tensor tables
+of every model file on the board
+(\texttt{step-a4-gguf-bytes-all.json}).  Within a quantisation class
+the effective bandwidth is consistent: the eight Q4-class dense models
+served through Ollama average 172\,GB/s, every one within $-12$ to
+$+16\,\%$ of that mean (standard deviation 9\,\%), and the two MoEs
+and \texttt{QwQ-32B} at IQ2\_M through llama.cpp average 120\,GB/s
+within $\pm$3\,\%.  The two paths differ by $\approx$2.4$\times$ for
+MoE models and little for dense ones, so the grouping does not mix
+them; \texttt{deepseek-r1-14b} through llama.cpp attains 190\,GB/s,
+which recovers the 191\,GB/s roofline cross-check of Section~7 of the
+main text from the tensor table alone, against 199\,GB/s for the same
+weights through Ollama.  The MoE lands on the same attainment as a
+dense model of the same quantisation only when its per-token traffic
+is taken as the measured 1.90\,GiB, not its 10.6\,GiB file size:
+consistent with the decomposition without proving it.  Two further
+regularities are visible.  The one Q8\_0 build attains 65\,\% of peak
+against 43--56\,\% for the Q4 class, the simpler dequantisation noted
+in Section~5.6 of the main text; and within the Q4 class the sub-10\,B
+models attain 43--47\,\% against 51--56\,\% for the 12--14\,B models,
+consistent with a per-token overhead that does not scale with weight
+bytes.  Two caveats: the dense comparator's 11.3\,GiB is a file size,
+that model having been removed from the board, and the KV cache, read
+by every model, is excluded at the 4K context used here.
+
+\begin{table}[h]
+\centering\small
+\caption{Effective decode bandwidth: per-token weight bytes from the
+GGUF tensor tables (\texttt{step-a4-gguf-bytes-all.json}, harness
+\texttt{bench-a4-scan-board.py}) times the measured decode rate at 4K
+context on verified-stock 24\,CU (Table~3 of the main text for the
+Ollama rows, Table~12 for the llama.cpp rows, Section~5.6 for the
+Q8\_0 build); analysis \texttt{analyze-a4-attainment.py}.
+``Attained'' is the fraction of the 357\,GB/s streaming peak.
+\texttt{QwQ-32B} uses its file size.  KV-cache reads are excluded.}
+\label{tab:s-attain}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Path} & \textbf{GiB/token} & \textbf{tok/s} & \textbf{GB/s} & \textbf{Attained} \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{Q4-class dense}} \\
+\texttt{llama3.2:3b}      & Ollama    & 1.87 & 80.6 & 162.1 & 45.4\,\% \\
+\texttt{phi4-mini}        & Ollama    & 2.31 & 67.9 & 168.6 & 47.2\,\% \\
+\texttt{gemma3:4b}        & Ollama    & 3.10 & 47.8 & 158.8 & 44.5\,\% \\
+\texttt{qwen3:8b}         & Ollama    & 4.86 & 31.6 & 164.9 & 46.2\,\% \\
+\texttt{qwen3.5:9b}       & Ollama    & 6.13 & 23.1 & 152.1 & 42.6\,\% \\
+\texttt{mistral-nemo:12b} & Ollama    & 6.58 & 26.0 & 183.7 & 51.4\,\% \\
+\texttt{qwen3:14b}        & Ollama    & 8.63 & 20.1 & 186.3 & 52.2\,\% \\
+\texttt{deepseek-r1:14b}  & Ollama    & 8.37 & 22.1 & 198.5 & 55.6\,\% \\
+\texttt{deepseek-r1-14b}  & llama.cpp & 8.37 & 21.2 & 190.4 & 53.3\,\% \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{IQ2\_M}} \\
+\texttt{qwen3.5-35b-a3b} (MoE) & llama.cpp & 1.90 & 59.5 & 121.1 & 33.9\,\% \\
+\texttt{qwen3.6-35b-a3b} (MoE) & llama.cpp & 1.91 & 59.6 & 122.2 & 34.2\,\% \\
+\texttt{QwQ-32B} (dense)       & llama.cpp & 11.30 & 9.6 & 116.5 & 32.6\,\% \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{Q8\_0 dense}} \\
+\texttt{qwen3:8b}         & Ollama    & 8.24 & 26.1 & 230.9 & 64.7\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%=====================================================================
+\section{Decode-Window Sweep: Session Repeatability and the 40-CU Repeat}
+%=====================================================================
+
+The five-cap sweep behind Table~4 of the main text was collected in a
+second session, after a compute-unit reconfiguration and several
+reboots, and reproduces the 100-token rates of a first three-cap
+session nine hours earlier (\texttt{step-a2-longdecode-24cu.json}) to
+within 0.2\,\% on all four models; those rates sit 0.9--2.4\,\% above
+the Table~3 figures of the main text, which come from a different
+prompt and pass.  Both are same-board, same-operator repeatability,
+not independent reproduction.  Achieved median lengths at the 1024 cap
+are 689, 497, 940 and 964 tokens for \texttt{deepseek-r1:14b},
+\texttt{phi4-mini}, \texttt{qwen3.5-35b-a3b} and \texttt{qwen3.5:9b};
+\texttt{phi4-mini}'s 512 and 1024 cells are the same $\approx$497-token
+generations.  Relative to the 100-token window a 30-token generation
+reads 1.8--2.3\,\% high and a generation at the 1024 cap 0.5--2.4\,\%
+low.  Under the 40-CU unlock (\texttt{step-a2-longdecode-40cu.json},
+caps 100, 512 and 1024) the pattern holds for three of the four
+models, but \texttt{deepseek-r1:14b} falls $\approx$11\,\% at the 1024
+cap (32.0, 29.3 and 28.3\,tok/s across three repetitions, the first
+matching the short-window rate), a decay consistent with the governor
+throttling under sustained load and absent at the 24-CU operating
+point.
+
+%=====================================================================
 \section{KV-Cache Footprint by Width}
 %=====================================================================
 
@@ -134,6 +358,107 @@ so the stored caches are 8.5 and 4.5 bits per element and the Q4\_0
 footprint is 0.28 of FP16, not 0.25.  That factor is what buys the
 longer context tiers on a fixed 16\,GiB pool.  The main
 text reports the quality cost of that choice.
+
+%=====================================================================
+\section{KV-Cache Width at Task Level}
+%=====================================================================
+
+Section~5.3.4 of the main text reports that the three KV widths are
+indistinguishable on the multi-hop and retrieval tasks;
+Table~\ref{tab:s-kvtask} gives the per-cell pass counts.
+
+\begin{table}[h]
+\centering\small
+\caption{KV-cache width versus task accuracy at filled context
+(verified-stock 24-CU, $n{=}3$ per cell, greedy decoding,
+Ollama~0.20.0).  Multi-hop is scored over both arithmetic-chain items
+(6~runs per cell); needle is the two-code retrieval probe (3~runs per
+cell); entries are pass counts.  The identical columns for the two
+capable models are a ceiling effect, not evidence of absence.  The
+40-CU repeat reproduced every cell except two \texttt{phi4-mini}
+multi-hop cells, which moved by one run.  Sources:
+\texttt{step-a1-kv-quality-24cu.json} and
+\texttt{step-a1-kv-quality-40cu.json}.}
+\label{tab:s-kvtask}
+\begin{tabular}{@{}llcccccc@{}}
+\toprule
+ & & \multicolumn{3}{c}{\textbf{16K filled}} & \multicolumn{3}{c}{\textbf{32K filled}} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+\textbf{Model} & \textbf{Task} & Q4\_0 & Q8\_0 & FP16 & Q4\_0 & Q8\_0 & FP16 \\
+\midrule
+\texttt{qwen3.5:9b}      & multi-hop (/6) & 6 & 6 & 6 & 6 & 6 & 6 \\
+                         & needle (/3)    & 3 & 3 & 3 & 3 & 3 & 3 \\
+\midrule
+\texttt{qwen3.5-35b-a3b} & multi-hop (/6) & 6 & 6 & 6 & 6 & 6 & 6 \\
+                         & needle (/3)    & 3 & 3 & 3 & 3 & 3 & 3 \\
+\midrule
+\texttt{phi4-mini}       & multi-hop (/6) & 1 & 1 & 0 & 0 & 1 & 2 \\
+                         & needle (/3)    & 3 & 3 & 3 & 3 & 3 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%=====================================================================
+\section{Perplexity Evaluator: Memory and Build}
+%=====================================================================
+
+\texttt{llama-perplexity} holds logits for every position
+($n_{\text{ctx}} \times n_{\text{vocab}} \times 4$\,B, $\approx$2.5\,GiB
+at 4096 tokens for a 152\,k vocabulary), so the context is set per
+model to keep weights, logits and KV in the 16\,GB pool (2048 for
+models above 10\,GiB, 4096 otherwise) while the budget of 98\,304
+evaluated tokens, not the chunk count, is held equal across models.
+The tool is not built by default in the canonical b9265 configuration
+and was compiled as an additional target in the same tree and build
+directory, leaving every other object unchanged.  Conditions are
+compared within a model on identical text, chunk by chunk.
+
+%=====================================================================
+\section{Flash Attention: Per-Build Shifts and Top-1 Flip Rates}
+%=====================================================================
+
+Perplexity with flash attention disabled at FP16 KV shifts by $-0.05$,
+$-0.13$ and $-0.17\,\%$ on \texttt{qwen3.5-35b-a3b},
+\texttt{phi4-mini} and \texttt{deepseek-r1-14b} at the full
+98\,304-token budget (\texttt{step-a5-perplexity.json}), and by
+$-0.30$ to $+0.42\,\%$ on the five shorter 8192-token KL samples of
+Table~\ref{tab:s-fa}: below half a per cent, with no stable sign.
+Disabling flash attention changes the top-1 token at 2.9--9.3\,\% of
+positions, against 6.5--13.7\,\% for a Q4\_0 cache and 2.8--9.3\,\% for
+Q8\_0, which accounts for the greedy divergence described in
+Section~5.4.5 of the main text.
+
+\begin{table}[h]
+\centering\small
+\caption{Mean KL divergence from an FP16-KV, flash-enabled reference
+and top-1 agreement with it, 8192-token samples at 2048-token context.
+``FA off'' is FP16 KV with flash attention disabled.  Sources:
+\texttt{step-a6-kv-confirm.json} (\texttt{phi4-mini}) and
+\texttt{step-a7-broad.json}.}
+\label{tab:s-fa}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{\textbf{Mean KL}} & \multicolumn{3}{c}{\textbf{Same top-1 (\%)}} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+\textbf{Model} & \textbf{Q8\_0} & \textbf{Q4\_0} & \textbf{FA off} & \textbf{Q8\_0} & \textbf{Q4\_0} & \textbf{FA off} \\
+\midrule
+\texttt{phi4-mini}            & 0.0219 & 0.0529 & 0.0227 & 90.7 & 86.3 & 90.7 \\
+\texttt{qwen3-8b} (Q4\_K\_M)  & 0.0037 & 0.0356 & 0.0038 & 96.9 & 91.7 & 96.8 \\
+\texttt{qwen3-8b} (Q8\_0)     & 0.0039 & 0.0399 & 0.0033 & 96.4 & 91.2 & 97.1 \\
+\texttt{deepseek-r1-14b}      & 0.0054 & 0.0294 & 0.0058 & 96.4 & 92.2 & 96.1 \\
+\texttt{qwen3-14b}            & 0.0032 & 0.0195 & 0.0032 & 97.2 & 93.5 & 97.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On the task-level runs, the 14\,B model's non-flash 32K arm on the
+first 24-CU pass exhausted the 16\,GB pool and the runner was
+terminated.  Later passes added a pre-launch guard that skips
+non-flash 32K cells, so the released data mark those cells as skipped,
+not as measured refusals; the 16K cells, well inside the pool, were
+re-run on the stock configuration
+(\texttt{step-a3-flashattn-gapfill-24cu.json}) and their divergence
+point reproduces at 192~characters, the value the 40-CU arm gave.
 
 %=====================================================================
 \section{Downstream Task Accuracy: HellaSwag and Winogrande}
@@ -280,7 +605,7 @@ the filled-context ladder.
 \begin{table}[h]
 \centering\small
 \caption{Generation speed (tok/s, median of three runs) on the 24-CU and
-40-CU arms with the per-cell ratio.  Same sources as Table~15 of the main
+40-CU arms with the per-cell ratio.  Same sources as Table~13 of the main
 text: \texttt{results-phase-d-24cu-ladder/} and
 \texttt{results-phase-d-stage2/}.}
 \label{tab:s-cutier}
@@ -329,6 +654,30 @@ from 1.35 to 1.43, \texttt{granite-4.0-h-tiny} from 1.23 to 1.27 and
 not isolated here.
 
 %=====================================================================
+\section{40-CU Filled-Context Sweep: Harness Changes and Telemetry}
+%=====================================================================
+
+The first filled-context attempt at 40\,CUs did not complete: at a
+high context tier a worker grew to $\approx$12\,GiB resident against
+the $\approx$14\,GiB usable UMA budget and invoked the OOM killer.
+This is host memory-budget exhaustion from an over-aggressive
+model\,$\times$\,context tier: CU count does not change the UMA
+budget, and the same tier fails identically at 24\,CUs.  Three harness
+changes, none of which touch the unlock, allowed the sweep to
+complete: a pre-launch guard that skips any cell whose projected
+weights\,$+$\,KV working set exceeds 11\,GiB; per-cell thermal gating
+that idles the board until the GPU edge sensor falls to
+$\leq$72\,\textdegree C, so no measurement starts mid-throttle; and
+operation under the \texttt{oberon} governor, the only working clock
+control on this APU (the \texttt{amdgpu}
+\texttt{force\_performance\_level} interface accepts only
+\texttt{auto}), which caps the core at 1.5\,GHz while self-throttling.
+Per-cell telemetry was sampled at 1\,Hz throughout; across the
+completed sweep the mean core clock stayed at 1.15--1.47\,GHz and peak
+edge temperature at 76--95\,\textdegree C, within the governor's
+self-throttling band.
+
+%=====================================================================
 \section{MXFP4 Path on \texttt{gpt-oss-20b}}
 %=====================================================================
 
@@ -343,7 +692,7 @@ On the build used throughout the paper (b9265) the GGUF loads natively.
 The two serving paths differ by more than the runtime wrapper usually
 accounts for: on the short-prompt protocol at 4K the llama-completion
 path reaches 66.1\,tok/s against the Ollama path's 45.9\,tok/s, a
-factor of 1.44 (both figures are the 24-CU column of Table~14 in the
+factor of 1.44 (both figures are the 24-CU column of Table~12 in the
 main text).  On the filled-context ladder the llama-completion path
 holds 64.8\,tok/s at 4K and 40.4\,tok/s at 64K
 (\texttt{results-moe-cu-ladder/step-2-ctx-quality.moe-24cu.json}).
@@ -404,9 +753,25 @@ quantisation step, which removes roughly 3.5\,GiB, restores normal
 operation.
 
 %=====================================================================
+\section{Prompt-Format Dependency of Mistral-Small-3.2}
+%=====================================================================
+
+The \texttt{Mistral-Small-3.2} model emitted an immediate end-of-text
+token in the \texttt{llama-completion} \emph{perf} step (raw-text
+prompt, no chat-template wrapping), producing valid prefill numbers
+but no generation tokens; the \emph{ctx-quality} step uses an explicit
+``Read the document and answer'' framing that satisfied the
+instruction-tuned distribution, and the filled-context figures of
+Table~9 of the main text come from the Ollama re-sweep, whose chat
+endpoint applies the model's own template.  This is a property of
+strict chat-templated models on raw-text completion and not a runtime
+defect; the corresponding $n{=}2$ perf row is omitted, and the model's
+short-prompt figure in Table~12 of the main text is the Ollama one.
+
+%=====================================================================
 \section{Key/Value-Head Control and Key/Value Split}
 
-Table~10 of the main text groups the Q4\_0 KV collapse by key/value-head
+Table~8 of the main text groups the Q4\_0 KV collapse by key/value-head
 count.  Every collapsing model there is a Qwen2-architecture build, so
 head count and architecture are confounded in that set.  The models in
 Table~\ref{tab:s-heads} were pulled from the Ollama library on
@@ -458,7 +823,7 @@ only.
 \centering\small
 \caption{Keys and values quantised separately on two collapsing Qwen2.5
 builds, same protocol.  \texttt{qwen2.5:1.5b} here is the Ollama
-library build pulled on 2026-09-09 (Q4\_K\_M, 0.92\,GiB); Table~9 of
+library build pulled on 2026-09-09 (Q4\_K\_M, 0.92\,GiB); Table~7 of
 the main text used a different 1.5\,B GGUF (FP16 PPL 8.995, ratio
 607$\times$), which is why the Q4\_0 ratio differs.  Source:
 \texttt{step-a14-heads-control.json}.}
@@ -481,7 +846,7 @@ determinism noted in the main text.
 
 \section{Arithmetic Item Under Four Request Sequences}
 
-Table~12 of the main text lists three models that pass every item at
+Table~10 of the main text lists three models that pass every item at
 Q4\_0 and lose only the arithmetic item ($17\times23$) at Q8\_0.  To
 separate a cache-width effect from a request-sequence effect, the item
 was re-run at both widths as the first request of a fresh server
@@ -538,7 +903,7 @@ the effect more directly than the tables do.
 \caption{Generation speed with filled context (80\,\% real-token fill,
 verified-stock 24-CU, $n{=}3$).  Panel~(a) is absolute throughput,
 panel~(b) the same data as a fraction of each model's 4K throughput.
-Per-cell values are in Table~7 of the main text.}
+Per-cell values are in Table~6 of the main text.}
 \end{figure}
 
 \begin{figure}[h]
@@ -548,7 +913,7 @@ Per-cell values are in Table~7 of the main text.}
 Left: generation throughput before (24~CU) and after (40~CU) the
 unlock.  Right: per-model speed-up with the cohort median
 (1.32$\times$) marked.  Prompt, KV width and llama.cpp build are
-identical between arms.  Per-model values are in Table~14 of the main
+identical between arms.  Per-model values are in Table~12 of the main
 text.}
 \end{figure}
 

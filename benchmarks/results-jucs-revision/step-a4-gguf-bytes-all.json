@@ -1,0 +1,3825 @@
+{
+ "host": "bc250",
+ "kernel": "6.18.9-200.fc43.x86_64",
+ "date": "2026-09-10T13:45:13",
+ "harness": "bench-a4-gguf-bytes.py (main() per file)",
+ "models": [
+  {
+   "label": "ollama:deepseek-r1:1.5b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-aabd4debf0c8f08881923f2c25fc0fdeed24435271c2b3e92c4af36704040dbc",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 339,
+   "file_bytes": 1117320512,
+   "tensor_bytes_total": 1111370240,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1111370240,
+   "expert_params": 0,
+   "always_resident_params": 1777088000,
+   "total_params": 1777088000,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1111370240.0,
+   "per_token_gib": 1.0350441932678223,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1777088000.0,
+   "bits_per_param_always_resident": 5.0031072856268235,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 756781056,
+    "Q6_K": 354009600,
+    "F32": 579584
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.17829179763793945,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.12225723266601562,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.8.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.11.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "deepseek-r1:1.5b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:deepseek-r1:14b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-6e9f90f02bb3b39b59e81916e8cfce9deb45aeaeb9a54a5be4414486b907dc1e",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 579,
+   "file_bytes": 8988109952,
+   "tensor_bytes_total": 8982142976,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8982142976,
+   "expert_params": 0,
+   "always_resident_params": 14770033664,
+   "total_params": 14770033664,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8982142976.0,
+   "per_token_gib": 8.365272521972656,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14770033664.0,
+   "bits_per_param_always_resident": 4.865062967536916,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6843432960,
+    "Q6_K": 2135347200,
+    "F32": 3362816
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5948066711425781,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.407867431640625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "deepseek-r1:14b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:deepseek-r1:8b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-e6a7edc1a4d7d9b2de136a221a57336b76316cfe53a252aeba814496c5ae439d",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 399,
+   "file_bytes": 5225373760,
+   "tensor_bytes_total": 5219418112,
+   "expert_bytes": 0,
+   "always_resident_bytes": 5219418112,
+   "expert_params": 0,
+   "always_resident_params": 8190735360,
+   "total_params": 8190735360,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 5219418112.0,
+   "per_token_gib": 4.8609619140625,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8190735360.0,
+   "bits_per_param_always_resident": 5.0978749844507245,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3662512128,
+    "Q6_K": 1253683200,
+    "F16": 301989888,
+    "F32": 1232896
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.4754447937011719,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.326019287109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.9.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "deepseek-r1:8b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:falcon3:1b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-89056211c7c712d163f68242223aaf2fee22bef5c6388d0971c131142f25bc01",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 165,
+   "file_bytes": 1778709056,
+   "tensor_bytes_total": 1773969408,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1773969408,
+   "expert_params": 0,
+   "always_resident_params": 1669408768,
+   "total_params": 1669408768,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1773969408.0,
+   "per_token_gib": 1.6521377563476562,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1669408768.0,
+   "bits_per_param_always_resident": 8.501066686622314,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q8_0": 1773666304,
+    "F32": 303104
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.265625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.265625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    }
+   ],
+   "ollama_tag": "falcon3:1b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma:2b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-c1864a5eb19305c40519da12cc543519e48a0697ecd30e15d5ac228644957d12",
+   "gguf_version": 3,
+   "arch": "gemma",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 164,
+   "file_bytes": 1678447520,
+   "tensor_bytes_total": 1672404992,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1672404992,
+   "expert_params": 0,
+   "always_resident_params": 2506434560,
+   "total_params": 2506434560,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1672404992.0,
+   "per_token_gib": 1.5575485229492188,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 2506434560.0,
+   "bits_per_param_always_resident": 5.337957012530182,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 1114767360,
+    "Q8_0": 557334528,
+    "F32": 303104
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.5190582275390625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.10.ffn_gate.weight",
+     "gib": 0.017578125,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "gemma:2b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma2:2b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-7462734796d67c40ecec2ca98eddf970e171dbb6b370e43fd633ee75b69abe1b",
+   "gguf_version": 3,
+   "arch": "gemma2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 288,
+   "file_bytes": 1629509152,
+   "tensor_bytes_total": 1623462912,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1623462912,
+   "expert_params": 0,
+   "always_resident_params": 2614341888,
+   "total_params": 2614341888,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1623462912.0,
+   "per_token_gib": 1.511967658996582,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 2614341888.0,
+   "bits_per_param_always_resident": 4.9678671927395595,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 1138655232,
+    "Q6_K": 483840000,
+    "F32": 967680
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.4506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.0111236572265625,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "gemma2:2b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma2:9b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-ff1d1fc78170d787ee1201778e2dd65ea211654ca5fb7d69b5a2e7b123a50373",
+   "gguf_version": 3,
+   "arch": "gemma2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 464,
+   "file_bytes": 5443143296,
+   "tensor_bytes_total": 5437085696,
+   "expert_bytes": 0,
+   "always_resident_bytes": 5437085696,
+   "expert_params": 0,
+   "always_resident_params": 9241705984,
+   "total_params": 9241705984,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 5437085696.0,
+   "per_token_gib": 5.063680648803711,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 9241705984.0,
+   "bits_per_param_always_resident": 4.706564528595157,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 4682022912,
+    "Q6_K": 752640000,
+    "F32": 2422784
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.7009506225585938,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.02691650390625,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "gemma2:9b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma3:12b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-e8ad13eff07a78d89926e9e8b882317d082ef5bf9768ad7b50fcdbbcd63748de",
+   "gguf_version": 3,
+   "arch": "gemma3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 1065,
+   "file_bytes": 8149180896,
+   "tensor_bytes_total": 8133352896,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8133352896,
+   "expert_params": 0,
+   "always_resident_params": 12187079280,
+   "total_params": 12187079280,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8133352896.0,
+   "per_token_gib": 7.574775159358978,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 12187079280.0,
+   "bits_per_param_always_resident": 5.339000565523523,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 5158010880,
+    "Q6_K": 2128896000,
+    "F16": 841780224,
+    "F32": 4665792
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.76904296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.8.ffn_down.weight",
+     "gib": 0.04506111145019531,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "gemma3:12b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma3:1b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-7cd4618c1faf8b7233c6c906dac1694b6a47684b37b8895d470ac688520b9c01",
+   "gguf_version": 3,
+   "arch": "gemma3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 340,
+   "file_bytes": 815310432,
+   "tensor_bytes_total": 799525120,
+   "expert_bytes": 0,
+   "always_resident_bytes": 799525120,
+   "expert_params": 0,
+   "always_resident_params": 999885952,
+   "total_params": 999885952,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 799525120.0,
+   "per_token_gib": 0.7446157932281494,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 999885952.0,
+   "bits_per_param_always_resident": 6.396930517131618,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q8_0": 324937728,
+    "Q5_0": 313657344,
+    "Q6_K": 84913920,
+    "Q4_K": 75479040,
+    "F32": 537088
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.298828125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.8.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.11.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.14.ffn_down.weight",
+     "gib": 0.006083250045776367,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "gemma3:1b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma3:270m",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-735af2139dc652bf01112746474883d79a52fa1c19038265d363e3d42556f7a2",
+   "gguf_version": 3,
+   "arch": "gemma3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 236,
+   "file_bytes": 291545472,
+   "tensor_bytes_total": 285018624,
+   "expert_bytes": 0,
+   "always_resident_bytes": 285018624,
+   "expert_params": 0,
+   "always_resident_params": 268098176,
+   "total_params": 268098176,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 285018624.0,
+   "per_token_gib": 0.265444278717041,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 268098176.0,
+   "bits_per_param_always_resident": 8.504903039698412,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q8_0": 284794880,
+    "F32": 223744
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0012969970703125,
+     "type": "Q8_0"
+    }
+   ],
+   "ollama_tag": "gemma3:270m",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma3:4b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-aeda25e63ebd698fab8638ffb778e68bed908b960d39d0becc650fa981609d25",
+   "gguf_version": 3,
+   "arch": "gemma3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 883,
+   "file_bytes": 3338792448,
+   "tensor_bytes_total": 3322976704,
+   "expert_bytes": 0,
+   "always_resident_bytes": 3322976704,
+   "expert_params": 0,
+   "always_resident_params": 4299915632,
+   "total_params": 4299915632,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 3322976704.0,
+   "per_token_gib": 3.094763219356537,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 4299915632.0,
+   "bits_per_param_always_resident": 6.182403541633024,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 1530593280,
+    "Q6_K": 950476800,
+    "F16": 838831104,
+    "F32": 3075520
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.5126953125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.9.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.12.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "gemma3:4b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma4-26b-q3:latest",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-b6aa7809d25f71031b82528ec88877830cb88bf7d210ff291a1a9fbe48e7df37",
+   "gguf_version": 3,
+   "arch": "gemma4",
+   "n_expert": 128,
+   "n_expert_used": 8,
+   "n_tensors": 658,
+   "file_bytes": 12526279680,
+   "tensor_bytes_total": 12510461048,
+   "expert_bytes": 10110581760,
+   "always_resident_bytes": 2399879288,
+   "expert_params": 22837989120,
+   "always_resident_params": 2395152926,
+   "total_params": 25233142046,
+   "activated_expert_fraction": 0.0625,
+   "per_token_bytes": 3031790648.0,
+   "per_token_gib": 2.82357507199049,
+   "always_resident_share_of_per_token": 0.7915715716001509,
+   "activated_expert_params": 1427374320.0,
+   "per_token_params": 3822527246.0,
+   "bits_per_param_always_resident": 8.015786422482487,
+   "bits_per_param_expert": 3.54167145167639,
+   "bytes_by_type": {
+    "IQ3_XXS": 5828444160,
+    "IQ4_NL": 4282122240,
+    "Q8_0": 1748285440,
+    "Q6_K": 605552640,
+    "F32": 46056568
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.56396484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.attn_output.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.5.attn_q.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.11.attn_output.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.11.attn_q.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.17.attn_output.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.17.attn_q.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.23.attn_output.weight",
+     "gib": 0.0228271484375,
+     "type": "Q8_0"
+    }
+   ],
+   "ollama_tag": "gemma4-26b-q3:latest",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:gemma4:latest",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-4c27e0f5b5adf02ac956c7322bd2ee7636fe3f45a8512c9aba5385242cb6e09a",
+   "gguf_version": 3,
+   "arch": "gemma4",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 2131,
+   "file_bytes": 9608338848,
+   "tensor_bytes_total": 9592421288,
+   "expert_bytes": 0,
+   "always_resident_bytes": 9592421288,
+   "expert_params": 0,
+   "always_resident_params": 7996157674,
+   "total_params": 7996157674,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 9592421288.0,
+   "per_token_gib": 8.933638490736485,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 7996157674.0,
+   "bits_per_param_always_resident": 9.597030653050126,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "BF16": 6243221504,
+    "Q4_K": 1941258240,
+    "Q6_K": 1023590400,
+    "F16": 318111744,
+    "F32": 66239400
+   },
+   "largest_always_resident": [
+    {
+     "name": "per_layer_token_embd.weight",
+     "gib": 5.25,
+     "type": "BF16"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.5126953125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "v.position_embd.weight",
+     "gib": 0.05859375,
+     "type": "F32"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "gemma4:latest",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:glm4:9b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-b506a070d1152798d435ec4e7687336567ae653b3106f73b7b4ac7be1cbc4449",
+   "gguf_version": 3,
+   "arch": "chatglm",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 283,
+   "file_bytes": 5455319040,
+   "tensor_bytes_total": 5449285632,
+   "expert_bytes": 0,
+   "always_resident_bytes": 5449285632,
+   "expert_params": 0,
+   "always_resident_params": 9399951360,
+   "total_params": 9399951360,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 5449285632.0,
+   "per_token_gib": 5.075042724609375,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 9399951360.0,
+   "bits_per_param_always_resident": 4.637713897277018,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 4938006528,
+    "Q6_K": 509214720,
+    "F32": 2064384
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.4742431640625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.3251953125,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.05877685546875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.05877685546875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.2.ffn_up.weight",
+     "gib": 0.05877685546875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.3.ffn_up.weight",
+     "gib": 0.05877685546875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.4.ffn_up.weight",
+     "gib": 0.05877685546875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.5.ffn_up.weight",
+     "gib": 0.05877685546875,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "glm4:9b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:granite3.3:8b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-77bcee066a76dcdd10d0d123c87e32c8ec2c74e31b6ffd87ebee49c9ac215dca",
+   "gguf_version": 3,
+   "arch": "granite",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 362,
+   "file_bytes": 4942873344,
+   "tensor_bytes_total": 4941126624,
+   "expert_bytes": 0,
+   "always_resident_bytes": 4941126624,
+   "expert_params": 0,
+   "always_resident_params": 8170864640,
+   "total_params": 8170864640,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 4941126624.0,
+   "per_token_gib": 4.6017827689647675,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8170864640.0,
+   "bits_per_param_always_resident": 4.837800494024584,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3845652480,
+    "Q6_K": 1094147040,
+    "F32": 1327104
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.15383049845695496,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.7.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.0400543212890625,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "granite3.3:8b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:llama3.1:8b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-667b0c1932bc6ffc593ed1d03f895bf2dc8dc6df21db3042284a6f4416b06a29",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 292,
+   "file_bytes": 4920738944,
+   "tensor_bytes_total": 4912898304,
+   "expert_bytes": 0,
+   "always_resident_bytes": 4912898304,
+   "expert_params": 0,
+   "always_resident_params": 8030261312,
+   "total_params": 8030261312,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 4912898304.0,
+   "per_token_gib": 4.575493097305298,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8030261312.0,
+   "bits_per_param_always_resident": 4.894384491980029,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3655139328,
+    "Q6_K": 1256693760,
+    "F32": 1065216
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.40134429931640625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.27520751953125,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.04486083984375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.04486083984375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.04486083984375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.04486083984375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.04486083984375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.04486083984375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "llama3.1:8b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:llama3.2:1b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-74701a8c35f6c8d9a4b91f3f3497643001d63e0c7a84e085bed452548fa88d45",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 147,
+   "file_bytes": 1321082688,
+   "tensor_bytes_total": 1313251456,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1313251456,
+   "expert_params": 0,
+   "always_resident_params": 1235814432,
+   "total_params": 1235814432,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1313251456.0,
+   "per_token_gib": 1.2230607271194458,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1235814432.0,
+   "bits_per_param_always_resident": 8.501285772328641,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q8_0": 1312980992,
+    "F32": 270464
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.259918212890625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.0166015625,
+     "type": "Q8_0"
+    }
+   ],
+   "ollama_tag": "llama3.2:1b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:llama3.2:3b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 255,
+   "file_bytes": 2019377376,
+   "tensor_bytes_total": 2011539712,
+   "expert_bytes": 0,
+   "always_resident_bytes": 2011539712,
+   "expert_params": 0,
+   "always_resident_params": 3212749888,
+   "total_params": 3212749888,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 2011539712.0,
+   "per_token_gib": 1.8733923435211182,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 3212749888.0,
+   "bits_per_param_always_resident": 5.008892150648485,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 1362493440,
+    "Q6_K": 648345600,
+    "F32": 700672
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.3010082244873047,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.13.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.16.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.19.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.01922607421875,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "llama3.2:3b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:mistral-nemo:12b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-b559938ab7a0392fc9ea9675b82280f2a15669ec3e0e0fc491c9cb0a7681cf94",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 363,
+   "file_bytes": 7071700672,
+   "tensor_bytes_total": 7063818240,
+   "expert_bytes": 0,
+   "always_resident_bytes": 7063818240,
+   "expert_params": 0,
+   "always_resident_params": 12247782400,
+   "total_params": 12247782400,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 7063818240.0,
+   "per_token_gib": 6.578693389892578,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 12247782400.0,
+   "bits_per_param_always_resident": 4.613941044543704,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 6511656960,
+    "Q6_K": 550502400,
+    "F32": 1658880
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5126953125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.3515625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0384521484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0384521484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0384521484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0384521484375,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "mistral-nemo:12b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:phi4-mini:latest",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-3c168af1dea0a414299c7d9077e100ac763370e5a98b3c53801a958a47f0a5db",
+   "gguf_version": 3,
+   "arch": "phi3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 196,
+   "file_bytes": 2491874624,
+   "tensor_bytes_total": 2483623296,
+   "expert_bytes": 0,
+   "always_resident_bytes": 2483623296,
+   "expert_params": 0,
+   "always_resident_params": 3836021856,
+   "total_params": 3836021856,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 2483623296.0,
+   "per_token_gib": 2.3130544424057007,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 3836021856.0,
+   "bits_per_param_always_resident": 5.179581116547215,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 1302331392,
+    "Q6_K": 834462720,
+    "Q5_K": 346030080,
+    "F32": 799104
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.46953678131103516,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.2.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.3.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.4.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.5.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.6.ffn_up.weight",
+     "gib": 0.0263671875,
+     "type": "Q4_K"
+    }
+   ],
+   "ollama_tag": "phi4-mini:latest",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:phi4:14b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-fd7b6731c33c57f61767612f56517460ec2d1e2e5a3f0163e0eb3d8d8cb5df20",
+   "gguf_version": 3,
+   "arch": "phi3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 243,
+   "file_bytes": 9053114464,
+   "tensor_bytes_total": 9049559040,
+   "expert_bytes": 0,
+   "always_resident_bytes": 9049559040,
+   "expert_params": 0,
+   "always_resident_params": 14659507200,
+   "total_params": 14659507200,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 9049559040.0,
+   "per_token_gib": 8.428058624267578,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14659507200.0,
+   "bits_per_param_always_resident": 4.938533835571226,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6039797760,
+    "Q6_K": 1926758400,
+    "Q5_K": 1081344000,
+    "F32": 1658880
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.3925323486328125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.2691650390625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.09613037109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.09613037109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.2.ffn_up.weight",
+     "gib": 0.09613037109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.3.ffn_up.weight",
+     "gib": 0.09613037109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.4.ffn_up.weight",
+     "gib": 0.09613037109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.5.ffn_up.weight",
+     "gib": 0.09613037109375,
+     "type": "Q4_K"
+    }
+   ],
+   "ollama_tag": "phi4:14b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5-coder:1.5b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-29d8c98fa6b098e200069bfb88b9508dc3e85586d20cba59f8dda9a808165104",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 338,
+   "file_bytes": 986048576,
+   "tensor_bytes_total": 980097536,
+   "expert_bytes": 0,
+   "always_resident_bytes": 980097536,
+   "expert_params": 0,
+   "always_resident_params": 1543714304,
+   "total_params": 1543714304,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 980097536.0,
+   "per_token_gib": 0.9127869606018066,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1543714304.0,
+   "bits_per_param_always_resident": 5.079165404947884,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 625508352,
+    "Q6_K": 354009600,
+    "F32": 579584
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.17829179763793945,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.13.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.16.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.19.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.21.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5-coder:1.5b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5-coder:14b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-ac9bc7a69dab38da1c790838955f1293420b55ab555ef6b4615efa1c1507b1ed",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 579,
+   "file_bytes": 8988110784,
+   "tensor_bytes_total": 8982142976,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8982142976,
+   "expert_params": 0,
+   "always_resident_params": 14770033664,
+   "total_params": 14770033664,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8982142976.0,
+   "per_token_gib": 8.365272521972656,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14770033664.0,
+   "bits_per_param_always_resident": 4.865062967536916,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6843432960,
+    "Q6_K": 2135347200,
+    "F32": 3362816
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5948066711425781,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.407867431640625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5-coder:14b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5-coder:3b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-4a188102020e9c9530b687fd6400f775c45e90a0d7baafe65bd0a36963fbb7ba",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 434,
+   "file_bytes": 1929903072,
+   "tensor_bytes_total": 1923946496,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1923946496,
+   "expert_params": 0,
+   "always_resident_params": 3085938688,
+   "total_params": 3085938688,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1923946496.0,
+   "per_token_gib": 1.7918148040771484,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 3085938688.0,
+   "bits_per_param_always_resident": 4.987646717626556,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 1327104000,
+    "Q6_K": 595875840,
+    "F32": 966656
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.23772239685058594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.11.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.14.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.17.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5-coder:3b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5-coder:7b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-60e05f2100071479f596b964f89f510f057ce397ea22f2833a0cfe029bfc2463",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 339,
+   "file_bytes": 4683074048,
+   "tensor_bytes_total": 4677120000,
+   "expert_bytes": 0,
+   "always_resident_bytes": 4677120000,
+   "expert_params": 0,
+   "always_resident_params": 7615616512,
+   "total_params": 7615616512,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 4677120000.0,
+   "per_token_gib": 4.355907440185547,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 7615616512.0,
+   "bits_per_param_always_resident": 4.913188569965641,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3427909632,
+    "Q6_K": 1247877120,
+    "F32": 1333248
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.4163646697998047,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.2855072021484375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.13.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5-coder:7b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5:0.5b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 290,
+   "file_bytes": 397807936,
+   "tensor_bytes_total": 391859712,
+   "expert_bytes": 0,
+   "always_resident_bytes": 391859712,
+   "expert_params": 0,
+   "always_resident_params": 494032768,
+   "total_params": 494032768,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 391859712.0,
+   "per_token_gib": 0.3649477958679199,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 494032768.0,
+   "bits_per_param_always_resident": 6.345485358574433,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q5_0": 173150208,
+    "Q8_0": 146105344,
+    "Q6_K": 42900480,
+    "Q4_K": 29417472,
+    "F32": 286208
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.13470935821533203,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.13.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.16.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.19.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.21.ffn_down.weight",
+     "gib": 0.0033295154571533203,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5:0.5b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5:1.5b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 338,
+   "file_bytes": 986048512,
+   "tensor_bytes_total": 980097536,
+   "expert_bytes": 0,
+   "always_resident_bytes": 980097536,
+   "expert_params": 0,
+   "always_resident_params": 1543714304,
+   "total_params": 1543714304,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 980097536.0,
+   "per_token_gib": 0.9127869606018066,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1543714304.0,
+   "bits_per_param_always_resident": 5.079165404947884,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 625508352,
+    "Q6_K": 354009600,
+    "F32": 579584
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.17829179763793945,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.13.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.16.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.19.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.21.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5:1.5b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5:14b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-2049f5674b1e92b4464e5729975c9689fcfbf0b0e4443ccf10b5339f370f9a54",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 579,
+   "file_bytes": 8988110688,
+   "tensor_bytes_total": 8982142976,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8982142976,
+   "expert_params": 0,
+   "always_resident_params": 14770033664,
+   "total_params": 14770033664,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8982142976.0,
+   "per_token_gib": 8.365272521972656,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14770033664.0,
+   "bits_per_param_always_resident": 4.865062967536916,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6843432960,
+    "Q6_K": 2135347200,
+    "F32": 3362816
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5948066711425781,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.407867431640625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5:14b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5:32b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-eabc98a9bcbfce7fd70f3e07de599f8fda98120fefed5881934161ede8bd1a41",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 771,
+   "file_bytes": 19851336288,
+   "tensor_bytes_total": 19845357568,
+   "expert_bytes": 0,
+   "always_resident_bytes": 19845357568,
+   "expert_params": 0,
+   "always_resident_params": 32763876352,
+   "total_params": 32763876352,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 19845357568.0,
+   "per_token_gib": 18.48242950439453,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 32763876352.0,
+   "bits_per_param_always_resident": 4.845667797006829,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 15348695040,
+    "Q6_K": 4492185600,
+    "F32": 4476928
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5948066711425781,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.407867431640625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.10814666748046875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.10814666748046875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.10814666748046875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.10814666748046875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.10814666748046875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.10814666748046875,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5:32b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5:3b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-5ee4f07cdb9beadbbb293e85803c569b01bd37ed059d2715faa7bb405f31caa6",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 434,
+   "file_bytes": 1929903008,
+   "tensor_bytes_total": 1923946496,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1923946496,
+   "expert_params": 0,
+   "always_resident_params": 3085938688,
+   "total_params": 3085938688,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1923946496.0,
+   "per_token_gib": 1.7918148040771484,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 3085938688.0,
+   "bits_per_param_always_resident": 4.987646717626556,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 1327104000,
+    "Q6_K": 595875840,
+    "F32": 966656
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.23772239685058594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.11.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.14.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.17.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.017223358154296875,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5:3b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen2.5:7b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 339,
+   "file_bytes": 4683073952,
+   "tensor_bytes_total": 4677120000,
+   "expert_bytes": 0,
+   "always_resident_bytes": 4677120000,
+   "expert_params": 0,
+   "always_resident_params": 7615616512,
+   "total_params": 7615616512,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 4677120000.0,
+   "per_token_gib": 4.355907440185547,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 7615616512.0,
+   "bits_per_param_always_resident": 4.913188569965641,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3427909632,
+    "Q6_K": 1247877120,
+    "F32": 1333248
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.4163646697998047,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.2855072021484375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.12.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.7.ffn_down.weight",
+     "gib": 0.05187034606933594,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen2.5:7b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3.5-35b-a3b-iq2m:latest",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-187b5bbb81d7ec1dc228cb04120302cc0d486cb3c988501af87e5f02e15ace0e",
+   "gguf_version": 3,
+   "arch": "qwen35moe",
+   "n_expert": 256,
+   "n_expert_used": 8,
+   "n_tensors": 733,
+   "file_bytes": 11391613568,
+   "tensor_bytes_total": 11380623872,
+   "expert_bytes": 9646899200,
+   "always_resident_bytes": 1733724672,
+   "expert_params": 32212254720,
+   "always_resident_params": 2448355968,
+   "total_params": 34660610688,
+   "activated_expert_fraction": 0.03125,
+   "per_token_bytes": 2035190272.0,
+   "per_token_gib": 1.895418643951416,
+   "always_resident_share_of_per_token": 0.8518735058104681,
+   "activated_expert_params": 1006632960.0,
+   "per_token_params": 3454988928.0,
+   "bits_per_param_always_resident": 5.664943152580009,
+   "bits_per_param_expert": 2.3958333333333335,
+   "bytes_by_type": {
+    "IQ2_XXS": 5536481280,
+    "IQ3_XXS": 4110417920,
+    "Q5_K": 1113784320,
+    "Q4_K": 286064640,
+    "Q6_K": 240844800,
+    "F32": 88852992,
+    "Q8_0": 4177920
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.32562255859375,
+     "type": "Q5_K"
+    },
+    {
+     "name": "output.weight",
+     "gib": 0.26641845703125,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.1.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.2.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.3.attn_q.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.4.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.5.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    }
+   ],
+   "ollama_tag": "qwen3.5-35b-a3b-iq2m:latest",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3.5:9b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-dec52a44569a2a25341c4e4d3fee25846eed4f6f0b936278e3a3c900bb99d37c",
+   "gguf_version": 3,
+   "arch": "qwen35",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 883,
+   "file_bytes": 6594462816,
+   "tensor_bytes_total": 6582475712,
+   "expert_bytes": 0,
+   "always_resident_bytes": 6582475712,
+   "expert_params": 0,
+   "always_resident_params": 9653104368,
+   "total_params": 9653104368,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 6582475712.0,
+   "per_token_gib": 6.130408227443695,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 9653104368.0,
+   "bits_per_param_always_resident": 5.455219760242833,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 4098097152,
+    "Q6_K": 1567211520,
+    "F16": 911204352,
+    "F32": 5962688
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.7770538330078125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.5328369140625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "v.merger.linear_fc1.weight",
+     "gib": 0.03955078125,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen3.5:9b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3:1.7b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-3d0b790534fe4b79525fc3692950408dca41171676ed7e21db57af5c65ef6ab6",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 311,
+   "file_bytes": 1359279776,
+   "tensor_bytes_total": 1353328640,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1353328640,
+   "expert_params": 0,
+   "always_resident_params": 2031739904,
+   "total_params": 2031739904,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1353328640.0,
+   "per_token_gib": 1.260385513305664,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 2031739904.0,
+   "bits_per_param_always_resident": 5.328747591502736,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 835633152,
+    "Q6_K": 399759360,
+    "F16": 117440512,
+    "F32": 495616
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.23772239685058594,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.1630096435546875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.009613037109375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.009613037109375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.009613037109375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.009613037109375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.8.ffn_down.weight",
+     "gib": 0.009613037109375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.11.ffn_down.weight",
+     "gib": 0.009613037109375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen3:1.7b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3:14b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-a8cc1361f3145dc01f6d77c6c82c9116b9ffe3c97b34716fe20418455876c40e",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 443,
+   "file_bytes": 9276184896,
+   "tensor_bytes_total": 9270225920,
+   "expert_bytes": 0,
+   "always_resident_bytes": 9270225920,
+   "expert_params": 0,
+   "always_resident_params": 14768307200,
+   "total_params": 14768307200,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 9270225920.0,
+   "per_token_gib": 8.633570671081543,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14768307200.0,
+   "bits_per_param_always_resident": 5.021686396122638,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6748692480,
+    "Q6_K": 2100403200,
+    "F16": 419430400,
+    "F32": 1699840
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5943059921264648,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.40752410888671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.7.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen3:14b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3:4b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 398,
+   "file_bytes": 2497280480,
+   "tensor_bytes_total": 2491323904,
+   "expert_bytes": 0,
+   "always_resident_bytes": 2491323904,
+   "expert_params": 0,
+   "always_resident_params": 4022468096,
+   "total_params": 4022468096,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 2491323904.0,
+   "per_token_gib": 2.3202261924743652,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 4022468096.0,
+   "bits_per_param_always_resident": 4.954816484888784,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 1765048320,
+    "Q6_K": 725491200,
+    "F32": 784384
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.2971529960632324,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.7.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.11.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.14.ffn_down.weight",
+     "gib": 0.019025802612304688,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen3:4b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3:8b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 399,
+   "file_bytes": 5225374496,
+   "tensor_bytes_total": 5219418112,
+   "expert_bytes": 0,
+   "always_resident_bytes": 5219418112,
+   "expert_params": 0,
+   "always_resident_params": 8190735360,
+   "total_params": 8190735360,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 5219418112.0,
+   "per_token_gib": 4.8609619140625,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8190735360.0,
+   "bits_per_param_always_resident": 5.0978749844507245,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3662512128,
+    "Q6_K": 1253683200,
+    "F16": 301989888,
+    "F32": 1232896
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.4754447937011719,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.326019287109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.9.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen3:8b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3:8b-nothink",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 399,
+   "file_bytes": 5225374496,
+   "tensor_bytes_total": 5219418112,
+   "expert_bytes": 0,
+   "always_resident_bytes": 5219418112,
+   "expert_params": 0,
+   "always_resident_params": 8190735360,
+   "total_params": 8190735360,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 5219418112.0,
+   "per_token_gib": 4.8609619140625,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8190735360.0,
+   "bits_per_param_always_resident": 5.0978749844507245,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 3662512128,
+    "Q6_K": 1253683200,
+    "F16": 301989888,
+    "F32": 1232896
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.4754447937011719,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.326019287109375,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.9.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    }
+   ],
+   "ollama_tag": "qwen3:8b-nothink",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:qwen3:8b-q8_0",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-d87f4a5a2f1a6051d9fac010c12f76f3ba2137b137d413ba8f4d3a3d06b3a25b",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 399,
+   "file_bytes": 8851075872,
+   "tensor_bytes_total": 8845119488,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8845119488,
+   "expert_params": 0,
+   "always_resident_params": 8190735360,
+   "total_params": 8190735360,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8845119488.0,
+   "per_token_gib": 8.237659454345703,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8190735360.0,
+   "bits_per_param_always_resident": 8.639145668112516,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q8_0": 8541896704,
+    "F16": 301989888,
+    "F32": 1232896
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.615814208984375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.615814208984375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    }
+   ],
+   "ollama_tag": "qwen3:8b-q8_0",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:smollm:135m",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-eb2c714d40d4b35ba4b8ee98475a06d51d8080a17d2d2a75a23665985c739b94",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 272,
+   "file_bytes": 91727296,
+   "tensor_bytes_total": 89941248,
+   "expert_bytes": 0,
+   "always_resident_bytes": 89941248,
+   "expert_params": 0,
+   "always_resident_params": 134515008,
+   "total_params": 134515008,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 89941248.0,
+   "per_token_gib": 0.08376431465148926,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 134515008.0,
+   "bits_per_param_always_resident": 5.349068440006337,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 59719680,
+    "Q8_0": 30081024,
+    "F32": 140544
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.02801513671875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.0004634857177734375,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "smollm:135m",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:smollm:360m",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-f7ae49f9d598730afa2de96fc7dade47f5850446bf813df2e9d739cc8a6c4f29",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 290,
+   "file_bytes": 229118944,
+   "tensor_bytes_total": 227331840,
+   "expert_bytes": 0,
+   "always_resident_bytes": 227331840,
+   "expert_params": 0,
+   "always_resident_params": 361821120,
+   "total_params": 361821120,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 227331840.0,
+   "per_token_gib": 0.21171927452087402,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 361821120.0,
+   "bits_per_param_always_resident": 5.026391825883464,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 176947200,
+    "Q8_0": 50135040,
+    "F32": 249600
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.04669189453125,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.0012874603271484375,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "smollm:360m",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:smollm2:135m",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-f535f83ec568d040f88ddc04a199fa6da90923bbb41d4dcaed02caa924d6ef57",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 272,
+   "file_bytes": 270885952,
+   "tensor_bytes_total": 269100288,
+   "expert_bytes": 0,
+   "always_resident_bytes": 269100288,
+   "expert_params": 0,
+   "always_resident_params": 134515008,
+   "total_params": 134515008,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 269100288.0,
+   "per_token_gib": 0.25061917304992676,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 134515008.0,
+   "bits_per_param_always_resident": 16.00417928087251,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "F16": 268959744,
+    "F32": 140544
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.052734375,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.00164794921875,
+     "type": "F16"
+    }
+   ],
+   "ollama_tag": "smollm2:135m",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:smollm2:360m",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-7d23be4097d67c5c43c3df62ebc19609a25f483c7d0b77d3989e1d94e36ccab6",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 290,
+   "file_bytes": 725553792,
+   "tensor_bytes_total": 723767040,
+   "expert_bytes": 0,
+   "always_resident_bytes": 723767040,
+   "expert_params": 0,
+   "always_resident_params": 361821120,
+   "total_params": 361821120,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 723767040.0,
+   "per_token_gib": 0.674060583114624,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 361821120.0,
+   "bits_per_param_always_resident": 16.00275937457714,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "F16": 723517440,
+    "F32": 249600
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.087890625,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.00457763671875,
+     "type": "F16"
+    }
+   ],
+   "ollama_tag": "smollm2:360m",
+   "source": "ollama-store"
+  },
+  {
+   "label": "ollama:tinyllama:1.1b",
+   "path": "/usr/share/ollama/.ollama/models/blobs/sha256-2af3b81862c6be03c769683af18efdadb2c33f60ff32ab6f83e42c043d6c7816",
+   "gguf_version": 3,
+   "arch": "llama",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 201,
+   "file_bytes": 637699456,
+   "tensor_bytes_total": 635990016,
+   "expert_bytes": 0,
+   "always_resident_bytes": 635990016,
+   "expert_params": 0,
+   "always_resident_params": 1100048384,
+   "total_params": 1100048384,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 635990016.0,
+   "per_token_gib": 0.5923118591308594,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1100048384.0,
+   "bits_per_param_always_resident": 4.625178493967043,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_0": 581861376,
+    "Q6_K": 53760000,
+    "F32": 368640
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.050067901611328125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.034332275390625,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.00604248046875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.00604248046875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.00604248046875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.00604248046875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.00604248046875,
+     "type": "Q4_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.00604248046875,
+     "type": "Q4_0"
+    }
+   ],
+   "ollama_tag": "tinyllama:1.1b",
+   "source": "ollama-store"
+  },
+  {
+   "label": "file:deepseek-r1-14b.gguf",
+   "path": "/opt/models/deepseek-r1-14b.gguf",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 579,
+   "file_bytes": 8988109952,
+   "tensor_bytes_total": 8982142976,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8982142976,
+   "expert_params": 0,
+   "always_resident_params": 14770033664,
+   "total_params": 14770033664,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8982142976.0,
+   "per_token_gib": 8.365272521972656,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14770033664.0,
+   "bits_per_param_always_resident": 4.865062967536916,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6843432960,
+    "Q6_K": 2135347200,
+    "F32": 3362816
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5948066711425781,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.407867431640625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.5.ffn_down.weight",
+     "gib": 0.054073333740234375,
+     "type": "Q6_K"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:gemma4.gguf",
+   "path": "/opt/models/gemma4.gguf",
+   "gguf_version": 3,
+   "arch": "gemma4",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 2131,
+   "file_bytes": 9608338848,
+   "tensor_bytes_total": 9592421288,
+   "expert_bytes": 0,
+   "always_resident_bytes": 9592421288,
+   "expert_params": 0,
+   "always_resident_params": 7996157674,
+   "total_params": 7996157674,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 9592421288.0,
+   "per_token_gib": 8.933638490736485,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 7996157674.0,
+   "bits_per_param_always_resident": 9.597030653050126,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "BF16": 6243221504,
+    "Q4_K": 1941258240,
+    "Q6_K": 1023590400,
+    "F16": 318111744,
+    "F32": 66239400
+   },
+   "largest_always_resident": [
+    {
+     "name": "per_layer_token_embd.weight",
+     "gib": 5.25,
+     "type": "BF16"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.5126953125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "v.position_embd.weight",
+     "gib": 0.05859375,
+     "type": "F32"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.02002716064453125,
+     "type": "Q6_K"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:qwen2.5-1.5b-q4km.gguf",
+   "path": "/opt/models/qwen2.5-1.5b-q4km.gguf",
+   "gguf_version": 3,
+   "arch": "qwen2",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 339,
+   "file_bytes": 1117320736,
+   "tensor_bytes_total": 1111370240,
+   "expert_bytes": 0,
+   "always_resident_bytes": 1111370240,
+   "expert_params": 0,
+   "always_resident_params": 1777088000,
+   "total_params": 1777088000,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 1111370240.0,
+   "per_token_gib": 1.0350441932678223,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 1777088000.0,
+   "bits_per_param_always_resident": 5.0031072856268235,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 756781056,
+    "Q6_K": 354009600,
+    "F32": 579584
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.17829179763793945,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.12225723266601562,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.10.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.13.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.16.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.19.ffn_down.weight",
+     "gib": 0.010514259338378906,
+     "type": "Q6_K"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:qwen3-14b.gguf",
+   "path": "/opt/models/qwen3-14b.gguf",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 443,
+   "file_bytes": 9276184896,
+   "tensor_bytes_total": 9270225920,
+   "expert_bytes": 0,
+   "always_resident_bytes": 9270225920,
+   "expert_params": 0,
+   "always_resident_params": 14768307200,
+   "total_params": 14768307200,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 9270225920.0,
+   "per_token_gib": 8.633570671081543,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 14768307200.0,
+   "bits_per_param_always_resident": 5.021686396122638,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 6748692480,
+    "Q6_K": 2100403200,
+    "F16": 419430400,
+    "F32": 1699840
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.5943059921264648,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.40752410888671875,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.4.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.7.ffn_down.weight",
+     "gib": 0.06809234619140625,
+     "type": "Q6_K"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:qwen3-8b-q8_0.gguf",
+   "path": "/opt/models/qwen3-8b-q8_0.gguf",
+   "gguf_version": 3,
+   "arch": "qwen3",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 399,
+   "file_bytes": 8851075872,
+   "tensor_bytes_total": 8845119488,
+   "expert_bytes": 0,
+   "always_resident_bytes": 8845119488,
+   "expert_params": 0,
+   "always_resident_params": 8190735360,
+   "total_params": 8190735360,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 8845119488.0,
+   "per_token_gib": 8.237659454345703,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 8190735360.0,
+   "bits_per_param_always_resident": 8.639145668112516,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q8_0": 8541896704,
+    "F16": 301989888,
+    "F32": 1232896
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.615814208984375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.615814208984375,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_gate.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_gate.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.0498046875,
+     "type": "Q8_0"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:qwen3.5-9b.gguf",
+   "path": "/opt/models/qwen3.5-9b.gguf",
+   "gguf_version": 3,
+   "arch": "qwen35",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 883,
+   "file_bytes": 6594462816,
+   "tensor_bytes_total": 6582475712,
+   "expert_bytes": 0,
+   "always_resident_bytes": 6582475712,
+   "expert_params": 0,
+   "always_resident_params": 9653104368,
+   "total_params": 9653104368,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 6582475712.0,
+   "per_token_gib": 6.130408227443695,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 9653104368.0,
+   "bits_per_param_always_resident": 5.455219760242833,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "Q4_K": 4098097152,
+    "Q6_K": 1567211520,
+    "F16": 911204352,
+    "F32": 5962688
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.7770538330078125,
+     "type": "Q6_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.5328369140625,
+     "type": "Q4_K"
+    },
+    {
+     "name": "v.merger.linear_fc1.weight",
+     "gib": 0.03955078125,
+     "type": "F16"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.3.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    },
+    {
+     "name": "blk.6.ffn_down.weight",
+     "gib": 0.0384521484375,
+     "type": "Q6_K"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:qwen3.6-35b-a3b-iq2m.gguf",
+   "path": "/opt/models/qwen3.6-35b-a3b-iq2m.gguf",
+   "gguf_version": 3,
+   "arch": "qwen35moe",
+   "n_expert": 256,
+   "n_expert_used": 8,
+   "n_tensors": 733,
+   "file_bytes": 11522702304,
+   "tensor_bytes_total": 11511712256,
+   "expert_bytes": 9766436864,
+   "always_resident_bytes": 1745275392,
+   "expert_params": 32212254720,
+   "always_resident_params": 2448355968,
+   "total_params": 34660610688,
+   "activated_expert_fraction": 0.03125,
+   "per_token_bytes": 2050476544.0,
+   "per_token_gib": 1.9096550941467285,
+   "always_resident_share_of_per_token": 0.8511559896195525,
+   "activated_expert_params": 1006632960.0,
+   "per_token_params": 3454988928.0,
+   "bits_per_param_always_resident": 5.702685115434979,
+   "bits_per_param_expert": 2.425520833333333,
+   "bytes_by_type": {
+    "IQ2_XXS": 5536481280,
+    "IQ3_XXS": 3802136576,
+    "Q5_K": 1113784320,
+    "IQ4_XS": 427819008,
+    "Q4_K": 286064640,
+    "Q6_K": 240844800,
+    "F32": 104581632
+   },
+   "largest_always_resident": [
+    {
+     "name": "token_embd.weight",
+     "gib": 0.32562255859375,
+     "type": "Q5_K"
+    },
+    {
+     "name": "output.weight",
+     "gib": 0.26641845703125,
+     "type": "Q4_K"
+    },
+    {
+     "name": "blk.0.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.1.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.2.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.3.attn_q.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.4.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    },
+    {
+     "name": "blk.5.attn_qkv.weight",
+     "gib": 0.0107421875,
+     "type": "Q5_K"
+    }
+   ],
+   "source": "/opt/models"
+  },
+  {
+   "label": "file:qwen3.8-27b-iq3xxs.gguf",
+   "path": "/opt/models/qwen3.8-27b-iq3xxs.gguf",
+   "gguf_version": 3,
+   "arch": "qwen35",
+   "n_expert": null,
+   "n_expert_used": null,
+   "n_tensors": 866,
+   "file_bytes": 11913559104,
+   "tensor_bytes_total": 11902562304,
+   "expert_bytes": 0,
+   "always_resident_bytes": 11902562304,
+   "expert_params": 0,
+   "always_resident_params": 27320697856,
+   "total_params": 27320697856,
+   "activated_expert_fraction": 1.0,
+   "per_token_bytes": 11902562304.0,
+   "per_token_gib": 11.085124969482422,
+   "always_resident_share_of_per_token": 1.0,
+   "activated_expert_params": 0,
+   "per_token_params": 27320697856.0,
+   "bits_per_param_always_resident": 3.485287928364109,
+   "bits_per_param_expert": null,
+   "bytes_by_type": {
+    "IQ3_S": 6289817600,
+    "IQ3_XXS": 2761687040,
+    "IQ4_XS": 1546526720,
+    "Q5_K": 874086400,
+    "Q2_K": 417177600,
+    "F32": 10686464,
+    "IQ1_M": 2580480
+   },
+   "largest_always_resident": [
+    {
+     "name": "output.weight",
+     "gib": 0.814056396484375,
+     "type": "Q5_K"
+    },
+    {
+     "name": "token_embd.weight",
+     "gib": 0.38852691650390625,
+     "type": "Q2_K"
+    },
+    {
+     "name": "blk.64.ffn_gate.weight",
+     "gib": 0.044097900390625,
+     "type": "IQ4_XS"
+    },
+    {
+     "name": "blk.0.ffn_down.weight",
+     "gib": 0.03566741943359375,
+     "type": "IQ3_S"
+    },
+    {
+     "name": "blk.0.ffn_up.weight",
+     "gib": 0.03566741943359375,
+     "type": "IQ3_S"
+    },
+    {
+     "name": "blk.1.ffn_down.weight",
+     "gib": 0.03566741943359375,
+     "type": "IQ3_S"
+    },
+    {
+     "name": "blk.1.ffn_up.weight",
+     "gib": 0.03566741943359375,
+     "type": "IQ3_S"
+    },
+    {
+     "name": "blk.2.ffn_down.weight",
+     "gib": 0.03566741943359375,
+     "type": "IQ3_S"
+    }
+   ],
+   "source": "/opt/models"
+  }
+ ]
+}
