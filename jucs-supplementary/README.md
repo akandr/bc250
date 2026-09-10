@@ -44,8 +44,10 @@ The manuscript itself is not in this repository. It is deposited separately;
 see the paper link in the top-level `Readme.md`.
 
 The harnesses, raw results and this supplement are archived at the tagged release
-`jucs-revision-4` of the repository (`jucs-revision-1` and `jucs-revision-2` are the earlier
+`jucs-revision-5` of the repository (`jucs-revision-1` and `jucs-revision-2` are the earlier
 snapshots; `jucs-revision-3` was tagged on the wrong commit and is identical to `jucs-revision-2`;
 the fourth adds the tensor-table scan of every model file on the board and the
-effective-bandwidth check behind Table S3); Zenodo concept DOI
+effective-bandwidth check behind Table S3; the fifth carries the final pre-submission supplement,
+with two Table S11 cells rounded like Table 13 of the paper and Figure S2 labelled with the paper's
+Table 12 speed-ups); Zenodo concept DOI
 [10.5281/zenodo.22668983](https://doi.org/10.5281/zenodo.22668983) resolves to the latest version.
