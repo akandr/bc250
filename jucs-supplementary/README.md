@@ -26,7 +26,7 @@ directories of this repository.
 ## Building
 
 ```
-lualatex supplement.tex   # twice, for the table of contents
+lualatex supplement.tex   # three times, for the table of contents
 ```
 
 Needs LuaLaTeX with `fontspec`, `booktabs`, `titlesec`, `fancyhdr` and
