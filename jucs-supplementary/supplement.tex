@@ -622,11 +622,14 @@ Table~\ref{tab:s-cutier} pairs the two compute-unit arms cell by cell on
 the filled-context ladder.
 
 \begin{table}[h]
-\centering\small
-\caption{Generation speed (tok/s, median of three runs) on the 24-CU and
-40-CU arms with the per-cell ratio.  Same sources as Table~13 of the main
-text: \texttt{results-phase-d-24cu-ladder/} and
-\texttt{results-phase-d-stage2/}.}
+\centering\footnotesize
+\caption{Generation speed (tok/s, median of the runs stated below) on the 24-CU and
+40-CU arms with the per-cell ratio.  Sources: the light models from
+\texttt{results-phase-d-24cu-ladder/} and \texttt{results-phase-d-stage2/}
+(11\,GiB guard, $n{=}3$ at 24\,CU and $n{=}2$ at 40\,CU); the heavy MoE
+builds from \texttt{results-moe-cu-ladder/} (14.7\,GiB guard, $n{=}2$ on
+both arms), the same files as the bottom group of Table~13 of the main
+text.}
 \label{tab:s-cutier}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -661,16 +664,49 @@ text: \texttt{results-phase-d-24cu-ladder/} and
 \texttt{gemma4-latest} & 48K & 21.2 & 26.1 & 1.23$\times$ \\
 \texttt{gemma4-latest} & 64K & 18.8 & 24.0 & 1.28$\times$ \\
 \midrule
-\texttt{qwen3-coder-30b} & 4K & 49.0 & 65.7 & 1.34$\times$ \\
+\multicolumn{5}{@{}l}{\emph{Heavy MoE builds (14.7\,GiB working-set guard)}} \\
+\texttt{qwen3.5-35b-a3b} & 4K & 56.5 & 74.1 & 1.31$\times$ \\
+\texttt{qwen3.5-35b-a3b} & 8K & 54.0 & 71.2 & 1.32$\times$ \\
+\texttt{qwen3.5-35b-a3b} & 16K & 50.2 & 67.7 & 1.35$\times$ \\
+\texttt{qwen3.5-35b-a3b} & 24K & 46.0 & 62.4 & 1.36$\times$ \\
+\texttt{qwen3.5-35b-a3b} & 32K & 42.8 & 59.7 & 1.39$\times$ \\
+\texttt{qwen3.5-35b-a3b} & 48K & 37.4 & 53.0 & 1.42$\times$ \\
+\texttt{qwen3.5-35b-a3b} & 64K & 33.5 & 47.8 & 1.43$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 4K & 56.2 & 73.6 & 1.31$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 8K & 53.6 & 71.4 & 1.33$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 16K & 50.0 & 67.2 & 1.34$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 24K & 45.8 & 62.0 & 1.35$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 32K & 42.7 & 59.2 & 1.39$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 48K & 37.4 & 52.9 & 1.41$\times$ \\
+\texttt{qwen3.6-35b-a3b} & 64K & 33.5 & 47.9 & 1.43$\times$ \\
+\texttt{qwen3-coder-30b} & 4K & 48.8 & 65.5 & 1.34$\times$ \\
+\texttt{qwen3-coder-30b} & 8K & 41.6 & 57.5 & 1.38$\times$ \\
+\texttt{qwen3-coder-30b} & 16K & 32.7 & 46.6 & 1.42$\times$ \\
+\texttt{qwen3-coder-30b} & 24K & 26.6 & 39.0 & 1.47$\times$ \\
+\texttt{qwen3-coder-30b} & 32K & 22.7 & 33.9 & 1.49$\times$ \\
+\texttt{qwen3-coder-30b} & 48K & 17.4 & 26.6 & 1.53$\times$ \\
+\texttt{qwen3-coder-30b} & 64K & 14.1 & 21.8 & 1.54$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 4K & 64.8 & 86.0 & 1.33$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 8K & 61.6 & 82.6 & 1.34$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 16K & 57.5 & 78.2 & 1.36$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 24K & 53.5 & 74.0 & 1.38$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 32K & 50.3 & 69.8 & 1.39$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 48K & 44.9 & 63.0 & 1.40$\times$ \\
+\texttt{gpt-oss-20b (MXFP4)} & 64K & 40.4 & 57.6 & 1.43$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The ratio rises with context depth on the four models that span the
+The ratio rises with context depth on every model that spans the
 ladder: \texttt{deepseek-r1-14b} from 1.48 to 1.55, \texttt{qwen3.5:9b}
 from 1.35 to 1.43, \texttt{granite-4.0-h-tiny} from 1.23 to 1.27 and
-\texttt{gemma4-latest} from 1.16 to 1.28.  The gain therefore does not wash out as context grows.  Why it rises was
-not isolated here.
+\texttt{gemma4-latest} from 1.16 to 1.28, and for the four heavy MoE
+builds the per-tier median climbs monotonically from 1.32$\times$ at 4K
+to 1.43$\times$ at 64K (1.38$\times$ over all 28 cells; prefill
+1.61$\times$), the figures quoted in Section~5.7 of the main text.  The
+light models' medians over their 25 cells are 1.27$\times$ for
+generation and 1.59$\times$ for prefill.  The gain therefore does not
+wash out as context grows.  Why it rises was not isolated here.
 
 %=====================================================================
 \section{40-CU Filled-Context Sweep: Harness Changes and Telemetry}
