@@ -23,6 +23,8 @@
 
 \setlength{\parskip}{0.6ex}
 \setlength{\parindent}{0pt}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
 
 \begin{document}
 
@@ -402,6 +404,127 @@ quantisation step, which removes roughly 3.5\,GiB, restores normal
 operation.
 
 %=====================================================================
+\section{Key/Value-Head Control and Key/Value Split}
+
+Table~10 of the main text groups the Q4\_0 KV collapse by key/value-head
+count.  Every collapsing model there is a Qwen2-architecture build, so
+head count and architecture are confounded in that set.  The models in
+Table~\ref{tab:s-heads} were pulled from the Ollama library on
+2026-09-09 to break the confound: three families with one to five
+key/value heads, plus a Qwen2-architecture model with different
+post-training (\texttt{deepseek-r1:1.5b}, DeepSeek's distillation onto
+the Qwen2.5-1.5B base).  The protocol is that of the main-text
+perplexity sweep: \texttt{llama-perplexity} b9265, WikiText-2 test,
+4096-token context, 24 chunks (98\,304 tokens), flash attention on,
+seed 42, verified-stock 24\,CU.
+
+\begin{table}[h]
+\centering\small
+\caption{Perplexity ratio against an FP16 KV cache for models chosen to
+test head count outside the Qwen2 architecture.  Weights are the Ollama
+library builds; the file type is read from the GGUF header.  Source:
+\texttt{step-a14-heads-control.json}, harness
+\texttt{bench-a14-heads-control.py}.}
+\label{tab:s-heads}
+\begin{tabular}{@{}llrlrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Arch.} & \textbf{KV heads} & \textbf{Weights} & \textbf{FP16 PPL} & \textbf{Q8\_0} & \textbf{Q4\_0} \\
+\midrule
+\texttt{gemma3:1b}        & gemma3 & 1 & Q4\_K\_M & 37.211 & 0.999$\times$ & 1.034$\times$ \\
+\texttt{gemma3:270m}      & gemma3 & 1 & Q8\_0    & 44.651 & 0.995$\times$ & 1.036$\times$ \\
+\texttt{gemma:2b}         & gemma  & 1 & Q4\_0    & 16.539 & 1.000$\times$ & 1.006$\times$ \\
+\texttt{deepseek-r1:1.5b} & qwen2  & 2 & Q4\_K\_M & 29.277 & 1.005$\times$ & \textbf{117.7$\times$} \\
+\texttt{smollm2:135m}     & llama  & 3 & F16      & 14.901 & 1.000$\times$ & 1.032$\times$ \\
+\texttt{falcon3:1b}       & llama  & 4 & Q8\_0    &  8.592 & 1.000$\times$ & 1.004$\times$ \\
+\texttt{smollm2:360m}     & llama  & 5 & F16      & 11.174 & 1.000$\times$ & 1.024$\times$ \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Excluded: FP16 baseline itself pathological under this evaluator}} \\
+\texttt{tinyllama:1.1b}   & llama  & 4 & Q4\_0    & 2347.4 & 0.999$\times$ & 0.985$\times$ \\
+\texttt{smollm:135m}      & llama  & 3 & Q4\_0    &  840.4 & 0.999$\times$ & 1.004$\times$ \\
+\texttt{smollm:360m}      & llama  & 5 & Q4\_0    &  509.7 & 1.000$\times$ & 1.017$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No model outside the Qwen2 architecture collapses at any head count,
+including the three with a single key/value head; the largest movement
+is $+3.6\,\%$.  The Qwen2-architecture distillation collapses like its
+base family and recovers at Q8\_0.  The three excluded builds report
+FP16 perplexities in the hundreds or thousands at every width, so the
+evaluator cannot assess them; their ratios are listed for completeness
+only.
+
+\begin{table}[!ht]
+\centering\small
+\caption{Keys and values quantised separately on two collapsing Qwen2.5
+builds, same protocol.  \texttt{qwen2.5:1.5b} here is the Ollama
+library build pulled on 2026-09-09 (Q4\_K\_M, 0.92\,GiB); Table~9 of
+the main text used a different 1.5\,B GGUF (FP16 PPL 8.995, ratio
+607$\times$), which is why the Q4\_0 ratio differs.  Source:
+\texttt{step-a14-heads-control.json}.}
+\label{tab:s-kvsplit}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Model} & \textbf{KV heads} & \textbf{FP16 PPL} & \textbf{K Q4\_0, V FP16} & \textbf{K FP16, V Q4\_0} & \textbf{Both Q4\_0} \\
+\midrule
+\texttt{qwen2.5:1.5b} & 2 & 8.956 & 832$\times$ & 1.004$\times$ & 824$\times$ \\
+\texttt{qwen2.5:7b}   & 4 & 6.673 & 429$\times$ & 1.003$\times$ & 408$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Quantising the keys alone reproduces the full collapse; quantising the
+values alone costs 0.3 to 0.4\,\%.  The defect is in the key cache of
+these builds.  The \texttt{qwen2.5:7b} FP16 and Q4\_0 perplexities
+repeat the earlier sweep's values to four decimals, the repeat
+determinism noted in the main text.
+
+\section{Arithmetic Item Under Four Request Sequences}
+
+Table~12 of the main text lists three models that pass every item at
+Q4\_0 and lose only the arithmetic item ($17\times23$) at Q8\_0.  To
+separate a cache-width effect from a request-sequence effect, the item
+was re-run at both widths as the first request of a fresh server
+session (three sessions) and inside the full fifteen-request battery in
+its original order (arithmetic at positions 14--16), with the
+arithmetic block moved first (positions 2--4) and moved to the middle
+(positions 8--10), one session each; prompts, checks and request
+options are those of the competence probe.  Table~\ref{tab:s-arith}
+gives the pass counts and the answers; ``Battery'', ``First'' and ``Middle'' are the three fifteen-request orders.
+
+\begin{table}[!ht]
+\centering\footnotesize
+\caption{Arithmetic-item passes under four request sequences at both KV
+widths (canonical stack, verified-stock 24\,CU, temperature~0, seed~42,
+zero foreign Ollama clients at every sequence start).  ``Answer'' is the
+final product the model gave; the three isolated responses of each cell
+are byte-identical.  Source: \texttt{step-a15-arith-sequence.json},
+harness \texttt{bench-a15-arith-sequence.py}.}
+\label{tab:s-arith}
+\begin{tabular}{@{}llccccl@{}}
+\toprule
+\textbf{Model} & \textbf{KV} & \textbf{Isolated} & \textbf{Battery} & \textbf{First} & \textbf{Middle} & \textbf{Answer} \\
+\midrule
+\texttt{deepseek-r1:14b}  & Q8\_0 & 0/3 & 0/3 & 0/3 & 0/3 & 397 (worked solution) \\
+\texttt{deepseek-r1:8b}   & Q8\_0 & 0/3 & 0/3 & 0/3 & 0/3 & 401 \\
+\texttt{mistral-nemo:12b} & Q8\_0 & 0/3 & 0/3 & 0/3 & 0/3 & 491 \\
+\midrule
+\texttt{deepseek-r1:14b}  & Q4\_0 & 3/3 & 3/3 & 3/3 & 3/3 & 391 (worked solution) \\
+\texttt{deepseek-r1:8b}   & Q4\_0 & 3/3 & 3/3 & 3/3 & 3/3 & 391 (worked solution) \\
+\texttt{mistral-nemo:12b} & Q4\_0 & 0/3 & 3/3 & 3/3 & 3/3 & 481 isolated; 391 otherwise \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At Q8\_0 every model fails at every position, and at Q4\_0 the two
+DeepSeek models pass at every position, so for them the outcome is a
+deterministic function of the cache width.  \texttt{mistral-nemo:12b}
+at Q4\_0 fails only as the first request of a session and passes at
+every later position once the battery's warm-up request precedes it,
+the request-history effect described in the main text's threats
+section.  In the fifteen-request sequences the other twelve items
+passed in every case.
+
 \section{Figures Removed From the Main Text}
 %=====================================================================
 

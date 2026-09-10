@@ -1,0 +1,4941 @@
+{
+ "step": "a15-arith-sequence",
+ "captured_at": "2026-09-09T23:18:54.286025",
+ "kernel": "6.18.9-200.fc43.x86_64",
+ "cu": "active_cu_number 24",
+ "ollama": "ollama version is 0.20.0",
+ "runs_per_task": 3,
+ "models": [
+  "deepseek-r1:14b",
+  "deepseek-r1:8b",
+  "mistral-nemo:12b"
+ ],
+ "kv_types": [
+  "q8_0",
+  "q4_0"
+ ],
+ "orders": {
+  "replay": [
+   "summarize",
+   "json_extract",
+   "fact_recall",
+   "instruction_follow",
+   "arithmetic"
+  ],
+  "arith_first": [
+   "arithmetic",
+   "summarize",
+   "json_extract",
+   "fact_recall",
+   "instruction_follow"
+  ],
+  "arith_middle": [
+   "summarize",
+   "json_extract",
+   "arithmetic",
+   "fact_recall",
+   "instruction_follow"
+  ]
+ },
+ "options": {
+  "num_ctx": 4096,
+  "num_predict": 300,
+  "temperature": 0.0,
+  "seed": 42,
+  "think": false
+ },
+ "prompts_and_checks": "imported from bench-a10-competence-canonical.py",
+ "cells": [
+  {
+   "model": "deepseek-r1:14b",
+   "kv_type": "q8_0",
+   "isolated": [
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "3",
+       "51",
+       "17",
+       "20",
+       "2",
+       "340",
+       "51"
+      ]
+     },
+     "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+     "eval_count": 89,
+     "session": 1,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "3",
+       "51",
+       "17",
+       "20",
+       "2",
+       "340",
+       "51"
+      ]
+     },
+     "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+     "eval_count": 89,
+     "session": 2,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "3",
+       "51",
+       "17",
+       "20",
+       "2",
+       "340",
+       "51"
+      ]
+     },
+     "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+     "eval_count": 89,
+     "session": 3,
+     "position": 1,
+     "foreign_clients": 0
+    }
+   ],
+   "sequences": {
+    "replay": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow",
+      "arithmetic"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3,
+      "arithmetic": 0
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram.\"",
+       "eval_count": 23,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_first": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "arithmetic",
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "arithmetic": 0,
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram.\"",
+       "eval_count": 23,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_middle": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "arithmetic",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "arithmetic": 0,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units and 1536 stream processors, and 16 GB of GDDR6 unified memory. Originally used in multi-board mining racks by ASRock Rack, these boards became available on the secondary market after decommissioning. Despite lacking ROCm support and dedicated tensor cores, the BC-250 can run a large language model at 38 tokens per second using Vulkan compute and quantized weights.",
+       "eval_count": 136,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "3",
+         "51",
+         "17",
+         "20",
+         "2",
+         "340",
+         "51"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), I can use the standard multiplication method.\n\nFirst, multiply 17 by 3 to get 51.\n\nThen, multiply 17 by 20 (which is 2 tens) to get 340.\n\nFinally, add 51 and 340 together to obtain the final result of 397.\n\nAnswer: 397",
+       "eval_count": 89,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram.\"",
+       "eval_count": 23,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and sustainable, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It diversifies energy sources, enhancing grid stability and security.\n5. Solar technology is scalable and adaptable to various geographic locations and applications.",
+       "eval_count": 72,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    }
+   },
+   "summary": {
+    "isolated_pass": 0,
+    "replay": 0,
+    "arith_first": 0,
+    "arith_middle": 0
+   }
+  },
+  {
+   "model": "deepseek-r1:8b",
+   "kv_type": "q8_0",
+   "isolated": [
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "401"
+      ]
+     },
+     "response": "401",
+     "eval_count": 4,
+     "session": 1,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "401"
+      ]
+     },
+     "response": "401",
+     "eval_count": 4,
+     "session": 2,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "401"
+      ]
+     },
+     "response": "401",
+     "eval_count": 4,
+     "session": 3,
+     "position": 1,
+     "foreign_clients": 0
+    }
+   ],
+   "sequences": {
+    "replay": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow",
+      "arithmetic"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3,
+      "arithmetic": 0
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_first": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "arithmetic",
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "arithmetic": 0,
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_middle": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "arithmetic",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "arithmetic": 0,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Cyan Skillfish APU, combining a Zen 2 CPU with 6 cores and 12 threads and a custom GPU with 24 compute units, all sharing 16 GB of GDDR6 unified memory via UMA architecture.\n\nOriginally deployed in mining racks by ASRock Rack and later available on the secondary market, this board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable compute path for AI inference tasks.\n\nDespite not having dedicated tensor cores, the BC-250 can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan compute backend.",
+       "eval_count": 151,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Dr. Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 59,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "401"
+        ]
+       },
+       "response": "401",
+       "eval_count": 4,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is **W**, and it is derived from the German word **Wolfram**.",
+       "eval_count": 25,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1.  Solar energy is a renewable resource, providing a sustainable electricity source that reduces dependence on finite fossil fuels.\n2.  It significantly lowers greenhouse gas emissions, helping combat climate change and improving air quality.\n3.  Once operational, solar power plants have low operating costs and minimal water usage compared to conventional power plants.\n4.  It enhances energy independence by allowing decentralized power generation and reducing reliance on imported fuels.\n5.  Solar energy systems create local jobs in manufacturing, installation, and maintenance, boosting economic development.",
+       "eval_count": 106,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    }
+   },
+   "summary": {
+    "isolated_pass": 0,
+    "replay": 0,
+    "arith_first": 0,
+    "arith_middle": 0
+   }
+  },
+  {
+   "model": "mistral-nemo:12b",
+   "kv_type": "q8_0",
+   "isolated": [
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "491"
+      ]
+     },
+     "response": "491",
+     "eval_count": 4,
+     "session": 1,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "491"
+      ]
+     },
+     "response": "491",
+     "eval_count": 4,
+     "session": 2,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "491"
+      ]
+     },
+     "response": "491",
+     "eval_count": 4,
+     "session": 3,
+     "position": 1,
+     "foreign_clients": 0
+    }
+   ],
+   "sequences": {
+    "replay": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow",
+      "arithmetic"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3,
+      "arithmetic": 0
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\n  \"name\": \"Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}",
+       "eval_count": 69,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_first": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "arithmetic",
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "arithmetic": 0,
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\n  \"name\": \"Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}",
+       "eval_count": 69,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_middle": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "arithmetic",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "arithmetic": 0,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 0,
+     "total": 12,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board powered by AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads alongside a GFX1013 GPU. It has 16 GB of GDDR6 unified memory shared between the CPU and GPU. Originally used in mining racks, these boards now support AI inference via Vulkan compute backend at 38 tokens per second for large language models despite lacking tensor cores.",
+       "eval_count": 103,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\n  \"name\": \"Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}",
+       "eval_count": 69,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "arithmetic",
+       "passed": false,
+       "scores": {
+        "contains_target": false,
+        "numbers_found": [
+         "491"
+        ]
+       },
+       "response": "491",
+       "eval_count": 4,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed independently of fuel sources.\n2. **Reduces Electricity Bills**: By generating your own electricity, you can significantly reduce your reliance on grid power and lower your utility bills.\n3. **Environmentally Friendly**: Solar power produces no greenhouse gas emissions or pollutants, helping to combat climate change and improve air quality.\n4. **Energy Independence**: Solar energy allows individuals and communities to become more self-sufficient by generating their own electricity.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal maintenance, with an average lifespan of 25-30 years before needing replacement.",
+       "eval_count": 139,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    }
+   },
+   "summary": {
+    "isolated_pass": 0,
+    "replay": 0,
+    "arith_first": 0,
+    "arith_middle": 0
+   }
+  },
+  {
+   "model": "deepseek-r1:14b",
+   "kv_type": "q4_0",
+   "isolated": [
+    {
+     "task": "arithmetic",
+     "passed": true,
+     "scores": {
+      "contains_target": true,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "23",
+       "10",
+       "7",
+       "23",
+       "10",
+       "23",
+       "7"
+      ]
+     },
+     "response": "To solve \\(17 \\times 23\\), we can break it down using the distributive property:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23\n\\]\n\nCalculating each part:\n\n\\[\n10 \\times 23 = 230\n\\]\n\\[\n7 \\times 23 = 161\n\\]\n\nAdding them together:\n\n\\[\n230 + 161 = 391\n\\]\n\n**Answer:** 391",
+     "eval_count": 133,
+     "session": 1,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": true,
+     "scores": {
+      "contains_target": true,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "23",
+       "10",
+       "7",
+       "23",
+       "10",
+       "23",
+       "7"
+      ]
+     },
+     "response": "To solve \\(17 \\times 23\\), we can break it down using the distributive property:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23\n\\]\n\nCalculating each part:\n\n\\[\n10 \\times 23 = 230\n\\]\n\\[\n7 \\times 23 = 161\n\\]\n\nAdding them together:\n\n\\[\n230 + 161 = 391\n\\]\n\n**Answer:** 391",
+     "eval_count": 133,
+     "session": 2,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": true,
+     "scores": {
+      "contains_target": true,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "23",
+       "10",
+       "7",
+       "23",
+       "10",
+       "23",
+       "7"
+      ]
+     },
+     "response": "To solve \\(17 \\times 23\\), we can break it down using the distributive property:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23\n\\]\n\nCalculating each part:\n\n\\[\n10 \\times 23 = 230\n\\]\n\\[\n7 \\times 23 = 161\n\\]\n\nAdding them together:\n\n\\[\n230 + 161 = 391\n\\]\n\n**Answer:** 391",
+     "eval_count": 133,
+     "session": 3,
+     "position": 1,
+     "foreign_clients": 0
+    }
+   ],
+   "sequences": {
+    "replay": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow",
+      "arithmetic"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3,
+      "arithmetic": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, paired with a GFX1013 GPU that has 24 compute units and 1536 stream processors. It includes 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in mining racks by ASRock Rack but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models efficiently using Vulkan compute and quantized weights.",
+       "eval_count": 129,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units, and 1536 stream processors. It has 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in ASRock Rack's multi-board mining racks but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models using Vulkan compute and quantized weights at a rate of 38 tokens per second.",
+       "eval_count": 138,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units, and 1536 stream processors. It has 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in ASRock Rack's multi-board mining racks but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models using Vulkan compute and quantized weights at a rate of 38 tokens per second.",
+       "eval_count": 138,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces electricity bills for homeowners and businesses.\n5. The technology is scalable and can be implemented in both urban and rural areas.",
+       "eval_count": 77,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces dependence on external energy sources.\n5. Solar technology is modular and can be implemented in various scales, from small households to large utility plants.",
+       "eval_count": 81,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces dependence on external energy sources.\n5. Solar technology is modular and can be implemented in various scales, from small households to large utility plants.",
+       "eval_count": 81,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_first": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "arithmetic",
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "arithmetic": 3,
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, paired with a GFX1013 GPU that has 24 compute units and 1536 stream processors. It includes 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in mining racks by ASRock Rack but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models efficiently using Vulkan compute and quantized weights.",
+       "eval_count": 129,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units, and 1536 stream processors. It has 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in ASRock Rack's multi-board mining racks but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models using Vulkan compute and quantized weights at a rate of 38 tokens per second.",
+       "eval_count": 138,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units, and 1536 stream processors. It has 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in ASRock Rack's multi-board mining racks but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models using Vulkan compute and quantized weights at a rate of 38 tokens per second.",
+       "eval_count": 138,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces electricity bills for homeowners and businesses.\n5. The technology is scalable and can be implemented in both urban and rural areas.",
+       "eval_count": 77,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces dependence on external energy sources.\n5. Solar technology is modular and can be implemented in various scales, from small households to large utility plants.",
+       "eval_count": 81,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces dependence on external energy sources.\n5. Solar technology is modular and can be implemented in various scales, from small households to large utility plants.",
+       "eval_count": 81,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_middle": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "arithmetic",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "arithmetic": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, paired with a GFX1013 GPU that has 24 compute units and 1536 stream processors. It includes 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in mining racks by ASRock Rack but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models efficiently using Vulkan compute and quantized weights.",
+       "eval_count": 129,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units, and 1536 stream processors. It has 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in ASRock Rack's multi-board mining racks but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models using Vulkan compute and quantized weights at a rate of 38 tokens per second.",
+       "eval_count": 138,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 is a crypto-mining board based on AMD's Cyan Skillfish APU, featuring a Zen 2 CPU with 6 cores and 12 threads, a GFX1013 GPU with 24 compute units, and 1536 stream processors. It has 16 GB of GDDR6 unified memory and a 256-bit memory bus, originally used in ASRock Rack's multi-board mining racks but later available on the secondary market. Despite lacking ROCm support and dedicated tensor cores, it can run large language models using Vulkan compute and quantized weights at a rate of 38 tokens per second.",
+       "eval_count": 138,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "23",
+         "10",
+         "7",
+         "23",
+         "10",
+         "23",
+         "7"
+        ]
+       },
+       "response": "To solve \\(17 \\times 23\\), we can use the standard multiplication method:\n\n\\[\n17 \\times 23 = (10 + 7) \\times 23 = 10 \\times 23 + 7 \\times 23 = 230 + 161 = 391\n\\]\n\nAnswer: 391",
+       "eval_count": 84,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, which is derived from the German word \"Wolfram.\"",
+       "eval_count": 22,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces electricity bills for homeowners and businesses.\n5. The technology is scalable and can be implemented in both urban and rural areas.",
+       "eval_count": 77,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces dependence on external energy sources.\n5. Solar technology is modular and can be implemented in various scales, from small households to large utility plants.",
+       "eval_count": 81,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is a renewable and sustainable resource, reducing reliance on finite fossil fuels.\n2. It significantly reduces greenhouse gas emissions, combating climate change.\n3. Solar power systems have low operating costs after initial installation.\n4. It offers energy independence and reduces dependence on external energy sources.\n5. Solar technology is modular and can be implemented in various scales, from small households to large utility plants.",
+       "eval_count": 81,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    }
+   },
+   "summary": {
+    "isolated_pass": 3,
+    "replay": 3,
+    "arith_first": 3,
+    "arith_middle": 3
+   }
+  },
+  {
+   "model": "deepseek-r1:8b",
+   "kv_type": "q4_0",
+   "isolated": [
+    {
+     "task": "arithmetic",
+     "passed": true,
+     "scores": {
+      "contains_target": true,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "20",
+       "340",
+       "17",
+       "3",
+       "51",
+       "340",
+       "51"
+      ]
+     },
+     "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nI can break it down. 17 times 20 is 340, and 17 times 3 is 51. Then I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391. So, 17 times 23 should be 391.\n\nI can also think of it as 17 times 23. I know that 10 times 23 is 230, and 7 times 23 is 161. Then 230 plus 161 is 391.\n\n230 plus 160 is 390, and then plus 1 is 391.\n\nI can use the standard multiplication method. Write it out:\n\n  17\n\n\u00d7 23\n\nFirst, multiply by the 3: 3 times 7 is 21, write down 1, carry over 2. 3 times 1 is 3, plus 2 is 5. So, 51.\n\nThen, multiply by the 2, but since it's the tens place, I need to add a zero or shift it. So, 2 times 7 is ",
+     "eval_count": 300,
+     "session": 1,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": true,
+     "scores": {
+      "contains_target": true,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "20",
+       "340",
+       "17",
+       "3",
+       "51",
+       "340",
+       "51"
+      ]
+     },
+     "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nI can break it down. 17 times 20 is 340, and 17 times 3 is 51. Then I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391. So, 17 times 23 should be 391.\n\nI can also think of it as 17 times 23. I know that 10 times 23 is 230, and 7 times 23 is 161. Then 230 plus 161 is 391.\n\n230 plus 160 is 390, and then plus 1 is 391.\n\nI can use the standard multiplication method. Write it out:\n\n  17\n\n\u00d7 23\n\nFirst, multiply by the 3: 3 times 7 is 21, write down 1, carry over 2. 3 times 1 is 3, plus 2 is 5. So, 51.\n\nThen, multiply by the 2, but since it's the tens place, I need to add a zero or shift it. So, 2 times 7 is ",
+     "eval_count": 300,
+     "session": 2,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": true,
+     "scores": {
+      "contains_target": true,
+      "numbers_found": [
+       "17",
+       "23",
+       "17",
+       "20",
+       "340",
+       "17",
+       "3",
+       "51",
+       "340",
+       "51"
+      ]
+     },
+     "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nI can break it down. 17 times 20 is 340, and 17 times 3 is 51. Then I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391. So, 17 times 23 should be 391.\n\nI can also think of it as 17 times 23. I know that 10 times 23 is 230, and 7 times 23 is 161. Then 230 plus 161 is 391.\n\n230 plus 160 is 390, and then plus 1 is 391.\n\nI can use the standard multiplication method. Write it out:\n\n  17\n\n\u00d7 23\n\nFirst, multiply by the 3: 3 times 7 is 21, write down 1, carry over 2. 3 times 1 is 3, plus 2 is 5. So, 51.\n\nThen, multiply by the 2, but since it's the tens place, I need to add a zero or shift it. So, 2 times 7 is ",
+     "eval_count": 300,
+     "session": 3,
+     "position": 1,
+     "foreign_clients": 0
+    }
+   ],
+   "sequences": {
+    "replay": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow",
+      "arithmetic"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3,
+      "arithmetic": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads with a custom GPU featuring 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack and later available on the secondary market, the board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable option for AI inference, despite not having dedicated tensor cores. Although it can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan backend, it lacks specialized hardware for efficient matrix operations.",
+       "eval_count": 170,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 2,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads to a Radeon RX 6000-class GPU with 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack, these boards entered the secondary market after decommissioning, and despite lacking native support for ROCm or tensor cores, they can run large AI models using quantized weights and the Vulkan compute backend.",
+       "eval_count": 139,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 2,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads to a Radeon RX 6000-class GPU with 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack, these boards entered the secondary market after decommissioning, and despite lacking native support for ROCm or tensor cores, they can run large AI models using quantized weights and the Vulkan compute backend.",
+       "eval_count": 139,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping to combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can reduce dependence on fossil fuels and associated price volatility.  \n5. It can lower electricity bills and provide energy independence for users.",
+       "eval_count": 76,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can lower electricity bills through reduced dependence on grid power.  \n5. It improves energy independence by reducing reliance on imported fuels.",
+       "eval_count": 74,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can lower electricity bills through reduced dependence on grid power.  \n5. It improves energy independence by reducing reliance on imported fuels.",
+       "eval_count": 74,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "20",
+         "340",
+         "17",
+         "3",
+         "51",
+         "340",
+         "51"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I can break it down. 17 times 20 is 340, and 17 times 3 is 51. Then, I add those together.\n\n340 plus 51 is 391.\n\nI can also think of it as 17 times 23. I know that 10 times 23 is 230, and 7 times 23 is 161. Then, 230 plus 161 is 391.\n\nBoth ways give me the same answer.\n\nI can use the standard multiplication method. Write it out:\n\n  17\n\n\u00d7 23\n\nFirst, multiply by the 3 in 23. 3 times 7 is 21, write down 1, carry over 2. 3 times 1 is 3, plus 2 is 5. So, 51.\n\nThen, multiply by the 2 in 23, but since it's the tens place, I need to add a zero or shift it left. So, 2 times 7 is 14, write down 4, carry over 1. 2 times 1 is 2, plus 1 is 3. But since it's the tens place, it's 3",
+       "eval_count": 300,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "10",
+         "7",
+         "23",
+         "20",
+         "3",
+         "17",
+         "23"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I'll break it down. I know that 17 is 10 plus 7, and 23 is 20 plus 3. So, I can use the distributive property.\n\nSo, 17 times 23 is the same as 17 times (20 plus 3). That means I can do 17 times 20 plus 17 times 3.\n\n17 times 20 is 340, because 17 times 2 is 34, and since it's 20, I add a zero, so 340.\n\nThen, 17 times 3 is 51.\n\nNow, I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391.\n\nI can also think of it as multiplying directly. 17 times 23.\n\nI'll do the multiplication: 7 times 3 is 21, write down 1, carry over 2.\n\nThen, 7 times 2 is 14, plus the 2 I carried over is 16, so write down 6, carry over 1.\n\nNow, since it's 17, I need to multiply the tens",
+       "eval_count": 300,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "10",
+         "7",
+         "23",
+         "20",
+         "3",
+         "17",
+         "23"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I'll break it down. I know that 17 is 10 plus 7, and 23 is 20 plus 3. So, I can use the distributive property.\n\nSo, 17 times 23 is the same as 17 times (20 plus 3). That means I can do 17 times 20 plus 17 times 3.\n\n17 times 20 is 340, because 17 times 2 is 34, and since it's 20, I add a zero, so 340.\n\nThen, 17 times 3 is 51.\n\nNow, I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391.\n\nI can also think of it as multiplying directly. 17 times 23.\n\nI'll do the multiplication: 7 times 3 is 21, write down 1, carry over 2.\n\nThen, 7 times 2 is 14, plus the 2 I carried over is 16, so write down 6, carry over 1.\n\nNow, since it's 17, I need to multiply the tens",
+       "eval_count": 300,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_first": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "arithmetic",
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "arithmetic": 3,
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "20",
+         "340",
+         "17",
+         "3",
+         "51",
+         "340",
+         "51"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I can break it down. 17 times 20 is 340, and 17 times 3 is 51. Then, I add those together.\n\n340 plus 51 is 391.\n\nI can also think of it as 17 times 23. I know that 10 times 23 is 230, and 7 times 23 is 161. Then, 230 plus 161 is 391.\n\nBoth ways give me the same answer.\n\nI can use the standard multiplication method. Write it out:\n\n  17\n\n\u00d7 23\n\nFirst, multiply by the 3 in 23. 3 times 7 is 21, write down 1, carry over 2. 3 times 1 is 3, plus 2 is 5. So, 51.\n\nThen, multiply by the 2 in 23, but since it's the tens place, I need to add a zero or shift it left. So, 2 times 7 is 14, write down 4, carry over 1. 2 times 1 is 2, plus 1 is 3. But since it's the tens place, it's 3",
+       "eval_count": 300,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "10",
+         "7",
+         "23",
+         "20",
+         "3",
+         "17",
+         "23"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I'll break it down. I know that 17 is 10 plus 7, and 23 is 20 plus 3. So, I can use the distributive property.\n\nSo, 17 times 23 is the same as 17 times (20 plus 3). That means I can do 17 times 20 plus 17 times 3.\n\n17 times 20 is 340, because 17 times 2 is 34, and since it's 20, I add a zero, so 340.\n\nThen, 17 times 3 is 51.\n\nNow, I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391.\n\nI can also think of it as multiplying directly. 17 times 23.\n\nI'll do the multiplication: 7 times 3 is 21, write down 1, carry over 2.\n\nThen, 7 times 2 is 14, plus the 2 I carried over is 16, so write down 6, carry over 1.\n\nNow, since it's 17, I need to multiply the tens",
+       "eval_count": 300,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "10",
+         "7",
+         "23",
+         "20",
+         "3",
+         "17",
+         "23"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I'll break it down. I know that 17 is 10 plus 7, and 23 is 20 plus 3. So, I can use the distributive property.\n\nSo, 17 times 23 is the same as 17 times (20 plus 3). That means I can do 17 times 20 plus 17 times 3.\n\n17 times 20 is 340, because 17 times 2 is 34, and since it's 20, I add a zero, so 340.\n\nThen, 17 times 3 is 51.\n\nNow, I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391.\n\nI can also think of it as multiplying directly. 17 times 23.\n\nI'll do the multiplication: 7 times 3 is 21, write down 1, carry over 2.\n\nThen, 7 times 2 is 14, plus the 2 I carried over is 16, so write down 6, carry over 1.\n\nNow, since it's 17, I need to multiply the tens",
+       "eval_count": 300,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads with a custom GPU featuring 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack and later available on the secondary market, the board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable option for AI inference, despite not having dedicated tensor cores. Although it can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan backend, it lacks specialized hardware for efficient matrix operations.",
+       "eval_count": 170,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 2,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads to a Radeon RX 6000-class GPU with 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack, these boards entered the secondary market after decommissioning, and despite lacking native support for ROCm or tensor cores, they can run large AI models using quantized weights and the Vulkan compute backend.",
+       "eval_count": 139,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 2,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads to a Radeon RX 6000-class GPU with 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack, these boards entered the secondary market after decommissioning, and despite lacking native support for ROCm or tensor cores, they can run large AI models using quantized weights and the Vulkan compute backend.",
+       "eval_count": 139,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping to combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can reduce dependence on fossil fuels and associated price volatility.  \n5. It can lower electricity bills and provide energy independence for users.",
+       "eval_count": 76,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can lower electricity bills through reduced dependence on grid power.  \n5. It improves energy independence by reducing reliance on imported fuels.",
+       "eval_count": 74,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can lower electricity bills through reduced dependence on grid power.  \n5. It improves energy independence by reducing reliance on imported fuels.",
+       "eval_count": 74,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_middle": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "arithmetic",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "arithmetic": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 4,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads with a custom GPU featuring 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack and later available on the secondary market, the board's GPU lacks support for ROCm's userspace libraries, making Vulkan the only viable option for AI inference, despite not having dedicated tensor cores. Although it can run a 35-billion parameter MoE language model at 38 tokens per second using quantized weights and a Vulkan backend, it lacks specialized hardware for efficient matrix operations.",
+       "eval_count": 170,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 2,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads to a Radeon RX 6000-class GPU with 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack, these boards entered the secondary market after decommissioning, and despite lacking native support for ROCm or tensor cores, they can run large AI models using quantized weights and the Vulkan compute backend.",
+       "eval_count": 139,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 2,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board is built around AMD's Ryzen-based \"Cyan Skillfish\" APU, combining a Zen 2 CPU with 6 cores and 12 threads to a Radeon RX 6000-class GPU with 24 compute units and 1536 stream processors, all sharing 16 GB of GDDR6 unified memory via a 256-bit bus. Originally deployed in mining racks by ASRock Rack, these boards entered the secondary market after decommissioning, and despite lacking native support for ROCm or tensor cores, they can run large AI models using quantized weights and the Vulkan compute backend.",
+       "eval_count": 139,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "```json\n{\n  \"name\": \"Dr. Maria Chen\",\n  \"age\": 42,\n  \"title\": \"Senior Research Scientist\",\n  \"company\": \"NVIDIA\",\n  \"year_joined\": 2018,\n  \"team_size\": 12,\n  \"patent_count\": 7\n}\n```",
+       "eval_count": 72,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "20",
+         "340",
+         "17",
+         "3",
+         "51",
+         "340",
+         "51"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I can break it down. 17 times 20 is 340, and 17 times 3 is 51. Then, I add those together.\n\n340 plus 51 is 391.\n\nI can also think of it as 17 times 23. I know that 10 times 23 is 230, and 7 times 23 is 161. Then, 230 plus 161 is 391.\n\nBoth ways give me the same answer.\n\nI can use the standard multiplication method. Write it out:\n\n  17\n\n\u00d7 23\n\nFirst, multiply by the 3 in 23. 3 times 7 is 21, write down 1, carry over 2. 3 times 1 is 3, plus 2 is 5. So, 51.\n\nThen, multiply by the 2 in 23, but since it's the tens place, I need to add a zero or shift it left. So, 2 times 7 is 14, write down 4, carry over 1. 2 times 1 is 2, plus 1 is 3. But since it's the tens place, it's 3",
+       "eval_count": 300,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "10",
+         "7",
+         "23",
+         "20",
+         "3",
+         "17",
+         "23"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I'll break it down. I know that 17 is 10 plus 7, and 23 is 20 plus 3. So, I can use the distributive property.\n\nSo, 17 times 23 is the same as 17 times (20 plus 3). That means I can do 17 times 20 plus 17 times 3.\n\n17 times 20 is 340, because 17 times 2 is 34, and since it's 20, I add a zero, so 340.\n\nThen, 17 times 3 is 51.\n\nNow, I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391.\n\nI can also think of it as multiplying directly. 17 times 23.\n\nI'll do the multiplication: 7 times 3 is 21, write down 1, carry over 2.\n\nThen, 7 times 2 is 14, plus the 2 I carried over is 16, so write down 6, carry over 1.\n\nNow, since it's 17, I need to multiply the tens",
+       "eval_count": 300,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "17",
+         "23",
+         "17",
+         "10",
+         "7",
+         "23",
+         "20",
+         "3",
+         "17",
+         "23"
+        ]
+       },
+       "response": "The problem is to solve 17 times 23. I need to multiply these two numbers.\n\nFirst, I'll break it down. I know that 17 is 10 plus 7, and 23 is 20 plus 3. So, I can use the distributive property.\n\nSo, 17 times 23 is the same as 17 times (20 plus 3). That means I can do 17 times 20 plus 17 times 3.\n\n17 times 20 is 340, because 17 times 2 is 34, and since it's 20, I add a zero, so 340.\n\nThen, 17 times 3 is 51.\n\nNow, I add those together: 340 plus 51.\n\n340 plus 50 is 390, and then plus 1 more is 391.\n\nI can also think of it as multiplying directly. 17 times 23.\n\nI'll do the multiplication: 7 times 3 is 21, write down 1, carry over 2.\n\nThen, 7 times 2 is 14, plus the 2 I carried over is 16, so write down 6, carry over 1.\n\nNow, since it's 17, I need to multiply the tens",
+       "eval_count": 300,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W, and it is derived from the German word \"Wolfram\".",
+       "eval_count": 23,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping to combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can reduce dependence on fossil fuels and associated price volatility.  \n5. It can lower electricity bills and provide energy independence for users.",
+       "eval_count": 76,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can lower electricity bills through reduced dependence on grid power.  \n5. It improves energy independence by reducing reliance on imported fuels.",
+       "eval_count": 74,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. Solar energy is renewable and abundant, providing a sustainable source of electricity.  \n2. It reduces greenhouse gas emissions, helping combat climate change.  \n3. It creates jobs in manufacturing, installation, and maintenance.  \n4. It can lower electricity bills through reduced dependence on grid power.  \n5. It improves energy independence by reducing reliance on imported fuels.",
+       "eval_count": 74,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    }
+   },
+   "summary": {
+    "isolated_pass": 3,
+    "replay": 3,
+    "arith_first": 3,
+    "arith_middle": 3
+   }
+  },
+  {
+   "model": "mistral-nemo:12b",
+   "kv_type": "q4_0",
+   "isolated": [
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "481"
+      ]
+     },
+     "response": "481",
+     "eval_count": 4,
+     "session": 1,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "481"
+      ]
+     },
+     "response": "481",
+     "eval_count": 4,
+     "session": 2,
+     "position": 1,
+     "foreign_clients": 0
+    },
+    {
+     "task": "arithmetic",
+     "passed": false,
+     "scores": {
+      "contains_target": false,
+      "numbers_found": [
+       "481"
+      ]
+     },
+     "response": "481",
+     "eval_count": 4,
+     "session": 3,
+     "position": 1,
+     "foreign_clients": 0
+    }
+   ],
+   "sequences": {
+    "replay": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow",
+      "arithmetic"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3,
+      "arithmetic": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available on the secondary market. Despite lacking tensor cores, it can run large language models using Vulkan compute backend at 38 tokens per second.",
+       "eval_count": 90,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available second-hand. Despite lacking tensor cores, it can run large language models at 38 tokens per second using Vulkan compute backend.",
+       "eval_count": 88,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available second-hand. Despite lacking tensor cores, it can run large language models at 38 tokens per second using Vulkan compute backend.",
+       "eval_count": 88,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed indefinitely.\n2. **Reduces Electricity Bills**: Lower utility costs as solar panels generate electricity directly from sunlight.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels, enhancing national security.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal upkeep and have a long lifespan.",
+       "eval_count": 100,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible.\n2. **Reduces Electricity Bills**: Lower utility costs due to decreased dependence on grid electricity.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels and volatile global energy markets.\n5. **Versatile Installation**: Can be installed almost anywhere with sufficient sunlight, including rooftops and remote locations.",
+       "eval_count": 95,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible.\n2. **Reduces Electricity Bills**: Lower utility costs due to decreased dependence on grid electricity.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels and volatile global energy markets.\n5. **Versatile Installation**: Can be installed almost anywhere with sufficient sunlight, including rooftops and remote locations.",
+       "eval_count": 95,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_first": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "arithmetic",
+      "summarize",
+      "json_extract",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "arithmetic": 3,
+      "summarize": 3,
+      "json_extract": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available on the secondary market. Despite lacking tensor cores, it can run large language models using Vulkan compute backend at 38 tokens per second.",
+       "eval_count": 90,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available second-hand. Despite lacking tensor cores, it can run large language models at 38 tokens per second using Vulkan compute backend.",
+       "eval_count": 88,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available second-hand. Despite lacking tensor cores, it can run large language models at 38 tokens per second using Vulkan compute backend.",
+       "eval_count": 88,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed indefinitely.\n2. **Reduces Electricity Bills**: Lower utility costs as solar panels generate electricity directly from sunlight.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels, enhancing national security.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal upkeep and have a long lifespan.",
+       "eval_count": 100,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible.\n2. **Reduces Electricity Bills**: Lower utility costs due to decreased dependence on grid electricity.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels and volatile global energy markets.\n5. **Versatile Installation**: Can be installed almost anywhere with sufficient sunlight, including rooftops and remote locations.",
+       "eval_count": 95,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible.\n2. **Reduces Electricity Bills**: Lower utility costs due to decreased dependence on grid electricity.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels and volatile global energy markets.\n5. **Versatile Installation**: Can be installed almost anywhere with sufficient sunlight, including rooftops and remote locations.",
+       "eval_count": 95,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    },
+    "arith_middle": {
+     "foreign_clients_at_start": 0,
+     "order": [
+      "summarize",
+      "json_extract",
+      "arithmetic",
+      "fact_recall",
+      "instruction_follow"
+     ],
+     "per_task": {
+      "summarize": 3,
+      "json_extract": 3,
+      "arithmetic": 3,
+      "fact_recall": 3,
+      "instruction_follow": 3
+     },
+     "arithmetic": 3,
+     "total": 15,
+     "requests": [
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available on the secondary market. Despite lacking tensor cores, it can run large language models using Vulkan compute backend at 38 tokens per second.",
+       "eval_count": 90,
+       "run": 1,
+       "position": 2
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available second-hand. Despite lacking tensor cores, it can run large language models at 38 tokens per second using Vulkan compute backend.",
+       "eval_count": 88,
+       "run": 2,
+       "position": 3
+      },
+      {
+       "task": "summarize",
+       "passed": true,
+       "scores": {
+        "keywords_found": 3,
+        "keywords_total": 4,
+        "keywords_pass": true,
+        "sentence_count": 3,
+        "sentences_pass": true
+       },
+       "response": "The AMD BC-250 crypto-mining board features a Zen 2 CPU with 6 cores, GFX1013 GPU with 24 compute units, and 16 GB GDDR6 unified memory. Originally used in multi-board mining racks, it's now available second-hand. Despite lacking tensor cores, it can run large language models at 38 tokens per second using Vulkan compute backend.",
+       "eval_count": 88,
+       "run": 3,
+       "position": 4
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 1,
+       "position": 5
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 2,
+       "position": 6
+      },
+      {
+       "task": "json_extract",
+       "passed": true,
+       "scores": {
+        "valid_json": true,
+        "keys_found": 4,
+        "keys_total": 4,
+        "keys_pass": true,
+        "values_matched": 2,
+        "values_total": 2
+       },
+       "response": "{\"name\": \"Maria Chen\", \"age\": 42, \"title\": \"Senior Research Scientist\", \"company\": \"NVIDIA\", \"year_joined\": 2018, \"team_size\": 12, \"patent_count\": 7}",
+       "eval_count": 60,
+       "run": 3,
+       "position": 7
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 1,
+       "position": 8
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 2,
+       "position": 9
+      },
+      {
+       "task": "arithmetic",
+       "passed": true,
+       "scores": {
+        "contains_target": true,
+        "numbers_found": [
+         "391"
+        ]
+       },
+       "response": "391",
+       "eval_count": 4,
+       "run": 3,
+       "position": 10
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 1,
+       "position": 11
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 2,
+       "position": 12
+      },
+      {
+       "task": "fact_recall",
+       "passed": true,
+       "scores": {
+        "keywords_found": 2,
+        "keywords_total": 2,
+        "keywords_pass": true
+       },
+       "response": "The chemical symbol for tungsten is W. It is derived from the German word \"Wolfram\".",
+       "eval_count": 20,
+       "run": 3,
+       "position": 13
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible and can be harnessed indefinitely.\n2. **Reduces Electricity Bills**: Lower utility costs as solar panels generate electricity directly from sunlight.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels, enhancing national security.\n5. **Low Maintenance Costs**: Once installed, solar panels require minimal upkeep and have a long lifespan.",
+       "eval_count": 100,
+       "run": 1,
+       "position": 14
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible.\n2. **Reduces Electricity Bills**: Lower utility costs due to decreased dependence on grid electricity.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels and volatile global energy markets.\n5. **Versatile Installation**: Can be installed almost anywhere with sufficient sunlight, including rooftops and remote locations.",
+       "eval_count": 95,
+       "run": 2,
+       "position": 15
+      },
+      {
+       "task": "instruction_follow",
+       "passed": true,
+       "scores": {
+        "numbered_items": 5,
+        "items_expected": 5,
+        "items_pass": true
+       },
+       "response": "1. **Renewable**: Solar energy is virtually inexhaustible.\n2. **Reduces Electricity Bills**: Lower utility costs due to decreased dependence on grid electricity.\n3. **Environmentally Friendly**: Minimal greenhouse gas emissions compared to traditional power sources.\n4. **Energy Independence**: Less reliance on imported fuels and volatile global energy markets.\n5. **Versatile Installation**: Can be installed almost anywhere with sufficient sunlight, including rooftops and remote locations.",
+       "eval_count": 95,
+       "run": 3,
+       "position": 16
+      }
+     ]
+    }
+   },
+   "summary": {
+    "isolated_pass": 0,
+    "replay": 3,
+    "arith_first": 3,
+    "arith_middle": 3
+   }
+  }
+ ],
+ "elapsed_min": 34.4
+}

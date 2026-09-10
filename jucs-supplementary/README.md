@@ -29,11 +29,13 @@ TeX Gyre fonts.
 | File | What it is |
 |------|------------|
 | `supplement.tex` | source |
-| `supplement.pdf` | built document, 7 pages |
+| `supplement.pdf` | built document, 9 pages |
 | `figures/` | the two figures removed from the main text |
 
 The manuscript itself is not in this repository. It is deposited separately;
 see the paper link in the top-level `Readme.md`.
 
 The harnesses, raw results and this supplement are archived at the tagged release
-`jucs-revision-1` of the repository, Zenodo DOI [10.5281/zenodo.22668984](https://doi.org/10.5281/zenodo.22668984).
+`jucs-revision-2` of the repository (`jucs-revision-1` is the earlier snapshot without the
+head-count control and the request-sequence re-run); Zenodo concept DOI
+[10.5281/zenodo.22668983](https://doi.org/10.5281/zenodo.22668983) resolves to the latest version.
