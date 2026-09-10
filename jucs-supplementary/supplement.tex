@@ -14,7 +14,8 @@
 \setmainfont{TeX Gyre Termes}
 \setmonofont{TeX Gyre Cursor}[Scale=0.86]
 
-\titleformat{\section}{\large\bfseries}{S\thesection}{0.7em}{}
+\renewcommand{\thesection}{S\arabic{section}}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.7em}{}
 \titlespacing*{\section}{0pt}{2.2ex}{1ex}
 \pagestyle{fancy}\fancyhf{}
 \fancyhead[L]{\small Supplementary material}
@@ -26,6 +27,24 @@
 \setlength{\parindent}{0pt}
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
+%% Widen the TOC number box so the S-prefixed section numbers fit
+%% (article.cls sets 1.5em; the definition below is the class one with 2.8em).
+\makeatletter
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{1.0em \@plus\p@}%
+    \setlength\@tempdima{2.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+\makeatother
 
 \begin{document}
 
@@ -68,7 +87,7 @@ verified across reboots.  With the limit at 16\,GiB, Vulkan reports
 16.5\,GiB across two logical heaps, a 5.5\,GiB host-visible
 BAR-mapped heap and an 11\,GiB device-local heap, backed by the same
 physical memory; the effect of forcing the host-visible heap is
-measured in Section~S\ref{sec:s-heap}.
+measured in Section~\ref{sec:s-heap}.
 
 \paragraph{Runtime configuration.}  Ollama runs with the following
 environment:
