@@ -1,0 +1,401 @@
+{
+  "step": "heap-ab",
+  "results": {
+    "granite-4.0-h-tiny": {
+      "tiers": {
+        "32768": {
+          "phm0": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm0-run1",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.14,
+              "rc": 0,
+              "prompt_eval_ms": 466.04,
+              "n_prompt": 249,
+              "prefill_tok_s": 534.29,
+              "eval_ms": 1135.43,
+              "n_gen": 119,
+              "gen_tok_s": 104.81,
+              "load_ms": 1037.28,
+              "total_ms": 1633.7,
+              "ttft_s": 1.503,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS, SPARC, and ARM RISC designs were characterized by a simplified instruction set that favored a smaller number of general-purpose registers, fixed-length instructions, and a focus on software to handle",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 4,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1250.0,
+                "temp_c_max": 68.0,
+                "temp_c_mean": 61.2,
+                "power_mw_mean": 71929.0,
+                "gtt_gib_max": 4.347,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577030948.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm0-run2",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.15,
+              "rc": 0,
+              "prompt_eval_ms": 467.3,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.84,
+              "eval_ms": 1136.48,
+              "n_gen": 119,
+              "gen_tok_s": 104.71,
+              "load_ms": 1045.05,
+              "total_ms": 1635.57,
+              "ttft_s": 1.512,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS, SPARC, and ARM RISC designs were characterized by a reduced instruction set that emphasized simplicity, regularity, and a focus on software rather than hardware. These architectures favored a large",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 4,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1250.0,
+                "temp_c_max": 68.0,
+                "temp_c_mean": 61.2,
+                "power_mw_mean": 67892.0,
+                "gtt_gib_max": 4.347,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577054594.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm1-run1",
+              "projected_vm_gib": 5.54,
+              "wall_s": 9.13,
+              "rc": 0,
+              "prompt_eval_ms": 467.66,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.44,
+              "eval_ms": 1138.52,
+              "n_gen": 119,
+              "gen_tok_s": 104.52,
+              "load_ms": 6709.74,
+              "total_ms": 1638.71,
+              "ttft_s": 7.177,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs**: The original RISC designs, such as MIPS, SPARC, and ARM, emphasized simplicity and efficiency. They used a reduced instruction set, focusing on a small set of simple instructions that could be executed in a single clock cycle. This design philosophy aimed to simplify the hardware, reduce the complexity of the instruction pipeline, and improve performance through faster execution of instructions. The simplicity",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 9,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1055.6,
+                "temp_c_max": 69.0,
+                "temp_c_mean": 58.6,
+                "power_mw_mean": 60111.0,
+                "gtt_gib_max": 4.347,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780576977552.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm1-run2",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.25,
+              "rc": 0,
+              "prompt_eval_ms": 466.9,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.31,
+              "eval_ms": 1135.95,
+              "n_gen": 119,
+              "gen_tok_s": 104.76,
+              "load_ms": 1127.69,
+              "total_ms": 1634.67,
+              "ttft_s": 1.595,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set designs, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs:**\nThe Reduced Instruction Set Computing (RISC) approach, pioneered by architectures like MIPS, SPARC, and ARM, emphasizes simplicity and efficiency. RISC designs aim to execute instructions in a single clock cycle by using a reduced set of instructions that are highly optimized for speed. This approach often involves loading and storing data to and from memory frequently, which can lead to more",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 4,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1250.0,
+                "temp_c_max": 69.0,
+                "temp_c_mean": 62.8,
+                "power_mw_mean": 80544.0,
+                "gtt_gib_max": 4.347,
+                "vram_gib_max": 0.01
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577007187.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 104.76,
+            "gen_tok_s_min": 104.71,
+            "gen_tok_s_max": 104.81,
+            "gen_tok_s_cv_pct": 0.07,
+            "prefill_tok_s_median": 533.565,
+            "prefill_tok_s_min": 532.84,
+            "prefill_tok_s_max": 534.29,
+            "prefill_tok_s_cv_pct": 0.19,
+            "ttft_s_median": 1.507,
+            "ttft_s_min": 1.503,
+            "ttft_s_max": 1.512,
+            "ttft_s_cv_pct": 0.42
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 104.64,
+            "gen_tok_s_min": 104.52,
+            "gen_tok_s_max": 104.76,
+            "gen_tok_s_cv_pct": 0.16,
+            "prefill_tok_s_median": 532.875,
+            "prefill_tok_s_min": 532.44,
+            "prefill_tok_s_max": 533.31,
+            "prefill_tok_s_cv_pct": 0.12,
+            "ttft_s_median": 4.386,
+            "ttft_s_min": 1.595,
+            "ttft_s_max": 7.177,
+            "ttft_s_cv_pct": 89.99
+          }
+        }
+      }
+    },
+    "deepseek-r1-14b": {
+      "tiers": {
+        "32768": {
+          "phm0": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm0-run1",
+              "projected_vm_gib": 11.57,
+              "wall_s": 31.38,
+              "rc": 0,
+              "prompt_eval_ms": 2998.04,
+              "n_prompt": 265,
+              "prefill_tok_s": 88.39,
+              "eval_ms": 5709.35,
+              "n_gen": 119,
+              "gen_tok_s": 20.84,
+              "load_ms": 20760.66,
+              "total_ms": 8993.41,
+              "ttft_s": 23.759,
+              "output": "This is a benchmarking exercise. Please write in English, but keep it concise and focused. Use clear, technical terms without unnecessary jargon. Avoid markdown formatting. Answer should be 300-400 words.\n\nOkay, so I need to compare RISC and CISC processor architectures. Hmm, I remember RISC stands for Reduced Instruction Set Computing and CISC is Complex Instruction Set Computing. But I'm a bit fuzzy on the details. Let me think about what each one entails.\n\nRISC processors have simpler instructions, right? Like MIPS, SPARC, and ARM are",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 31,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1161.3,
+                "temp_c_max": 75.0,
+                "temp_c_mean": 61.2,
+                "power_mw_mean": 67980.0,
+                "gtt_gib_max": 10.042,
+                "vram_gib_max": 0.029
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577235644.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm0-run2",
+              "projected_vm_gib": 11.57,
+              "wall_s": 42.71,
+              "rc": 0,
+              "prompt_eval_ms": 2912.52,
+              "n_prompt": 265,
+              "prefill_tok_s": 90.99,
+              "eval_ms": 5664.24,
+              "n_gen": 119,
+              "gen_tok_s": 21.01,
+              "load_ms": 32275.35,
+              "total_ms": 8849.0,
+              "ttft_s": 35.188,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 500-700 words. Use markdown formatting for code blocks and tables. Include specific examples, such as the MIPS R2000, SPARC architecture, and x80/x86 processors. Use proper terminology and avoid jargon where possible. \n\nThe response should be in English.\n\n</think>\n\n### Comparison of RISC and CISC Processor Architectures\n\n#### **(a) Original RISC Designs: MIPS, SPARC, and ARM**\n\n**",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 42,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1119.0,
+                "temp_c_max": 76.0,
+                "temp_c_mean": 60.1,
+                "power_mw_mean": 68395.0,
+                "gtt_gib_max": 10.042,
+                "vram_gib_max": 0.029
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577287573.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm1-run1",
+              "projected_vm_gib": 11.57,
+              "wall_s": 35.81,
+              "rc": 0,
+              "prompt_eval_ms": 2958.77,
+              "n_prompt": 265,
+              "prefill_tok_s": 89.56,
+              "eval_ms": 5653.39,
+              "n_gen": 119,
+              "gen_tok_s": 21.05,
+              "load_ms": 25552.81,
+              "total_ms": 8880.38,
+              "ttft_s": 28.512,
+              "output": "This is a benchmarking exercise. Please write in English, but keep the response concise and focused. Use markdown formatting for code blocks and tables as needed. No markdown, no formatting, just plain text. \n\n---\n\n**Answer**\n\nRISC and CISC architectures differ in their instruction set design philosophies. RISC, exemplified by MIPS, SPARC, and ARM, focuses on a simple, optimized instruction set with uniform instruction length, making it efficient for compilers and enabling high-speed processing. CISC, like x86, offers complex, versatile instructions, which can reduce the number of",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 35,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1128.6,
+                "temp_c_max": 76.0,
+                "temp_c_mean": 60.9,
+                "power_mw_mean": 68058.0,
+                "gtt_gib_max": 10.042,
+                "vram_gib_max": 0.024
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577123246.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm1-run2",
+              "projected_vm_gib": 11.57,
+              "wall_s": 35.5,
+              "rc": 0,
+              "prompt_eval_ms": 3078.43,
+              "n_prompt": 265,
+              "prefill_tok_s": 86.08,
+              "eval_ms": 5661.19,
+              "n_gen": 119,
+              "gen_tok_s": 21.02,
+              "load_ms": 24875.78,
+              "total_ms": 9013.82,
+              "ttft_s": 27.954,
+              "output": "This is a benchmarking exercise. Please write in English, but keep the response concise and focused. Use markdown formatting for code blocks and tables. No markdown, no formatting, just plain text. No need for references or citations. \n\n---\n\n**Answer**\n\nRISC and CISC architectures differ in their instruction set design philosophies. RISC, exemplified by MIPS, SPARC, and ARM, focuses on a simple, efficient instruction set with uniform instruction length and a load-store architecture. This design aims for high performance through pipelines that can execute multiple instructions simultaneously. CISC, like x8",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 35,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1142.9,
+                "temp_c_max": 75.0,
+                "temp_c_mean": 60.9,
+                "power_mw_mean": 68302.0,
+                "gtt_gib_max": 10.042,
+                "vram_gib_max": 0.028
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780577179592.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 20.925,
+            "gen_tok_s_min": 20.84,
+            "gen_tok_s_max": 21.01,
+            "gen_tok_s_cv_pct": 0.57,
+            "prefill_tok_s_median": 89.69,
+            "prefill_tok_s_min": 88.39,
+            "prefill_tok_s_max": 90.99,
+            "prefill_tok_s_cv_pct": 2.05,
+            "ttft_s_median": 29.474,
+            "ttft_s_min": 23.759,
+            "ttft_s_max": 35.188,
+            "ttft_s_cv_pct": 27.42
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 21.035,
+            "gen_tok_s_min": 21.02,
+            "gen_tok_s_max": 21.05,
+            "gen_tok_s_cv_pct": 0.1,
+            "prefill_tok_s_median": 87.82,
+            "prefill_tok_s_min": 86.08,
+            "prefill_tok_s_max": 89.56,
+            "prefill_tok_s_cv_pct": 2.8,
+            "ttft_s_median": 28.233,
+            "ttft_s_min": 27.954,
+            "ttft_s_max": 28.512,
+            "ttft_s_cv_pct": 1.4
+          }
+        }
+      }
+    }
+  },
+  "models": [
+    "granite-4.0-h-tiny",
+    "deepseek-r1-14b"
+  ],
+  "ctx_tiers": [
+    32768
+  ],
+  "runs_per_variant": 2
+}

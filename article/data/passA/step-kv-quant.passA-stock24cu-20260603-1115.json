@@ -1,0 +1,2688 @@
+{
+  "step": "kv-quant",
+  "results": {
+    "qwen3.5-9b-q4km": {
+      "kind": "dense",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-4096-q4_0-r1",
+                "projected_vm_gib": 6.39,
+                "wall_s": 0.82,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.289.259 I llama_completion: llama backend init\n0.00.289.271 I llama_completion: load the model and apply lora adapter, if any\n0.00.289.286 I common_init_result: fitting params to device memory ...\n0.00.289.286 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.532.177 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.532.183 E llama_model_load_from_file_impl: failed to load model\n0.00.532.227 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.758.801 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.758.808 E llama_model_load_from_file_impl: failed to load model\n0.00.758.814 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.758.820 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507204401.csv"
+              },
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-4096-q4_0-r2",
+                "projected_vm_gib": 6.39,
+                "wall_s": 0.84,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.298.595 I llama_completion: llama backend init\n0.00.298.607 I llama_completion: load the model and apply lora adapter, if any\n0.00.298.624 I common_init_result: fitting params to device memory ...\n0.00.298.624 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.545.445 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.545.450 E llama_model_load_from_file_impl: failed to load model\n0.00.545.492 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.774.055 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.774.063 E llama_model_load_from_file_impl: failed to load model\n0.00.774.069 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.774.075 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507221147.csv"
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-4096-q8_0-r1",
+                "projected_vm_gib": 6.64,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.295.795 I llama_completion: llama backend init\n0.00.295.808 I llama_completion: load the model and apply lora adapter, if any\n0.00.295.823 I common_init_result: fitting params to device memory ...\n0.00.295.823 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.540.319 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.540.326 E llama_model_load_from_file_impl: failed to load model\n0.00.540.378 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.766.534 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.766.542 E llama_model_load_from_file_impl: failed to load model\n0.00.766.549 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.766.556 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507237629.csv"
+              },
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-4096-q8_0-r2",
+                "projected_vm_gib": 6.64,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.295.418 I llama_completion: llama backend init\n0.00.295.430 I llama_completion: load the model and apply lora adapter, if any\n0.00.295.446 I common_init_result: fitting params to device memory ...\n0.00.295.446 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.540.376 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.540.384 E llama_model_load_from_file_impl: failed to load model\n0.00.540.429 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.766.007 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.766.016 E llama_model_load_from_file_impl: failed to load model\n0.00.766.021 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.766.029 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507254096.csv"
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-4096-f16-r1",
+                "projected_vm_gib": 7.14,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.295.620 I llama_completion: llama backend init\n0.00.295.633 I llama_completion: load the model and apply lora adapter, if any\n0.00.295.651 I common_init_result: fitting params to device memory ...\n0.00.295.651 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.540.244 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.540.251 E llama_model_load_from_file_impl: failed to load model\n0.00.540.295 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.765.250 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.765.257 E llama_model_load_from_file_impl: failed to load model\n0.00.765.262 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.765.269 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507270563.csv"
+              },
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-4096-f16-r2",
+                "projected_vm_gib": 7.14,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.294.332 I llama_completion: llama backend init\n0.00.294.343 I llama_completion: load the model and apply lora adapter, if any\n0.00.294.358 I common_init_result: fitting params to device memory ...\n0.00.294.359 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.538.237 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.538.244 E llama_model_load_from_file_impl: failed to load model\n0.00.538.288 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.764.858 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.764.866 E llama_model_load_from_file_impl: failed to load model\n0.00.764.872 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.764.878 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507287028.csv"
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-16384-q4_0-r1",
+                "projected_vm_gib": 7.14,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.295.253 I llama_completion: llama backend init\n0.00.295.265 I llama_completion: load the model and apply lora adapter, if any\n0.00.295.305 I common_init_result: fitting params to device memory ...\n0.00.295.306 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.539.677 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.539.685 E llama_model_load_from_file_impl: failed to load model\n0.00.539.729 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.765.329 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.765.334 E llama_model_load_from_file_impl: failed to load model\n0.00.765.339 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.765.346 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507303495.csv"
+              },
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-16384-q4_0-r2",
+                "projected_vm_gib": 7.14,
+                "wall_s": 0.84,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.296.325 I llama_completion: llama backend init\n0.00.296.337 I llama_completion: load the model and apply lora adapter, if any\n0.00.296.353 I common_init_result: fitting params to device memory ...\n0.00.296.353 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.542.997 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.543.003 E llama_model_load_from_file_impl: failed to load model\n0.00.543.043 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.771.696 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.771.704 E llama_model_load_from_file_impl: failed to load model\n0.00.771.712 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.771.720 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507319961.csv"
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-16384-q8_0-r1",
+                "projected_vm_gib": 8.14,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.297.786 I llama_completion: llama backend init\n0.00.297.799 I llama_completion: load the model and apply lora adapter, if any\n0.00.297.816 I common_init_result: fitting params to device memory ...\n0.00.297.816 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.541.565 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.541.572 E llama_model_load_from_file_impl: failed to load model\n0.00.541.618 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.768.051 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.768.058 E llama_model_load_from_file_impl: failed to load model\n0.00.768.063 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.768.070 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507336432.csv"
+              },
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-16384-q8_0-r2",
+                "projected_vm_gib": 8.14,
+                "wall_s": 0.83,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.299.535 I llama_completion: llama backend init\n0.00.299.547 I llama_completion: load the model and apply lora adapter, if any\n0.00.299.563 I common_init_result: fitting params to device memory ...\n0.00.299.563 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.543.869 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.543.882 E llama_model_load_from_file_impl: failed to load model\n0.00.543.929 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.770.477 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.770.483 E llama_model_load_from_file_impl: failed to load model\n0.00.770.489 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.770.496 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507352909.csv"
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-16384-f16-r1",
+                "projected_vm_gib": 10.14,
+                "wall_s": 0.85,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.296.158 I llama_completion: llama backend init\n0.00.296.170 I llama_completion: load the model and apply lora adapter, if any\n0.00.296.185 I common_init_result: fitting params to device memory ...\n0.00.296.186 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.544.489 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.544.495 E llama_model_load_from_file_impl: failed to load model\n0.00.544.536 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.786.286 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.786.294 E llama_model_load_from_file_impl: failed to load model\n0.00.786.300 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.786.321 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507369382.csv"
+              },
+              {
+                "model": "qwen3.5-9b-q4km",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-9b-q4km-16384-f16-r2",
+                "projected_vm_gib": 10.14,
+                "wall_s": 0.84,
+                "rc": 1,
+                "output": "",
+                "status": "fail",
+                "stderr_tail": "0.00.301.525 I llama_completion: llama backend init\n0.00.301.539 I llama_completion: load the model and apply lora adapter, if any\n0.00.301.555 I common_init_result: fitting params to device memory ...\n0.00.301.555 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.546.835 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.546.842 E llama_model_load_from_file_impl: failed to load model\n0.00.546.889 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.774.904 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.774.911 E llama_model_load_from_file_impl: failed to load model\n0.00.774.917 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.774.924 E llama_completion: error: unable to create context\n",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507385859.csv"
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    },
+    "deepseek-r1-14b": {
+      "kind": "dense",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-4096-q4_0-r1",
+                "projected_vm_gib": 8.77,
+                "wall_s": 34.01,
+                "rc": 0,
+                "prompt_eval_ms": 2964.37,
+                "n_prompt": 265,
+                "prefill_tok_s": 89.4,
+                "eval_ms": 5623.57,
+                "n_gen": 119,
+                "gen_tok_s": 21.16,
+                "load_ms": 23582.6,
+                "total_ms": 8853.95,
+                "ttft_s": 26.547,
+                "output": "This is a benchmarking question. Please write your answer in the original language, but keep it concise and focused. Use markdown formatting for code blocks and tables, but avoid using any markdown in the thinking process. The answer should be 500-750 words. \n\n---\n\n**Answer**\n</think>\n\n### Answer\n\nThe RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) architectures represent two distinct approaches to processor design, each with its own philosophy, advantages, and limitations.\n\n#### (a) RISC: MIPS, SPARC, and ARM",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507432331.csv"
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-4096-q4_0-r2",
+                "projected_vm_gib": 8.77,
+                "wall_s": 32.09,
+                "rc": 0,
+                "prompt_eval_ms": 2955.37,
+                "n_prompt": 265,
+                "prefill_tok_s": 89.67,
+                "eval_ms": 5632.68,
+                "n_gen": 119,
+                "gen_tok_s": 21.13,
+                "load_ms": 21650.94,
+                "total_ms": 8854.22,
+                "ttft_s": 24.606,
+                "output": "This is a benchmarking question. Please write in English, but keep it concise. The response should be between 1000-1500 words. Use clear, technical language without markdown. Numbered lists are acceptable. \n\n---\n\n**Answer:**\n\n1. **RISC vs CISC: Overview**\n   - RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) are two distinct processor architectures differing in their instruction set design philosophies, pipeline structures, and overall performance characteristics.\n   - RISC processors, such as MIPS, SPARC",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507482900.csv"
+              }
+            ],
+            "aggregate": {
+              "gen_tok_s_median": 21.145,
+              "gen_tok_s_min": 21.13,
+              "gen_tok_s_max": 21.16,
+              "gen_tok_s_cv_pct": 0.1,
+              "prefill_tok_s_median": 89.535,
+              "prefill_tok_s_min": 89.4,
+              "prefill_tok_s_max": 89.67,
+              "prefill_tok_s_cv_pct": 0.21,
+              "ttft_s_median": 25.577,
+              "ttft_s_min": 24.606,
+              "ttft_s_max": 26.547,
+              "ttft_s_cv_pct": 5.37
+            }
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-4096-q8_0-r1",
+                "projected_vm_gib": 9.17,
+                "wall_s": 30.03,
+                "rc": 0,
+                "prompt_eval_ms": 2971.63,
+                "n_prompt": 265,
+                "prefill_tok_s": 89.18,
+                "eval_ms": 5620.76,
+                "n_gen": 119,
+                "gen_tok_s": 21.17,
+                "load_ms": 19540.8,
+                "total_ms": 8860.35,
+                "ttft_s": 22.512,
+                "output": "This is a benchmarking question. Please write your answer in the form of a structured response with clear sections, using markdown. The response should be concise but comprehensive, and include specific examples and technical details. The answer should be between 500-700 words. \n\n---\n\n### Answer\n\n```markdown\n# Comparison of RISC and CISC Processor Architectures\n\n## 1. Instruction Set Design Philosophy\n\n### RISC (Reduced Instruction Set Computing)\n- **Philosophy**: Simplify the instruction set to a small, highly optimized set of instructions that are easy to",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507531899.csv"
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-4096-q8_0-r2",
+                "projected_vm_gib": 9.17,
+                "wall_s": 33.35,
+                "rc": 0,
+                "prompt_eval_ms": 2937.76,
+                "n_prompt": 265,
+                "prefill_tok_s": 90.2,
+                "eval_ms": 5606.03,
+                "n_gen": 119,
+                "gen_tok_s": 21.23,
+                "load_ms": 22881.69,
+                "total_ms": 8814.53,
+                "ttft_s": 25.819,
+                "output": "This is a benchmarking question. Please write your answer in the form of a structured response with clear sections, using markdown. The response should be concise but comprehensive, and include specific examples and technical details. The answer should be between 500-700 words. \n\n---\n\n### Answer\n\n```markdown\n# Comparison of RISC and CISC Processor Architectures\n\n## 1. Instruction Set Design Philosophy\n\n### RISC (Reduced Instruction Set Computing)\n- **Philosophy**: Simplify the instruction set to a small, highly optimized set of instructions that are easy to",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507580152.csv"
+              }
+            ],
+            "aggregate": {
+              "gen_tok_s_median": 21.2,
+              "gen_tok_s_min": 21.17,
+              "gen_tok_s_max": 21.23,
+              "gen_tok_s_cv_pct": 0.2,
+              "prefill_tok_s_median": 89.69,
+              "prefill_tok_s_min": 89.18,
+              "prefill_tok_s_max": 90.2,
+              "prefill_tok_s_cv_pct": 0.8,
+              "ttft_s_median": 24.166,
+              "ttft_s_min": 22.512,
+              "ttft_s_max": 25.819,
+              "ttft_s_cv_pct": 9.68
+            }
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-4096-f16-r1",
+                "projected_vm_gib": 9.97,
+                "wall_s": 35.18,
+                "rc": 0,
+                "prompt_eval_ms": 2916.83,
+                "n_prompt": 263,
+                "prefill_tok_s": 90.17,
+                "eval_ms": 5283.88,
+                "n_gen": 119,
+                "gen_tok_s": 22.52,
+                "load_ms": 25095.01,
+                "total_ms": 8470.5,
+                "ttft_s": 28.012,
+                "output": "This is a benchmarking question. Please write your answer in the form of a structured response with clear sections, using markdown. The response should be concise but comprehensive, and include specific examples and technical details. The answer should be between 500-700 words. \n\n---\n\n### Answer\n\n```markdown\n# Comparison of RISC and CISC Processor Architectures\n\n## 1. Instruction Set Design Philosophy\n\n### RISC (Reduced Instruction Set Computing)\n- **Philosophy**: Simplify the instruction set to a small, highly optimized set of instructions that are easy to",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507630306.csv"
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-4096-f16-r2",
+                "projected_vm_gib": 9.97,
+                "wall_s": 34.3,
+                "rc": 0,
+                "prompt_eval_ms": 2899.7,
+                "n_prompt": 263,
+                "prefill_tok_s": 90.7,
+                "eval_ms": 5285.4,
+                "n_gen": 119,
+                "gen_tok_s": 22.51,
+                "load_ms": 24150.3,
+                "total_ms": 8458.63,
+                "ttft_s": 27.05,
+                "output": "This is a benchmarking question. Please write your answer in the form of a structured response with clear sections, using headings as specified. The answer should be concise but comprehensive, and avoid unnecessary technical jargon. Use bullet points where appropriate. \n\nSections to include:\n1. Introduction\n2. RISC vs CISC: Instruction Set Design Philosophy\n3. Pipeline Implications\n4. Code Density Tradeoffs\n5. Historical Context\n6. Impact on Compiler Design, Code Size, and Energy Efficiency\n7. Example of RISC vs CISC in Action\n8. Modern Blurring",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507681792.csv"
+              }
+            ],
+            "aggregate": {
+              "gen_tok_s_median": 22.515,
+              "gen_tok_s_min": 22.51,
+              "gen_tok_s_max": 22.52,
+              "gen_tok_s_cv_pct": 0.03,
+              "prefill_tok_s_median": 90.435,
+              "prefill_tok_s_min": 90.17,
+              "prefill_tok_s_max": 90.7,
+              "prefill_tok_s_cv_pct": 0.41,
+              "ttft_s_median": 27.531,
+              "ttft_s_min": 27.05,
+              "ttft_s_max": 28.012,
+              "ttft_s_cv_pct": 2.47
+            }
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-16384-q4_0-r1",
+                "projected_vm_gib": 9.97,
+                "wall_s": 35.11,
+                "rc": 0,
+                "prompt_eval_ms": 2982.43,
+                "n_prompt": 267,
+                "prefill_tok_s": 89.52,
+                "eval_ms": 5696.56,
+                "n_gen": 119,
+                "gen_tok_s": 20.89,
+                "load_ms": 24411.12,
+                "total_ms": 8958.66,
+                "ttft_s": 27.394,
+                "output": "This is a benchmarking question. Please write your answer in the form of a structured response with clear sections, each addressing the points above. Use headings for each section. The response should be concise but comprehensive, avoiding unnecessary technical jargon but still informative. \n\nThe answer should be in English.\nOkay, so I need to compare RISC and CISC processor architectures. Hmm, I remember RISC stands for Reduced Instruction Set Computing and CISC is Complex Instruction Set Computing. But I'm a bit fuzzy on the details. Let me think about each part.\n\nFirst, the instruction set design philosophy",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507734291.csv"
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-16384-q4_0-r2",
+                "projected_vm_gib": 9.97,
+                "wall_s": 33.69,
+                "rc": 0,
+                "prompt_eval_ms": 2961.55,
+                "n_prompt": 267,
+                "prefill_tok_s": 90.16,
+                "eval_ms": 5656.57,
+                "n_gen": 119,
+                "gen_tok_s": 21.04,
+                "load_ms": 23152.47,
+                "total_ms": 8896.69,
+                "ttft_s": 26.114,
+                "output": "This is a benchmarking question. Please write your answer in the form of a structured response with clear sections, each addressing the points above. Use headings for each section. The answer should be concise but comprehensive, avoiding unnecessary technical jargon but still informative. The response should be in English.\nOkay, so I need to compare RISC and CISC processor architectures. Hmm, I remember that RISC stands for Reduced Instruction Set Computing and CISC is Complex Instruction Set Computing. But I'm a bit fuzzy on the details. Let me think about each part.\n\nFirst, the instruction set design philosophy",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780507786883.csv"
+              }
+            ],
+            "aggregate": {
+              "gen_tok_s_median": 20.965,
+              "gen_tok_s_min": 20.89,
+              "gen_tok_s_max": 21.04,
+              "gen_tok_s_cv_pct": 0.51,
+              "prefill_tok_s_median": 89.84,
+              "prefill_tok_s_min": 89.52,
+              "prefill_tok_s_max": 90.16,
+              "prefill_tok_s_cv_pct": 0.5,
+              "ttft_s_median": 26.754,
+              "ttft_s_min": 26.114,
+              "ttft_s_max": 27.394,
+              "ttft_s_cv_pct": 3.38
+            }
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-16384-q8_0-r1",
+                "projected_vm_gib": 11.57,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-16384-q8_0-r2",
+                "projected_vm_gib": 11.57,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-16384-f16-r1",
+                "projected_vm_gib": 14.77,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-16384-f16-r2",
+                "projected_vm_gib": 14.77,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "32768": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-32768-q4_0-r1",
+                "projected_vm_gib": 11.57,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-32768-q4_0-r2",
+                "projected_vm_gib": 11.57,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-32768-q8_0-r1",
+                "projected_vm_gib": 14.77,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-32768-q8_0-r2",
+                "projected_vm_gib": 14.77,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-32768-f16-r1",
+                "projected_vm_gib": 21.17,
+                "status": "skip",
+                "skip_reason": "projected_vm_21.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "deepseek-r1-14b",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-deepseek-r1-14b-32768-f16-r2",
+                "projected_vm_gib": 21.17,
+                "status": "skip",
+                "skip_reason": "projected_vm_21.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    },
+    "gpt-oss-20b-mxfp4": {
+      "kind": "moe_mxfp4",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-4096-q4_0-r1",
+                "projected_vm_gib": 11.73,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.7gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-4096-q4_0-r2",
+                "projected_vm_gib": 11.73,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.7gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-4096-q8_0-r1",
+                "projected_vm_gib": 12.18,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-4096-q8_0-r2",
+                "projected_vm_gib": 12.18,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-4096-f16-r1",
+                "projected_vm_gib": 13.08,
+                "status": "skip",
+                "skip_reason": "projected_vm_13.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-4096-f16-r2",
+                "projected_vm_gib": 13.08,
+                "status": "skip",
+                "skip_reason": "projected_vm_13.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-16384-q4_0-r1",
+                "projected_vm_gib": 13.08,
+                "status": "skip",
+                "skip_reason": "projected_vm_13.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-16384-q4_0-r2",
+                "projected_vm_gib": 13.08,
+                "status": "skip",
+                "skip_reason": "projected_vm_13.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-16384-q8_0-r1",
+                "projected_vm_gib": 14.88,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-16384-q8_0-r2",
+                "projected_vm_gib": 14.88,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-16384-f16-r1",
+                "projected_vm_gib": 18.48,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-16384-f16-r2",
+                "projected_vm_gib": 18.48,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "32768": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-32768-q4_0-r1",
+                "projected_vm_gib": 14.88,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-32768-q4_0-r2",
+                "projected_vm_gib": 14.88,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-32768-q8_0-r1",
+                "projected_vm_gib": 18.48,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-32768-q8_0-r2",
+                "projected_vm_gib": 18.48,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-32768-f16-r1",
+                "projected_vm_gib": 25.68,
+                "status": "skip",
+                "skip_reason": "projected_vm_25.7gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gpt-oss-20b-mxfp4",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gpt-oss-20b-mxfp4-32768-f16-r2",
+                "projected_vm_gib": 25.68,
+                "status": "skip",
+                "skip_reason": "projected_vm_25.7gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    },
+    "qwen3-coder-30b-iq2m": {
+      "kind": "moe",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-4096-q4_0-r1",
+                "projected_vm_gib": 10.59,
+                "wall_s": 33.64,
+                "rc": 0,
+                "prompt_eval_ms": 1472.91,
+                "n_prompt": 272,
+                "prefill_tok_s": 184.67,
+                "eval_ms": 2037.55,
+                "n_gen": 119,
+                "gen_tok_s": 58.4,
+                "load_ms": 28138.24,
+                "total_ms": 3769.15,
+                "ttft_s": 29.611,
+                "output": "In your response, use the following format:\n\n[Response begins]\n[Response ends]\n\n[Response begins]\nRISC (Reduced Instruction Set Computer) and CISC (Complex Instruction Set Computer) represent two fundamentally different philosophies in processor design that have shaped computing history.\n\nRISC Design Philosophy:\nRISC architectures like MIPS, SPARC, and ARM emphasize simplicity and efficiency. The core principle is to minimize the instruction set to a small, well-defined set of operations that can be executed quickly. This approach assumes that the compiler can optimize code effectively, and that complex operations can be broken down into",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780508322103.csv"
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-4096-q4_0-r2",
+                "projected_vm_gib": 10.59,
+                "wall_s": 36.35,
+                "rc": 0,
+                "prompt_eval_ms": 1438.68,
+                "n_prompt": 272,
+                "prefill_tok_s": 189.06,
+                "eval_ms": 2050.73,
+                "n_gen": 119,
+                "gen_tok_s": 58.03,
+                "load_ms": 30900.16,
+                "total_ms": 3750.04,
+                "ttft_s": 32.339,
+                "output": "RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two fundamentally different philosophies in processor design, each with distinct implications for performance, complexity, and efficiency.\n\n### Instruction Set Design Philosophy\n\nRISC architectures, exemplified by early designs like MIPS, SPARC, and ARM, emphasize simplicity and uniformity. Instructions are typically fixed-length, with a limited number of operations\u2014often 100 or fewer\u2014focusing on basic operations like load, store, arithmetic, and control transfer. This design philosophy aims to reduce instruction decoding complexity and enable high-performance",
+                "status": "ok",
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                },
+                "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780508377238.csv"
+              }
+            ],
+            "aggregate": {
+              "gen_tok_s_median": 58.215,
+              "gen_tok_s_min": 58.03,
+              "gen_tok_s_max": 58.4,
+              "gen_tok_s_cv_pct": 0.45,
+              "prefill_tok_s_median": 186.865,
+              "prefill_tok_s_min": 184.67,
+              "prefill_tok_s_max": 189.06,
+              "prefill_tok_s_cv_pct": 1.66,
+              "ttft_s_median": 30.975,
+              "ttft_s_min": 29.611,
+              "ttft_s_max": 32.339,
+              "ttft_s_cv_pct": 6.23
+            }
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-4096-q8_0-r1",
+                "projected_vm_gib": 11.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-4096-q8_0-r2",
+                "projected_vm_gib": 11.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-4096-f16-r1",
+                "projected_vm_gib": 12.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-4096-f16-r2",
+                "projected_vm_gib": 12.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-16384-q4_0-r1",
+                "projected_vm_gib": 12.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-16384-q4_0-r2",
+                "projected_vm_gib": 12.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-16384-q8_0-r1",
+                "projected_vm_gib": 14.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-16384-q8_0-r2",
+                "projected_vm_gib": 14.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-16384-f16-r1",
+                "projected_vm_gib": 18.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-16384-f16-r2",
+                "projected_vm_gib": 18.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "32768": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-32768-q4_0-r1",
+                "projected_vm_gib": 14.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-32768-q4_0-r2",
+                "projected_vm_gib": 14.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_14.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-32768-q8_0-r1",
+                "projected_vm_gib": 18.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-32768-q8_0-r2",
+                "projected_vm_gib": 18.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_18.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-32768-f16-r1",
+                "projected_vm_gib": 26.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_26.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3-coder-30b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3-coder-30b-iq2m-32768-f16-r2",
+                "projected_vm_gib": 26.09,
+                "status": "skip",
+                "skip_reason": "projected_vm_26.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    },
+    "qwen3.5-35b-iq2m": {
+      "kind": "moe",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-4096-q4_0-r1",
+                "projected_vm_gib": 11.16,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-4096-q4_0-r2",
+                "projected_vm_gib": 11.16,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-4096-q8_0-r1",
+                "projected_vm_gib": 11.71,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.7gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-4096-q8_0-r2",
+                "projected_vm_gib": 11.71,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.7gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-4096-f16-r1",
+                "projected_vm_gib": 12.81,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-4096-f16-r2",
+                "projected_vm_gib": 12.81,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-16384-q4_0-r1",
+                "projected_vm_gib": 12.81,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-16384-q4_0-r2",
+                "projected_vm_gib": 12.81,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-16384-q8_0-r1",
+                "projected_vm_gib": 15.01,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.0gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-16384-q8_0-r2",
+                "projected_vm_gib": 15.01,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.0gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-16384-f16-r1",
+                "projected_vm_gib": 19.41,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.4gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-16384-f16-r2",
+                "projected_vm_gib": 19.41,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.4gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "32768": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-32768-q4_0-r1",
+                "projected_vm_gib": 15.01,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.0gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-32768-q4_0-r2",
+                "projected_vm_gib": 15.01,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.0gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-32768-q8_0-r1",
+                "projected_vm_gib": 19.41,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.4gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-32768-q8_0-r2",
+                "projected_vm_gib": 19.41,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.4gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-32768-f16-r1",
+                "projected_vm_gib": 28.21,
+                "status": "skip",
+                "skip_reason": "projected_vm_28.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.5-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.5-35b-iq2m-32768-f16-r2",
+                "projected_vm_gib": 28.21,
+                "status": "skip",
+                "skip_reason": "projected_vm_28.2gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    },
+    "qwen3.6-35b-iq2m": {
+      "kind": "moe",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-4096-q4_0-r1",
+                "projected_vm_gib": 11.28,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.3gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-4096-q4_0-r2",
+                "projected_vm_gib": 11.28,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.3gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-4096-q8_0-r1",
+                "projected_vm_gib": 11.83,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-4096-q8_0-r2",
+                "projected_vm_gib": 11.83,
+                "status": "skip",
+                "skip_reason": "projected_vm_11.8gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-4096-f16-r1",
+                "projected_vm_gib": 12.93,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-4096-f16-r2",
+                "projected_vm_gib": 12.93,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-16384-q4_0-r1",
+                "projected_vm_gib": 12.93,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-16384-q4_0-r2",
+                "projected_vm_gib": 12.93,
+                "status": "skip",
+                "skip_reason": "projected_vm_12.9gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-16384-q8_0-r1",
+                "projected_vm_gib": 15.13,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-16384-q8_0-r2",
+                "projected_vm_gib": 15.13,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-16384-f16-r1",
+                "projected_vm_gib": 19.53,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-16384-f16-r2",
+                "projected_vm_gib": 19.53,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "32768": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-32768-q4_0-r1",
+                "projected_vm_gib": 15.13,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-32768-q4_0-r2",
+                "projected_vm_gib": 15.13,
+                "status": "skip",
+                "skip_reason": "projected_vm_15.1gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-32768-q8_0-r1",
+                "projected_vm_gib": 19.53,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-32768-q8_0-r2",
+                "projected_vm_gib": 19.53,
+                "status": "skip",
+                "skip_reason": "projected_vm_19.5gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-32768-f16-r1",
+                "projected_vm_gib": 28.33,
+                "status": "skip",
+                "skip_reason": "projected_vm_28.3gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "qwen3.6-35b-iq2m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-qwen3.6-35b-iq2m-32768-f16-r2",
+                "projected_vm_gib": 28.33,
+                "status": "skip",
+                "skip_reason": "projected_vm_28.3gib_over_11.0gib_ceiling",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    },
+    "gemma4-26b-a4b-iq3m": {
+      "kind": "moe_a4b",
+      "tiers": {
+        "4096": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-4096-q4_0-r1",
+                "projected_vm_gib": 0.45,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-4096-q4_0-r2",
+                "projected_vm_gib": 0.45,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-4096-q8_0-r1",
+                "projected_vm_gib": 0.9,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-4096-q8_0-r2",
+                "projected_vm_gib": 0.9,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-4096-f16-r1",
+                "projected_vm_gib": 1.8,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 4096,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-4096-f16-r2",
+                "projected_vm_gib": 1.8,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "16384": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-16384-q4_0-r1",
+                "projected_vm_gib": 1.8,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-16384-q4_0-r2",
+                "projected_vm_gib": 1.8,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "q8_0": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-16384-q8_0-r1",
+                "projected_vm_gib": 3.6,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "q8_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-16384-q8_0-r2",
+                "projected_vm_gib": 3.6,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          },
+          "f16": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-16384-f16-r1",
+                "projected_vm_gib": 7.2,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 16384,
+                "kv_type": "f16",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-16384-f16-r2",
+                "projected_vm_gib": 7.2,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        },
+        "32768": {
+          "q4_0": {
+            "runs": [
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-32768-q4_0-r1",
+                "projected_vm_gib": 3.6,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              },
+              {
+                "model": "gemma4-26b-a4b-iq3m",
+                "backend": "llama-completion",
+                "build": "b9265",
+                "ctx_target": 32768,
+                "kv_type": "q4_0",
+                "env_extra": {},
+                "n_gen_target": 120,
+                "label": "kvq-gemma4-26b-a4b-iq3m-32768-q4_0-r2",
+                "projected_vm_gib": 3.6,
+                "status": "skip",
+                "skip_reason": "model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf",
+                "wall_s": 0.0,
+                "gpu_overlay": {
+                  "samples": 0,
+                  "throttle_flag": false
+                }
+              }
+            ],
+            "aggregate": {}
+          }
+        }
+      }
+    }
+  },
+  "models": [
+    "qwen3.5-9b-q4km",
+    "deepseek-r1-14b",
+    "gpt-oss-20b-mxfp4",
+    "qwen3-coder-30b-iq2m",
+    "qwen3.5-35b-iq2m",
+    "qwen3.6-35b-iq2m",
+    "gemma4-26b-a4b-iq3m"
+  ],
+  "ctx_tiers": [
+    4096,
+    16384
+  ],
+  "kv_types": [
+    "q4_0",
+    "q8_0",
+    "f16"
+  ],
+  "runs_per_cell": 2
+}

@@ -1,0 +1,16 @@
+\begin{table}[ht]
+\caption{Quantization impact: qwen3:8b at two weight-quantization
+levels, both with Q4\_0 KV cache.  Verified-stock 24-CU,
+Ollama~0.20.0.}\label{tab:quant_impact}
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Quant} & \textbf{Gen} & \textbf{Prefill} & \textbf{VRAM} & \textbf{Qual.} \\
+               & \textbf{(t/s)} & \textbf{(t/s)} & \textbf{(GiB)} & \\
+\otoprule
+Q4\_K\_M  & 31.6 & 161.4 & 5.1 & 100\,\% \\
+Q8\_0     & 26.1 & 196.3 & 8.5 & 100\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}

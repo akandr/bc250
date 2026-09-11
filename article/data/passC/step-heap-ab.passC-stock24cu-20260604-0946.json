@@ -1,0 +1,2060 @@
+{
+  "step": "heap-ab",
+  "results": {
+    "granite-4.0-h-tiny": {
+      "tiers": {
+        "2048": {
+          "phm0": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-2048-phm0-run1",
+              "projected_vm_gib": 4.14,
+              "wall_s": 3.08,
+              "rc": 0,
+              "prompt_eval_ms": 467.44,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.68,
+              "eval_ms": 1136.63,
+              "n_gen": 119,
+              "gen_tok_s": 104.7,
+              "load_ms": 956.3,
+              "total_ms": 1635.91,
+              "ttft_s": 1.424,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS, SPARC, and ARM RISC designs were characterized by a reduced instruction set that emphasized simplicity, regularity, and a focus on software rather than hardware. These architectures favored a large",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566454317.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-2048-phm0-run2",
+              "projected_vm_gib": 4.14,
+              "wall_s": 3.09,
+              "rc": 0,
+              "prompt_eval_ms": 467.23,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.92,
+              "eval_ms": 1137.19,
+              "n_gen": 119,
+              "gen_tok_s": 104.64,
+              "load_ms": 956.03,
+              "total_ms": 1635.87,
+              "ttft_s": 1.423,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs**: The original RISC designs, such as MIPS, SPARC, and ARM, emphasized simplicity and efficiency. They adopted a reduced instruction set, focusing on a smaller number of general-purpose registers, fixed-length instructions, and a load/store architecture. This design philosophy aimed to simplify the hardware, reduce the complexity of the instruction pipeline, and improve performance by allowing faster execution of instructions",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566477897.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-2048-phm0-run3",
+              "projected_vm_gib": 4.14,
+              "wall_s": 3.02,
+              "rc": 0,
+              "prompt_eval_ms": 467.64,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.46,
+              "eval_ms": 1136.67,
+              "n_gen": 119,
+              "gen_tok_s": 104.69,
+              "load_ms": 956.87,
+              "total_ms": 1636.07,
+              "ttft_s": 1.425,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS and SPARC designs exemplify this approach, focusing on a reduced set of instructions that are highly optimized for speed and simplicity. ARM, another prominent RISC architecture, further refined these principles",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566501488.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-2048-phm1-run1",
+              "projected_vm_gib": 4.14,
+              "wall_s": 9.18,
+              "rc": 0,
+              "prompt_eval_ms": 468.24,
+              "n_prompt": 249,
+              "prefill_tok_s": 531.78,
+              "eval_ms": 1143.52,
+              "n_gen": 119,
+              "gen_tok_s": 104.06,
+              "load_ms": 6700.12,
+              "total_ms": 1643.64,
+              "ttft_s": 7.168,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs**: The original RISC designs, such as MIPS, SPARC, and ARM, emphasized simplicity and efficiency. They adopted a reduced instruction set, focusing on a smaller number of general-purpose registers, fixed-length instructions, and a load/store architecture. This design philosophy aimed to simplify the hardware, reduce the complexity of the instruction pipeline, and improve performance by allowing faster execution of instructions",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566377523.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-2048-phm1-run2",
+              "projected_vm_gib": 4.14,
+              "wall_s": 3.08,
+              "rc": 0,
+              "prompt_eval_ms": 467.63,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.47,
+              "eval_ms": 1136.5,
+              "n_gen": 119,
+              "gen_tok_s": 104.71,
+              "load_ms": 957.91,
+              "total_ms": 1635.41,
+              "ttft_s": 1.426,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs (MIPS, SPARC, ARM):** RISC architectures, exemplified by MIPS, SPARC, and ARM, emphasize a reduced instruction set that focuses on simplicity and efficiency. These designs aim to execute instructions in a single clock cycle, leveraging pipelining and parallel execution. The philosophy is to use a large number of registers and rely on software to handle complex operations",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566407213.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-2048-phm1-run3",
+              "projected_vm_gib": 4.14,
+              "wall_s": 3.01,
+              "rc": 0,
+              "prompt_eval_ms": 467.22,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.94,
+              "eval_ms": 1137.5,
+              "n_gen": 119,
+              "gen_tok_s": 104.62,
+              "load_ms": 953.32,
+              "total_ms": 1635.98,
+              "ttft_s": 1.421,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for hardware design, software execution, and compiler optimization.\n\n(a) **RISC Designs (MIPS, SPARC, ARM):** RISC architectures, exemplified by MIPS, SPARC, and ARM, emphasize a reduced instruction set that prioritizes simplicity and efficiency. The philosophy is to execute instructions in a single clock cycle, leveraging pipelining and parallelism. This approach leads to a more uniform instruction length, which simplifies decoding and execution.",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566430796.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 104.69,
+            "gen_tok_s_min": 104.64,
+            "gen_tok_s_max": 104.7,
+            "gen_tok_s_cv_pct": 0.03,
+            "prefill_tok_s_median": 532.68,
+            "prefill_tok_s_min": 532.46,
+            "prefill_tok_s_max": 532.92,
+            "prefill_tok_s_cv_pct": 0.04,
+            "ttft_s_median": 1.424,
+            "ttft_s_min": 1.423,
+            "ttft_s_max": 1.425,
+            "ttft_s_cv_pct": 0.07
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 104.62,
+            "gen_tok_s_min": 104.06,
+            "gen_tok_s_max": 104.71,
+            "gen_tok_s_cv_pct": 0.34,
+            "prefill_tok_s_median": 532.47,
+            "prefill_tok_s_min": 531.78,
+            "prefill_tok_s_max": 532.94,
+            "prefill_tok_s_cv_pct": 0.11,
+            "ttft_s_median": 1.426,
+            "ttft_s_min": 1.421,
+            "ttft_s_max": 7.168,
+            "ttft_s_cv_pct": 99.35
+          }
+        },
+        "8192": {
+          "phm0": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-8192-phm0-run1",
+              "projected_vm_gib": 4.34,
+              "wall_s": 3.03,
+              "rc": 0,
+              "prompt_eval_ms": 466.39,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.88,
+              "eval_ms": 1134.7,
+              "n_gen": 119,
+              "gen_tok_s": 104.87,
+              "load_ms": 946.42,
+              "total_ms": 1632.49,
+              "ttft_s": 1.413,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS, SPARC, and ARM RISC designs were characterized by a simplified instruction set that favored a smaller number of general-purpose registers, fixed-length instructions, and a focus on software rather than",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566595635.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-8192-phm0-run2",
+              "projected_vm_gib": 4.34,
+              "wall_s": 3.01,
+              "rc": 0,
+              "prompt_eval_ms": 466.89,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.32,
+              "eval_ms": 1132.93,
+              "n_gen": 119,
+              "gen_tok_s": 105.04,
+              "load_ms": 958.67,
+              "total_ms": 1631.97,
+              "ttft_s": 1.426,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS and SPARC designs exemplify this approach, focusing on a reduced set of instructions that are highly optimized for speed and simplicity. ARM, another prominent RISC architecture, further refined these principles",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566619169.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-8192-phm0-run3",
+              "projected_vm_gib": 4.34,
+              "wall_s": 3.07,
+              "rc": 0,
+              "prompt_eval_ms": 466.75,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.47,
+              "eval_ms": 1135.17,
+              "n_gen": 119,
+              "gen_tok_s": 104.83,
+              "load_ms": 956.48,
+              "total_ms": 1633.03,
+              "ttft_s": 1.423,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs**: The original RISC designs, such as MIPS, SPARC, and ARM, emphasized simplicity and efficiency. They adopted a reduced instruction set, focusing on a smaller number of general-purpose registers, fixed-length instructions, and a load/store architecture. This design philosophy aimed to simplify the hardware, reduce the complexity of the instruction pipeline, and improve performance by allowing faster execution of instructions",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566642684.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-8192-phm1-run1",
+              "projected_vm_gib": 4.34,
+              "wall_s": 3.03,
+              "rc": 0,
+              "prompt_eval_ms": 467.03,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.16,
+              "eval_ms": 1136.94,
+              "n_gen": 119,
+              "gen_tok_s": 104.67,
+              "load_ms": 946.88,
+              "total_ms": 1635.38,
+              "ttft_s": 1.414,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS, SPARC, and ARM RISC designs were characterized by a reduced instruction set that emphasized simplicity, regularity, and a focus on software rather than hardware. These architectures favored a large",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566525017.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-8192-phm1-run2",
+              "projected_vm_gib": 4.34,
+              "wall_s": 3.05,
+              "rc": 0,
+              "prompt_eval_ms": 465.81,
+              "n_prompt": 249,
+              "prefill_tok_s": 534.55,
+              "eval_ms": 1136.24,
+              "n_gen": 119,
+              "gen_tok_s": 104.73,
+              "load_ms": 959.34,
+              "total_ms": 1633.84,
+              "ttft_s": 1.425,
+              "output": "**Answer:**\n\nThe distinction between RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) processor architectures is rooted in their design philosophies and historical contexts. RISC, exemplified by designs such as MIPS, SPARC, and ARM, emphasizes a simplified instruction set that allows for faster execution through simpler instructions that can be executed in a single clock cycle. This philosophy is grounded in the belief that a smaller, more efficient instruction set can lead to better performance through reduced latency and simpler pipeline design. The original RISC designs aimed to achieve high performance by minimizing the",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566548554.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-8192-phm1-run3",
+              "projected_vm_gib": 4.34,
+              "wall_s": 3.03,
+              "rc": 0,
+              "prompt_eval_ms": 466.86,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.35,
+              "eval_ms": 1135.54,
+              "n_gen": 119,
+              "gen_tok_s": 104.8,
+              "load_ms": 948.61,
+              "total_ms": 1634.09,
+              "ttft_s": 1.415,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs (MIPS, SPARC, ARM):** RISC architectures, exemplified by MIPS, SPARC, and ARM, emphasize a reduced instruction set that focuses on simplicity and efficiency. Each instruction is designed to perform a single, basic operation, which allows for faster execution due to simpler decoding and shorter pipeline stages. This design philosophy aims to achieve high performance through pipelining",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566572106.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 104.87,
+            "gen_tok_s_min": 104.83,
+            "gen_tok_s_max": 105.04,
+            "gen_tok_s_cv_pct": 0.11,
+            "prefill_tok_s_median": 533.47,
+            "prefill_tok_s_min": 533.32,
+            "prefill_tok_s_max": 533.88,
+            "prefill_tok_s_cv_pct": 0.05,
+            "ttft_s_median": 1.423,
+            "ttft_s_min": 1.413,
+            "ttft_s_max": 1.426,
+            "ttft_s_cv_pct": 0.48
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 104.73,
+            "gen_tok_s_min": 104.67,
+            "gen_tok_s_max": 104.8,
+            "gen_tok_s_cv_pct": 0.06,
+            "prefill_tok_s_median": 533.35,
+            "prefill_tok_s_min": 533.16,
+            "prefill_tok_s_max": 534.55,
+            "prefill_tok_s_cv_pct": 0.14,
+            "ttft_s_median": 1.415,
+            "ttft_s_min": 1.414,
+            "ttft_s_max": 1.425,
+            "ttft_s_cv_pct": 0.43
+          }
+        },
+        "32768": {
+          "phm0": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm0-run1",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.01,
+              "rc": 0,
+              "prompt_eval_ms": 467.19,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.98,
+              "eval_ms": 1135.15,
+              "n_gen": 119,
+              "gen_tok_s": 104.83,
+              "load_ms": 960.42,
+              "total_ms": 1633.92,
+              "ttft_s": 1.428,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical contexts.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS and SPARC designs exemplify this approach, focusing on a reduced set of instructions that are highly optimized for speed and simplicity. ARM, another prominent RISC architecture, further refined these principles",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566736958.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm0-run2",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.02,
+              "rc": 0,
+              "prompt_eval_ms": 466.29,
+              "n_prompt": 249,
+              "prefill_tok_s": 534.0,
+              "eval_ms": 1137.36,
+              "n_gen": 119,
+              "gen_tok_s": 104.63,
+              "load_ms": 963.75,
+              "total_ms": 1635.86,
+              "ttft_s": 1.43,
+              "output": "**Answer:**\n\nRISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) represent two distinct philosophies in processor architecture, each with its own set of design principles, implications, and historical context.\n\n(a) **RISC Designs:**\nThe RISC philosophy emerged in the 1980s as a response to the complexity and inefficiency of CISC architectures. The original MIPS and SPARC designs exemplify this approach, focusing on a reduced set of instructions that are highly optimized for speed and simplicity. ARM, another prominent RISC architecture, further refined these principles",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566760473.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm0-run3",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.06,
+              "rc": 0,
+              "prompt_eval_ms": 467.44,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.68,
+              "eval_ms": 1137.06,
+              "n_gen": 119,
+              "gen_tok_s": 104.66,
+              "load_ms": 960.75,
+              "total_ms": 1636.13,
+              "ttft_s": 1.428,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs**: The original RISC designs, such as MIPS, SPARC, and ARM, emphasized simplicity and efficiency. They adopted a reduced instruction set, focusing on a smaller number of general-purpose registers, fixed-length instructions, and a load/store architecture. This design philosophy aimed to simplify the hardware, reduce the complexity of the instruction pipeline, and improve performance by allowing faster execution of instructions",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566784001.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm1-run1",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.08,
+              "rc": 0,
+              "prompt_eval_ms": 466.84,
+              "n_prompt": 249,
+              "prefill_tok_s": 533.38,
+              "eval_ms": 1139.99,
+              "n_gen": 119,
+              "gen_tok_s": 104.39,
+              "load_ms": 973.41,
+              "total_ms": 1638.27,
+              "ttft_s": 1.44,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies and approaches to instruction sets. RISC (Reduced Instruction Set Computing) architectures, exemplified by designs like MIPS, SPARC, and ARM, prioritize a reduced set of instructions that are highly optimized for speed and efficiency. These architectures aim to execute instructions in a single clock cycle, leveraging pipelining and parallel execution to enhance performance. The philosophy behind RISC is to simplify the instruction set, allowing for faster execution through simpler instructions that can be executed more quickly and efficiently.\n\nIn contrast,",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566666263.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm1-run2",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.02,
+              "rc": 0,
+              "prompt_eval_ms": 467.29,
+              "n_prompt": 249,
+              "prefill_tok_s": 532.87,
+              "eval_ms": 1138.28,
+              "n_gen": 119,
+              "gen_tok_s": 104.54,
+              "load_ms": 965.65,
+              "total_ms": 1637.53,
+              "ttft_s": 1.433,
+              "output": "**Answer:**\n\nThe distinction between RISC and CISC processor architectures lies in their design philosophies, instruction set complexities, and the implications for performance, code density, and energy efficiency.\n\n(a) **RISC Designs:**\nThe Reduced Instruction Set Computing (RISC) approach, pioneered by architectures like MIPS, SPARC, and ARM, emphasizes a simplified instruction set with a focus on fast execution of basic operations. RISC architectures typically have a load/store architecture, where data must be loaded into registers before operations are performed, and results are stored back to memory. This design philosophy aims to",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566689849.csv"
+            },
+            {
+              "model": "granite-4.0-h-tiny",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-granite-4.0-h-tiny-32768-phm1-run3",
+              "projected_vm_gib": 5.54,
+              "wall_s": 3.07,
+              "rc": 0,
+              "prompt_eval_ms": 466.16,
+              "n_prompt": 249,
+              "prefill_tok_s": 534.15,
+              "eval_ms": 1137.99,
+              "n_gen": 119,
+              "gen_tok_s": 104.57,
+              "load_ms": 962.66,
+              "total_ms": 1635.84,
+              "ttft_s": 1.429,
+              "output": "**Answer:**\n\n(a) The original RISC designs, such as MIPS, SPARC, and ARM, were developed with the philosophy of simplifying the instruction set to improve performance. This was achieved by reducing the complexity of individual instructions, allowing for faster execution through simpler decoding and execution units. The focus was on creating a small, highly optimized set of instructions that could be executed quickly, often with the assumption that software would handle complex operations through multiple instructions.\n\n(b) The x86 CISC lineage, starting with Intel's 8086, evolved with the philosophy of providing a large, complex",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566713377.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 104.66,
+            "gen_tok_s_min": 104.63,
+            "gen_tok_s_max": 104.83,
+            "gen_tok_s_cv_pct": 0.1,
+            "prefill_tok_s_median": 532.98,
+            "prefill_tok_s_min": 532.68,
+            "prefill_tok_s_max": 534.0,
+            "prefill_tok_s_cv_pct": 0.13,
+            "ttft_s_median": 1.428,
+            "ttft_s_min": 1.428,
+            "ttft_s_max": 1.43,
+            "ttft_s_cv_pct": 0.08
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 104.54,
+            "gen_tok_s_min": 104.39,
+            "gen_tok_s_max": 104.57,
+            "gen_tok_s_cv_pct": 0.09,
+            "prefill_tok_s_median": 533.38,
+            "prefill_tok_s_min": 532.87,
+            "prefill_tok_s_max": 534.15,
+            "prefill_tok_s_cv_pct": 0.12,
+            "ttft_s_median": 1.433,
+            "ttft_s_min": 1.429,
+            "ttft_s_max": 1.44,
+            "ttft_s_cv_pct": 0.39
+          }
+        }
+      }
+    },
+    "deepseek-r1-14b": {
+      "tiers": {
+        "2048": {
+          "phm0": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-2048-phm0-run1",
+              "projected_vm_gib": 8.77,
+              "wall_s": 26.27,
+              "rc": 0,
+              "prompt_eval_ms": 2890.91,
+              "n_prompt": 263,
+              "prefill_tok_s": 90.97,
+              "eval_ms": 5642.28,
+              "n_gen": 119,
+              "gen_tok_s": 21.09,
+              "load_ms": 15959.76,
+              "total_ms": 8804.77,
+              "ttft_s": 18.851,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 1000-1500 words, with clear sections and subheadings. Use markdown formatting. Include code examples where appropriate. \n\nThe response should be in English.\n\n</think>\n\n# Comparison of RISC and CISC Processor Architectures\n\n## Introduction\n\nThe RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) architectures represent two distinct approaches to designing computer processors. This comparison will explore their instruction set design philosophies, pipeline implications",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567000428.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-2048-phm0-run2",
+              "projected_vm_gib": 8.77,
+              "wall_s": 26.82,
+              "rc": 0,
+              "prompt_eval_ms": 2942.83,
+              "n_prompt": 263,
+              "prefill_tok_s": 89.37,
+              "eval_ms": 5637.25,
+              "n_gen": 119,
+              "gen_tok_s": 21.11,
+              "load_ms": 16335.17,
+              "total_ms": 8849.06,
+              "ttft_s": 19.278,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 500-750 words. Use markdown formatting for code blocks and tables. Include specific examples, such as the MIPS R2000, SPARC architecture, and x80/x86-64 processors. Also, include a table comparing RISC and CISC characteristics. \n\nThe response should be in English.\n\n</think>\n\n### Comparison of RISC and CISC Processor Architectures\n\n#### **Instruction Set Design Philosophy**\n- **RISC (Reduc",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567047258.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-2048-phm0-run3",
+              "projected_vm_gib": 8.77,
+              "wall_s": 24.29,
+              "rc": 0,
+              "prompt_eval_ms": 2945.79,
+              "n_prompt": 263,
+              "prefill_tok_s": 89.28,
+              "eval_ms": 5642.95,
+              "n_gen": 119,
+              "gen_tok_s": 21.09,
+              "load_ms": 13843.56,
+              "total_ms": 8911.97,
+              "ttft_s": 16.789,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 500-750 words. Use markdown formatting for code blocks and tables. Include specific examples, such as the MIPS R2000, SPARC architecture, and x80/x86-64 processors. Also, include a table comparing RISC and CISC characteristics. \n\nThe response should be in English.\n\n</think>\n\n### Comparison of RISC and CISC Processor Architectures\n\n#### **Instruction Set Design Philosophy**\n- **RISC (Reduc",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567094625.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-2048-phm1-run1",
+              "projected_vm_gib": 8.77,
+              "wall_s": 34.0,
+              "rc": 0,
+              "prompt_eval_ms": 2962.95,
+              "n_prompt": 263,
+              "prefill_tok_s": 88.76,
+              "eval_ms": 5648.05,
+              "n_gen": 119,
+              "gen_tok_s": 21.07,
+              "load_ms": 23834.45,
+              "total_ms": 8880.8,
+              "ttft_s": 26.797,
+              "output": "This is a benchmarking question. The answer should be concise, well-structured, and comprehensive. Use bullet points where appropriate. Avoid markdown. Keep paragraphs short. Use bold for key terms. Do not use any HTML tags. Answer should be 500-700 words.\n\nOkay, so I need to compare RISC and CISC processor architectures. Hmm, I remember RISC stands for Reduced Instruction Set Computing and CISC is Complex Instruction Set Computing. But I'm a bit fuzzy on the details. Let me think about what each one entails.\n\nRISC processors have simpler",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566852562.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-2048-phm1-run2",
+              "projected_vm_gib": 8.77,
+              "wall_s": 25.11,
+              "rc": 0,
+              "prompt_eval_ms": 2796.76,
+              "n_prompt": 263,
+              "prefill_tok_s": 94.04,
+              "eval_ms": 5638.24,
+              "n_gen": 119,
+              "gen_tok_s": 21.11,
+              "load_ms": 15001.37,
+              "total_ms": 8713.6,
+              "ttft_s": 17.798,
+              "output": "This is a benchmarking prompt. Please write a detailed, comprehensive response. The response should be 1000-1500 words. Use markdown formatting. Include code examples where appropriate. \n\n---\n\n### Response Outline\n\n1. **Introduction**\n   - Briefly introduce RISC and CISC architectures.\n   - Mention the historical context of their development.\n\n2. **RISC Architecture (Original Designs)**\n   - **MIPS**: Discuss the design philosophy, pipeline, and instruction set.\n   - **SPARC**: Similar points, focusing on its design and evolution.",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566907096.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-2048-phm1-run3",
+              "projected_vm_gib": 8.77,
+              "wall_s": 27.12,
+              "rc": 0,
+              "prompt_eval_ms": 2947.8,
+              "n_prompt": 263,
+              "prefill_tok_s": 89.22,
+              "eval_ms": 5651.38,
+              "n_gen": 119,
+              "gen_tok_s": 21.06,
+              "load_ms": 16736.08,
+              "total_ms": 8869.8,
+              "ttft_s": 19.684,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 1000-1500 words, with clear sections and subheadings. Use markdown formatting. Include code examples where appropriate. \n\nThe response should be in English.\n\n</think>\n\n# Comparison of RISC and CISC Processor Architectures\n\n## Introduction\n\nThe RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) architectures represent two distinct approaches to designing computer processors. This comparison will delve into their instruction set design philosophies, pipeline",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780566952755.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 21.09,
+            "gen_tok_s_min": 21.09,
+            "gen_tok_s_max": 21.11,
+            "gen_tok_s_cv_pct": 0.05,
+            "prefill_tok_s_median": 89.37,
+            "prefill_tok_s_min": 89.28,
+            "prefill_tok_s_max": 90.97,
+            "prefill_tok_s_cv_pct": 1.06,
+            "ttft_s_median": 18.851,
+            "ttft_s_min": 16.789,
+            "ttft_s_max": 19.278,
+            "ttft_s_cv_pct": 7.27
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 21.07,
+            "gen_tok_s_min": 21.06,
+            "gen_tok_s_max": 21.11,
+            "gen_tok_s_cv_pct": 0.13,
+            "prefill_tok_s_median": 89.22,
+            "prefill_tok_s_min": 88.76,
+            "prefill_tok_s_max": 94.04,
+            "prefill_tok_s_cv_pct": 3.23,
+            "ttft_s_median": 19.684,
+            "ttft_s_min": 17.798,
+            "ttft_s_max": 26.797,
+            "ttft_s_cv_pct": 22.15
+          }
+        },
+        "8192": {
+          "phm0": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-8192-phm0-run1",
+              "projected_vm_gib": 9.17,
+              "wall_s": 26.36,
+              "rc": 0,
+              "prompt_eval_ms": 2958.87,
+              "n_prompt": 263,
+              "prefill_tok_s": 88.89,
+              "eval_ms": 5681.93,
+              "n_gen": 119,
+              "gen_tok_s": 20.94,
+              "load_ms": 15893.7,
+              "total_ms": 8894.55,
+              "ttft_s": 18.853,
+              "output": "This is a benchmarking question. Please write your answer in the form of a markdown file, with the following structure:\n\n# Title\n## Subtitle\n### Sub-subtitle\n#### Paragraph\n#### Paragraph\n#### Paragraph\n#### Paragraph\n## Subtitle\n### Sub-subtitle\n#### Paragraph\n#### Paragraph\n#### Paragraph\n#### Paragraph\n## Subtitle\n### Sub-subtitle\n#### Paragraph\n#### Paragraph\n#### Paragraph\n#### Paragraph\n## Subtitle\n### Sub-subtitle\n#### Paragraph\n#### Paragraph\n#### Paragraph\n#### Paragraph\n## Subtitle\n### Sub-subtitle",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 26,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1173.1,
+                "temp_c_max": 75.0,
+                "temp_c_mean": 62.0,
+                "power_mw_mean": 73336.0,
+                "gtt_gib_max": 8.729,
+                "vram_gib_max": 0.026
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567286369.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-8192-phm0-run2",
+              "projected_vm_gib": 9.17,
+              "wall_s": 26.56,
+              "rc": 0,
+              "prompt_eval_ms": 2957.11,
+              "n_prompt": 263,
+              "prefill_tok_s": 88.94,
+              "eval_ms": 5670.66,
+              "n_gen": 119,
+              "gen_tok_s": 20.99,
+              "load_ms": 16151.21,
+              "total_ms": 8891.95,
+              "ttft_s": 19.108,
+              "output": "This is a benchmarking session. Please write in English. \n\n</think>\n\nRISC and CISC architectures represent two distinct approaches to processor design, each with its own philosophy, advantages, and limitations. RISC (Reduced Instruction Set Computing) architectures, such as MIPS, SPARC, and ARM, focus on a minimal set of simple, efficient instructions. This design philosophy emphasizes regularity and simplicity, allowing for faster execution and easier pipeline implementation. RISC processors typically have shorter instruction pipelines, which can lead to higher clock speeds and better performance per instruction. However, this simplicity can result in",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 26,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1173.1,
+                "temp_c_max": 75.0,
+                "temp_c_mean": 62.0,
+                "power_mw_mean": 72768.0,
+                "gtt_gib_max": 8.729,
+                "vram_gib_max": 0.026
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567333276.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-8192-phm0-run3",
+              "projected_vm_gib": 9.17,
+              "wall_s": 32.58,
+              "rc": 0,
+              "prompt_eval_ms": 2960.38,
+              "n_prompt": 263,
+              "prefill_tok_s": 88.84,
+              "eval_ms": 5691.06,
+              "n_gen": 119,
+              "gen_tok_s": 20.91,
+              "load_ms": 22129.89,
+              "total_ms": 8921.37,
+              "ttft_s": 25.09,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, comprehensive answer. The response should be 1000-1500 words. Use markdown formatting. Include code examples where appropriate. \n\n---\n\n**Answer**\n</think>\n\n# Comparison of RISC and CISC Processor Architectures\n\n## Introduction\n\nThe RISC (Reduced Instruction Set Computing) and CISC (Complex Instruction Set Computing) architectures represent two distinct approaches to designing computer processors. While both architectures aim to achieve high performance, they differ significantly in their instruction set design philosophy, pipeline organization, code density, historical",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 32,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1156.2,
+                "temp_c_max": 75.0,
+                "temp_c_mean": 60.9,
+                "power_mw_mean": 70783.0,
+                "gtt_gib_max": 8.729,
+                "vram_gib_max": 0.026
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567380384.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-8192-phm1-run1",
+              "projected_vm_gib": 9.17,
+              "wall_s": 26.02,
+              "rc": 0,
+              "prompt_eval_ms": 2934.49,
+              "n_prompt": 263,
+              "prefill_tok_s": 89.62,
+              "eval_ms": 5831.97,
+              "n_gen": 119,
+              "gen_tok_s": 20.4,
+              "load_ms": 15452.14,
+              "total_ms": 9045.47,
+              "ttft_s": 18.387,
+              "output": "This is a benchmarking question. The answer should be concise, but comprehensive. It should be structured with clear sections, each addressing the points above. Use bullet points where appropriate. Avoid markdown. Use clear headings. The answer should be 500-700 words. \n\nThe answer should be in English.\n\n</think>\n\n### Comparison of RISC and CISC Processor Architectures\n\n#### (a) Original RISC Designs: MIPS, SPARC, ARM\n- **Instruction Set Design Philosophy**: RISC (Reduced Instruction Set Computing) focuses on a minimal set of simple,",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567139479.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-8192-phm1-run2",
+              "projected_vm_gib": 9.17,
+              "wall_s": 31.11,
+              "rc": 0,
+              "prompt_eval_ms": 2932.29,
+              "n_prompt": 263,
+              "prefill_tok_s": 89.69,
+              "eval_ms": 5681.82,
+              "n_gen": 119,
+              "gen_tok_s": 20.94,
+              "load_ms": 20711.89,
+              "total_ms": 8876.2,
+              "ttft_s": 23.644,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 1000-1500 words. Use markdown formatting. Include code examples where appropriate. \n\nThe response should be in English.\n\n</think>\n\n### Comparison of RISC and CISC Processor Architectures\n\n#### **a) Original RISC Designs: MIPS, SPARC, and ARM**\n\n**Instruction Set Design Philosophy:**\n- **RISC (Reduced Instruction Set Computing)** architectures aim to simplify the instruction set by reducing the number of instructions and making them uniform in",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567186053.csv"
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-8192-phm1-run3",
+              "projected_vm_gib": 9.17,
+              "wall_s": 28.11,
+              "rc": 0,
+              "prompt_eval_ms": 2928.73,
+              "n_prompt": 263,
+              "prefill_tok_s": 89.8,
+              "eval_ms": 5709.54,
+              "n_gen": 119,
+              "gen_tok_s": 20.84,
+              "load_ms": 17674.46,
+              "total_ms": 8906.76,
+              "ttft_s": 20.603,
+              "output": "This is a benchmarking prompt. Please respond with a detailed, well-structured answer. The response should be 500-700 words, with clear sections and subheadings. Use markdown formatting. No markdown? Then use clear section breaks with lines or dashes.\n\n---\n\n### RISC vs CISC: A Comprehensive Comparison\n\n#### 1. Instruction Set Design Philosophy\n- **RISC (Reduced Instruction Set Computing):** Focuses on a minimal set of simple, orthogonal instructions. MIPS, SPARC, and ARM are prime examples. RISC aims for simplicity,",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 27,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1166.7,
+                "temp_c_max": 76.0,
+                "temp_c_mean": 61.9,
+                "power_mw_mean": 74182.0,
+                "gtt_gib_max": 8.729,
+                "vram_gib_max": 0.026
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567237708.csv"
+            }
+          ],
+          "phm0_agg": {
+            "gen_tok_s_median": 20.94,
+            "gen_tok_s_min": 20.91,
+            "gen_tok_s_max": 20.99,
+            "gen_tok_s_cv_pct": 0.19,
+            "prefill_tok_s_median": 88.89,
+            "prefill_tok_s_min": 88.84,
+            "prefill_tok_s_max": 88.94,
+            "prefill_tok_s_cv_pct": 0.06,
+            "ttft_s_median": 19.108,
+            "ttft_s_min": 18.853,
+            "ttft_s_max": 25.09,
+            "ttft_s_cv_pct": 16.79
+          },
+          "phm1_agg": {
+            "gen_tok_s_median": 20.84,
+            "gen_tok_s_min": 20.4,
+            "gen_tok_s_max": 20.94,
+            "gen_tok_s_cv_pct": 1.39,
+            "prefill_tok_s_median": 89.69,
+            "prefill_tok_s_min": 89.62,
+            "prefill_tok_s_max": 89.8,
+            "prefill_tok_s_cv_pct": 0.1,
+            "ttft_s_median": 20.603,
+            "ttft_s_min": 18.387,
+            "ttft_s_max": 23.644,
+            "ttft_s_cv_pct": 12.64
+          }
+        },
+        "32768": {
+          "phm0": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm0-run1",
+              "projected_vm_gib": 11.57,
+              "status": "skip",
+              "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              }
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm0-run2",
+              "projected_vm_gib": 11.57,
+              "status": "skip",
+              "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              }
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm0-run3",
+              "projected_vm_gib": 11.57,
+              "status": "skip",
+              "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              }
+            }
+          ],
+          "phm1": [
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm1-run1",
+              "projected_vm_gib": 11.57,
+              "status": "skip",
+              "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              }
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm1-run2",
+              "projected_vm_gib": 11.57,
+              "status": "skip",
+              "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              }
+            },
+            {
+              "model": "deepseek-r1-14b",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-deepseek-r1-14b-32768-phm1-run3",
+              "projected_vm_gib": 11.57,
+              "status": "skip",
+              "skip_reason": "projected_vm_11.6gib_over_11.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              }
+            }
+          ],
+          "phm0_agg": {},
+          "phm1_agg": {}
+        }
+      }
+    },
+    "qwen3.5-9b-q4km": {
+      "tiers": {
+        "2048": {
+          "phm0": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-2048-phm0-run1",
+              "projected_vm_gib": 6.39,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.470 I llama_completion: llama backend init\n0.00.032.481 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.496 I common_init_result: fitting params to device memory ...\n0.00.032.496 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.266.901 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.266.908 E llama_model_load_from_file_impl: failed to load model\n0.00.266.950 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.496.180 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.496.185 E llama_model_load_from_file_impl: failed to load model\n0.00.496.190 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.496.197 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 54111.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567661781.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-2048-phm0-run2",
+              "projected_vm_gib": 6.39,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.888 I llama_completion: llama backend init\n0.00.032.900 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.919 I common_init_result: fitting params to device memory ...\n0.00.032.919 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.267.958 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.267.964 E llama_model_load_from_file_impl: failed to load model\n0.00.268.012 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.497.539 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.497.547 E llama_model_load_from_file_impl: failed to load model\n0.00.497.554 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.497.560 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53002.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567682798.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-2048-phm0-run3",
+              "projected_vm_gib": 6.39,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.186 I llama_completion: llama backend init\n0.00.032.197 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.213 I common_init_result: fitting params to device memory ...\n0.00.032.214 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.266.567 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.266.573 E llama_model_load_from_file_impl: failed to load model\n0.00.266.614 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.493.947 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.493.954 E llama_model_load_from_file_impl: failed to load model\n0.00.493.959 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.493.966 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 52096.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567703820.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-2048-phm1-run1",
+              "projected_vm_gib": 6.39,
+              "wall_s": 0.67,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.174.131 I llama_completion: llama backend init\n0.00.174.143 I llama_completion: load the model and apply lora adapter, if any\n0.00.174.158 I common_init_result: fitting params to device memory ...\n0.00.174.159 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.422.259 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.422.267 E llama_model_load_from_file_impl: failed to load model\n0.00.422.311 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.649.752 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.649.757 E llama_model_load_from_file_impl: failed to load model\n0.00.649.763 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.649.769 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 54245.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567598552.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-2048-phm1-run2",
+              "projected_vm_gib": 6.39,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.813 I llama_completion: llama backend init\n0.00.032.825 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.840 I common_init_result: fitting params to device memory ...\n0.00.032.841 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.266.972 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.266.979 E llama_model_load_from_file_impl: failed to load model\n0.00.267.022 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.495.971 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.495.977 E llama_model_load_from_file_impl: failed to load model\n0.00.495.983 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.495.990 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53163.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567619742.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 2048,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-2048-phm1-run3",
+              "projected_vm_gib": 6.39,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.390 I llama_completion: llama backend init\n0.00.032.401 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.416 I common_init_result: fitting params to device memory ...\n0.00.032.417 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.267.343 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.267.348 E llama_model_load_from_file_impl: failed to load model\n0.00.267.388 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.496.222 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.496.230 E llama_model_load_from_file_impl: failed to load model\n0.00.496.235 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.496.242 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53059.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567640760.csv"
+            }
+          ],
+          "phm0_agg": {},
+          "phm1_agg": {}
+        },
+        "8192": {
+          "phm0": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-8192-phm0-run1",
+              "projected_vm_gib": 6.64,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.054 I llama_completion: llama backend init\n0.00.033.066 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.081 I common_init_result: fitting params to device memory ...\n0.00.033.082 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.268.377 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.268.383 E llama_model_load_from_file_impl: failed to load model\n0.00.268.425 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.497.637 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.497.646 E llama_model_load_from_file_impl: failed to load model\n0.00.497.652 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.497.659 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 54219.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567787898.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-8192-phm0-run2",
+              "projected_vm_gib": 6.64,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.935 I llama_completion: llama backend init\n0.00.033.951 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.967 I common_init_result: fitting params to device memory ...\n0.00.033.967 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.268.825 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.268.833 E llama_model_load_from_file_impl: failed to load model\n0.00.268.876 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.496.280 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.496.288 E llama_model_load_from_file_impl: failed to load model\n0.00.496.294 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.496.301 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 56011.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567808919.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-8192-phm0-run3",
+              "projected_vm_gib": 6.64,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.693 I llama_completion: llama backend init\n0.00.033.706 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.722 I common_init_result: fitting params to device memory ...\n0.00.033.723 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.267.242 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.267.249 E llama_model_load_from_file_impl: failed to load model\n0.00.267.292 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.494.173 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.494.182 E llama_model_load_from_file_impl: failed to load model\n0.00.494.188 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.494.195 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53118.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567829941.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-8192-phm1-run1",
+              "projected_vm_gib": 6.64,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.249 I llama_completion: llama backend init\n0.00.033.261 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.276 I common_init_result: fitting params to device memory ...\n0.00.033.277 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.268.399 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.268.405 E llama_model_load_from_file_impl: failed to load model\n0.00.268.445 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.495.536 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.495.543 E llama_model_load_from_file_impl: failed to load model\n0.00.495.560 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.495.566 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 52119.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567724836.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-8192-phm1-run2",
+              "projected_vm_gib": 6.64,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.974 I llama_completion: llama backend init\n0.00.032.987 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.002 I common_init_result: fitting params to device memory ...\n0.00.033.002 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.268.910 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.268.917 E llama_model_load_from_file_impl: failed to load model\n0.00.268.959 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.498.367 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.498.374 E llama_model_load_from_file_impl: failed to load model\n0.00.498.391 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.498.398 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53056.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567745855.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-8192-phm1-run3",
+              "projected_vm_gib": 6.64,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.606 I llama_completion: llama backend init\n0.00.032.618 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.635 I common_init_result: fitting params to device memory ...\n0.00.032.636 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.268.906 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.268.914 E llama_model_load_from_file_impl: failed to load model\n0.00.268.963 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.497.091 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.497.099 E llama_model_load_from_file_impl: failed to load model\n0.00.497.106 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.497.114 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53017.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567766877.csv"
+            }
+          ],
+          "phm0_agg": {},
+          "phm1_agg": {}
+        },
+        "32768": {
+          "phm0": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-32768-phm0-run1",
+              "projected_vm_gib": 8.14,
+              "wall_s": 0.52,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.638 I llama_completion: llama backend init\n0.00.033.651 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.666 I common_init_result: fitting params to device memory ...\n0.00.033.666 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.272.840 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.272.848 E llama_model_load_from_file_impl: failed to load model\n0.00.272.891 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.500.567 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.500.574 E llama_model_load_from_file_impl: failed to load model\n0.00.500.579 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.500.586 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53069.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567914029.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-32768-phm0-run2",
+              "projected_vm_gib": 8.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.627 I llama_completion: llama backend init\n0.00.033.640 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.656 I common_init_result: fitting params to device memory ...\n0.00.033.656 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.271.439 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.271.447 E llama_model_load_from_file_impl: failed to load model\n0.00.271.489 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.500.400 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.500.408 E llama_model_load_from_file_impl: failed to load model\n0.00.500.413 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.500.420 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 52211.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567935055.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-32768-phm0-run3",
+              "projected_vm_gib": 8.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.548 I llama_completion: llama backend init\n0.00.033.561 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.576 I common_init_result: fitting params to device memory ...\n0.00.033.576 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.270.294 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.270.301 E llama_model_load_from_file_impl: failed to load model\n0.00.270.343 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.499.141 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.499.148 E llama_model_load_from_file_impl: failed to load model\n0.00.499.154 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.499.161 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 54.0,
+                "temp_c_mean": 54.0,
+                "power_mw_mean": 51235.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567956078.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-32768-phm1-run1",
+              "projected_vm_gib": 8.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.239 I llama_completion: llama backend init\n0.00.033.253 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.269 I common_init_result: fitting params to device memory ...\n0.00.033.270 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.268.647 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.268.656 E llama_model_load_from_file_impl: failed to load model\n0.00.268.700 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.498.155 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.498.163 E llama_model_load_from_file_impl: failed to load model\n0.00.498.169 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.498.176 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53179.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567850960.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-32768-phm1-run2",
+              "projected_vm_gib": 8.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.034.024 I llama_completion: llama backend init\n0.00.034.037 I llama_completion: load the model and apply lora adapter, if any\n0.00.034.053 I common_init_result: fitting params to device memory ...\n0.00.034.053 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.269.660 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.269.668 E llama_model_load_from_file_impl: failed to load model\n0.00.269.709 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.497.870 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.497.878 E llama_model_load_from_file_impl: failed to load model\n0.00.497.884 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.497.891 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53171.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567871982.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 32768,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-32768-phm1-run3",
+              "projected_vm_gib": 8.14,
+              "wall_s": 0.52,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.034.188 I llama_completion: llama backend init\n0.00.034.200 I llama_completion: load the model and apply lora adapter, if any\n0.00.034.215 I common_init_result: fitting params to device memory ...\n0.00.034.216 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.271.175 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.271.183 E llama_model_load_from_file_impl: failed to load model\n0.00.271.226 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.500.689 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.500.696 E llama_model_load_from_file_impl: failed to load model\n0.00.500.703 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.500.709 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 52111.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780567893004.csv"
+            }
+          ],
+          "phm0_agg": {},
+          "phm1_agg": {}
+        },
+        "65536": {
+          "phm0": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-65536-phm0-run1",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.032.868 I llama_completion: llama backend init\n0.00.032.880 I llama_completion: load the model and apply lora adapter, if any\n0.00.032.897 I common_init_result: fitting params to device memory ...\n0.00.032.898 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.269.027 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.269.034 E llama_model_load_from_file_impl: failed to load model\n0.00.269.081 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.497.591 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.497.597 E llama_model_load_from_file_impl: failed to load model\n0.00.497.616 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.497.623 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53102.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780568089702.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-65536-phm0-run2",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.389 I llama_completion: llama backend init\n0.00.033.401 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.418 I common_init_result: fitting params to device memory ...\n0.00.033.419 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.271.352 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.271.359 E llama_model_load_from_file_impl: failed to load model\n0.00.271.404 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.497.478 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.497.484 E llama_model_load_from_file_impl: failed to load model\n0.00.497.490 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.497.497 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 52141.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780568110725.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "0"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-65536-phm0-run3",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.249 I llama_completion: llama backend init\n0.00.033.261 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.278 I common_init_result: fitting params to device memory ...\n0.00.033.278 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.267.333 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.267.340 E llama_model_load_from_file_impl: failed to load model\n0.00.267.386 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.492.663 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.492.670 E llama_model_load_from_file_impl: failed to load model\n0.00.492.677 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.492.684 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 54.0,
+                "temp_c_mean": 54.0,
+                "power_mw_mean": 53080.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780568131747.csv"
+            }
+          ],
+          "phm1": [
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-65536-phm1-run1",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.84,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.298.568 I llama_completion: llama backend init\n0.00.298.581 I llama_completion: load the model and apply lora adapter, if any\n0.00.298.598 I common_init_result: fitting params to device memory ...\n0.00.298.598 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.544.147 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.544.154 E llama_model_load_from_file_impl: failed to load model\n0.00.544.201 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.771.675 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.771.680 E llama_model_load_from_file_impl: failed to load model\n0.00.771.686 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.771.693 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 62003.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780568026308.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-65536-phm1-run2",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.006 I llama_completion: llama backend init\n0.00.033.017 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.034 I common_init_result: fitting params to device memory ...\n0.00.033.034 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.266.903 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.266.909 E llama_model_load_from_file_impl: failed to load model\n0.00.266.956 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.492.549 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.492.555 E llama_model_load_from_file_impl: failed to load model\n0.00.492.560 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.492.567 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 55.0,
+                "temp_c_mean": 55.0,
+                "power_mw_mean": 53064.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780568047659.csv"
+            },
+            {
+              "model": "qwen3.5-9b-q4km",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 65536,
+              "kv_type": "q4_0",
+              "env_extra": {
+                "GGML_VK_PREFER_HOST_MEMORY": "1"
+              },
+              "n_gen_target": 120,
+              "label": "heap-ab-qwen3.5-9b-q4km-65536-phm1-run3",
+              "projected_vm_gib": 10.14,
+              "wall_s": 0.51,
+              "rc": 1,
+              "output": "",
+              "status": "fail",
+              "stderr_tail": "0.00.033.266 I llama_completion: llama backend init\n0.00.033.278 I llama_completion: load the model and apply lora adapter, if any\n0.00.033.296 I common_init_result: fitting params to device memory ...\n0.00.033.296 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.270.562 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.270.570 E llama_model_load_from_file_impl: failed to load model\n0.00.270.616 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.499.040 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.499.046 E llama_model_load_from_file_impl: failed to load model\n0.00.499.052 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.499.059 E llama_completion: error: unable to create context\n",
+              "gpu_overlay": {
+                "samples": 1,
+                "throttle_flag": false,
+                "sclk_mhz_max": 1000,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1000.0,
+                "temp_c_max": 54.0,
+                "temp_c_mean": 54.0,
+                "power_mw_mean": 53219.0,
+                "gtt_gib_max": 0.012,
+                "vram_gib_max": 0.009
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780568068677.csv"
+            }
+          ],
+          "phm0_agg": {},
+          "phm1_agg": {}
+        }
+      }
+    }
+  },
+  "models": [
+    "qwen3.5-9b-q4km"
+  ],
+  "ctx_tiers": [
+    65536
+  ],
+  "runs_per_variant": 3
+}

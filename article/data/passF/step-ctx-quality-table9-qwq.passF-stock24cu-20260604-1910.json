@@ -1,0 +1,302 @@
+{
+  "step": "ctx-quality",
+  "results": {
+    "qwq-32b-iq2m": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "tiers": {
+        "4096": {
+          "runs": [
+            {
+              "model": "qwq-32b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 4096,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-qwq-32b-iq2m-4096-r1",
+              "projected_vm_gib": 11.04,
+              "wall_s": 120.27,
+              "rc": 0,
+              "prompt_eval_ms": 63357.96,
+              "n_prompt": 3083,
+              "prefill_tok_s": 48.66,
+              "eval_ms": 22275.26,
+              "n_gen": 199,
+              "gen_tok_s": 8.93,
+              "load_ms": 32562.99,
+              "total_ms": 86097.45,
+              "ttft_s": 95.921,
+              "output": "The two codes are OMEGA-4-COBALT-RIVER-17 and DELTA-7-VIOLET-MOUNTAIN-93.\n\nWait, but let me check again. The first code was in the EARLY NOTE: \"OMEGA-4-COBALT-RIVER-17\". The second code was in the SPECIAL NOTE: \"DELTA-7-VIOLET-MOUNTAIN-93\". The user wants them listed in the order they appeared. The EARLY NOTE comes first in the document, then the SPECIAL NOTE later. So the order is correct as I listed. The answer should be exactly those two codes, each on their own line. Let me confirm once more. Yes, that's right.\nOMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93\nOkay, I need to make sure I didn't miss any other codes. The document had two special notes:",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 118,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1360.2,
+                "temp_c_max": 83.0,
+                "temp_c_mean": 72.5,
+                "power_mw_mean": 93475.0,
+                "gtt_gib_max": 10.797,
+                "vram_gib_max": 0.021
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780625889788.csv",
+              "output_len_chars": 664,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.4
+            },
+            {
+              "model": "qwq-32b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 4096,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-qwq-32b-iq2m-4096-r2",
+              "projected_vm_gib": 11.04,
+              "wall_s": 119.21,
+              "rc": 0,
+              "prompt_eval_ms": 63294.38,
+              "n_prompt": 3083,
+              "prefill_tok_s": 48.71,
+              "eval_ms": 22337.79,
+              "n_gen": 199,
+              "gen_tok_s": 8.91,
+              "load_ms": 31562.81,
+              "total_ms": 86073.49,
+              "ttft_s": 94.857,
+              "output": "The two codes are OMEGA-4-COBALT-RIVER-17 and DELTA-7-VIOLET-MOUNTAIN-93.\n\nWait, let me check again. The document had two notes. The first one was an EARLY NOTE which mentioned the first auxiliary code as OMEGA-4-COBALT-RIVER-17. Then later, there's a SPECIAL NOTE that mentions the secret access code DELTA-7-VIOLET-MOUNTAIN-93. The question asks for both codes in the order they appeared. So the first code is OMEGA-4..., the second is DELTA-7... So the answer should list them in that order. The user wants only the codes, each on their own line. Let me confirm again. Yes, the EARLY NOTE comes before the SPECIAL NOTE in the document. So the answer is correct as stated.\n\n\nANSWER: OMEGA-4-COBALT-RIVER-",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 117,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1367.5,
+                "temp_c_max": 84.0,
+                "temp_c_mean": 74.6,
+                "power_mw_mean": 96090.0,
+                "gtt_gib_max": 10.797,
+                "vram_gib_max": 0.029
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780626025610.csv",
+              "output_len_chars": 706,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.0,
+              "needle_depth_pct_early": 10.4
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 8.92,
+            "gen_tok_s_min": 8.91,
+            "gen_tok_s_max": 8.93,
+            "gen_tok_s_cv_pct": 0.16,
+            "prefill_tok_s_median": 48.685,
+            "prefill_tok_s_min": 48.66,
+            "prefill_tok_s_max": 48.71,
+            "prefill_tok_s_cv_pct": 0.07,
+            "ttft_s_median": 95.389,
+            "ttft_s_min": 94.857,
+            "ttft_s_max": 95.921,
+            "ttft_s_cv_pct": 0.79
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.0,
+          "prompt_chars": 15564
+        },
+        "8192": {
+          "runs": [
+            {
+              "model": "qwq-32b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-qwq-32b-iq2m-8192-r1",
+              "projected_vm_gib": 11.59,
+              "wall_s": 190.16,
+              "rc": 0,
+              "prompt_eval_ms": 134155.65,
+              "n_prompt": 6050,
+              "prefill_tok_s": 45.1,
+              "eval_ms": 24200.5,
+              "n_gen": 199,
+              "gen_tok_s": 8.22,
+              "load_ms": 29816.76,
+              "total_ms": 158790.43,
+              "ttft_s": 163.972,
+              "output": "The first code is OMEGA-4-COBALT-RIVER-17. The second code is DELTA-7-VIOLET-MOUNTAIN-93.\n\nWait, but the user said to respond with ONLY the two codes, one per line, nothing else. So I should just list them as:\n\nOMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93\n\nBut let me double-check the document. The first code was in the EARLY NOTE: \"OMEGA-4-COBALT-RIVER-17\". The second code was in the SPECIAL NOTE: \"DELTA-7-VIOLET-MOUNTAIN-93\". Yes, that's correct. The user wants them listed in order of appearance, so the first one first, then the second. No other text needed.\n\n**Final Answer**\nOMEGA-4-COBALT-RIVER-17\nDELTA-7",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 185,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1421.6,
+                "temp_c_max": 85.0,
+                "temp_c_mean": 77.7,
+                "power_mw_mean": 101477.0,
+                "gtt_gib_max": 11.086,
+                "vram_gib_max": 0.031
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780626205385.csv",
+              "output_len_chars": 621,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.2,
+              "needle_depth_pct_early": 10.1
+            },
+            {
+              "model": "qwq-32b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 8192,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-qwq-32b-iq2m-8192-r2",
+              "projected_vm_gib": 11.59,
+              "wall_s": 190.23,
+              "rc": 0,
+              "prompt_eval_ms": 134060.82,
+              "n_prompt": 6050,
+              "prefill_tok_s": 45.13,
+              "eval_ms": 24214.51,
+              "n_gen": 199,
+              "gen_tok_s": 8.22,
+              "load_ms": 29896.45,
+              "total_ms": 158747.13,
+              "ttft_s": 163.957,
+              "output": "The two codes are OMEGA-4-COBALT-RIVER-17 and DELTA-7-VIOLET-MOUNTAIN-93.\n\nWait, but let me check again. The document had an EARLY NOTE and a SPECIAL NOTE. The EARLY NOTE was mentioned earlier, and the SPECIAL NOTE was towards the end. Let me scan through the document again to confirm.\n\nLooking back, the first code is in the EARLY NOTE: \"The first auxiliary code is OMEGA-4-COBALT-RIVER-17\". Then later, the SPECIAL NOTE says \"The secret access code is DELTA-7-VIOLET-MOUNTAIN-93\". So the order is OMEGA... first, then DELTA... So the answer should be those two codes in that order.\n\n**Final Answer**\nOMEGA-4-COBALT-RIVER-17\nDELTA-7-VIOLET-MOUNTAIN-93\nAlright, let me",
+              "status": "ok",
+              "gpu_overlay": {
+                "samples": 186,
+                "throttle_flag": true,
+                "sclk_mhz_max": 1500,
+                "sclk_mhz_min": 1000,
+                "sclk_mhz_mean": 1419.4,
+                "temp_c_max": 86.0,
+                "temp_c_mean": 79.0,
+                "power_mw_mean": 102261.0,
+                "gtt_gib_max": 11.086,
+                "vram_gib_max": 0.029
+              },
+              "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780626411096.csv",
+              "output_len_chars": 669,
+              "needle_pass": true,
+              "needle_reason": "both_present:exact|exact",
+              "needle_depth_pct": 50.2,
+              "needle_depth_pct_early": 10.1
+            }
+          ],
+          "aggregate": {
+            "gen_tok_s_median": 8.22,
+            "gen_tok_s_min": 8.22,
+            "gen_tok_s_max": 8.22,
+            "gen_tok_s_cv_pct": 0.0,
+            "prefill_tok_s_median": 45.115,
+            "prefill_tok_s_min": 45.1,
+            "prefill_tok_s_max": 45.13,
+            "prefill_tok_s_cv_pct": 0.05,
+            "ttft_s_median": 163.964,
+            "ttft_s_min": 163.957,
+            "ttft_s_max": 163.972,
+            "ttft_s_cv_pct": 0.01
+          },
+          "verify": {
+            "pass": 2,
+            "total": 2,
+            "pass_rate": 1.0
+          },
+          "ladder_status": "ok",
+          "depth_pct": 50.2,
+          "prompt_chars": 31129
+        },
+        "16384": {
+          "runs": [
+            {
+              "model": "qwq-32b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 16384,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-qwq-32b-iq2m-16384-r1",
+              "projected_vm_gib": 12.69,
+              "status": "skip",
+              "skip_reason": "projected_vm_12.7gib_over_12.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.1,
+              "needle_depth_pct_early": 10.1
+            },
+            {
+              "model": "qwq-32b-iq2m",
+              "backend": "llama-completion",
+              "build": "b9265",
+              "ctx_target": 16384,
+              "kv_type": "q4_0",
+              "env_extra": {},
+              "n_gen_target": 200,
+              "label": "ctxq-qwq-32b-iq2m-16384-r2",
+              "projected_vm_gib": 12.69,
+              "status": "skip",
+              "skip_reason": "projected_vm_12.7gib_over_12.0gib_ceiling",
+              "wall_s": 0.0,
+              "gpu_overlay": {
+                "samples": 0,
+                "throttle_flag": false
+              },
+              "output": "",
+              "output_len_chars": 0,
+              "needle_pass": false,
+              "needle_reason": "empty_output",
+              "needle_depth_pct": 50.1,
+              "needle_depth_pct_early": 10.1
+            }
+          ],
+          "aggregate": {},
+          "verify": {
+            "pass": 0,
+            "total": 2,
+            "pass_rate": 0.0
+          },
+          "ladder_status": "failed",
+          "depth_pct": 50.1,
+          "prompt_chars": 62259
+        }
+      }
+    }
+  },
+  "config": {
+    "tiers": [
+      4096,
+      8192,
+      16384
+    ],
+    "runs_n": 2,
+    "n_gen": 200,
+    "needle_code": "DELTA-7-VIOLET-MOUNTAIN-93"
+  }
+}

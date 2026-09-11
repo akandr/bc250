@@ -1,0 +1,21 @@
+\begin{table}[ht]
+\caption{Statistical validation: 3 runs per model at 4K context,
+verified-stock 24-CU configuration, Ollama~0.20.0.}\label{tab:stat_validation}
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model} & \textbf{Median} & \textbf{Range} & \textbf{CV} \\
+               & \textbf{(tok/s)} &                & \textbf{(\%)} \\
+\otoprule
+qwen3\!:\!14b & 20.1 & 20.1--20.1 & 0.04 \\
+mistral-nemo\!:\!12b & 26.0 & 26.0--26.0 & 0.01 \\
+qwen3\!:\!8b & 31.6 & 31.6--31.7 & 0.14 \\
+qwen3.5-35b-a3b & 25.1 & 24.9--25.1 & 0.36 \\
+qwen3.5\!:\!9b & 23.1 & 23.1--23.1 & 0.15 \\
+Qwen3-30B-A3B & 41.5 & 41.4--41.7 & 0.35 \\
+llama3.2\!:\!3b & 80.6 & 80.5--80.7 & 0.12 \\
+phi4-mini & 67.9 & 67.8--68.0 & 0.10 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,29 @@
+\begin{table}[ht]
+\caption{GPU clock and edge temperature during 4K-context perf runs
+on verified-stock 24-CU, Ollama~0.20.0; ranges in the sclk column
+reflect variation across the three runs (per-run time-weighted means).
+``Peak sclk'' is the highest DPM tier the 1\,Hz overlay sampler
+observed in any run; ``Temp~max'' is the highest edge-sensor reading
+across the three runs.  The peak DPM tier observed during these
+perf cells is 1\,500\,MHz, matching the wider sustained-inference
+sweep of Section~\ref{subsubsec:power_sweep}.  Per-run package power
+is not reported in this table because the 1\,Hz sampler used here
+records sclk and temperature only; the dedicated 5\,Hz
+\texttt{power1\_average} channel is reported in the sustained-
+inference sweep below.}\label{tab:clock_power}
+\centering
+\scriptsize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model}        & \textbf{Per-run mean sclk} & \textbf{Peak sclk} & \textbf{Temp max} \\
+                      & \textbf{(MHz)}             & \textbf{(MHz)}      & \textbf{(\textdegree C)} \\
+\otoprule
+qwen3.5\!:\!9b (Ollama) & --- & --- & --- \\
+deepseek-r1-14b & 1159--1174 & 1500 & 74 \\
+gpt-oss-20b (Ollama) & --- & --- & --- \\
+qwen3-coder-30b (IQ2\_M) & 1083--1111 & 1500 & 70 \\
+qwen3.5-35b (IQ2\_M) & 1114--1136 & 1500 & 71 \\
+granite-4.0-h-tiny & 1168--1192 & 1500 & 74 \\
+\bottomrule
+\end{tabular}
+\end{table}

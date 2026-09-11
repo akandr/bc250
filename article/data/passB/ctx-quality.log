@@ -1,0 +1,455 @@
+[WARN] sampler script missing at /tmp/gpu-overlay-sampler.sh; gpu_overlay will be empty
+pkill: killing pid 29090 failed: Operacja niedozwolona
+[ctx-quality] tiers=[4096, 16384, 32768, 65536]  runs_n=3  n_gen=100
+[ctx-quality] 13 llama-completion + 6 ollama models
+[svc] ollama running=False (was False)
+
+[ctx-quality] === qwen3.5-9b-q4km (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-9b-q4km-4096-r1
+     status=fail gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-9b-q4km-4096-r2
+     status=fail gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-9b-q4km-4096-r3
+     status=fail gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for qwen3.5-9b-q4km
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY qwen3.5-9b-q4km:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === deepseek-r1-14b (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-deepseek-r1-14b-4096-r1
+     status=ok gen=27.41 pp=169.29 n_prompt=3080 n_gen=60 needle=True (both_present:exact|exact) out_chars=150 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-deepseek-r1-14b-4096-r2
+     status=ok gen=27.31 pp=167.16 n_prompt=3080 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-deepseek-r1-14b-4096-r3
+     status=ok gen=27.36 pp=163.9 n_prompt=3080 n_gen=60 needle=True (both_present:exact|exact) out_chars=150 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-deepseek-r1-14b-16384-r1
+     status=ok gen=20.54 pp=121.93 n_prompt=11990 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-deepseek-r1-14b-16384-r2
+     status=ok gen=19.96 pp=119.97 n_prompt=11990 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-deepseek-r1-14b-16384-r3
+     status=ok gen=20.53 pp=117.17 n_prompt=11990 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [32768] run 1/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-deepseek-r1-14b-32768-r1
+     status=ok gen=15.25 pp=84.62 n_prompt=23842 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [32768] run 2/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-deepseek-r1-14b-32768-r2
+     status=ok gen=15.29 pp=84.06 n_prompt=23842 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [32768] run 3/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-deepseek-r1-14b-32768-r3
+     status=ok gen=15.3 pp=83.39 n_prompt=23842 n_gen=29 needle=True (both_present:exact|exact) out_chars=76 throttle=False temp_max=None
+  [65536] run 1/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-deepseek-r1-14b-65536-r1
+   [skip] deepseek-r1-14b ctx=65536 kv=q4_0: projected_vm_14.8gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [65536] run 2/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-deepseek-r1-14b-65536-r2
+   [skip] deepseek-r1-14b ctx=65536 kv=q4_0: projected_vm_14.8gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [65536] run 3/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-deepseek-r1-14b-65536-r3
+   [skip] deepseek-r1-14b ctx=65536 kv=q4_0: projected_vm_14.8gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [65536] all runs failed -- stopping ladder for deepseek-r1-14b
+  SUMMARY deepseek-r1-14b:
+      4096  gen=27.36 t/s  pp=167.16 t/s  needle=3/3  status=ok
+     16384  gen=20.53 t/s  pp=119.97 t/s  needle=3/3  status=ok
+     32768  gen=15.29 t/s  pp=84.06 t/s  needle=3/3  status=ok
+     65536  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+
+[ctx-quality] === gpt-oss-20b-mxfp4 (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-gpt-oss-20b-mxfp4-4096-r1
+     status=ok gen=85.06 pp=497.34 n_prompt=3047 n_gen=99 needle=True (both_present:exact|exact) out_chars=317 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-gpt-oss-20b-mxfp4-4096-r2
+     status=ok gen=84.76 pp=496.33 n_prompt=3047 n_gen=99 needle=False (missing_primary:DELTA) out_chars=401 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-gpt-oss-20b-mxfp4-4096-r3
+     status=ok gen=84.11 pp=495.01 n_prompt=3047 n_gen=91 needle=True (both_present:exact|exact) out_chars=309 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-gpt-oss-20b-mxfp4-16384-r1
+   [skip] gpt-oss-20b-mxfp4 ctx=16384 kv=q4_0: projected_vm_13.1gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-gpt-oss-20b-mxfp4-16384-r2
+   [skip] gpt-oss-20b-mxfp4 ctx=16384 kv=q4_0: projected_vm_13.1gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-gpt-oss-20b-mxfp4-16384-r3
+   [skip] gpt-oss-20b-mxfp4 ctx=16384 kv=q4_0: projected_vm_13.1gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for gpt-oss-20b-mxfp4
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY gpt-oss-20b-mxfp4:
+      4096  gen=84.76 t/s  pp=496.33 t/s  needle=2/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === qwen3-coder-30b-iq2m (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3-coder-30b-iq2m-4096-r1
+     status=ok gen=65.34 pp=356.24 n_prompt=3087 n_gen=99 needle=True (both_present:exact|exact) out_chars=214 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3-coder-30b-iq2m-4096-r2
+     status=ok gen=65.26 pp=355.67 n_prompt=3087 n_gen=99 needle=True (both_present:exact|exact) out_chars=415 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3-coder-30b-iq2m-4096-r3
+     status=ok gen=65.48 pp=356.84 n_prompt=3087 n_gen=99 needle=True (both_present:exact|exact) out_chars=214 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3-coder-30b-iq2m-16384-r1
+   [skip] qwen3-coder-30b-iq2m ctx=16384 kv=q4_0: projected_vm_12.1gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3-coder-30b-iq2m-16384-r2
+   [skip] qwen3-coder-30b-iq2m ctx=16384 kv=q4_0: projected_vm_12.1gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3-coder-30b-iq2m-16384-r3
+   [skip] qwen3-coder-30b-iq2m ctx=16384 kv=q4_0: projected_vm_12.1gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for qwen3-coder-30b-iq2m
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY qwen3-coder-30b-iq2m:
+      4096  gen=65.34 t/s  pp=356.24 t/s  needle=3/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === qwen3.5-35b-iq2m (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-35b-iq2m-4096-r1
+     status=ok gen=74.07 pp=377.22 n_prompt=3129 n_gen=31 needle=True (both_present:exact|exact) out_chars=83 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-35b-iq2m-4096-r2
+     status=ok gen=74.13 pp=378.66 n_prompt=3129 n_gen=31 needle=True (both_present:exact|exact) out_chars=83 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-35b-iq2m-4096-r3
+     status=ok gen=74.79 pp=378.01 n_prompt=3129 n_gen=31 needle=True (both_present:exact|exact) out_chars=83 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.5-35b-iq2m-16384-r1
+   [skip] qwen3.5-35b-iq2m ctx=16384 kv=q4_0: projected_vm_12.8gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.5-35b-iq2m-16384-r2
+   [skip] qwen3.5-35b-iq2m ctx=16384 kv=q4_0: projected_vm_12.8gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.5-35b-iq2m-16384-r3
+   [skip] qwen3.5-35b-iq2m ctx=16384 kv=q4_0: projected_vm_12.8gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for qwen3.5-35b-iq2m
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY qwen3.5-35b-iq2m:
+      4096  gen=74.13 t/s  pp=378.01 t/s  needle=3/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === qwen3.6-35b-iq2m (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.6-35b-iq2m-4096-r1
+     status=ok gen=74.52 pp=379.48 n_prompt=3129 n_gen=31 needle=True (both_present:exact|exact) out_chars=83 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.6-35b-iq2m-4096-r2
+     status=ok gen=74.88 pp=382.4 n_prompt=3129 n_gen=31 needle=True (both_present:exact|exact) out_chars=83 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.6-35b-iq2m-4096-r3
+     status=ok gen=74.92 pp=378.82 n_prompt=3129 n_gen=99 needle=False (missing_primary:DELTA) out_chars=380 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.6-35b-iq2m-16384-r1
+   [skip] qwen3.6-35b-iq2m ctx=16384 kv=q4_0: projected_vm_12.9gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.6-35b-iq2m-16384-r2
+   [skip] qwen3.6-35b-iq2m ctx=16384 kv=q4_0: projected_vm_12.9gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.6-35b-iq2m-16384-r3
+   [skip] qwen3.6-35b-iq2m ctx=16384 kv=q4_0: projected_vm_12.9gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for qwen3.6-35b-iq2m
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY qwen3.6-35b-iq2m:
+      4096  gen=74.88 t/s  pp=379.48 t/s  needle=2/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === granite-4.0-h-tiny (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-granite-4.0-h-tiny-4096-r1
+     status=ok gen=122.13 pp=1078.62 n_prompt=3038 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-granite-4.0-h-tiny-4096-r2
+     status=ok gen=123.07 pp=1079.8 n_prompt=3038 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-granite-4.0-h-tiny-4096-r3
+     status=ok gen=123.89 pp=1080.11 n_prompt=3038 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-granite-4.0-h-tiny-16384-r1
+     status=ok gen=121.36 pp=1022.21 n_prompt=11858 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-granite-4.0-h-tiny-16384-r2
+     status=ok gen=121.44 pp=1022.03 n_prompt=11858 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-granite-4.0-h-tiny-16384-r3
+     status=ok gen=122.08 pp=1022.11 n_prompt=11858 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [32768] run 1/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-granite-4.0-h-tiny-32768-r1
+     status=ok gen=117.68 pp=954.82 n_prompt=23593 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [32768] run 2/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-granite-4.0-h-tiny-32768-r2
+     status=ok gen=118.06 pp=954.61 n_prompt=23593 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [32768] run 3/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-granite-4.0-h-tiny-32768-r3
+     status=ok gen=118.49 pp=954.76 n_prompt=23593 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [65536] run 1/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-granite-4.0-h-tiny-65536-r1
+     status=ok gen=110.58 pp=832.64 n_prompt=47075 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [65536] run 2/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-granite-4.0-h-tiny-65536-r2
+     status=ok gen=110.75 pp=832.49 n_prompt=47075 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [65536] run 3/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-granite-4.0-h-tiny-65536-r3
+     status=ok gen=110.35 pp=832.5 n_prompt=47075 n_gen=25 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  SUMMARY granite-4.0-h-tiny:
+      4096  gen=123.07 t/s  pp=1079.8 t/s  needle=3/3  status=ok
+     16384  gen=121.44 t/s  pp=1022.11 t/s  needle=3/3  status=ok
+     32768  gen=118.06 t/s  pp=954.76 t/s  needle=3/3  status=ok
+     65536  gen=110.58 t/s  pp=832.5 t/s  needle=3/3  status=ok
+
+[ctx-quality] === gemma4-26b-a4b-iq3m (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-a4b-iq3m-4096-r1
+   [skip] gemma4-26b-a4b-iq3m ctx=4096 kv=q4_0: model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-a4b-iq3m-4096-r2
+   [skip] gemma4-26b-a4b-iq3m ctx=4096 kv=q4_0: model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-a4b-iq3m-4096-r3
+   [skip] gemma4-26b-a4b-iq3m ctx=4096 kv=q4_0: model_path_not_found:/opt/models/gemma4-26b-a4b-iq3m.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for gemma4-26b-a4b-iq3m
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] above MODEL_CTX_CAP=16384 for gemma4-26b-a4b-iq3m -- skip
+  [65536] above MODEL_CTX_CAP=16384 for gemma4-26b-a4b-iq3m -- skip
+  SUMMARY gemma4-26b-a4b-iq3m:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=capped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=capped
+
+[ctx-quality] === qwen3.6-27b-q4km (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.6-27b-q4km-4096-r1
+   [skip] qwen3.6-27b-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/qwen3.6-27b-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.6-27b-q4km-4096-r2
+   [skip] qwen3.6-27b-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/qwen3.6-27b-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.6-27b-q4km-4096-r3
+   [skip] qwen3.6-27b-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/qwen3.6-27b-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for qwen3.6-27b-q4km
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY qwen3.6-27b-q4km:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === glm-5.1-q4km (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-glm-5.1-q4km-4096-r1
+   [skip] glm-5.1-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/glm-5.1-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-glm-5.1-q4km-4096-r2
+   [skip] glm-5.1-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/glm-5.1-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-glm-5.1-q4km-4096-r3
+   [skip] glm-5.1-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/glm-5.1-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for glm-5.1-q4km
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY glm-5.1-q4km:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === llama-3.4-8b-q4km (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-llama-3.4-8b-q4km-4096-r1
+   [skip] llama-3.4-8b-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/llama-3.4-8b-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-llama-3.4-8b-q4km-4096-r2
+   [skip] llama-3.4-8b-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/llama-3.4-8b-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-llama-3.4-8b-q4km-4096-r3
+   [skip] llama-3.4-8b-q4km ctx=4096 kv=q4_0: model_path_not_found:/opt/models/llama-3.4-8b-q4km.gguf
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for llama-3.4-8b-q4km
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY llama-3.4-8b-q4km:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === qwq-32b-iq2m (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwq-32b-iq2m-4096-r1
+     status=ok gen=13.87 pp=77.29 n_prompt=3083 n_gen=99 needle=True (both_present:exact|exact) out_chars=329 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwq-32b-iq2m-4096-r2
+     status=ok gen=13.88 pp=75.17 n_prompt=3083 n_gen=99 needle=True (both_present:exact|exact) out_chars=369 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwq-32b-iq2m-4096-r3
+     status=ok gen=13.86 pp=75.62 n_prompt=3083 n_gen=99 needle=True (both_present:exact|exact) out_chars=357 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwq-32b-iq2m-16384-r1
+   [skip] qwq-32b-iq2m ctx=16384 kv=q4_0: projected_vm_12.7gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwq-32b-iq2m-16384-r2
+   [skip] qwq-32b-iq2m ctx=16384 kv=q4_0: projected_vm_12.7gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwq-32b-iq2m-16384-r3
+   [skip] qwq-32b-iq2m ctx=16384 kv=q4_0: projected_vm_12.7gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for qwq-32b-iq2m
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY qwq-32b-iq2m:
+      4096  gen=13.87 t/s  pp=75.62 t/s  needle=3/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === mistral-small-3.2-q3km (llama-completion) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-4096-r1
+     status=ok gen=16.75 pp=87.08 n_prompt=3106 n_gen=29 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-4096-r2
+     status=ok gen=16.75 pp=89.37 n_prompt=3106 n_gen=29 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-4096-r3
+     status=ok gen=16.75 pp=81.51 n_prompt=3106 n_gen=29 needle=True (both_present:exact|exact) out_chars=64 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-16384-r1
+   [skip] mistral-small-3.2-q3km ctx=16384 kv=q4_0: projected_vm_12.3gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-16384-r2
+   [skip] mistral-small-3.2-q3km ctx=16384 kv=q4_0: projected_vm_12.3gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-16384-r3
+   [skip] mistral-small-3.2-q3km ctx=16384 kv=q4_0: projected_vm_12.3gib_over_12.0gib_ceiling
+     status=skip gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for mistral-small-3.2-q3km
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY mistral-small-3.2-q3km:
+      4096  gen=16.75 t/s  pp=87.08 t/s  needle=3/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+[svc] starting ollama service ...
+[svc] ollama running=False
+
+[ctx-quality] === qwen3.5-9b-ollama (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-9b-ollama-4096-r1
+     status=ok gen=30.894 pp=267.696 n_prompt=3137 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-9b-ollama-4096-r2
+     status=ok gen=31.109 pp=268.595 n_prompt=3137 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-qwen3.5-9b-ollama-4096-r3
+     status=ok gen=30.785 pp=268.741 n_prompt=3137 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.5-9b-ollama-16384-r1
+     status=ok gen=28.95 pp=240.656 n_prompt=12164 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.5-9b-ollama-16384-r2
+     status=ok gen=28.985 pp=240.868 n_prompt=12164 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-qwen3.5-9b-ollama-16384-r3
+     status=ok gen=28.981 pp=240.843 n_prompt=12164 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [32768] run 1/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-qwen3.5-9b-ollama-32768-r1
+     status=ok gen=25.384 pp=207.8 n_prompt=24172 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [32768] run 2/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-qwen3.5-9b-ollama-32768-r2
+     status=ok gen=25.58 pp=205.052 n_prompt=24172 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [32768] run 3/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-qwen3.5-9b-ollama-32768-r3
+     status=ok gen=25.618 pp=202.196 n_prompt=24172 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [65536] run 1/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-qwen3.5-9b-ollama-65536-r1
+     status=ok gen=23.353 pp=155.595 n_prompt=48195 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [65536] run 2/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-qwen3.5-9b-ollama-65536-r2
+     status=ok gen=23.34 pp=153.211 n_prompt=48195 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [65536] run 3/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-qwen3.5-9b-ollama-65536-r3
+     status=ok gen=23.342 pp=153.216 n_prompt=48195 n_gen=27 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  SUMMARY qwen3.5-9b-ollama:
+      4096  gen=30.894 t/s  pp=268.595 t/s  needle=3/3  status=ok
+     16384  gen=28.981 t/s  pp=240.843 t/s  needle=3/3  status=ok
+     32768  gen=25.58 t/s  pp=205.052 t/s  needle=3/3  status=ok
+     65536  gen=23.342 t/s  pp=153.216 t/s  needle=3/3  status=ok
+
+[ctx-quality] === gemma4-latest (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-latest-4096-r1
+     status=ok gen=30.789 pp=461.695 n_prompt=3011 n_gen=100 needle=False (missing_primary:DELTA) out_chars=100 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-latest-4096-r2
+     status=ok gen=30.671 pp=468.977 n_prompt=3011 n_gen=100 needle=False (missing_primary:DELTA) out_chars=599 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-latest-4096-r3
+     status=ok gen=30.718 pp=469.035 n_prompt=3011 n_gen=100 needle=False (missing_primary:DELTA) out_chars=527 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=1423s)  tag=ctxq-gemma4-latest-16384-r1
+     status=ok gen=29.939 pp=372.78 n_prompt=11688 n_gen=100 needle=False (missing_primary:DELTA) out_chars=347 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=1423s)  tag=ctxq-gemma4-latest-16384-r2
+     status=ok gen=30.339 pp=373.06 n_prompt=11688 n_gen=58 needle=False (missing_primary:DELTA) out_chars=221 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=1423s)  tag=ctxq-gemma4-latest-16384-r3
+     status=ok gen=29.996 pp=372.952 n_prompt=11688 n_gen=100 needle=False (missing_primary:DELTA) out_chars=381 throttle=False temp_max=None
+  [32768] run 1/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-gemma4-latest-32768-r1
+     status=ok gen=27.74 pp=291.873 n_prompt=23230 n_gen=66 needle=False (missing_primary:DELTA) out_chars=187 throttle=False temp_max=None
+  [32768] run 2/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-gemma4-latest-32768-r2
+     status=ok gen=27.354 pp=291.88 n_prompt=23230 n_gen=100 needle=False (missing_primary:DELTA) out_chars=433 throttle=False temp_max=None
+  [32768] run 3/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-gemma4-latest-32768-r3
+     status=ok gen=27.389 pp=291.863 n_prompt=23230 n_gen=100 needle=False (missing_primary:DELTA) out_chars=123 throttle=False temp_max=None
+  [65536] run 1/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-gemma4-latest-65536-r1
+     status=ok gen=24.166 pp=201.859 n_prompt=46320 n_gen=100 needle=False (missing_primary:DELTA) out_chars=151 throttle=False temp_max=None
+  [65536] run 2/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-gemma4-latest-65536-r2
+     status=ok gen=24.192 pp=200.571 n_prompt=46320 n_gen=100 needle=False (missing_primary:DELTA) out_chars=451 throttle=False temp_max=None
+  [65536] run 3/3 (target 65536 tok, needle@50.0%, prompt_chars=249036, timeout=5296s)  tag=ctxq-gemma4-latest-65536-r3
+     status=ok gen=24.472 pp=199.29 n_prompt=46320 n_gen=100 needle=False (missing_primary:DELTA) out_chars=164 throttle=False temp_max=None
+  SUMMARY gemma4-latest:
+      4096  gen=30.718 t/s  pp=468.977 t/s  needle=0/3  status=ok
+     16384  gen=29.996 t/s  pp=372.952 t/s  needle=0/3  status=ok
+     32768  gen=27.389 t/s  pp=291.873 t/s  needle=0/3  status=ok
+     65536  gen=24.192 t/s  pp=200.571 t/s  needle=0/3  status=ok
+
+[ctx-quality] === gemma4-26b-q3 (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-q3-4096-r1
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-q3-4096-r2
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-q3-4096-r3
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for gemma4-26b-q3
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] above MODEL_CTX_CAP=16384 for gemma4-26b-q3 -- skip
+  [65536] above MODEL_CTX_CAP=16384 for gemma4-26b-q3 -- skip
+  SUMMARY gemma4-26b-q3:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=capped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=capped
+
+[ctx-quality] === gemma4-26b-a4b-ollama (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-a4b-ollama-4096-r1
+     status=http_error gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-a4b-ollama-4096-r2
+     status=http_error gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=931s)  tag=ctxq-gemma4-26b-a4b-ollama-4096-r3
+     status=http_error gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] all runs failed -- stopping ladder for gemma4-26b-a4b-ollama
+  [16384] ladder stopped (prior tier failed) -- skip
+  [32768] above MODEL_CTX_CAP=16384 for gemma4-26b-a4b-ollama -- skip
+  [65536] above MODEL_CTX_CAP=16384 for gemma4-26b-a4b-ollama -- skip
+  SUMMARY gemma4-26b-a4b-ollama:
+      4096  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     16384  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=capped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=capped
+
+[ctx-quality] === gpt-oss-20b-ollama (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-gpt-oss-20b-ollama-4096-r1
+     status=ok gen=49.796 pp=442.264 n_prompt=3107 n_gen=100 needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-gpt-oss-20b-ollama-4096-r2
+     status=ok gen=49.769 pp=441.538 n_prompt=3107 n_gen=100 needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-gpt-oss-20b-ollama-4096-r3
+     status=ok gen=49.815 pp=442.175 n_prompt=3107 n_gen=100 needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-gpt-oss-20b-ollama-16384-r1
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-gpt-oss-20b-ollama-16384-r2
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-gpt-oss-20b-ollama-16384-r3
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [16384] all runs failed -- stopping ladder for gpt-oss-20b-ollama
+  [32768] ladder stopped (prior tier failed) -- skip
+  [65536] ladder stopped (prior tier failed) -- skip
+  SUMMARY gpt-oss-20b-ollama:
+      4096  gen=49.796 t/s  pp=442.175 t/s  needle=0/3  status=ok
+     16384  gen=None t/s  pp=None t/s  needle=0/3  status=failed
+     32768  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+     65536  gen=None t/s  pp=None t/s  needle=0/0  status=stopped
+
+[ctx-quality] === mistral-small-3.2-q3km-ollama (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-ollama-4096-r1
+     status=ok gen=17.543 pp=94.86 n_prompt=3114 n_gen=29 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-ollama-4096-r2
+     status=ok gen=17.572 pp=95.436 n_prompt=3114 n_gen=29 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-ollama-4096-r3
+     status=ok gen=17.539 pp=95.443 n_prompt=3114 n_gen=29 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-ollama-16384-r1
+     status=ok gen=14.791 pp=74.424 n_prompt=12055 n_gen=29 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-ollama-16384-r2
+     status=ok gen=14.796 pp=70.487 n_prompt=12055 n_gen=29 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=900s)  tag=ctxq-mistral-small-3.2-q3km-ollama-16384-r3
+     status=ok gen=14.813 pp=69.236 n_prompt=12055 n_gen=29 needle=True (both_present:exact|exact) out_chars=50 throttle=False temp_max=None
+  [32768] run 1/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-mistral-small-3.2-q3km-ollama-32768-r1
+     status=timeout gen=None pp=None n_prompt=None n_gen=None needle=False (empty_output) out_chars=0 throttle=False temp_max=None
+  [32768] run 2/3 (target 32768 tok, needle@50.0%, prompt_chars=124518, timeout=3248s)  tag=ctxq-mistral-small-3.2-q3km-ollama-32768-r2

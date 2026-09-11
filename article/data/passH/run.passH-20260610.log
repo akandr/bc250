@@ -1,0 +1,26 @@
+[ok] sampler healthcheck: 4 lines in 3s
+[ctx-quality] tiers=[4096, 16384]  runs_n=3  n_gen=200
+[ctx-quality] 0 llama-completion + 1 ollama models  only=['phi4-14b-ollama']
+[svc] starting ollama service ...
+[svc] ollama running=False
+
+[ctx-quality] === phi4-14b-ollama (ollama) ===
+  [4096] run 1/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-phi4-14b-ollama-4096-r1
+     status=ok gen=19.836 pp=89.782 n_prompt=3046 n_gen=25 needle=True (both_present:exact|exact) out_chars=52 throttle=True temp_max=85.0
+  [4096] run 2/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-phi4-14b-ollama-4096-r2
+     status=ok gen=19.797 pp=89.796 n_prompt=3046 n_gen=26 needle=True (both_present:exact|exact) out_chars=52 throttle=True temp_max=85.0
+  [4096] run 3/3 (target 4096 tok, needle@50.0%, prompt_chars=15564, timeout=900s)  tag=ctxq-phi4-14b-ollama-4096-r3
+     status=ok gen=19.812 pp=89.774 n_prompt=3046 n_gen=25 needle=True (both_present:exact|exact) out_chars=52 throttle=True temp_max=85.0
+  [16384] run 1/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=1189s)  tag=ctxq-phi4-14b-ollama-16384-r1
+     status=ok gen=13.807 pp=64.081 n_prompt=11866 n_gen=26 needle=True (both_present:exact|exact) out_chars=52 throttle=True temp_max=85.0
+  [16384] run 2/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=1189s)  tag=ctxq-phi4-14b-ollama-16384-r2
+     status=ok gen=13.811 pp=64.091 n_prompt=11866 n_gen=26 needle=True (both_present:exact|exact) out_chars=52 throttle=True temp_max=85.0
+  [16384] run 3/3 (target 16384 tok, needle@50.1%, prompt_chars=62259, timeout=1189s)  tag=ctxq-phi4-14b-ollama-16384-r3
+     status=ok gen=13.795 pp=64.097 n_prompt=11866 n_gen=26 needle=True (both_present:exact|exact) out_chars=52 throttle=True temp_max=84.0
+  SUMMARY phi4-14b-ollama:
+      4096  gen=19.812 t/s  pp=89.782 t/s  needle=3/3  status=ok
+     16384  gen=13.807 t/s  pp=64.091 t/s  needle=3/3  status=ok
+
+=== ctx-quality summary ===
+  model                                   4096           16384
+  phi4-14b-ollama                 19.8 t/s 3/3    13.8 t/s 3/3

@@ -1,0 +1,19 @@
+\begin{table}[t]
+\caption{Multi-needle long-context retrieval (W2.B).  Five fixed-content
+codes planted at depths 10\,/\,30\,/\,50\,/\,70\,/\,90\,\% of a filler
+document; model is asked to enumerate them.  Score = number of codes
+correctly recovered (median across 2 runs).  Verified-stock 24-CU,
+Ollama~0.20.0/llama.cpp~b9265, KV~q4\_0.}\label{tab:multineedle}
+\centering
+\scriptsize
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Model} & \textbf{16K} & \textbf{32K} & \textbf{64K} & \textbf{128K} & \textbf{Notes} \\
+\otoprule
+qwen3.5-9b-ollama & 5/5 & 5/5 & 5/5 & 5/5 &  \\
+gemma4-latest & --- & 0/5 & 0/5 & 0/5 &  \\
+deepseek-r1-14b & 5/5 & 5/5 & 5/5 & --- &  \\
+granite-4.0-h-tiny & 5/5 & 5/5 & 5/5 & 5/5 &  \\
+\bottomrule
+\end{tabular}
+\end{table}

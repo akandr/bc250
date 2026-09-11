@@ -1,0 +1,191 @@
+{
+  "deepseek-r1-14b": {
+    "gen": 21.18,
+    "pp": 98.03,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "dense"
+  },
+  "gpt-oss-20b-mxfp4": {
+    "gen": 66.11,
+    "pp": 181.03,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "moe_mxfp4"
+  },
+  "qwen3-coder-30b-iq2m": {
+    "gen": 57.72,
+    "pp": 178.15,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "moe"
+  },
+  "qwen3.5-35b-iq2m": {
+    "gen": 59.53,
+    "pp": 171.81,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "moe"
+  },
+  "qwen3.6-35b-iq2m": {
+    "gen": 59.57,
+    "pp": 170.84,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "moe"
+  },
+  "granite-4.0-h-tiny": {
+    "gen": 104.23,
+    "pp": 510.65,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "mamba_moe"
+  },
+  "qwq-32b-iq2m": {
+    "gen": 9.63,
+    "pp": 47.92,
+    "source": "passA-stock24cu",
+    "backend": "llama-completion",
+    "kind": "dense"
+  },
+  "qwen3.5-9b-ollama": {
+    "gen": 23.139,
+    "pp": 143.114,
+    "source": "passA-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "gemma4-latest": {
+    "gen": 28.858,
+    "pp": 303.963,
+    "source": "passA-stock24cu",
+    "backend": "ollama",
+    "kind": "moe_a4b"
+  },
+  "gpt-oss-20b-ollama": {
+    "gen": 45.864,
+    "pp": 253.619,
+    "source": "passA-stock24cu",
+    "backend": "ollama",
+    "kind": "moe_mxfp4"
+  },
+  "mistral-small-3.2-q3km-ollama": {
+    "gen": 11.594,
+    "pp": 51.53,
+    "source": "passA-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "gemma2-9b-ollama": {
+    "gen": 29.678,
+    "pp": 166.606,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "qwen3-8b-ollama-q4km": {
+    "gen": 31.65,
+    "pp": 161.407,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "deepseek-r1-14b-ollama": {
+    "gen": 22.107,
+    "pp": 82.694,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "qwen3-coder-30b-iq2m-ollama": {
+    "gen": 43.831,
+    "pp": 174.592,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "moe"
+  },
+  "granite3-3-8b-ollama": {
+    "gen": 35.568,
+    "pp": 146.631,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "glm4-9b-ollama": {
+    "gen": 34.135,
+    "pp": 195.0,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "llama3.2-3b-ollama": {
+    "gen": 80.616,
+    "pp": 384.942,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "qwen3-30b-a3b-q2k-ollama": {
+    "gen": 41.548,
+    "pp": 169.13,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "moe"
+  },
+  "gemma3-12b-ollama": {
+    "gen": 20.916,
+    "pp": 106.055,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "llama3-1-8b-ollama": {
+    "gen": 39.986,
+    "pp": 189.852,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "phi4-mini-ollama": {
+    "gen": 67.872,
+    "pp": 357.477,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "qwen3-14b-ollama": {
+    "gen": 20.139,
+    "pp": 86.436,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "qwen3-8b-ollama-q8": {
+    "gen": 26.095,
+    "pp": 196.321,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "gemma3-4b-ollama": {
+    "gen": 47.801,
+    "pp": 328.717,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  },
+  "qwen3-5-35b-a3b-iq2m-ollama": {
+    "gen": 25.063,
+    "pp": 147.285,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "moe"
+  },
+  "mistral-nemo-12b-ollama": {
+    "gen": 25.971,
+    "pp": 130.136,
+    "source": "passD-stock24cu",
+    "backend": "ollama",
+    "kind": "dense"
+  }
+}

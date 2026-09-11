@@ -1,0 +1,15 @@
+\begin{table}[t]
+\caption{Cold-start TTFT: model fully unloaded $\to$ first generated
+token.  Three runs per model on verified-stock 24-CU,
+Ollama~0.20.0.}\label{tab:cold_start}
+\centering
+\scriptsize
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Model} & \textbf{Run~1} & \textbf{Run~2} & \textbf{Run~3} & \textbf{Med.} & \textbf{Load} \\
+\otoprule
+qwen3.5-35b-a3b & 22.6\,s & 22.1\,s & 21.5\,s & --- & 16.5\,s \\
+qwen3.5\!:\!9b & 15.1\,s & 12.7\,s & --- & --- & 9.9\,s \\
+\bottomrule
+\end{tabular}
+\end{table}

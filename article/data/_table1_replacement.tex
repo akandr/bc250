@@ -1,0 +1,29 @@
+\begin{table}[ht]
+\caption{Generation speed and VRAM for representative models at 4K
+context. $\star$~recommended.  All numbers from the verified-stock
+24-CU configuration under Ollama 0.20.0.  This table supersedes the
+original Ollama-0.18.0 numbers, which were measured before a kernel
+upgrade and accompanying CU-unlock event went undetected on the
+benchmark host; see Section~\ref{subsec:errata}.}\label{tab:gen_speed}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccrrcr@{}}
+\toprule
+\textbf{Model} & \textbf{Par.} & \textbf{Quant} & \textbf{Gen} & \textbf{Pfill} & \textbf{VRAM} & \textbf{Qual.} \\
+ & & & \textbf{(t/s)} & \textbf{(t/s)} & \textbf{(GiB)} & \\
+\otoprule
+\multicolumn{7}{@{}l}{\scriptsize $^a$\,Qwen3.5-35B-A3B (35\,B total, 3\,B active per token), IQ2\_M $\approx$2.5\,bits/weight.} \\
+\addlinespace[1pt]
+llama3.2\!:\!3b & 3.2B & Q4\_K\_M &  80.6 & 384.9 & 2.2 & 93\% \\
+phi4-mini & 3.8B & Q4\_K\_M &  67.9 & 357.5 & 2.5 & 93\% \\
+gemma3\!:\!4b & 4B & Q4\_K\_M &  47.8 & 328.7 & 3.8 & 100\% \\
+qwen3\!:\!8b & 8.2B & Q4\_K\_M &  31.6 & 161.4 & 5.1 & 100\% \\
+$\star$ qwen3.5\!:\!9b & 9.7B & Q4\_K\_M &  23.1 & 143.1 & 7.9 & 100\% \\
+mistral-nemo\!:\!12b & 12.2B & Q4\_0 &  26.0 & 130.1 & 6.7 & 80\% \\
+qwen3\!:\!14b & 14.8B & Q4\_K\_M &  20.1 &  86.4 & 8.9 & 100\% \\
+deepseek-r1\!:\!14b & 14B & Q4\_K\_M &  22.1 &  82.7 & 8.5 & 100\% \\
+$\star$ qwen3.5-35b-a3b\,$^a$ & 35/3B & IQ2\_M &  25.1 & 147.3 & 12.3 & 93\% \\
+\bottomrule
+\end{tabular}
+\end{table}

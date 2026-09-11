@@ -1,0 +1,662 @@
+{
+  "step": "cold",
+  "results": {
+    "qwen3.5-9b-q4km": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "cold_runs": [
+        {
+          "model": "qwen3.5-9b-q4km",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3.5-9b-q4km-r1",
+          "projected_vm_gib": 6.39,
+          "wall_s": 0.84,
+          "rc": 1,
+          "output": "",
+          "status": "fail",
+          "stderr_tail": "0.00.302.906 I llama_completion: llama backend init\n0.00.302.918 I llama_completion: load the model and apply lora adapter, if any\n0.00.302.936 I common_init_result: fitting params to device memory ...\n0.00.302.936 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.547.800 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.547.807 E llama_model_load_from_file_impl: failed to load model\n0.00.547.859 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.773.205 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.773.215 E llama_model_load_from_file_impl: failed to load model\n0.00.773.220 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.773.227 E llama_completion: error: unable to create context\n",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780484608317.csv",
+          "cold_load_s": null
+        },
+        {
+          "model": "qwen3.5-9b-q4km",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3.5-9b-q4km-r2",
+          "projected_vm_gib": 6.39,
+          "wall_s": 0.84,
+          "rc": 1,
+          "output": "",
+          "status": "fail",
+          "stderr_tail": "0.00.297.729 I llama_completion: llama backend init\n0.00.297.740 I llama_completion: load the model and apply lora adapter, if any\n0.00.297.757 I common_init_result: fitting params to device memory ...\n0.00.297.758 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)\n0.00.545.194 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.545.202 E llama_model_load_from_file_impl: failed to load model\n0.00.545.257 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.774.378 E llama_model_load: error loading model: error loading model hyperparameters: key qwen35.rope.dimension_sections has wrong array length; expected 4, got 3\n0.00.774.386 E llama_model_load_from_file_impl: failed to load model\n0.00.774.392 E common_init_from_params: failed to load model '/opt/models/qwen3.5-9b-q4km.gguf'\n0.00.774.398 E llama_completion: error: unable to create context\n",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780484629897.csv",
+          "cold_load_s": null
+        }
+      ],
+      "warm_runs": []
+    },
+    "deepseek-r1-14b": {
+      "backend": "llama-completion",
+      "kind": "dense",
+      "cold_runs": [
+        {
+          "model": "deepseek-r1-14b",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-deepseek-r1-14b-r1",
+          "projected_vm_gib": 8.77,
+          "wall_s": 32.73,
+          "rc": 0,
+          "prompt_eval_ms": 2507.78,
+          "n_prompt": 245,
+          "prefill_tok_s": 97.7,
+          "eval_ms": 3744.6,
+          "n_gen": 79,
+          "gen_tok_s": 21.1,
+          "load_ms": 24633.96,
+          "total_ms": 6485.2,
+          "ttft_s": 27.142,
+          "output": "This is a benchmarking question. Please write in English, but keep it concise. The response should be a single, well-structured paragraph without markdown, and include all the required points. \n\nThe response should be 500-700 words. \n\nThe response should be in English.\n\nOkay, so I need to compare RISC and CISC processor architectures. Hmm, I",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780484681463.csv",
+          "cold_load_s": 24.634
+        },
+        {
+          "model": "deepseek-r1-14b",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-deepseek-r1-14b-r2",
+          "projected_vm_gib": 8.77,
+          "wall_s": 32.28,
+          "rc": 0,
+          "prompt_eval_ms": 2448.33,
+          "n_prompt": 245,
+          "prefill_tok_s": 100.07,
+          "eval_ms": 3737.78,
+          "n_gen": 79,
+          "gen_tok_s": 21.14,
+          "load_ms": 24178.6,
+          "total_ms": 6423.54,
+          "ttft_s": 26.627,
+          "output": "This is a benchmarking question. Please write in English, but keep the thinking in Chinese. The response should be concise, well-structured, and in English. The thinking process should be in Chinese, concise and clear.\n\n</think>\n\n### \u6bd4\u8f83RISC\u548cCISC\u5904\u7406\u5668\u67b6\u6784\n\n#### (a) \u539f\u59cbRISC\u8bbe\u8ba1\uff08MIPS/SPARC/ARM",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780484737372.csv",
+          "cold_load_s": 24.179
+        }
+      ],
+      "warm_runs": []
+    },
+    "gpt-oss-20b-mxfp4": {
+      "backend": "llama-completion",
+      "kind": "moe_mxfp4",
+      "cold_runs": [
+        {
+          "model": "gpt-oss-20b-mxfp4",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-gpt-oss-20b-mxfp4-r1",
+          "projected_vm_gib": 11.73,
+          "status": "skip",
+          "skip_reason": "projected_vm_11.7gib_over_11.0gib_ceiling",
+          "wall_s": 0.0,
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "cold_load_s": null
+        },
+        {
+          "model": "gpt-oss-20b-mxfp4",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-gpt-oss-20b-mxfp4-r2",
+          "projected_vm_gib": 11.73,
+          "status": "skip",
+          "skip_reason": "projected_vm_11.7gib_over_11.0gib_ceiling",
+          "wall_s": 0.0,
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "cold_load_s": null
+        }
+      ],
+      "warm_runs": []
+    },
+    "qwen3-coder-30b-iq2m": {
+      "backend": "llama-completion",
+      "kind": "moe",
+      "cold_runs": [
+        {
+          "model": "qwen3-coder-30b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3-coder-30b-iq2m-r1",
+          "projected_vm_gib": 10.59,
+          "wall_s": 33.73,
+          "rc": 0,
+          "prompt_eval_ms": 1424.62,
+          "n_prompt": 252,
+          "prefill_tok_s": 176.89,
+          "eval_ms": 1370.05,
+          "n_gen": 79,
+          "gen_tok_s": 57.66,
+          "load_ms": 28893.71,
+          "total_ms": 3030.03,
+          "ttft_s": 30.318,
+          "output": "RISC (Reduced Instruction Set Computer) and CISC (Complex Instruction Set Computer) represent two fundamentally different philosophies in processor design. RISC emphasizes simplicity, predictability, and efficiency, while CISC focuses on functionality and code density. The design philosophies of these architectures have profound implications for pipeline design, instruction decoding, and compiler optimization.\n\nRISC architectures, exemplified by early designs like",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780484891988.csv",
+          "cold_load_s": 28.894
+        },
+        {
+          "model": "qwen3-coder-30b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3-coder-30b-iq2m-r2",
+          "projected_vm_gib": 10.59,
+          "wall_s": 35.95,
+          "rc": 0,
+          "prompt_eval_ms": 1408.13,
+          "n_prompt": 252,
+          "prefill_tok_s": 178.96,
+          "eval_ms": 1356.47,
+          "n_gen": 79,
+          "gen_tok_s": 58.24,
+          "load_ms": 31213.5,
+          "total_ms": 3000.18,
+          "ttft_s": 32.622,
+          "output": "RISC (Reduced Instruction Set Computer) and CISC (Complex Instruction Set Computer) represent two fundamentally different philosophies in processor design. RISC emphasizes simplicity, predictability, and efficiency, while CISC focuses on functionality and code density. The original RISC designs, such as MIPS, SPARC, and ARM, were built around the principle of a small, fixed-length instruction set that executes",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780484953034.csv",
+          "cold_load_s": 31.213
+        }
+      ],
+      "warm_runs": []
+    },
+    "qwen3.5-35b-iq2m": {
+      "backend": "llama-completion",
+      "kind": "moe",
+      "cold_runs": [
+        {
+          "model": "qwen3.5-35b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3.5-35b-iq2m-r1",
+          "projected_vm_gib": 11.16,
+          "status": "skip",
+          "skip_reason": "projected_vm_11.2gib_over_11.0gib_ceiling",
+          "wall_s": 0.0,
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "cold_load_s": null
+        },
+        {
+          "model": "qwen3.5-35b-iq2m",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3.5-35b-iq2m-r2",
+          "projected_vm_gib": 11.16,
+          "status": "skip",
+          "skip_reason": "projected_vm_11.2gib_over_11.0gib_ceiling",
+          "wall_s": 0.0,
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "cold_load_s": null
+        }
+      ],
+      "warm_runs": []
+    },
+    "granite-4.0-h-tiny": {
+      "backend": "llama-completion",
+      "kind": "mamba_moe",
+      "cold_runs": [
+        {
+          "model": "granite-4.0-h-tiny",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-granite-4.0-h-tiny-r1",
+          "projected_vm_gib": 4.14,
+          "wall_s": 8.98,
+          "rc": 0,
+          "prompt_eval_ms": 462.23,
+          "n_prompt": 235,
+          "prefill_tok_s": 508.4,
+          "eval_ms": 759.75,
+          "n_gen": 79,
+          "gen_tok_s": 103.98,
+          "load_ms": 6862.39,
+          "total_ms": 1243.0,
+          "ttft_s": 7.325,
+          "output": "**Constraints:**\n- The response must be in the form of a single, coherent paragraph.\n- The response must not exceed 300 words.\n- The response must include the keywords: \"pipeline\", \"code density\", \"micro-op decoding\", \"superscalar implementations\", \"compiler design\", \"energy efficiency\", and \"performance implications\".\n\n**Answer:**\n\nThe RISC (Reduced Instruction",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485110789.csv",
+          "cold_load_s": 6.862
+        },
+        {
+          "model": "granite-4.0-h-tiny",
+          "backend": "llama-completion",
+          "build": "b9265",
+          "ctx_target": 4096,
+          "kv_type": "q4_0",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-granite-4.0-h-tiny-r2",
+          "projected_vm_gib": 4.14,
+          "wall_s": 8.79,
+          "rc": 0,
+          "prompt_eval_ms": 461.86,
+          "n_prompt": 235,
+          "prefill_tok_s": 508.82,
+          "eval_ms": 760.46,
+          "n_gen": 79,
+          "gen_tok_s": 103.88,
+          "load_ms": 6764.52,
+          "total_ms": 1243.65,
+          "ttft_s": 7.226,
+          "output": "**Constraints:**\n- The response must be in the form of a single, coherent paragraph.\n- The response must not exceed 300 words.\n- The response must include the keywords: \"pipeline\", \"code density\", \"micro-op decoding\", \"superscalar implementations\", and \"energy efficiency\".\n\n**Response:**\nThe distinction between RISC and CISC processor architectures traces back to their foundational",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485140925.csv",
+          "cold_load_s": 6.765
+        }
+      ],
+      "warm_runs": []
+    },
+    "gemma4-latest": {
+      "backend": "ollama",
+      "kind": "moe_a4b",
+      "cold_runs": [
+        {
+          "model": "gemma4-latest",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-gemma4-latest-r1",
+          "ollama_model_tag": "gemma4:latest",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.3,
+          "wall_s": 17.75,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 2760.28,
+          "gen_tok_s": 28.983,
+          "n_prompt": 256,
+          "prompt_eval_ms": 847.34,
+          "prefill_tok_s": 302.124,
+          "load_ms": 13748.55,
+          "total_ms": 17718.29,
+          "ttft_s": 14.596,
+          "output": "{/* End of Description */}\n\n## 1. The Goal\n\nThe goal of this problem is to systematically evaluate a given mathematical problem (or system of equations, or algorithm) by breaking it down into a sequence of logical steps. The output must precisely mirror the thought process of a highly competent expert tackling the problem from first principles, using rigorous, step-by-human-readable, detailed, structured",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485238991.csv",
+          "cold_load_s": 13.749
+        },
+        {
+          "model": "gemma4-latest",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-gemma4-latest-r2",
+          "ollama_model_tag": "gemma4:latest",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.3,
+          "wall_s": 16.96,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 2771.75,
+          "gen_tok_s": 28.863,
+          "n_prompt": 256,
+          "prompt_eval_ms": 830.12,
+          "prefill_tok_s": 308.389,
+          "load_ms": 13008.25,
+          "total_ms": 16952.87,
+          "ttft_s": 13.838,
+          "output": ": $\\text{The problem asks for the completion of a sentence fragment related to an analogy or concept. The key elements provided are:}$\n\n1.  **A statement about a process/system**: \"$\\text{...}$\"\n2.  **A set of keywords/actions**: \"$\\text{...}$\"\n3.  **A connection/relationship**: \"$\\text",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485275678.csv",
+          "cold_load_s": 13.008
+        }
+      ],
+      "warm_runs": [
+        {
+          "model": "gemma4-latest",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "warm-gemma4-latest-r1",
+          "ollama_model_tag": "gemma4:latest",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.3,
+          "wall_s": 4.01,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 2787.84,
+          "gen_tok_s": 28.696,
+          "n_prompt": 256,
+          "prompt_eval_ms": 819.85,
+          "prefill_tok_s": 312.253,
+          "load_ms": 339.26,
+          "total_ms": 4008.25,
+          "ttft_s": 1.159,
+          "output": "ribble-associated-with-the-rejection-of-the-proposed-revision-to-the-algorithm-for-detecting-the-optimal-sequence-of-state-transitions-in-a-discrete-time-Markov-chain-model-that-is-susceptible-to-initial-conditions-and-is-affected-by-the-",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485308139.csv",
+          "cold_load_s": 0.339
+        }
+      ]
+    },
+    "qwen3.5-9b-ollama": {
+      "backend": "ollama",
+      "kind": "dense",
+      "cold_runs": [
+        {
+          "model": "qwen3.5-9b-ollama",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3.5-9b-ollama-r1",
+          "ollama_model_tag": "qwen3.5:9b",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.25,
+          "wall_s": 16.87,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 3454.96,
+          "gen_tok_s": 23.155,
+          "n_prompt": 261,
+          "prompt_eval_ms": 1834.61,
+          "prefill_tok_s": 142.264,
+          "load_ms": 11331.4,
+          "total_ms": 16870.54,
+          "ttft_s": 13.166,
+          "output": "The evolution of processor architectures represents a fundamental tension between hardware simplicity and software expressiveness, manifesting in the dichotomy between Reduced Instruction Set Computer (RISC) and Complex Instruction Set Computer (CISC) designs. While the historical narrative often frames them as opposing philosophies, modern high-performance computing reveals a convergence where the theoretical boundaries have largely dissolved, replaced by hybrid implementations that optimize for specific workload characteristics",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485335980.csv",
+          "cold_load_s": 11.331
+        },
+        {
+          "model": "qwen3.5-9b-ollama",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-qwen3.5-9b-ollama-r2",
+          "ollama_model_tag": "qwen3.5:9b",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.25,
+          "wall_s": 16.52,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 3456.82,
+          "gen_tok_s": 23.143,
+          "n_prompt": 261,
+          "prompt_eval_ms": 1874.66,
+          "prefill_tok_s": 139.225,
+          "load_ms": 10640.71,
+          "total_ms": 16514.39,
+          "ttft_s": 12.515,
+          "output": "The evolution of processor architectures represents a fundamental tension between hardware complexity and software efficiency, manifesting primarily through the dichotomy between Reduced Instruction Set Computer (RISC) and Complex Instruction Set Computer (CISC) designs. While the historical narrative often frames them as opposing philosophies, modern high-performance computing reveals a convergence where the theoretical distinctions have largely dissolved into implementation details.\n\n### Instruction Set Design Philosophy and",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485371676.csv",
+          "cold_load_s": 10.641
+        }
+      ],
+      "warm_runs": [
+        {
+          "model": "qwen3.5-9b-ollama",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "warm-qwen3.5-9b-ollama-r1",
+          "ollama_model_tag": "qwen3.5:9b",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.25,
+          "wall_s": 5.61,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 3454.7,
+          "gen_tok_s": 23.157,
+          "n_prompt": 261,
+          "prompt_eval_ms": 1805.67,
+          "prefill_tok_s": 144.545,
+          "load_ms": 275.58,
+          "total_ms": 5610.7,
+          "ttft_s": 2.081,
+          "output": "The debate between Reduced Instruction Set Computer (RISC) and Complex Instruction Set Computer (CISC) architectures represents one of the most significant divergences in computer engineering history. While the terminology suggests a binary opposition, modern processor design has largely converged, blending the philosophies of both to optimize for performance, density, and power efficiency.\n\n### Instruction Set Design Philosophy and Historical Context\n\nThe fundamental divergence",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485403699.csv",
+          "cold_load_s": 0.276
+        }
+      ]
+    },
+    "gpt-oss-20b-ollama": {
+      "backend": "ollama",
+      "kind": "moe_mxfp4",
+      "cold_runs": [
+        {
+          "model": "gpt-oss-20b-ollama",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-gpt-oss-20b-ollama-r1",
+          "ollama_model_tag": "gpt-oss:20b",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.45,
+          "wall_s": 22.3,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 1738.33,
+          "gen_tok_s": 46.021,
+          "n_prompt": 298,
+          "prompt_eval_ms": 1177.85,
+          "prefill_tok_s": 253.004,
+          "load_ms": 19085.7,
+          "total_ms": 22295.32,
+          "ttft_s": 20.264,
+          "output": "",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485433176.csv",
+          "cold_load_s": 19.086
+        },
+        {
+          "model": "gpt-oss-20b-ollama",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "cold-gpt-oss-20b-ollama-r2",
+          "ollama_model_tag": "gpt-oss:20b",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.45,
+          "wall_s": 21.24,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 1744.35,
+          "gen_tok_s": 45.862,
+          "n_prompt": 298,
+          "prompt_eval_ms": 1167.13,
+          "prefill_tok_s": 255.327,
+          "load_ms": 18030.11,
+          "total_ms": 21235.62,
+          "ttft_s": 19.197,
+          "output": "",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485474326.csv",
+          "cold_load_s": 18.03
+        }
+      ],
+      "warm_runs": [
+        {
+          "model": "gpt-oss-20b-ollama",
+          "backend": "ollama",
+          "build": "ollama-0.20.0",
+          "ctx_target": 4096,
+          "kv_type": "ollama-default",
+          "env_extra": {},
+          "n_gen_target": 80,
+          "label": "warm-gpt-oss-20b-ollama-r1",
+          "ollama_model_tag": "gpt-oss:20b",
+          "ollama_mode": "chat",
+          "projected_vm_gib": 0.45,
+          "wall_s": 21.28,
+          "rc": 0,
+          "n_gen": 80,
+          "eval_ms": 1755.74,
+          "gen_tok_s": 45.565,
+          "n_prompt": 298,
+          "prompt_eval_ms": 1183.38,
+          "prefill_tok_s": 251.822,
+          "load_ms": 18048.43,
+          "total_ms": 21278.53,
+          "ttft_s": 19.232,
+          "output": "**RISC\u2011vs\u2011CISC: The \u201cold\u201d debate and its modern relevance**\n\nThe \u201cRISC\u2011vs\u2011CISC\u201d debate is a classic example of how architectural choices can shape an entire ecosystem.  In the 1970s and",
+          "status": "ok",
+          "gpu_overlay": {
+            "samples": 0,
+            "throttle_flag": false
+          },
+          "overlay_csv": "/home/akandr/phase-c-out/results/overlay-1780485526071.csv",
+          "cold_load_s": 18.048
+        }
+      ]
+    }
+  },
+  "runs_per_model": 2,
+  "ctx": 4096,
+  "n_gen": 80
+}
