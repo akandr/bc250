@@ -181,8 +181,8 @@ b9165 & \texttt{moe-coder-30b-iq2m} & 16384 & 362.99 & 358.35 & $-1.3\,\%$ \\
 
 The effect depends on prefill length.  At 2048 and 4096 tokens host
 placement is faster in all eight cells, by 6.1 to 13.9\,\%, and the
-advantage shrinks as prefill grows.  At 16384 tokens it is gone: three
-cells move by less than 1.5\,\% and one is slower with host placement.
+advantage shrinks as prefill grows.  At 16384 tokens it is gone: all four
+cells move by less than 1.5\,\%, and one is slower with host placement.
 Both builds behave the same way, so the pattern follows the prefill
 length, not the llama.cpp version.  A single run per cell does
 not separate a small effect from run-to-run scatter, which is why only
@@ -630,7 +630,8 @@ the filled-context ladder.
 (11\,GiB guard, $n{=}3$ at 24\,CU and $n{=}2$ at 40\,CU); the heavy MoE
 builds from \texttt{results-moe-cu-ladder/} (14.7\,GiB guard, $n{=}2$ on
 both arms), the same files as the bottom group of Table~13 of the main
-text.}
+text.  The $\Delta$ column is computed on the unrounded medians (rates
+are printed to 0.1\,tok/s).}
 \label{tab:s-cutier}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -757,9 +758,7 @@ A gap of this size on a model where the runtime difference should be
 small is consistent with the Ollama variant taking a less direct kernel
 path on this device, most likely dequantising to a wider intermediate
 type.  No kernel-level profiling was performed, so that remains an
-explanation, not a measurement.  The practical reading is that
-MXFP4 weights are better served through llama.cpp directly than through
-the Ollama wrapper when generation throughput matters.
+explanation, not a measurement.
 
 %=====================================================================
 \section{Failed Configurations at the Quantisation Ceiling}
@@ -805,7 +804,7 @@ high-water of 12.26 to 12.52\,GiB and ran normally:
 \texttt{mistral-small-3.2} at the 16\,GiB pool reached 13.56\,GiB with
 0.32\,GiB free and timed out at the first tier
 (\texttt{retest16-mistral-small3.2-24b.json}).  Dropping one
-quantisation step, which removes roughly 3.5\,GiB, restores normal
+quantisation step, which removes 2 to 3\,GiB, restores normal
 operation.
 
 %=====================================================================
@@ -831,8 +830,8 @@ Table~8 of the main text groups the Q4\_0 KV collapse by key/value-head
 count.  Every collapsing model there is a Qwen2-architecture build, so
 head count and architecture are confounded in that set.  The models in
 Table~\ref{tab:s-heads} were pulled from the Ollama library on
-2026-09-09 to break the confound: three families with one to five
-key/value heads, plus a Qwen2-architecture model with different
+2026-09-09 to break the confound: three other architectures with one to
+five key/value heads, plus a Qwen2-architecture model with different
 post-training (\texttt{deepseek-r1:1.5b}, DeepSeek's distillation onto
 the Qwen2.5-1.5B base).  The protocol is that of the main-text
 perplexity sweep: \texttt{llama-perplexity} b9265, WikiText-2 test,
@@ -894,8 +893,9 @@ the main text used a different 1.5\,B GGUF (FP16 PPL 8.995, ratio
 \end{tabular}
 \end{table}
 
-Quantising the keys alone reproduces the full collapse; quantising the
-values alone costs 0.3 to 0.4\,\%.  The defect is in the key cache of
+Quantising the keys alone reproduces the full collapse
+(Table~\ref{tab:s-kvsplit}); quantising the values alone costs 0.3 to
+0.4\,\%.  The defect is in the key cache of
 these builds.  The \texttt{qwen2.5:7b} FP16 and Q4\_0 perplexities
 repeat the earlier sweep's values to four decimals, the repeat
 determinism noted in the main text.
@@ -956,8 +956,8 @@ the effect more directly than the tables do.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.86\textwidth]{figures/fig-context-degradation}
-\caption{Generation speed with filled context (80\,\% real-token fill,
-verified-stock 24-CU, $n{=}3$).  Panel~(a) is absolute throughput,
+\caption{Generation speed with filled context (verified-stock 24-CU,
+$n{=}3$).  Panel~(a) is absolute throughput,
 panel~(b) the same data as a fraction of each model's 4K throughput.
 Per-cell values are in Table~6 of the main text.}
 \end{figure}
