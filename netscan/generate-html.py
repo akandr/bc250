@@ -2122,6 +2122,7 @@ def gen_leaks():
     cat_badges = ""
     cat_icons = {"ransomware_victim": "🔒", "exploited_vuln": "🛡", "exposed_secret": "🔑",
                  "channel_mention": "📱", "c2_infrastructure": "🦠", "c2_stats": "📊",
+                 "attacking_host": "🍯", "attack_stats": "📊",
                  "osint_alert": "🐦", "darkweb_mention": "🧅", "breach_intel": "🕵",
                  "pl_database": "🇵🇱", "source_code_leak": "💻", "target_breach": "🎯",
                  "major_breach": "📢", "infostealer_exposure": "🔓"}

@@ -852,7 +852,7 @@ All jobs run as direct `subprocess.Popen` calls — roughly 3–10× faster than
 | `company-think-*` | Per-company deep-dives | 106 |
 | `patent-watch.py` | IR/RGB camera patent monitor — Google Patents, EPO | 1 |
 | `event-scout.py` | Meetup/conference tracker | 1 |
-| `leak-monitor.py` | CTI: 11 OSINT sources — HIBP, Hudson Rock, GitHub dorks, Ahmia, CISA KEV | 1 |
+| `leak-monitor.py` | CTI: 12 OSINT sources — HIBP, Hudson Rock, GitHub dorks, Ahmia, CISA KEV, NetAPI compromised IPs | 1 |
 | `idle-think.sh` | Research brain — 8 task types → JSON notes | 34 |
 | `ha-journal.py` | Home Assistant analysis (climate, sensors, anomalies) | 2 |
 | `ha-correlate.py` | HA cross-sensor correlation | 2 |
@@ -1722,7 +1722,7 @@ bc250/
 │   ├── company-intel.py            # Company deep-dive
 │   ├── patent-watch.py             # Patent monitor
 │   ├── event-scout.py              # Event tracker
-│   ├── leak-monitor.py             # CTI: 11 OSINT sources
+│   ├── leak-monitor.py             # CTI: 12 OSINT sources
 │   ├── ha-journal.py               # Home Assistant journal
 │   ├── ha-correlate.py             # HA cross-sensor correlation
 │   ├── idle-think.sh               # Research brain (8 task types)
