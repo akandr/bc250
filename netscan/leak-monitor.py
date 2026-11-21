@@ -833,20 +833,22 @@ def scan_feodo_c2(db):
     # Also try to scrape the Feodo browse page for recent C2 entries
     html = fetch_url("https://feodotracker.abuse.ch/browse/", timeout=20)
     if html:
-        # Parse table rows for recent C2 servers
-        rows = re.findall(
-            r'<tr>\s*<td[^>]*>(\d{4}-\d{2}-\d{2}[^<]*)</td>\s*'
-            r'<td[^>]*>([^<]*)</td>\s*'   # IP
-            r'<td[^>]*>([^<]*)</td>\s*'   # Port
-            r'<td[^>]*>([^<]*)</td>\s*'   # Status
-            r'<td[^>]*>([^<]*)</td>',     # Malware
-            html, re.DOTALL
-        )
+        # Parse table rows for recent C2 servers. The cells carry markup
+        # (host link, malware/status badges), so strip the tags per cell:
+        # first seen | host | malware | status | network | country
+        rows = []
+        for tr in re.findall(r'<tr>\s*(<td.*?)</tr>', html, re.DOTALL):
+            cells = [strip_html(c) for c in
+                     re.findall(r'<td[^>]*>(.*?)</td>', tr, re.DOTALL)]
+            if len(cells) >= 4 and re.match(r'\d{4}-\d{2}-\d{2}', cells[0]):
+                rows.append(cells)
         log(f"  {len(rows)} recent C2 entries from browse page")
 
         # Only flag new/interesting C2 infrastructure (last 7 days)
         cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
-        for date_str, ip, port, status, malware in rows[:50]:
+        for cells in rows[:50]:
+            date_str, ip, malware, status = cells[:4]
+            network = " ".join(cells[4:6])
             if date_str.strip()[:10] < cutoff:
                 continue
 
@@ -857,8 +859,9 @@ def scan_feodo_c2(db):
             is_notable = any(n in malware.lower() for n in notable)
 
             if is_notable:
-                title = f"Feodo C2: {malware} @ {ip.strip()}:{port.strip()}"
-                summary = f"Date: {date_str.strip()}, Status: {status.strip()}, Malware: {malware}"
+                title = f"Feodo C2: {malware} @ {ip.strip()}"
+                summary = (f"Date: {date_str.strip()}, Status: {status.strip()}, "
+                           f"Malware: {malware}, Network: {network}")
                 if add_finding(db, "feodo", "c2_infrastructure",
                               title, summary,
                               url=f"https://feodotracker.abuse.ch/browse/host/{ip.strip()}/",
