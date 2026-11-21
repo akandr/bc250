@@ -17,6 +17,7 @@ Sources:
   9. LeakForum.io            — underground forum (Atom feed, PL DBs & code leaks)
  10. Cracked.sh              — underground forum (auth scrape, PL DBs & code leaks)
  11. Ahmia.fi                — dark web search engine (clearnet → Tor hidden service index)
+ 12. NetAPI compromised IPs  — hosts caught attacking honeypots, Polish networks
 
 Security:
   - Tor SOCKS5 on 127.0.0.1:9050 (client-only, no relay/exit)
@@ -33,7 +34,9 @@ Cron:
 """
 
 import argparse
+import csv
 import hashlib
+import io
 import json
 import os
 import re
@@ -44,6 +47,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 from llm_sanitize import sanitize_llm_output
@@ -182,6 +186,11 @@ TELEGRAM_CHANNELS = [
 # ── Feodo C2 Tracker (abuse.ch) ────────────────────────────────────────────
 FEODO_RECENT_URL = "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"
 FEODO_C2_URL = "https://feodotracker.abuse.ch/browse/"
+
+# ── NetAPI compromised IP feed (hosts that attacked a honeypot, last 48h) ──
+NETAPI_IP_FEED_URL = "https://netapi.com/api2/?method=compromised&dataset_type=ip&format=csv"
+NETAPI_COUNTRY = "PL"       # record hosts in networks of this country
+NETAPI_MAX_NEW = 50         # at most this many new hosts per run
 
 # ── HIBP Breach Catalog ────────────────────────────────────────────────────
 HIBP_BREACHES_URL = "https://haveibeenpwned.com/api/v3/breaches"
@@ -1519,6 +1528,70 @@ def scan_ahmia_darkweb(db):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+#  Source 12: NetAPI compromised IP feed — attacking hosts in Polish networks
+# ══════════════════════════════════════════════════════════════════════════
+
+def scan_netapi_attackers(db):
+    """Check the NetAPI compromised IP feed for attacking hosts in Polish networks."""
+    log("🍯 Scanning NetAPI compromised IP feed...")
+    new_findings = 0
+
+    # CSV: ip,first_seen,last_seen,category,top_threat,threats,country,asn,as_name,sensors
+    text = fetch_url(NETAPI_IP_FEED_URL, timeout=60)
+    if not text or not text.startswith("ip,"):
+        log("  NetAPI: failed to fetch feed")
+        return 0
+
+    def sensors(row):
+        try:
+            return int(row.get("sensors") or 0)
+        except ValueError:
+            return 0
+
+    rows = [r for r in csv.DictReader(io.StringIO(text)) if r.get("ip")]
+    local = [r for r in rows if r.get("country") == NETAPI_COUNTRY]
+    log(f"  {len(rows)} attacking IPs in feed, {len(local)} in {NETAPI_COUNTRY} networks")
+
+    # Malware spreaders (category A) first, then the hosts seen by most sensors
+    local.sort(key=lambda r: (r.get("category") != "A", -sensors(r)))
+
+    for r in local:
+        if new_findings >= NETAPI_MAX_NEW:
+            break
+        ip = r["ip"]
+        is_malware = r.get("category") == "A"
+        title = f"NetAPI: {r.get('top_threat') or 'attack'} from {ip} ({NETAPI_COUNTRY})"
+        summary = (f"Network: AS{r.get('asn', '?')} {r.get('as_name', '')}\n"
+                   f"Attacks: {(r.get('threats') or '').replace('|', ', ')}\n"
+                   f"Sensors: {sensors(r)}, first seen {(r.get('first_seen') or '')[:10]}, "
+                   f"last seen {(r.get('last_seen') or '')[:16].replace('T', ' ')} UTC")
+        if add_finding(db, "netapi", "attacking_host",
+                      title, summary,
+                      url=f"https://netapi.com/lookup-ip/{ip}/",
+                      severity="medium" if is_malware else "low",
+                      relevance=3 if is_malware else 2):
+            new_findings += 1
+            log(f"  ⚠ NEW: {title[:80]}")
+
+    # Record the day's picture as a general intel finding (once per day)
+    today = datetime.now().strftime("%Y-%m-%d")
+    top_attacks = ", ".join(f"{t} {n}" for t, n in Counter(
+        r.get("top_threat") or "?" for r in local).most_common(5))
+    top_networks = ", ".join(f"{a} {n}" for a, n in Counter(
+        r.get("as_name") or "?" for r in local).most_common(5))
+    add_finding(db, "netapi", "attack_stats",
+               f"NetAPI daily: {len(local)} attacking IPs in {NETAPI_COUNTRY} networks ({today})",
+               f"Attacking IPs worldwide: {len(rows)} as of {today}\n"
+               f"Top attacks from {NETAPI_COUNTRY}: {top_attacks}\n"
+               f"Top {NETAPI_COUNTRY} networks: {top_networks}",
+               url="https://netapi.com/compromised-ips/",
+               severity="info", relevance=1)
+
+    log(f"  netapi: {new_findings} new findings")
+    return new_findings
+
+
+# ══════════════════════════════════════════════════════════════════════════
 #  LLM Analysis — Triage & Summarize findings
 # ══════════════════════════════════════════════════════════════════════════
 
@@ -1612,6 +1685,7 @@ def run_scrape_only():
         ("leakforum", scan_leakforum),
         ("cracked", scan_cracked),
         ("ahmia_darkweb", scan_ahmia_darkweb),
+        ("netapi", scan_netapi_attackers),
     ]
 
     scanner_errors = []
@@ -1759,6 +1833,7 @@ def run_full_scan():
         ("leakforum", scan_leakforum),
         ("cracked", scan_cracked),
         ("ahmia_darkweb", scan_ahmia_darkweb),
+        ("netapi", scan_netapi_attackers),
     ]
 
     for name, scanner in scanners:
